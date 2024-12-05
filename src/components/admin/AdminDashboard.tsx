@@ -21,14 +21,45 @@ export const AdminDashboard = () => {
 
   const checkAdminAccess = useCallback(async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      console.log("Checking admin access...");
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
+      if (sessionError) {
+        console.error("Session error:", sessionError);
+        throw sessionError;
+      }
+
       if (!session) {
+        console.log("No session found");
         navigate("/login");
         return false;
       }
 
-      const { data: { user } } = await supabase.auth.getUser();
+      // Try to refresh the session
+      const { data: { session: refreshedSession }, error: refreshError } = 
+        await supabase.auth.refreshSession();
+      
+      if (refreshError) {
+        console.error("Session refresh error:", refreshError);
+        if (refreshError.message.includes("refresh_token_not_found")) {
+          toast({
+            title: "Session expirée",
+            description: "Veuillez vous reconnecter",
+            variant: "destructive",
+          });
+          await supabase.auth.signOut();
+          navigate("/login");
+          return false;
+        }
+      }
+
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError) {
+        console.error("User fetch error:", userError);
+        throw userError;
+      }
+
       const isAdminUser = user?.email === "mendar.bouchali@gmail.com";
       
       if (!isAdminUser) {
@@ -46,7 +77,7 @@ export const AdminDashboard = () => {
       console.error('Error checking admin access:', error);
       toast({
         title: "Erreur d'authentification",
-        description: "Veuillez vous reconnecter.",
+        description: "Veuillez vous reconnecter",
         variant: "destructive",
       });
       navigate("/login");
@@ -71,6 +102,7 @@ export const AdminDashboard = () => {
     initializeAdmin();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event, session?.user?.email);
       if (!session) {
         if (mounted) {
           navigate("/login");

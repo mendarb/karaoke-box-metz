@@ -54,6 +54,7 @@ export const BookingsTable = ({ data, onStatusChange, onViewDetails }: BookingsT
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="hover:bg-transparent"
           >
             Date
             <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -69,6 +70,7 @@ export const BookingsTable = ({ data, onStatusChange, onViewDetails }: BookingsT
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="hover:bg-transparent"
           >
             Client
             <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -97,6 +99,7 @@ export const BookingsTable = ({ data, onStatusChange, onViewDetails }: BookingsT
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="hover:bg-transparent"
           >
             Prix
             <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -118,6 +121,7 @@ export const BookingsTable = ({ data, onStatusChange, onViewDetails }: BookingsT
             variant="outline"
             size="sm"
             onClick={() => onViewDetails(row.original)}
+            className="hover:bg-primary/10"
           >
             Détails
           </Button>
@@ -166,6 +170,7 @@ export const BookingsTable = ({ data, onStatusChange, onViewDetails }: BookingsT
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
+                className="hover:bg-muted/50"
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>

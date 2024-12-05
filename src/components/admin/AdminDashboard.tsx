@@ -6,6 +6,9 @@ import { BookingsTable } from "./BookingsTable";
 import { BookingDetailsDialog } from "./BookingDetailsDialog";
 import { useBookings, Booking } from "@/hooks/useBookings";
 import { useBookingStatus } from "@/hooks/useBookingStatus";
+import { DashboardStats } from "./DashboardStats";
+import { ResizablePanelGroup, ResizablePanel } from "@/components/ui/resizable";
+import { DashboardSidebar } from "./DashboardSidebar";
 
 export const AdminDashboard = () => {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
@@ -15,9 +18,7 @@ export const AdminDashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
-
-    const setupRealtimeAndFetchBookings = async () => {
+    const checkAdminAccess = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         
@@ -39,21 +40,6 @@ export const AdminDashboard = () => {
         }
 
         await fetchBookings();
-
-        realtimeChannel = supabase.channel('bookings_changes')
-          .on('postgres_changes', 
-            { 
-              event: '*', 
-              schema: 'public', 
-              table: 'bookings' 
-            }, 
-            () => {
-              console.log('Received realtime update');
-              fetchBookings();
-            }
-          )
-          .subscribe();
-
       } catch (error: any) {
         console.error('Error in admin dashboard:', error);
         toast({
@@ -65,33 +51,42 @@ export const AdminDashboard = () => {
       }
     };
 
-    setupRealtimeAndFetchBookings();
-
-    return () => {
-      if (realtimeChannel) {
-        console.log('Unsubscribing from realtime channel');
-        realtimeChannel.unsubscribe();
-      }
-    };
+    checkAdminAccess();
   }, [toast, navigate, fetchBookings]);
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-[50vh]">
+      <div className="flex justify-center items-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-10">
-      <h1 className="text-2xl font-bold mb-6">Tableau de bord administrateur</h1>
-      
-      <BookingsTable
-        data={bookings}
-        onStatusChange={updateBookingStatus}
-        onViewDetails={(booking) => setSelectedBooking(booking)}
-      />
+    <div className="min-h-screen bg-background">
+      <ResizablePanelGroup direction="horizontal">
+        <ResizablePanel defaultSize={20} minSize={15} maxSize={25}>
+          <DashboardSidebar />
+        </ResizablePanel>
+        
+        <ResizablePanel defaultSize={80}>
+          <div className="p-6">
+            <h1 className="text-2xl font-bold mb-6">Tableau de bord administrateur</h1>
+            
+            <div className="mb-8">
+              <DashboardStats bookings={bookings} />
+            </div>
+            
+            <div className="bg-card rounded-lg shadow-lg p-6">
+              <BookingsTable
+                data={bookings}
+                onStatusChange={updateBookingStatus}
+                onViewDetails={(booking) => setSelectedBooking(booking)}
+              />
+            </div>
+          </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
 
       {selectedBooking && (
         <BookingDetailsDialog

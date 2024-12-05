@@ -16,6 +16,7 @@ export const AdminDashboard = () => {
   const { updateBookingStatus } = useBookingStatus(fetchBookings);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
     const checkAdminAccess = async () => {
@@ -23,7 +24,7 @@ export const AdminDashboard = () => {
         const { data: { session } } = await supabase.auth.getSession();
         
         if (!session?.access_token) {
-          navigate("/");
+          navigate("/login");
           return;
         }
 
@@ -43,18 +44,28 @@ export const AdminDashboard = () => {
       } catch (error: any) {
         console.error('Error in admin dashboard:', error);
         toast({
-          title: "Erreur",
-          description: error.message || "Une erreur inattendue est survenue.",
+          title: "Erreur d'authentification",
+          description: "Veuillez vous reconnecter.",
           variant: "destructive",
         });
-        navigate("/");
+        navigate("/login");
+      } finally {
+        setIsCheckingAuth(false);
       }
     };
 
     checkAdminAccess();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        navigate("/login");
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [toast, navigate, fetchBookings]);
 
-  if (isLoading) {
+  if (isCheckingAuth || isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
@@ -77,7 +88,7 @@ export const AdminDashboard = () => {
               <DashboardStats bookings={bookings} />
             </div>
             
-            <div className="bg-card rounded-lg shadow-lg p-6">
+            <div className="bg-white rounded-lg shadow-lg p-6">
               <BookingsTable
                 data={bookings}
                 onStatusChange={updateBookingStatus}

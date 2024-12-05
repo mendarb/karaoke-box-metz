@@ -35,6 +35,8 @@ export const useBookings = () => {
         throw new Error("No session found");
       }
 
+      console.log("Session found, fetching bookings with token:", session.access_token);
+      
       const { data, error } = await supabase
         .from('bookings')
         .select('*')

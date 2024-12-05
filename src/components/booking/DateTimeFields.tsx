@@ -27,8 +27,6 @@ const timeSlots = [
   { id: "22", label: "22:00" },
 ];
 
-const OPENING_DATE = new Date(2024, 0, 7); // January 7, 2024
-
 export const DateTimeFields = ({ form }: DateTimeFieldsProps) => {
   const [selectedDate, setSelectedDate] = useState<Date>();
 
@@ -49,8 +47,8 @@ export const DateTimeFields = ({ form }: DateTimeFieldsProps) => {
                   setSelectedDate(date);
                 }}
                 disabled={(date) => {
-                  // Disable dates before opening date and Mondays
-                  return date < OPENING_DATE || isMonday(date);
+                  // Disable only Mondays and dates in the past
+                  return isMonday(date) || date < new Date();
                 }}
                 locale={fr}
                 className="rounded-xl border border-violet-100 p-4 mx-auto"

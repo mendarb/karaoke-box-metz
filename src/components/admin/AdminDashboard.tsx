@@ -49,12 +49,41 @@ export const AdminDashboard = () => {
     }
   };
 
+  const sendBookingEmail = async (booking: Booking) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('send-booking-email', {
+        body: {
+          to: booking.user_email,
+          userName: booking.user_name,
+          date: booking.date,
+          timeSlot: booking.time_slot,
+          duration: booking.duration,
+          groupSize: booking.group_size,
+          price: booking.price,
+          status: booking.status,
+        },
+      });
+
+      if (error) throw error;
+      console.log('Email sent successfully:', data);
+    } catch (error) {
+      console.error('Error sending email:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'envoyer l'email de notification",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleStatusChange = async (bookingId: string, newStatus: string) => {
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('bookings')
         .update({ status: newStatus })
-        .eq('id', bookingId);
+        .eq('id', bookingId)
+        .select()
+        .single();
 
       if (error) throw error;
 
@@ -62,6 +91,11 @@ export const AdminDashboard = () => {
         title: "Succès",
         description: "Statut de la réservation mis à jour",
       });
+
+      // Send email notification
+      if (data) {
+        await sendBookingEmail(data);
+      }
 
       fetchBookings();
     } catch (error: any) {

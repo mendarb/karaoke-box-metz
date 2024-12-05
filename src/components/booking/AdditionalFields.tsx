@@ -38,6 +38,7 @@ export const AdditionalFields = ({ form, calculatedPrice, groupSize, duration }:
       <FormField
         control={form.control}
         name="terms"
+        rules={{ required: "Vous devez accepter les conditions" }}
         render={({ field }) => (
           <FormItem className="flex flex-row items-start space-x-3 space-y-0">
             <FormControl>
@@ -45,7 +46,7 @@ export const AdditionalFields = ({ form, calculatedPrice, groupSize, duration }:
             </FormControl>
             <div className="space-y-1 leading-none">
               <FormLabel>
-                J'accepte les conditions générales et la politique d'annulation
+                J'accepte les conditions générales et la politique d'annulation *
               </FormLabel>
             </div>
           </FormItem>

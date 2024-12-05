@@ -7,21 +7,18 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { price, groupSize, duration } = await req.json();
-    console.log('Request data:', { price, groupSize, duration });
+    const { price, groupSize, duration, date, timeSlot, message } = await req.json();
+    console.log('Request data:', { price, groupSize, duration, date, timeSlot, message });
 
-    // Initialize Stripe
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
       apiVersion: '2023-10-16',
     });
 
-    // Create checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -30,15 +27,23 @@ serve(async (req) => {
             currency: 'eur',
             product_data: {
               name: `Réservation Karaoké - ${groupSize} personnes - ${duration}h`,
+              description: `Le ${new Date(date).toLocaleDateString('fr-FR')} à ${timeSlot}h`,
             },
-            unit_amount: price * 100, // Stripe expects amounts in cents
+            unit_amount: price * 100,
           },
           quantity: 1,
         },
       ],
       mode: 'payment',
-      success_url: `${req.headers.get('origin')}/success`,
-      cancel_url: `${req.headers.get('origin')}/`,
+      success_url: `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${req.headers.get('origin')}/cancel`,
+      metadata: {
+        date,
+        timeSlot,
+        groupSize,
+        duration,
+        message: message || '',
+      },
     });
 
     return new Response(

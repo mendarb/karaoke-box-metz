@@ -41,9 +41,10 @@ export const GroupSizeAndDurationFields = ({
       <FormField
         control={form.control}
         name="groupSize"
+        rules={{ required: "La taille du groupe est requise" }}
         render={({ field }) => (
           <FormItem>
-            <FormLabel className="text-lg font-medium">Nombre de participants</FormLabel>
+            <FormLabel className="text-lg font-medium">Nombre de participants *</FormLabel>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3">
               {groupSizes.map((size) => (
                 <FormControl key={size.value}>
@@ -74,9 +75,10 @@ export const GroupSizeAndDurationFields = ({
       <FormField
         control={form.control}
         name="duration"
+        rules={{ required: "La durée est requise" }}
         render={({ field }) => (
           <FormItem>
-            <FormLabel className="text-lg font-medium">Durée de la session</FormLabel>
+            <FormLabel className="text-lg font-medium">Durée de la session *</FormLabel>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
               {durations.map((duration) => (
                 <FormControl key={duration.value}>

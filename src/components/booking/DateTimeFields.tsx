@@ -29,16 +29,17 @@ const timeSlots = [
 
 export const DateTimeFields = ({ form }: DateTimeFieldsProps) => {
   const [selectedDate, setSelectedDate] = useState<Date>();
-  const minDate = new Date('2025-01-07');
+  const minDate = new Date();
 
   return (
     <div className="space-y-8 animate-fadeIn">
       <FormField
         control={form.control}
         name="date"
+        rules={{ required: "La date est requise" }}
         render={({ field }) => (
           <FormItem className="flex flex-col">
-            <FormLabel className="text-lg font-medium mb-4">Date de réservation</FormLabel>
+            <FormLabel className="text-lg font-medium mb-4">Date de réservation *</FormLabel>
             <FormControl>
               <Calendar
                 mode="single"
@@ -51,6 +52,7 @@ export const DateTimeFields = ({ form }: DateTimeFieldsProps) => {
                   return isMonday(date) || date < minDate;
                 }}
                 locale={fr}
+                required
                 className="rounded-xl border-0 p-0 w-full [&_.rdp-caption]:mb-4 [&_.rdp-nav]:h-10 [&_.rdp-cell]:h-10 [&_.rdp-button]:h-10 [&_.rdp-button]:w-10 [&_.rdp-button]:rounded-full [&_.rdp-day_button:hover]:bg-violet-50 [&_.rdp-day_button.rdp-day_selected]:bg-violet-600 [&_.rdp-day_button.rdp-day_selected]:text-white [&_.rdp-nav_button]:rounded-full [&_.rdp-nav_button]:w-10 [&_.rdp-nav_button]:h-10 [&_.rdp-nav_button:hover]:bg-violet-50"
               />
             </FormControl>
@@ -63,10 +65,11 @@ export const DateTimeFields = ({ form }: DateTimeFieldsProps) => {
         <FormField
           control={form.control}
           name="timeSlot"
+          rules={{ required: "L'horaire est requis" }}
           render={({ field }) => (
             <FormItem className="animate-fadeIn">
               <FormLabel className="text-lg font-medium mb-4 block">
-                Créneaux disponibles pour le {format(selectedDate, "d MMMM yyyy", { locale: fr })}
+                Créneaux disponibles pour le {format(selectedDate, "d MMMM yyyy", { locale: fr })} *
               </FormLabel>
               <div className="grid grid-cols-2 gap-4">
                 {timeSlots.map((slot) => (

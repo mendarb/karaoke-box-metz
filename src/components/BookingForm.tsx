@@ -69,33 +69,33 @@ export const BookingForm = () => {
           return;
         }
 
-        console.log('Making request to:', 'https://lxkaosgjtqonrnlivzev.supabase.co/functions/v1/create-checkout');
+        console.log('Making request to create-checkout with data:', {
+          ...data,
+          price: calculatedPrice,
+          groupSize,
+          duration,
+        });
         
-        const response = await fetch(
-          'https://lxkaosgjtqonrnlivzev.supabase.co/functions/v1/create-checkout',
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${session.access_token}`,
-            },
-            body: JSON.stringify({
-              ...data,
-              price: calculatedPrice,
-              groupSize,
-              duration,
-            }),
+        const { data: response, error } = await supabase.functions.invoke('create-checkout', {
+          body: {
+            ...data,
+            price: calculatedPrice,
+            groupSize,
+            duration,
           }
-        );
+        });
 
-        if (!response.ok) {
-          console.error('Response not OK:', response.status, response.statusText);
-          throw new Error("Erreur lors de la création de la session de paiement");
+        if (error) {
+          console.error('Supabase function error:', error);
+          throw error;
         }
 
-        const { url } = await response.json();
-        if (url) {
-          window.location.href = url;
+        console.log('Response from create-checkout:', response);
+
+        if (response?.url) {
+          window.location.href = response.url;
+        } else {
+          throw new Error("URL de paiement non reçue");
         }
       } catch (error) {
         console.error("Erreur:", error);

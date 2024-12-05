@@ -40,21 +40,19 @@ export const DateTimeFields = ({ form }: DateTimeFieldsProps) => {
           <FormItem className="flex flex-col">
             <FormLabel className="text-lg font-medium mb-2">Date de réservation</FormLabel>
             <FormControl>
-              <div className="flex justify-center">
-                <Calendar
-                  mode="single"
-                  selected={field.value}
-                  onSelect={(date) => {
-                    field.onChange(date);
-                    setSelectedDate(date);
-                  }}
-                  disabled={(date) => {
-                    return isMonday(date) || date < minDate;
-                  }}
-                  locale={fr}
-                  className="rounded-xl border border-violet-100 p-4 w-auto"
-                />
-              </div>
+              <Calendar
+                mode="single"
+                selected={field.value}
+                onSelect={(date) => {
+                  field.onChange(date);
+                  setSelectedDate(date);
+                }}
+                disabled={(date) => {
+                  return isMonday(date) || date < minDate;
+                }}
+                locale={fr}
+                className="rounded-xl border border-violet-100 p-4 w-full"
+              />
             </FormControl>
             <FormMessage />
           </FormItem>

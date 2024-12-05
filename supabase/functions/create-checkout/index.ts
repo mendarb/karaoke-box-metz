@@ -14,7 +14,6 @@ serve(async (req) => {
   }
 
   try {
-    // Get the request body
     const { price, groupSize, duration } = await req.json()
 
     // Initialize Supabase client

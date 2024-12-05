@@ -31,30 +31,33 @@ export function AuthModal({
 
     try {
       if (isLogin) {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
         })
-        
+
         if (error) {
-          // Check error.message directly since we're not trying to parse the response body
+          console.log("Auth error:", error)
           if (error.message.includes("Email not confirmed")) {
             toast({
               title: "Email non confirmé",
               description: "Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte de réception.",
               variant: "destructive",
             })
-            return
-          }
-          if (error.message === "Invalid login credentials") {
+          } else if (error.message === "Invalid login credentials") {
             toast({
               title: "Erreur",
               description: "Email ou mot de passe incorrect",
               variant: "destructive",
             })
-            return
+          } else {
+            toast({
+              title: "Erreur",
+              description: error.message,
+              variant: "destructive",
+            })
           }
-          throw error
+          return
         }
 
         toast({
@@ -70,7 +73,14 @@ export function AuthModal({
             emailRedirectTo: window.location.origin,
           },
         })
-        if (error) throw error
+        if (error) {
+          toast({
+            title: "Erreur",
+            description: error.message,
+            variant: "destructive",
+          })
+          return
+        }
         toast({
           title: "Inscription réussie",
           description: "Vérifiez votre email pour confirmer votre compte. Un email vous a été envoyé.",
@@ -81,7 +91,7 @@ export function AuthModal({
       console.error("Auth error:", error)
       toast({
         title: "Erreur",
-        description: error.message,
+        description: "Une erreur inattendue s'est produite",
         variant: "destructive",
       })
     } finally {

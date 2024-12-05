@@ -67,8 +67,15 @@ export const AdminDashboard = () => {
 
   if (isCheckingAuth || isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+      <div className="flex min-h-screen bg-background">
+        <div className="w-1/5">
+          <DashboardSidebar />
+        </div>
+        <div className="flex-1 p-6">
+          <div className="flex justify-center items-center min-h-[calc(100vh-3rem)]">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -92,7 +99,7 @@ export const AdminDashboard = () => {
               <BookingsTable
                 data={bookings}
                 onStatusChange={updateBookingStatus}
-                onViewDetails={(booking) => setSelectedBooking(booking)}
+                onViewDetails={setSelectedBooking}
               />
             </div>
           </div>

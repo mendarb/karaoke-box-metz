@@ -58,11 +58,14 @@ serve(async (req) => {
       payment_method_types: ['card'],
       line_items: [
         {
-          price: Deno.env.get('STRIPE_PRICE_ID'),
-          quantity: 1,
-          adjustable_quantity: {
-            enabled: false,
+          price_data: {
+            currency: 'eur',
+            product_data: {
+              name: `Réservation Karaoké - ${groupSize} personnes - ${duration}h`,
+            },
+            unit_amount: price * 100, // Stripe expects amounts in cents
           },
+          quantity: 1,
         },
       ],
       mode: 'payment',

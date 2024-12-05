@@ -49,34 +49,30 @@ export const BookingsTable = ({ data, onStatusChange, onViewDetails }: BookingsT
   const columns: ColumnDef<Booking>[] = [
     {
       accessorKey: "date",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="hover:bg-transparent"
-          >
-            Date
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="hover:bg-transparent"
+        >
+          Date
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => format(new Date(row.getValue("date")), "d MMM yyyy", { locale: fr }),
     },
     {
       accessorKey: "user_name",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="hover:bg-transparent"
-          >
-            Client
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="hover:bg-transparent"
+        >
+          Client
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
     },
     {
       accessorKey: "time_slot",
@@ -94,18 +90,16 @@ export const BookingsTable = ({ data, onStatusChange, onViewDetails }: BookingsT
     },
     {
       accessorKey: "price",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="hover:bg-transparent"
-          >
-            Prix
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="hover:bg-transparent"
+        >
+          Prix
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => `${row.getValue("price")}€`,
     },
     {
@@ -121,7 +115,6 @@ export const BookingsTable = ({ data, onStatusChange, onViewDetails }: BookingsT
             variant="outline"
             size="sm"
             onClick={() => onViewDetails(row.original)}
-            className="hover:bg-primary/10"
           >
             Détails
           </Button>
@@ -146,7 +139,7 @@ export const BookingsTable = ({ data, onStatusChange, onViewDetails }: BookingsT
   });
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-md border bg-white">
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -170,7 +163,7 @@ export const BookingsTable = ({ data, onStatusChange, onViewDetails }: BookingsT
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
-                className="hover:bg-muted/50"
+                className="hover:bg-muted/50 transition-colors"
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>

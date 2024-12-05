@@ -21,11 +21,17 @@ export const BookingActions = ({ bookingId, onStatusChange }: BookingActionsProp
           <MoreHorizontal className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => onStatusChange(bookingId, 'confirmed')}>
+      <DropdownMenuContent align="end" className="w-[160px]">
+        <DropdownMenuItem 
+          onClick={() => onStatusChange(bookingId, 'confirmed')}
+          className="cursor-pointer"
+        >
           Confirmer
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onStatusChange(bookingId, 'cancelled')}>
+        <DropdownMenuItem 
+          onClick={() => onStatusChange(bookingId, 'cancelled')}
+          className="cursor-pointer text-red-600 focus:text-red-600"
+        >
           Annuler
         </DropdownMenuItem>
       </DropdownMenuContent>

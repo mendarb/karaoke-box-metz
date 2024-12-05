@@ -19,54 +19,51 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    let unsubscribe: (() => void) | undefined;
-
     const checkUser = async () => {
       try {
         setIsLoading(true);
-        const { data: { user }, error } = await supabase.auth.getUser();
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        if (error) {
-          console.error("Error checking user:", error);
-          toast({
-            title: "Erreur d'authentification",
-            description: "Impossible de vérifier votre identité. Veuillez vous reconnecter.",
-            variant: "destructive",
-          });
+        if (sessionError) {
+          console.error("Session error:", sessionError);
           return;
         }
 
-        setUser(user);
-        setIsAdmin(user?.email === "mendar.bouchali@gmail.com");
+        if (session?.user) {
+          console.log("User session found:", session.user);
+          setUser(session.user);
+          setIsAdmin(session.user.email === "mendar.bouchali@gmail.com");
+        }
       } catch (error) {
-        console.error("Error in checkUser:", error);
+        console.error("Error checking user:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    const setupAuthListener = () => {
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-        const newUser = session?.user ?? null;
-        setUser(newUser);
-        setIsAdmin(newUser?.email === "mendar.bouchali@gmail.com");
-      });
-      
-      return () => {
-        subscription.unsubscribe();
-      };
-    };
-
+    // Initial check
     checkUser();
-    unsubscribe = setupAuthListener();
+
+    // Setup auth listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event, session?.user);
+      
+      if (session?.user) {
+        setUser(session.user);
+        setIsAdmin(session.user.email === "mendar.bouchali@gmail.com");
+      } else {
+        setUser(null);
+        setIsAdmin(false);
+        setShowAdminDashboard(false);
+      }
+    });
 
     return () => {
-      if (unsubscribe) {
-        unsubscribe();
-      }
+      subscription.unsubscribe();
     };
-  }, [toast]);
+  }, []);
 
+  // Reset admin dashboard when user is not admin
   useEffect(() => {
     if (!isAdmin) {
       setShowAdminDashboard(false);

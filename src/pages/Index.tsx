@@ -7,35 +7,78 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
 
 const Index = () => {
+  const { toast } = useToast();
   const isMobile = useIsMobile();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showAdminDashboard, setShowAdminDashboard] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let authSubscription: { data: { subscription: { unsubscribe: () => void } } };
+
     const checkUser = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        setIsLoading(true);
+        const { data: { user }, error } = await supabase.auth.getUser();
+        
+        if (error) {
+          console.error("Error checking user:", error);
+          toast({
+            title: "Erreur d'authentification",
+            description: "Impossible de vérifier votre identité. Veuillez vous reconnecter.",
+            variant: "destructive",
+          });
+          return;
+        }
+
         console.log("Current user:", user);
         setUser(user);
         setIsAdmin(user?.email === "mendar.bouchali@gmail.com");
       } catch (error) {
-        console.error("Error checking user:", error);
+        console.error("Error in checkUser:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
+
+    const setupAuthListener = async () => {
+      authSubscription = supabase.auth.onAuthStateChange((_event, session) => {
+        console.log("Auth state changed:", session);
+        setUser(session?.user ?? null);
+        setIsAdmin(session?.user?.email === "mendar.bouchali@gmail.com");
+      });
+    };
+
     checkUser();
+    setupAuthListener();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("Auth state changed:", session);
-      setUser(session?.user ?? null);
-      setIsAdmin(session?.user?.email === "mendar.bouchali@gmail.com");
-    });
+    return () => {
+      if (authSubscription?.data?.subscription) {
+        console.log("Cleaning up auth subscription");
+        authSubscription.data.subscription.unsubscribe();
+      }
+    };
+  }, [toast]);
 
-    return () => subscription.unsubscribe();
-  }, []);
+  // Reset admin dashboard view when user changes
+  useEffect(() => {
+    if (!isAdmin) {
+      setShowAdminDashboard(false);
+    }
+  }, [isAdmin]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-violet-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-violet-50">

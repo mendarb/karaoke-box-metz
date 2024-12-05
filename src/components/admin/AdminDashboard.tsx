@@ -12,6 +12,7 @@ import {
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 
 type Booking = {
   id: string;
@@ -32,9 +33,10 @@ export const AdminDashboard = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchBookings = async () => {
+    const checkAdminAndFetchBookings = async () => {
       try {
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         
@@ -45,7 +47,7 @@ export const AdminDashboard = () => {
             description: "Veuillez vous reconnecter.",
             variant: "destructive",
           });
-          setIsLoading(false);
+          navigate("/");
           return;
         }
 
@@ -55,14 +57,13 @@ export const AdminDashboard = () => {
             description: "Vous n'avez pas les droits d'accès à cette page.",
             variant: "destructive",
           });
-          setIsLoading(false);
+          navigate("/");
           return;
         }
 
-        console.log('Fetching bookings for user:', user.email);
         const { data, error } = await supabase
           .from('bookings')
-          .select('*')
+          .select()
           .order('created_at', { ascending: false });
 
         if (error) {
@@ -75,7 +76,6 @@ export const AdminDashboard = () => {
           return;
         }
 
-        console.log('Bookings fetched:', data);
         setBookings(data || []);
       } catch (error) {
         console.error('Unexpected error:', error);
@@ -89,8 +89,8 @@ export const AdminDashboard = () => {
       }
     };
 
-    fetchBookings();
-  }, [toast]);
+    checkAdminAndFetchBookings();
+  }, [toast, navigate]);
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -109,7 +109,7 @@ export const AdminDashboard = () => {
   };
 
   if (isLoading) {
-    return <div>Chargement...</div>;
+    return <div className="flex justify-center items-center min-h-screen">Chargement...</div>;
   }
 
   return (

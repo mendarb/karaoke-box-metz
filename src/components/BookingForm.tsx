@@ -16,6 +16,7 @@ export const BookingForm = () => {
   const [duration, setDuration] = useState("");
   const [currentStep, setCurrentStep] = useState(1);
   const [calculatedPrice, setCalculatedPrice] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const form = useForm();
 
   const steps: BookingStep[] = [
@@ -50,10 +51,13 @@ export const BookingForm = () => {
   ];
 
   const handlePriceCalculated = (price: number) => {
+    console.log('Price calculated:', price);
     setCalculatedPrice(price);
   };
 
-  const checkTimeSlotAvailability = async (date: Date, timeSlot: string, duration: string) => {
+  const checkTimeSlotAvailability = async (date: Date, timeSlot: string) => {
+    console.log('Checking availability for:', { date, timeSlot });
+    
     const { data: bookings, error } = await supabase
       .from('bookings')
       .select('*')
@@ -65,7 +69,6 @@ export const BookingForm = () => {
       return false;
     }
 
-    // Si des réservations existent pour ce créneau
     if (bookings && bookings.length > 0) {
       toast({
         title: "Créneau non disponible",
@@ -81,72 +84,70 @@ export const BookingForm = () => {
   const onSubmit = async (data: any) => {
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
-    } else {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.access_token) {
-          toast({
-            title: "Erreur",
-            description: "Vous devez être connecté pour effectuer une réservation.",
-            variant: "destructive",
-          });
-          return;
-        }
+      return;
+    }
 
-        // Vérifier la disponibilité du créneau
-        const isAvailable = await checkTimeSlotAvailability(data.date, data.timeSlot, duration);
-        if (!isAvailable) {
-          return;
-        }
+    try {
+      setIsSubmitting(true);
+      console.log('Starting submission with data:', { ...data, groupSize, duration, calculatedPrice });
 
-        // Sauvegarder la réservation dans la base de données
-        const { error: bookingError } = await supabase
-          .from('bookings')
-          .insert([
-            {
-              user_id: session.user.id,
-              date: data.date,
-              time_slot: data.timeSlot,
-              duration: duration,
-              group_size: groupSize,
-              status: 'pending',
-              price: calculatedPrice,
-            }
-          ]);
-
-        if (bookingError) {
-          console.error('Booking error:', bookingError);
-          throw bookingError;
-        }
-
-        // Créer la session de paiement
-        const { data: response, error } = await supabase.functions.invoke('create-checkout', {
-          body: {
-            ...data,
-            price: calculatedPrice,
-            groupSize,
-            duration,
-          }
-        });
-
-        if (error) {
-          console.error('Supabase function error:', error);
-          throw error;
-        }
-
-        if (response?.url) {
-          window.location.href = response.url;
-        } else {
-          throw new Error("URL de paiement non reçue");
-        }
-      } catch (error) {
-        console.error("Erreur:", error);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
         toast({
           title: "Erreur",
-          description: "Une erreur est survenue lors de la réservation. Veuillez réessayer.",
+          description: "Vous devez être connecté pour effectuer une réservation.",
           variant: "destructive",
         });
+        return;
       }
+
+      const isAvailable = await checkTimeSlotAvailability(data.date, data.timeSlot);
+      if (!isAvailable) return;
+
+      // Sauvegarder la réservation
+      const { error: bookingError } = await supabase
+        .from('bookings')
+        .insert([{
+          user_id: session.user.id,
+          date: data.date,
+          time_slot: data.timeSlot,
+          duration: duration,
+          group_size: groupSize,
+          status: 'pending',
+          price: calculatedPrice,
+          message: data.message || null,
+        }]);
+
+      if (bookingError) throw bookingError;
+
+      // Créer la session de paiement
+      const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
+        body: JSON.stringify({
+          price: calculatedPrice,
+          groupSize,
+          duration,
+          date: data.date,
+          timeSlot: data.timeSlot,
+          message: data.message,
+        })
+      });
+
+      console.log('Checkout response:', { checkoutData, checkoutError });
+
+      if (checkoutError) throw checkoutError;
+      if (!checkoutData?.url) throw new Error("URL de paiement non reçue");
+
+      window.location.href = checkoutData.url;
+      
+    } catch (error) {
+      console.error("Erreur lors de la soumission:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la réservation. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -207,8 +208,9 @@ export const BookingForm = () => {
           <Button
             type="submit"
             className="w-full bg-violet-600 hover:bg-violet-700"
+            disabled={isSubmitting}
           >
-            {currentStep === 4 ? "Procéder au paiement" : "Suivant"}
+            {currentStep === 4 ? (isSubmitting ? "Traitement..." : "Procéder au paiement") : "Suivant"}
           </Button>
         </div>
       </form>

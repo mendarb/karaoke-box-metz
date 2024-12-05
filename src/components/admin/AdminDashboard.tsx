@@ -13,6 +13,14 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreHorizontal, Calendar, Clock, Users, Euro } from "lucide-react";
 
 type Booking = {
   id: string;
@@ -35,33 +43,41 @@ export const AdminDashboard = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  const fetchBookings = async () => {
+    try {
+      const { data: bookingsData, error: bookingsError } = await supabase
+        .from('bookings')
+        .select('*')
+        .order('date', { ascending: true })
+        .order('time_slot', { ascending: true });
+
+      if (bookingsError) throw bookingsError;
+      setBookings(bookingsData || []);
+    } catch (error: any) {
+      console.error('Error fetching bookings:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les réservations",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     const checkAdminAndFetchBookings = async () => {
       try {
-        // First, check if we have a valid session
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        const { data: { session } } = await supabase.auth.getSession();
         
-        if (sessionError) {
-          console.error('Session error:', sessionError);
-          throw sessionError;
-        }
-
-        if (!sessionData.session) {
-          console.log("No session found");
+        if (!session?.access_token) {
           navigate("/");
           return;
         }
 
-        // Then get the user details
-        const { data: userData, error: userError } = await supabase.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
         
-        if (userError) {
-          console.error('User error:', userError);
-          throw userError;
-        }
-
-        if (!userData.user || userData.user.email !== "mendar.bouchali@gmail.com") {
-          console.log("Access denied - not admin");
+        if (!user || user.email !== "mendar.bouchali@gmail.com") {
           toast({
             title: "Accès refusé",
             description: "Vous n'avez pas les droits d'accès à cette page.",
@@ -71,20 +87,27 @@ export const AdminDashboard = () => {
           return;
         }
 
-        // Finally fetch the bookings
-        console.log("Fetching bookings with session:", sessionData.session);
-        const { data: bookingsData, error: bookingsError } = await supabase
-          .from('bookings')
-          .select('*')
-          .order('created_at', { ascending: false });
+        fetchBookings();
 
-        if (bookingsError) {
-          console.error('Error fetching bookings:', bookingsError);
-          throw bookingsError;
-        }
+        // Subscribe to realtime changes
+        const bookingsSubscription = supabase
+          .channel('bookings_changes')
+          .on('postgres_changes', 
+            { 
+              event: '*', 
+              schema: 'public', 
+              table: 'bookings' 
+            }, 
+            () => {
+              fetchBookings();
+            }
+          )
+          .subscribe();
 
-        console.log("Bookings fetched successfully:", bookingsData);
-        setBookings(bookingsData || []);
+        return () => {
+          bookingsSubscription.unsubscribe();
+        };
+
       } catch (error: any) {
         console.error('Error in admin dashboard:', error);
         toast({
@@ -93,13 +116,36 @@ export const AdminDashboard = () => {
           variant: "destructive",
         });
         navigate("/");
-      } finally {
-        setIsLoading(false);
       }
     };
 
     checkAdminAndFetchBookings();
   }, [toast, navigate]);
+
+  const handleStatusChange = async (bookingId: string, newStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from('bookings')
+        .update({ status: newStatus })
+        .eq('id', bookingId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Succès",
+        description: "Statut de la réservation mis à jour",
+      });
+
+      fetchBookings();
+    } catch (error: any) {
+      console.error('Error updating booking status:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour le statut",
+        variant: "destructive",
+      });
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -133,33 +179,83 @@ export const AdminDashboard = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Horaire</TableHead>
+              <TableHead>Réservation</TableHead>
               <TableHead>Client</TableHead>
-              <TableHead>Groupe</TableHead>
-              <TableHead>Durée</TableHead>
+              <TableHead>Détails</TableHead>
               <TableHead>Prix</TableHead>
               <TableHead>Statut</TableHead>
               <TableHead>Message</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {bookings.map((booking) => (
               <TableRow key={booking.id}>
                 <TableCell>
-                  {format(new Date(booking.date), "d MMMM yyyy", { locale: fr })}
+                  <div className="space-y-1">
+                    <div className="flex items-center text-sm">
+                      <Calendar className="mr-2 h-4 w-4" />
+                      {format(new Date(booking.date), "d MMMM yyyy", { locale: fr })}
+                    </div>
+                    <div className="flex items-center text-sm text-gray-500">
+                      <Clock className="mr-2 h-4 w-4" />
+                      {booking.time_slot}h - {parseInt(booking.time_slot) + parseInt(booking.duration)}h
+                    </div>
+                  </div>
                 </TableCell>
-                <TableCell>{booking.time_slot}h</TableCell>
                 <TableCell>
-                  <div className="font-medium">{booking.user_name}</div>
-                  <div className="text-sm text-gray-500">{booking.user_email}</div>
-                  <div className="text-sm text-gray-500">{booking.user_phone}</div>
+                  <div className="space-y-1">
+                    <div className="font-medium">{booking.user_name}</div>
+                    <div className="text-sm text-gray-500">{booking.user_email}</div>
+                    <div className="text-sm text-gray-500">{booking.user_phone}</div>
+                  </div>
                 </TableCell>
-                <TableCell>{booking.group_size} pers.</TableCell>
-                <TableCell>{booking.duration}h</TableCell>
-                <TableCell>{booking.price}€</TableCell>
+                <TableCell>
+                  <div className="space-y-1">
+                    <div className="flex items-center text-sm">
+                      <Users className="mr-2 h-4 w-4" />
+                      {booking.group_size} personnes
+                    </div>
+                    <div className="flex items-center text-sm text-gray-500">
+                      <Clock className="mr-2 h-4 w-4" />
+                      {booking.duration}h
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center">
+                    <Euro className="mr-1 h-4 w-4" />
+                    {booking.price}
+                  </div>
+                </TableCell>
                 <TableCell>{getStatusBadge(booking.status)}</TableCell>
-                <TableCell className="max-w-xs truncate">{booking.message || "-"}</TableCell>
+                <TableCell className="max-w-xs">
+                  <p className="truncate text-sm text-gray-500">
+                    {booking.message || "-"}
+                  </p>
+                </TableCell>
+                <TableCell className="text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => handleStatusChange(booking.id, 'confirmed')}
+                      >
+                        Confirmer
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleStatusChange(booking.id, 'cancelled')}
+                      >
+                        Annuler
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

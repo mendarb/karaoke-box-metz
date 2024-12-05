@@ -15,6 +15,7 @@ export const BookingForm = () => {
   const [groupSize, setGroupSize] = useState("");
   const [duration, setDuration] = useState("");
   const [currentStep, setCurrentStep] = useState(1);
+  const [calculatedPrice, setCalculatedPrice] = useState(0);
   const form = useForm();
 
   const steps: BookingStep[] = [
@@ -48,16 +49,42 @@ export const BookingForm = () => {
     },
   ];
 
-  const onSubmit = (data: any) => {
+  const handlePriceCalculated = (price: number) => {
+    setCalculatedPrice(price);
+  };
+
+  const onSubmit = async (data: any) => {
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
     } else {
-      console.log(data);
-      toast({
-        title: "Réservation envoyée !",
-        description:
-          "Nous vous contacterons sous 24 heures pour confirmer votre créneau.",
-      });
+      try {
+        const response = await fetch('/api/create-checkout-session', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ...data,
+            price: calculatedPrice,
+            groupSize,
+            duration
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Erreur lors de la création de la session de paiement');
+        }
+
+        const { url } = await response.json();
+        window.location.href = url;
+      } catch (error) {
+        console.error('Erreur:', error);
+        toast({
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la réservation. Veuillez réessayer.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -86,7 +113,11 @@ export const BookingForm = () => {
           <>
             <AdditionalFields form={form} />
             {groupSize && duration && (
-              <PriceCalculator groupSize={groupSize} duration={duration} />
+              <PriceCalculator 
+                groupSize={groupSize} 
+                duration={duration} 
+                onPriceCalculated={handlePriceCalculated}
+              />
             )}
           </>
         );
@@ -119,7 +150,7 @@ export const BookingForm = () => {
             type="submit"
             className="w-full bg-violet-600 hover:bg-violet-700"
           >
-            {currentStep === 4 ? "Réserver ma cabine" : "Suivant"}
+            {currentStep === 4 ? "Procéder au paiement" : "Suivant"}
           </Button>
         </div>
       </form>

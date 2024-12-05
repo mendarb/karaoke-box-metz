@@ -21,21 +21,7 @@ import { BookingStatusBadge } from "./BookingStatusBadge";
 import { BookingActions } from "./BookingActions";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-
-type Booking = {
-  id: string;
-  created_at: string;
-  date: string;
-  time_slot: string;
-  duration: string;
-  group_size: string;
-  status: string;
-  price: number;
-  message: string | null;
-  user_email: string;
-  user_name: string;
-  user_phone: string;
-};
+import { Booking } from "@/hooks/useBookings";
 
 interface BookingsTableProps {
   data: Booking[];

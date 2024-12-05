@@ -1,5 +1,5 @@
 import { Home, Calendar, Settings, LogOut } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
@@ -7,6 +7,7 @@ import { useToast } from "@/components/ui/use-toast";
 export const DashboardSidebar = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const location = useLocation();
 
   const handleLogout = async () => {
     try {
@@ -21,6 +22,10 @@ export const DashboardSidebar = () => {
     }
   };
 
+  const isActive = (path: string) => {
+    return location.pathname === path;
+  };
+
   return (
     <div className="h-screen bg-card p-4 flex flex-col border-r">
       <div className="mb-8">
@@ -28,15 +33,27 @@ export const DashboardSidebar = () => {
       </div>
 
       <nav className="space-y-2 flex-1">
-        <Button variant="ghost" className="w-full justify-start" onClick={() => navigate("/admin")}>
+        <Button 
+          variant={isActive("/admin") ? "secondary" : "ghost"} 
+          className="w-full justify-start" 
+          onClick={() => navigate("/admin")}
+        >
           <Home className="mr-2 h-4 w-4" />
           Dashboard
         </Button>
-        <Button variant="ghost" className="w-full justify-start">
+        <Button 
+          variant={isActive("/admin/calendar") ? "secondary" : "ghost"} 
+          className="w-full justify-start"
+          onClick={() => navigate("/admin/calendar")}
+        >
           <Calendar className="mr-2 h-4 w-4" />
           Calendrier
         </Button>
-        <Button variant="ghost" className="w-full justify-start">
+        <Button 
+          variant={isActive("/admin/settings") ? "secondary" : "ghost"} 
+          className="w-full justify-start"
+          onClick={() => navigate("/admin/settings")}
+        >
           <Settings className="mr-2 h-4 w-4" />
           Paramètres
         </Button>

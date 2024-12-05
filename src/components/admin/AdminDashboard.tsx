@@ -35,24 +35,6 @@ export const AdminDashboard = () => {
         return false;
       }
 
-      // Try to refresh the session
-      const { data: { session: refreshedSession }, error: refreshError } = 
-        await supabase.auth.refreshSession();
-      
-      if (refreshError) {
-        console.error("Session refresh error:", refreshError);
-        if (refreshError.message.includes("refresh_token_not_found")) {
-          toast({
-            title: "Session expirée",
-            description: "Veuillez vous reconnecter",
-            variant: "destructive",
-          });
-          await supabase.auth.signOut();
-          navigate("/login");
-          return false;
-        }
-      }
-
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
       if (userError) {
@@ -89,8 +71,8 @@ export const AdminDashboard = () => {
     let mounted = true;
 
     const initializeAdmin = async () => {
-      const hasAccess = await checkAdminAccess();
       if (mounted) {
+        const hasAccess = await checkAdminAccess();
         setIsAdmin(hasAccess);
         setIsCheckingAuth(false);
         if (hasAccess) {
@@ -103,13 +85,13 @@ export const AdminDashboard = () => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event, session?.user?.email);
-      if (!session) {
-        if (mounted) {
+      if (mounted) {
+        if (!session) {
           navigate("/login");
+        } else {
+          const hasAccess = await checkAdminAccess();
+          setIsAdmin(hasAccess);
         }
-      } else if (mounted) {
-        const hasAccess = await checkAdminAccess();
-        setIsAdmin(hasAccess);
       }
     });
 

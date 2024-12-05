@@ -8,7 +8,7 @@ import { PersonalInfoFields } from "./booking/PersonalInfoFields";
 import { DateTimeFields } from "./booking/DateTimeFields";
 import { GroupSizeAndDurationFields } from "./booking/GroupSizeAndDurationFields";
 import { AdditionalFields } from "./booking/AdditionalFields";
-import { BookingSteps, type BookingStep } from "./BookingSteps";
+import { BookingSteps, type BookingStep } from "./booking/BookingSteps";
 import { supabase } from "@/lib/supabase";
 
 export const BookingForm = () => {

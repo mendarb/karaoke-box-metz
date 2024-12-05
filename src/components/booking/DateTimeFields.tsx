@@ -32,12 +32,12 @@ export const DateTimeFields = ({ form }: DateTimeFieldsProps) => {
   const minDate = new Date('2025-01-07');
 
   return (
-    <div className="space-y-6 animate-fadeIn">
+    <div className="space-y-6 animate-fadeIn w-full">
       <FormField
         control={form.control}
         name="date"
         render={({ field }) => (
-          <FormItem className="flex flex-col">
+          <FormItem className="flex flex-col w-full">
             <FormLabel className="text-lg font-medium mb-2">Date de réservation</FormLabel>
             <FormControl>
               <Calendar
@@ -51,7 +51,7 @@ export const DateTimeFields = ({ form }: DateTimeFieldsProps) => {
                   return isMonday(date) || date < minDate;
                 }}
                 locale={fr}
-                className="rounded-xl border border-violet-100 p-4 w-full"
+                className="rounded-xl border border-violet-100 p-4 w-full [&_.rdp-table]:w-full [&_.rdp]:w-full [&_.rdp-caption]:w-full [&_.rdp-cell]:w-[14.28%] [&_.rdp-head_th]:w-[14.28%]"
               />
             </FormControl>
             <FormMessage />

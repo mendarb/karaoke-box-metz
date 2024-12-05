@@ -38,18 +38,24 @@ export const AdminDashboard = () => {
   useEffect(() => {
     const checkAdminAndFetchBookings = async () => {
       try {
-        console.log("Checking admin status and fetching bookings...");
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        if (authError) {
-          console.error('Auth error:', authError);
-          toast({
-            title: "Erreur d'authentification",
-            description: "Veuillez vous reconnecter.",
-            variant: "destructive",
-          });
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          throw sessionError;
+        }
+
+        if (!session) {
+          console.log("No session found");
           navigate("/");
           return;
+        }
+
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        
+        if (userError) {
+          console.error('User error:', userError);
+          throw userError;
         }
 
         if (!user || user.email !== "mendar.bouchali@gmail.com") {
@@ -64,30 +70,26 @@ export const AdminDashboard = () => {
         }
 
         console.log("Fetching bookings...");
-        const { data, error } = await supabase
+        const { data, error: bookingsError } = await supabase
           .from('bookings')
           .select('*')
           .order('created_at', { ascending: false });
 
-        if (error) {
-          console.error('Error fetching bookings:', error);
-          toast({
-            title: "Erreur",
-            description: "Impossible de charger les réservations: " + error.message,
-            variant: "destructive",
-          });
-          return;
+        if (bookingsError) {
+          console.error('Error fetching bookings:', bookingsError);
+          throw bookingsError;
         }
 
         console.log("Bookings fetched:", data);
         setBookings(data || []);
-      } catch (error) {
-        console.error('Unexpected error:', error);
+      } catch (error: any) {
+        console.error('Error in admin dashboard:', error);
         toast({
           title: "Erreur",
-          description: "Une erreur inattendue est survenue.",
+          description: error.message || "Une erreur inattendue est survenue.",
           variant: "destructive",
         });
+        navigate("/");
       } finally {
         setIsLoading(false);
       }

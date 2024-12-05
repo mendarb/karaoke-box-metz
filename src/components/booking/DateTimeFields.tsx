@@ -25,9 +25,10 @@ const timeSlots = [
 
 interface DateTimeFieldsProps {
   form: UseFormReturn<any>;
+  onAvailabilityChange: (date: Date | undefined, availableHours: number) => void;
 }
 
-export const DateTimeFields = ({ form }: DateTimeFieldsProps) => {
+export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [bookedSlots, setBookedSlots] = useState<{ [key: string]: number }>({}); // Stocke la durée réservée pour chaque créneau
 
@@ -37,6 +38,22 @@ export const DateTimeFields = ({ form }: DateTimeFieldsProps) => {
 
   const isMonday = (date: Date) => {
     return date.getDay() === 1; // 1 représente Lundi
+  };
+
+  // Fonction pour calculer les heures disponibles à partir d'un créneau
+  const calculateAvailableHours = (timeSlot: string) => {
+    const slotTime = parseInt(timeSlot.split(':')[0]);
+    let availableHours = 0;
+    let currentSlot = slotTime;
+
+    while (currentSlot < 22) {
+      const nextSlot = `${currentSlot + 1}:00`;
+      if (bookedSlots[nextSlot]) break;
+      availableHours++;
+      currentSlot++;
+    }
+
+    return availableHours;
   };
 
   // Fonction pour vérifier les réservations existantes
@@ -65,17 +82,12 @@ export const DateTimeFields = ({ form }: DateTimeFieldsProps) => {
 
   // Vérifier si un créneau est disponible
   const isSlotAvailable = (slot: string) => {
-    // Si le créneau est directement réservé
-    if (slot in bookedSlots) return false;
-
-    // Vérifier les chevauchements avec les créneaux réservés
     const slotTime = parseInt(slot.split(':')[0]) * 60 + parseInt(slot.split(':')[1]);
     
     for (const [bookedSlot, duration] of Object.entries(bookedSlots)) {
       const bookedTime = parseInt(bookedSlot.split(':')[0]) * 60 + parseInt(bookedSlot.split(':')[1]);
       const bookedEndTime = bookedTime + duration * 60;
       
-      // Si le créneau actuel est pendant une réservation existante
       if (slotTime >= bookedTime && slotTime < bookedEndTime) {
         return false;
       }
@@ -90,6 +102,15 @@ export const DateTimeFields = ({ form }: DateTimeFieldsProps) => {
       checkBookings(selectedDate);
     }
   }, [selectedDate]);
+
+  // Mettre à jour les heures disponibles quand le créneau change
+  useEffect(() => {
+    const timeSlot = form.watch("timeSlot");
+    if (selectedDate && timeSlot) {
+      const availableHours = calculateAvailableHours(timeSlot);
+      onAvailabilityChange(selectedDate, availableHours);
+    }
+  }, [form.watch("timeSlot"), selectedDate, bookedSlots]);
 
   return (
     <div className="space-y-6">

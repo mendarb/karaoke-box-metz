@@ -17,6 +17,8 @@ export const BookingForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [calculatedPrice, setCalculatedPrice] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [availableHours, setAvailableHours] = useState(4);
   const form = useForm();
 
   const steps: BookingStep[] = [
@@ -55,24 +57,50 @@ export const BookingForm = () => {
     setCalculatedPrice(price);
   };
 
-  const checkTimeSlotAvailability = async (date: Date, timeSlot: string) => {
-    console.log('Checking availability for:', { date, timeSlot });
+  const handleAvailabilityChange = (date: Date | undefined, hours: number) => {
+    setSelectedDate(date);
+    setAvailableHours(hours);
+    console.log('Available hours updated:', hours);
+  };
+
+  const checkTimeSlotAvailability = async (date: Date, timeSlot: string, duration: string) => {
+    console.log('Checking availability for:', { date, timeSlot, duration });
     
+    const requestedStartTime = parseInt(timeSlot.split(':')[0]) * 60 + parseInt(timeSlot.split(':')[1] || '0');
+    const requestedDuration = parseInt(duration) * 60;
+    const requestedEndTime = requestedStartTime + requestedDuration;
+
     const { data: bookings, error } = await supabase
       .from('bookings')
       .select('*')
-      .eq('date', date.toISOString().split('T')[0])
-      .eq('time_slot', timeSlot);
+      .eq('date', date.toISOString().split('T')[0]);
 
     if (error) {
       console.error('Error checking availability:', error);
       return false;
     }
 
-    if (bookings && bookings.length > 0) {
+    const hasOverlap = bookings?.some(booking => {
+      const existingStartTime = parseInt(booking.time_slot.split(':')[0]) * 60 + parseInt(booking.time_slot.split(':')[1] || '0');
+      const existingDuration = parseInt(booking.duration) * 60;
+      const existingEndTime = existingStartTime + existingDuration;
+
+      const overlap = (
+        (requestedStartTime >= existingStartTime && requestedStartTime < existingEndTime) ||
+        (requestedEndTime > existingStartTime && requestedEndTime <= existingEndTime) ||
+        (requestedStartTime <= existingStartTime && requestedEndTime >= existingEndTime)
+      );
+
+      if (overlap) {
+        console.log('Found overlap with booking:', booking);
+      }
+      return overlap;
+    });
+
+    if (hasOverlap) {
       toast({
         title: "Créneau non disponible",
-        description: "Ce créneau est déjà réservé. Veuillez choisir un autre horaire.",
+        description: "Ce créneau chevauche une réservation existante. Veuillez choisir un autre horaire.",
         variant: "destructive",
       });
       return false;
@@ -101,10 +129,9 @@ export const BookingForm = () => {
         return;
       }
 
-      const isAvailable = await checkTimeSlotAvailability(data.date, data.timeSlot);
+      const isAvailable = await checkTimeSlotAvailability(data.date, data.timeSlot, duration);
       if (!isAvailable) return;
 
-      // Récupérer les informations de l'utilisateur
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         throw new Error("Utilisateur non trouvé");
@@ -112,7 +139,6 @@ export const BookingForm = () => {
 
       console.log('User data:', { user });
 
-      // Sauvegarder la réservation avec les informations utilisateur
       const { error: bookingError } = await supabase
         .from('bookings')
         .insert([{
@@ -134,7 +160,6 @@ export const BookingForm = () => {
         throw bookingError;
       }
 
-      // Créer la session de paiement
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
         body: JSON.stringify({
           price: calculatedPrice,
@@ -179,7 +204,10 @@ export const BookingForm = () => {
       case 1:
         return <PersonalInfoFields form={form} />;
       case 2:
-        return <DateTimeFields form={form} />;
+        return <DateTimeFields 
+          form={form} 
+          onAvailabilityChange={handleAvailabilityChange}
+        />;
       case 3:
         return (
           <GroupSizeAndDurationFields
@@ -187,6 +215,7 @@ export const BookingForm = () => {
             onGroupSizeChange={setGroupSize}
             onDurationChange={setDuration}
             onPriceCalculated={handlePriceCalculated}
+            availableHours={availableHours}
           />
         );
       case 4:

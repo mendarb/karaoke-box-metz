@@ -15,6 +15,7 @@ interface GroupSizeAndDurationFieldsProps {
   onGroupSizeChange: (value: string) => void;
   onDurationChange: (value: string) => void;
   onPriceCalculated: (price: number) => void;
+  availableHours?: number;
 }
 
 const groupSizes = [
@@ -38,6 +39,7 @@ export const GroupSizeAndDurationFields = ({
   onGroupSizeChange,
   onDurationChange,
   onPriceCalculated,
+  availableHours = 4,
 }: GroupSizeAndDurationFieldsProps) => {
   return (
     <div className="space-y-8 animate-fadeIn">
@@ -83,33 +85,40 @@ export const GroupSizeAndDurationFields = ({
           <FormItem>
             <FormLabel className="text-lg font-medium">Durée de la session *</FormLabel>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
-              {durations.map((duration) => (
-                <FormControl key={duration.value}>
-                  <Button
-                    type="button"
-                    variant={field.value === duration.value ? "default" : "outline"}
-                    className={cn(
-                      "w-full h-14 text-base gap-2 transition-all duration-200 relative",
-                      field.value === duration.value 
-                        ? "bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-100 scale-105" 
-                        : "hover:border-violet-300 hover:scale-105"
-                    )}
-                    onClick={() => {
-                      field.onChange(duration.value);
-                      onDurationChange(duration.value);
-                    }}
-                  >
-                    <Clock className="w-5 h-5" />
-                    {duration.label}
-                    {duration.discount && (
-                      <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs font-bold rounded-full px-1.5 py-0.5 flex items-center gap-0.5">
-                        -10%
-                        <BadgePercent className="w-3 h-3" />
-                      </div>
-                    )}
-                  </Button>
-                </FormControl>
-              ))}
+              {durations.map((duration) => {
+                const isAvailable = parseInt(duration.value) <= availableHours;
+                return (
+                  <FormControl key={duration.value}>
+                    <Button
+                      type="button"
+                      variant={field.value === duration.value ? "default" : "outline"}
+                      className={cn(
+                        "w-full h-14 text-base gap-2 transition-all duration-200 relative",
+                        field.value === duration.value 
+                          ? "bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-100 scale-105" 
+                          : "hover:border-violet-300 hover:scale-105",
+                        !isAvailable && "opacity-50 cursor-not-allowed"
+                      )}
+                      onClick={() => {
+                        if (isAvailable) {
+                          field.onChange(duration.value);
+                          onDurationChange(duration.value);
+                        }
+                      }}
+                      disabled={!isAvailable}
+                    >
+                      <Clock className="w-5 h-5" />
+                      {duration.label}
+                      {duration.discount && isAvailable && (
+                        <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs font-bold rounded-full px-1.5 py-0.5 flex items-center gap-0.5">
+                          -10%
+                          <BadgePercent className="w-3 h-3" />
+                        </div>
+                      )}
+                    </Button>
+                  </FormControl>
+                );
+              })}
             </div>
           </FormItem>
         )}

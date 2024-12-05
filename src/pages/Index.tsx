@@ -19,49 +19,49 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkUser = async () => {
+    let authListener: any = null;
+
+    const setupAuth = async () => {
       try {
         setIsLoading(true);
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        const { data: { session } } = await supabase.auth.getSession();
         
-        if (sessionError) {
-          console.error("Session error:", sessionError);
-          return;
-        }
-
         if (session?.user) {
-          console.log("User session found:", session.user);
           setUser(session.user);
           setIsAdmin(session.user.email === "mendar.bouchali@gmail.com");
         }
+
+        // Set up auth state listener
+        authListener = supabase.auth.onAuthStateChange((event, session) => {
+          if (session?.user) {
+            setUser(session.user);
+            setIsAdmin(session.user.email === "mendar.bouchali@gmail.com");
+          } else {
+            setUser(null);
+            setIsAdmin(false);
+            setShowAdminDashboard(false);
+          }
+        });
       } catch (error) {
-        console.error("Error checking user:", error);
+        console.error("Auth setup error:", error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de vérifier l'authentification",
+          variant: "destructive",
+        });
       } finally {
         setIsLoading(false);
       }
     };
 
-    // Initial check
-    checkUser();
-
-    // Setup auth listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event, session?.user);
-      
-      if (session?.user) {
-        setUser(session.user);
-        setIsAdmin(session.user.email === "mendar.bouchali@gmail.com");
-      } else {
-        setUser(null);
-        setIsAdmin(false);
-        setShowAdminDashboard(false);
-      }
-    });
+    setupAuth();
 
     return () => {
-      subscription.unsubscribe();
+      if (authListener) {
+        authListener.data.subscription.unsubscribe();
+      }
     };
-  }, []);
+  }, [toast]);
 
   // Reset admin dashboard when user is not admin
   useEffect(() => {

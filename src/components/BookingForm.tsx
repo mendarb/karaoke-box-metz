@@ -172,7 +172,12 @@ export const BookingForm = () => {
         );
       case 4:
         return (
-          <AdditionalFields form={form} calculatedPrice={calculatedPrice} />
+          <AdditionalFields 
+            form={form} 
+            calculatedPrice={calculatedPrice}
+            groupSize={groupSize}
+            duration={duration}
+          />
         );
       default:
         return null;

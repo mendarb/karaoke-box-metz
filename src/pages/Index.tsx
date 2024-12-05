@@ -19,51 +19,61 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Initialize auth state
-    const initAuth = async () => {
+    let mounted = true;
+
+    const initializeAuth = async () => {
       try {
+        // Get initial session
         const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          setUser(session.user);
-          setIsAdmin(session.user.email === "mendar.bouchali@gmail.com");
+        
+        if (mounted) {
+          if (session?.user) {
+            setUser(session.user);
+            setIsAdmin(session.user.email === "mendar.bouchali@gmail.com");
+          } else {
+            setUser(null);
+            setIsAdmin(false);
+          }
+          setIsLoading(false);
         }
       } catch (error) {
-        console.error("Error initializing auth:", error);
-      } finally {
-        setIsLoading(false);
+        console.error("Auth initialization error:", error);
+        if (mounted) {
+          setIsLoading(false);
+          toast({
+            title: "Erreur d'authentification",
+            description: "Une erreur est survenue lors de l'initialisation",
+            variant: "destructive",
+          });
+        }
       }
     };
 
-    initAuth();
+    // Initialize auth
+    initializeAuth();
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        console.log("Auth state changed:", event);
-        
-        if (session?.user) {
-          setUser(session.user);
-          setIsAdmin(session.user.email === "mendar.bouchali@gmail.com");
-        } else {
-          setUser(null);
-          setIsAdmin(false);
-          setShowAdminDashboard(false);
+      (_event, session) => {
+        if (mounted) {
+          if (session?.user) {
+            setUser(session.user);
+            setIsAdmin(session.user.email === "mendar.bouchali@gmail.com");
+          } else {
+            setUser(null);
+            setIsAdmin(false);
+            setShowAdminDashboard(false);
+          }
         }
       }
     );
 
-    // Cleanup subscription
+    // Cleanup function
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
-
-  // Reset admin dashboard when user is not admin
-  useEffect(() => {
-    if (!isAdmin) {
-      setShowAdminDashboard(false);
-    }
-  }, [isAdmin]);
+  }, []); // Empty dependency array since we only want to run this once
 
   if (isLoading) {
     return (

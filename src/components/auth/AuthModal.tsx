@@ -31,19 +31,32 @@ export function AuthModal({
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         })
+        
         if (error) {
+          // Check error.message directly since we're not trying to parse the response body
           if (error.message.includes("Email not confirmed")) {
-            throw new Error("Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte de réception.")
+            toast({
+              title: "Email non confirmé",
+              description: "Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte de réception.",
+              variant: "destructive",
+            })
+            return
           }
           if (error.message === "Invalid login credentials") {
-            throw new Error("Email ou mot de passe incorrect")
+            toast({
+              title: "Erreur",
+              description: "Email ou mot de passe incorrect",
+              variant: "destructive",
+            })
+            return
           }
           throw error
         }
+
         toast({
           title: "Connexion réussie",
           description: "Vous êtes maintenant connecté",

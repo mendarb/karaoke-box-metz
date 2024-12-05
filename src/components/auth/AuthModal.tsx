@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
@@ -34,24 +35,34 @@ export function AuthModal({
           email,
           password,
         })
-        if (error) throw error
+        if (error) {
+          if (error.message === "Invalid login credentials") {
+            throw new Error("Email ou mot de passe incorrect")
+          }
+          throw error
+        }
         toast({
           title: "Connexion réussie",
           description: "Vous êtes maintenant connecté",
         })
+        onClose()
       } else {
         const { error } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            emailRedirectTo: window.location.origin,
+          },
         })
         if (error) throw error
         toast({
           title: "Inscription réussie",
           description: "Vérifiez votre email pour confirmer votre compte",
         })
+        onClose()
       }
-      onClose()
     } catch (error) {
+      console.error("Auth error:", error)
       toast({
         title: "Erreur",
         description: error.message,
@@ -69,6 +80,12 @@ export function AuthModal({
           <DialogTitle>
             {isLogin ? "Connexion" : "Créer un compte"}
           </DialogTitle>
+          <DialogDescription>
+            {isLogin 
+              ? "Connectez-vous à votre compte"
+              : "Créez un compte pour réserver votre box"
+            }
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleAuth} className="space-y-4 pt-4">
           <div className="space-y-2">
@@ -79,6 +96,7 @@ export function AuthModal({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              placeholder="votre@email.com"
             />
           </div>
           <div className="space-y-2">
@@ -89,6 +107,8 @@ export function AuthModal({
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              placeholder="••••••••"
+              minLength={6}
             />
           </div>
           <Button type="submit" className="w-full" disabled={isLoading}>

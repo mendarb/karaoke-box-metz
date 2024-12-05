@@ -8,6 +8,8 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  console.log('Function called with request:', req);
+
   // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -15,45 +17,16 @@ serve(async (req) => {
 
   try {
     const { price, groupSize, duration } = await req.json()
-
-    // Initialize Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-    )
-
-    // Get user from auth header
-    const authHeader = req.headers.get('Authorization')!
-    const token = authHeader.replace('Bearer ', '')
-    const { data: { user } } = await supabaseClient.auth.getUser(token)
-
-    if (!user?.email) {
-      throw new Error('User not authenticated')
-    }
+    console.log('Received data:', { price, groupSize, duration });
 
     // Initialize Stripe
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
       apiVersion: '2023-10-16',
     })
-
-    // Get or create customer
-    const customers = await stripe.customers.list({
-      email: user.email,
-      limit: 1
-    })
-
-    let customerId = customers.data[0]?.id
-
-    if (!customerId) {
-      const customer = await stripe.customers.create({
-        email: user.email,
-      })
-      customerId = customer.id
-    }
+    console.log('Stripe initialized');
 
     // Create checkout session
     const session = await stripe.checkout.sessions.create({
-      customer: customerId,
       payment_method_types: ['card'],
       line_items: [
         {
@@ -70,12 +43,9 @@ serve(async (req) => {
       mode: 'payment',
       success_url: `${req.headers.get('origin')}/success`,
       cancel_url: `${req.headers.get('origin')}/`,
-      metadata: {
-        groupSize,
-        duration,
-        userId: user.id,
-      },
     })
+
+    console.log('Checkout session created:', session);
 
     return new Response(
       JSON.stringify({ url: session.url }),
@@ -85,7 +55,7 @@ serve(async (req) => {
       }
     )
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Error:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 

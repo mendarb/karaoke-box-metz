@@ -1,115 +1,18 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
 import { BookingsTable } from "./BookingsTable";
 import { BookingDetailsDialog } from "./BookingDetailsDialog";
-
-type Booking = {
-  id: string;
-  created_at: string;
-  date: string;
-  time_slot: string;
-  duration: string;
-  group_size: string;
-  status: string;
-  price: number;
-  message: string | null;
-  user_email: string;
-  user_name: string;
-  user_phone: string;
-};
+import { useBookings, Booking } from "@/hooks/useBookings";
+import { useBookingStatus } from "@/hooks/useBookingStatus";
 
 export const AdminDashboard = () => {
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const { bookings, isLoading, fetchBookings } = useBookings();
+  const { updateBookingStatus } = useBookingStatus(fetchBookings);
   const { toast } = useToast();
   const navigate = useNavigate();
-
-  const fetchBookings = async () => {
-    try {
-      const { data: bookingsData, error: bookingsError } = await supabase
-        .from('bookings')
-        .select('*')
-        .order('date', { ascending: true })
-        .order('time_slot', { ascending: true });
-
-      if (bookingsError) throw bookingsError;
-      setBookings(bookingsData || []);
-    } catch (error: any) {
-      console.error('Error fetching bookings:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les réservations",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const sendBookingEmail = async (booking: Booking) => {
-    try {
-      const { error } = await supabase.functions.invoke('send-booking-email', {
-        body: {
-          to: booking.user_email,
-          userName: booking.user_name,
-          date: booking.date,
-          timeSlot: booking.time_slot,
-          duration: booking.duration,
-          groupSize: booking.group_size,
-          price: booking.price,
-          status: booking.status,
-        },
-      });
-
-      if (error) throw error;
-      console.log('Email sent successfully for booking:', booking.id);
-    } catch (error) {
-      console.error('Error sending email:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'envoyer l'email de notification",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleStatusChange = async (bookingId: string, newStatus: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('bookings')
-        .update({ status: newStatus })
-        .eq('id', bookingId)
-        .select()
-        .maybeSingle();
-
-      if (error) throw error;
-
-      if (data) {
-        toast({
-          title: "Succès",
-          description: "Statut de la réservation mis à jour",
-        });
-        await sendBookingEmail(data);
-        await fetchBookings();
-      } else {
-        toast({
-          title: "Erreur",
-          description: "Réservation non trouvée",
-          variant: "destructive",
-        });
-      }
-    } catch (error: any) {
-      console.error('Error updating booking status:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de mettre à jour le statut",
-        variant: "destructive",
-      });
-    }
-  };
 
   useEffect(() => {
     let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
@@ -137,7 +40,6 @@ export const AdminDashboard = () => {
 
         await fetchBookings();
 
-        // Configuration du canal realtime
         realtimeChannel = supabase.channel('bookings_changes')
           .on('postgres_changes', 
             { 
@@ -165,14 +67,13 @@ export const AdminDashboard = () => {
 
     setupRealtimeAndFetchBookings();
 
-    // Cleanup function
     return () => {
       if (realtimeChannel) {
         console.log('Unsubscribing from realtime channel');
         realtimeChannel.unsubscribe();
       }
     };
-  }, [toast, navigate]);
+  }, [toast, navigate, fetchBookings]);
 
   if (isLoading) {
     return (
@@ -188,7 +89,7 @@ export const AdminDashboard = () => {
       
       <BookingsTable
         data={bookings}
-        onStatusChange={handleStatusChange}
+        onStatusChange={updateBookingStatus}
         onViewDetails={(booking) => setSelectedBooking(booking)}
       />
 

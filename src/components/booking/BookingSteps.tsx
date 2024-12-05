@@ -1,4 +1,4 @@
-import { Check } from "lucide-react";
+import { Check, ChevronRight } from "lucide-react";
 
 export type BookingStep = {
   id: number;
@@ -19,10 +19,10 @@ export const BookingSteps = ({
     <div className="space-y-4 pb-8">
       <nav aria-label="Progress">
         <ol role="list" className="space-y-4 md:flex md:space-x-8 md:space-y-0">
-          {steps.map((step) => (
+          {steps.map((step, index) => (
             <li key={step.id} className="md:flex-1">
               <div
-                className={`group relative flex flex-col border-l-4 py-2 pl-4 hover:bg-gray-50 md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4 ${
+                className={`group flex flex-col border-l-4 py-2 pl-4 transition-all duration-200 md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4 ${
                   step.current
                     ? "border-violet-600 cursor-default"
                     : step.completed
@@ -30,22 +30,25 @@ export const BookingSteps = ({
                     : "border-gray-200 cursor-not-allowed"
                 }`}
               >
-                <span className="text-sm font-medium">
+                <span className="text-sm font-medium flex items-center">
                   {step.completed ? (
                     <span className="flex items-center text-violet-600">
-                      <Check className="mr-2 h-4 w-4" />
+                      <Check className="mr-2 h-5 w-5" />
                       {step.name}
                     </span>
                   ) : step.current ? (
-                    <span className="text-violet-600">{step.name}</span>
+                    <span className="text-violet-600 flex items-center">
+                      {step.name}
+                      <ChevronRight className="ml-2 h-5 w-5 animate-pulse" />
+                    </span>
                   ) : (
                     <span className="text-gray-500">{step.name}</span>
                   )}
+                  {index < steps.length - 1 && !step.current && (
+                    <ChevronRight className="ml-2 h-5 w-5 text-gray-400" />
+                  )}
                 </span>
                 <span className="text-sm text-gray-500">{step.description}</span>
-                {step.current && (
-                  <div className="absolute -bottom-px left-0 h-0.5 w-full bg-violet-600" />
-                )}
               </div>
             </li>
           ))}

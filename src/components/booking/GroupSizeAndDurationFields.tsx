@@ -21,6 +21,7 @@ const groupSizes = [
   { value: "4", label: "4 pers." },
   { value: "5", label: "5 pers." },
   { value: "6", label: "6 pers." },
+  { value: "6+", label: "6+ pers." },
 ];
 
 const durations = [
@@ -50,10 +51,10 @@ export const GroupSizeAndDurationFields = ({
                     type="button"
                     variant={field.value === size.value ? "default" : "outline"}
                     className={cn(
-                      "w-full h-14 text-base gap-2",
+                      "w-full h-14 text-base gap-2 transition-all duration-200",
                       field.value === size.value 
-                        ? "bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-100" 
-                        : "hover:border-violet-300"
+                        ? "bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-100 scale-105" 
+                        : "hover:border-violet-300 hover:scale-105"
                     )}
                     onClick={() => {
                       field.onChange(size.value);
@@ -83,10 +84,10 @@ export const GroupSizeAndDurationFields = ({
                     type="button"
                     variant={field.value === duration.value ? "default" : "outline"}
                     className={cn(
-                      "w-full h-14 text-base gap-2",
+                      "w-full h-14 text-base gap-2 transition-all duration-200",
                       field.value === duration.value 
-                        ? "bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-100" 
-                        : "hover:border-violet-300"
+                        ? "bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-100 scale-105" 
+                        : "hover:border-violet-300 hover:scale-105"
                     )}
                     onClick={() => {
                       field.onChange(duration.value);

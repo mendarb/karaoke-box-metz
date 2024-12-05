@@ -32,13 +32,13 @@ export const DateTimeFields = ({ form }: DateTimeFieldsProps) => {
   const minDate = new Date('2025-01-07');
 
   return (
-    <div className="space-y-6 animate-fadeIn w-full">
+    <div className="space-y-8 animate-fadeIn">
       <FormField
         control={form.control}
         name="date"
         render={({ field }) => (
-          <FormItem className="flex flex-col w-full">
-            <FormLabel className="text-lg font-medium mb-2">Date de réservation</FormLabel>
+          <FormItem className="flex flex-col">
+            <FormLabel className="text-lg font-medium mb-4">Date de réservation</FormLabel>
             <FormControl>
               <Calendar
                 mode="single"
@@ -51,7 +51,7 @@ export const DateTimeFields = ({ form }: DateTimeFieldsProps) => {
                   return isMonday(date) || date < minDate;
                 }}
                 locale={fr}
-                className="rounded-xl border border-violet-100 p-4 w-full [&_.rdp-table]:w-full [&_.rdp]:w-full [&_.rdp-caption]:w-full [&_.rdp-cell]:w-[14.28%] [&_.rdp-head_th]:w-[14.28%]"
+                className="rounded-xl border-0 p-0 w-full [&_.rdp-caption]:mb-4 [&_.rdp-nav]:h-10 [&_.rdp-cell]:h-10 [&_.rdp-button]:h-10 [&_.rdp-button]:w-10 [&_.rdp-button]:rounded-full [&_.rdp-day_button:hover]:bg-violet-50 [&_.rdp-day_button.rdp-day_selected]:bg-violet-600 [&_.rdp-day_button.rdp-day_selected]:text-white [&_.rdp-nav_button]:rounded-full [&_.rdp-nav_button]:w-10 [&_.rdp-nav_button]:h-10 [&_.rdp-nav_button:hover]:bg-violet-50"
               />
             </FormControl>
             <FormMessage />
@@ -65,24 +65,27 @@ export const DateTimeFields = ({ form }: DateTimeFieldsProps) => {
           name="timeSlot"
           render={({ field }) => (
             <FormItem className="animate-fadeIn">
-              <FormLabel className="text-lg font-medium">
+              <FormLabel className="text-lg font-medium mb-4 block">
                 Créneaux disponibles pour le {format(selectedDate, "d MMMM yyyy", { locale: fr })}
               </FormLabel>
-              <div className="grid grid-cols-2 gap-3 mt-3">
+              <div className="grid grid-cols-2 gap-4">
                 {timeSlots.map((slot) => (
                   <Button
                     key={slot.id}
                     type="button"
                     variant={field.value === slot.id ? "default" : "outline"}
                     className={cn(
-                      "w-full h-14 text-base gap-2",
+                      "h-14 text-base rounded-2xl border-2 transition-all duration-200",
                       field.value === slot.id 
-                        ? "bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-100" 
-                        : "hover:border-violet-300"
+                        ? "bg-violet-600 hover:bg-violet-700 border-transparent" 
+                        : "hover:border-violet-200 hover:bg-violet-50/50"
                     )}
                     onClick={() => field.onChange(slot.id)}
                   >
-                    <Clock className="w-5 h-5" />
+                    <Clock className={cn(
+                      "w-5 h-5 mr-2",
+                      field.value === slot.id ? "text-white" : "text-violet-600"
+                    )} />
                     {slot.label}
                   </Button>
                 ))}

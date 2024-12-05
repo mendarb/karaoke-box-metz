@@ -57,7 +57,6 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
       setDiscount(Math.round(totalDiscount));
       setDiscountPercentage(discountPercent);
       
-      // Notify parent component of the calculated price
       if (onPriceCalculated) {
         onPriceCalculated(Math.round(totalPrice));
       }
@@ -71,7 +70,6 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
       setIsLoading(true);
       console.log('Initiating payment process...');
       
-      // Vérifier l'authentification
       const { data: { session }, error: authError } = await supabase.auth.getSession();
       console.log('Auth session:', session);
       if (authError) {
@@ -88,7 +86,6 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
         return;
       }
 
-      // Préparer les données pour la fonction Edge
       const payload = {
         price,
         groupSize,
@@ -96,11 +93,11 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
       };
       console.log('Sending payload to create-checkout:', payload);
 
-      // Appeler la fonction Edge
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: payload,
         headers: {
           Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
         },
       });
 
@@ -115,7 +112,6 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
         throw new Error("URL de paiement non reçue");
       }
 
-      // Rediriger vers Stripe
       window.location.href = data.url;
       
     } catch (error: any) {

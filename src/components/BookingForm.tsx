@@ -69,8 +69,10 @@ export const BookingForm = () => {
           return;
         }
 
+        console.log('Making request to:', `${supabase.supabaseUrl}/functions/v1/create-checkout`);
+        
         const response = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`,
+          `${supabase.supabaseUrl}/functions/v1/create-checkout`,
           {
             method: "POST",
             headers: {
@@ -87,6 +89,7 @@ export const BookingForm = () => {
         );
 
         if (!response.ok) {
+          console.error('Response not OK:', response.status, response.statusText);
           throw new Error("Erreur lors de la création de la session de paiement");
         }
 

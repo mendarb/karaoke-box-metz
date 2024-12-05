@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from 'https://esm.sh/stripe@14.21.0'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,24 +7,32 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log('Function called with request:', req);
-
+  console.log('Function started');
+  
   // Handle CORS
   if (req.method === 'OPTIONS') {
+    console.log('Handling CORS preflight');
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
+    console.log('Parsing request body');
     const { price, groupSize, duration } = await req.json()
-    console.log('Received data:', { price, groupSize, duration });
+    console.log('Request data:', { price, groupSize, duration });
 
     // Initialize Stripe
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+    console.log('Initializing Stripe');
+    const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
+    if (!stripeKey) {
+      throw new Error('Stripe key not configured');
+    }
+    
+    const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
     })
-    console.log('Stripe initialized');
 
     // Create checkout session
+    console.log('Creating checkout session');
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -35,7 +42,7 @@ serve(async (req) => {
             product_data: {
               name: `Réservation Karaoké - ${groupSize} personnes - ${duration}h`,
             },
-            unit_amount: price * 100, // Stripe expects amounts in cents
+            unit_amount: price * 100,
           },
           quantity: 1,
         },
@@ -45,7 +52,7 @@ serve(async (req) => {
       cancel_url: `${req.headers.get('origin')}/`,
     })
 
-    console.log('Checkout session created:', session);
+    console.log('Session created successfully:', session.id);
 
     return new Response(
       JSON.stringify({ url: session.url }),
@@ -55,9 +62,12 @@ serve(async (req) => {
       }
     )
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error in function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: error.stack
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,

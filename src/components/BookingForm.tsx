@@ -104,7 +104,7 @@ export const BookingForm = () => {
           {renderStepContent()}
         </div>
 
-        <div className="flex justify-between space-x-4">
+        <div className="flex justify-between space-x-4 pb-20 sm:pb-0">
           {currentStep > 1 && (
             <Button
               type="button"

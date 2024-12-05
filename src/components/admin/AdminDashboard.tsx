@@ -1,18 +1,9 @@
 import { useEffect, useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { useNavigate } from "react-router-dom";
-import { BookingStatusBadge } from "./BookingStatusBadge";
-import { BookingActions } from "./BookingActions";
-import { BookingDetails } from "./BookingDetails";
+import { BookingsTable } from "./BookingsTable";
+import { BookingDetailsDialog } from "./BookingDetailsDialog";
 
 type Booking = {
   id: string;
@@ -32,6 +23,7 @@ type Booking = {
 export const AdminDashboard = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -106,10 +98,7 @@ export const AdminDashboard = () => {
 
         await fetchBookings();
 
-        // Initialize realtime subscription
-        const channel = supabase.channel('bookings_changes');
-        
-        channel
+        const channel = supabase.channel('bookings_changes')
           .on('postgres_changes', 
             { 
               event: '*', 
@@ -121,12 +110,9 @@ export const AdminDashboard = () => {
               fetchBookings();
             }
           )
-          .subscribe((status) => {
-            console.log('Subscription status:', status);
-          });
+          .subscribe();
 
         return () => {
-          console.log('Cleaning up subscription');
           channel.unsubscribe();
         };
 
@@ -156,69 +142,19 @@ export const AdminDashboard = () => {
     <div className="container mx-auto py-10">
       <h1 className="text-2xl font-bold mb-6">Tableau de bord administrateur</h1>
       
-      <div className="rounded-md border">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[200px]">Réservation</TableHead>
-                <TableHead className="w-[200px]">Client</TableHead>
-                <TableHead className="w-[200px]">Détails</TableHead>
-                <TableHead className="w-[100px]">Prix</TableHead>
-                <TableHead className="w-[120px]">Statut</TableHead>
-                <TableHead className="w-[200px]">Message</TableHead>
-                <TableHead className="w-[100px] text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {bookings.map((booking) => (
-                <TableRow key={booking.id}>
-                  <TableCell>
-                    <BookingDetails
-                      date={booking.date}
-                      timeSlot={booking.time_slot}
-                      duration={booking.duration}
-                      groupSize={booking.group_size}
-                      price={booking.price}
-                      userName={booking.user_name}
-                      userEmail={booking.user_email}
-                      userPhone={booking.user_phone}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-1">
-                      <div className="font-medium">{booking.user_name}</div>
-                      <div className="text-sm text-gray-500">{booking.user_email}</div>
-                      <div className="text-sm text-gray-500">{booking.user_phone}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      <div>{booking.group_size} personnes</div>
-                      <div>{booking.duration}h</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>{booking.price}€</TableCell>
-                  <TableCell>
-                    <BookingStatusBadge status={booking.status} />
-                  </TableCell>
-                  <TableCell>
-                    <p className="text-sm text-gray-500 max-w-[200px] truncate">
-                      {booking.message || "-"}
-                    </p>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <BookingActions
-                      bookingId={booking.id}
-                      onStatusChange={handleStatusChange}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
+      <BookingsTable
+        data={bookings}
+        onStatusChange={handleStatusChange}
+        onViewDetails={(booking) => setSelectedBooking(booking)}
+      />
+
+      {selectedBooking && (
+        <BookingDetailsDialog
+          isOpen={!!selectedBooking}
+          onClose={() => setSelectedBooking(null)}
+          booking={selectedBooking}
+        />
+      )}
     </div>
   );
 };

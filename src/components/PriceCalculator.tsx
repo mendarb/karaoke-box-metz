@@ -20,6 +20,8 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
       const hours = parseInt(duration) || 0;
       const size = groupSize === "6+" ? 6 : parseInt(groupSize) || 0;
 
+      console.log('Parsed values:', { hours, size });
+
       // Base price calculation
       let basePrice = 0;
       if (size <= 3) basePrice = 30;

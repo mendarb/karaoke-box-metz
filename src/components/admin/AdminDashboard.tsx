@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
@@ -17,106 +17,83 @@ export const AdminDashboard = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  useEffect(() => {
-    const checkAdminAccess = async () => {
-      try {
-        console.log("Checking admin access...");
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session) {
-          console.log("No session found, redirecting to login");
-          navigate("/login");
-          return;
-        }
+  const checkAdminAccess = useCallback(async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        navigate("/login");
+        return false;
+      }
 
-        const { data: { user } } = await supabase.auth.getUser();
-        console.log("Current user:", user?.email);
-        
-        if (!user || user.email !== "mendar.bouchali@gmail.com") {
-          toast({
-            title: "Accès refusé",
-            description: "Vous n'avez pas les droits d'accès à cette page.",
-            variant: "destructive",
-          });
-          navigate("/");
-          return;
-        }
-
-        setIsCheckingAuth(false);
-        await fetchBookings();
-      } catch (error: any) {
-        console.error('Error in admin dashboard:', error);
+      const { data: { user } } = await supabase.auth.getUser();
+      const isAdminUser = user?.email === "mendar.bouchali@gmail.com";
+      
+      if (!isAdminUser) {
         toast({
-          title: "Erreur d'authentification",
-          description: "Veuillez vous reconnecter.",
+          title: "Accès refusé",
+          description: "Vous n'avez pas les droits d'accès à cette page.",
           variant: "destructive",
         });
-        navigate("/login");
+        navigate("/");
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error checking admin access:', error);
+      toast({
+        title: "Erreur d'authentification",
+        description: "Veuillez vous reconnecter.",
+        variant: "destructive",
+      });
+      navigate("/login");
+      return false;
+    }
+  }, [navigate, toast]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const initializeAdmin = async () => {
+      const hasAccess = await checkAdminAccess();
+      if (mounted) {
+        setIsAdmin(hasAccess);
+        setIsCheckingAuth(false);
+        if (hasAccess) {
+          await fetchBookings();
+        }
       }
     };
 
-    checkAdminAccess();
+    initializeAdmin();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!session) {
-        navigate("/login");
+        if (mounted) {
+          navigate("/login");
+        }
+      } else if (mounted) {
+        const hasAccess = await checkAdminAccess();
+        setIsAdmin(hasAccess);
       }
     });
 
-    return () => subscription.unsubscribe();
-  }, [toast, navigate, fetchBookings]);
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [checkAdminAccess, navigate, fetchBookings]);
 
-  const renderContent = () => {
-    if (isCheckingAuth) {
-      return (
-        <div className="flex-1 p-6 animate-fadeIn">
-          <div className="h-8 w-48 bg-gray-200 rounded animate-pulse mb-6"></div>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-24 bg-gray-200 rounded animate-pulse"></div>
-            ))}
-          </div>
-          <div className="bg-gray-200 rounded h-[500px] animate-pulse"></div>
-        </div>
-      );
-    }
-
+  if (isCheckingAuth || !isAdmin) {
     return (
-      <div className="flex-1 p-6 animate-fadeIn">
-        <h1 className="text-2xl font-bold mb-6">Tableau de bord administrateur</h1>
-        <div className="mb-8">
-          {isLoading ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-24 bg-gray-200 rounded animate-pulse"></div>
-              ))}
-            </div>
-          ) : (
-            <DashboardStats bookings={bookings} />
-          )}
-        </div>
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          {isLoading ? (
-            <div className="space-y-4">
-              <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
-              <div className="space-y-3">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="h-12 bg-gray-200 rounded animate-pulse"></div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <BookingsTable
-              data={bookings}
-              onStatusChange={updateBookingStatus}
-              onViewDetails={setSelectedBooking}
-            />
-          )}
-        </div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
       </div>
     );
-  };
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -125,7 +102,19 @@ export const AdminDashboard = () => {
           <DashboardSidebar />
         </ResizablePanel>
         <ResizablePanel defaultSize={80}>
-          {renderContent()}
+          <div className="p-6">
+            <h1 className="text-2xl font-bold mb-6">Tableau de bord administrateur</h1>
+            <div className="mb-8">
+              <DashboardStats bookings={bookings} />
+            </div>
+            <div className="bg-white rounded-lg shadow-lg p-6">
+              <BookingsTable
+                data={bookings}
+                onStatusChange={updateBookingStatus}
+                onViewDetails={setSelectedBooking}
+              />
+            </div>
+          </div>
         </ResizablePanel>
       </ResizablePanelGroup>
 

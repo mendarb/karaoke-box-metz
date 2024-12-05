@@ -36,6 +36,9 @@ export function AuthModal({
           password,
         })
         if (error) {
+          if (error.message.includes("Email not confirmed")) {
+            throw new Error("Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte de réception.")
+          }
           if (error.message === "Invalid login credentials") {
             throw new Error("Email ou mot de passe incorrect")
           }
@@ -57,7 +60,7 @@ export function AuthModal({
         if (error) throw error
         toast({
           title: "Inscription réussie",
-          description: "Vérifiez votre email pour confirmer votre compte",
+          description: "Vérifiez votre email pour confirmer votre compte. Un email vous a été envoyé.",
         })
         onClose()
       }

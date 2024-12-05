@@ -19,7 +19,7 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    let authSubscription: { data: { subscription: { unsubscribe: () => void } } };
+    let unsubscribe: (() => void) | undefined;
 
     const checkUser = async () => {
       try {
@@ -36,7 +36,6 @@ const Index = () => {
           return;
         }
 
-        console.log("Current user:", user);
         setUser(user);
         setIsAdmin(user?.email === "mendar.bouchali@gmail.com");
       } catch (error) {
@@ -46,26 +45,28 @@ const Index = () => {
       }
     };
 
-    const setupAuthListener = async () => {
-      authSubscription = supabase.auth.onAuthStateChange((_event, session) => {
-        console.log("Auth state changed:", session);
-        setUser(session?.user ?? null);
-        setIsAdmin(session?.user?.email === "mendar.bouchali@gmail.com");
+    const setupAuthListener = () => {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        const newUser = session?.user ?? null;
+        setUser(newUser);
+        setIsAdmin(newUser?.email === "mendar.bouchali@gmail.com");
       });
+      
+      return () => {
+        subscription.unsubscribe();
+      };
     };
 
     checkUser();
-    setupAuthListener();
+    unsubscribe = setupAuthListener();
 
     return () => {
-      if (authSubscription?.data?.subscription) {
-        console.log("Cleaning up auth subscription");
-        authSubscription.data.subscription.unsubscribe();
+      if (unsubscribe) {
+        unsubscribe();
       }
     };
   }, [toast]);
 
-  // Reset admin dashboard view when user changes
   useEffect(() => {
     if (!isAdmin) {
       setShowAdminDashboard(false);

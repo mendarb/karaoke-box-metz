@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "./ui/button";
+import { useToast } from "./ui/use-toast";
+import { supabase } from "@/lib/supabase";
 
 interface PriceCalculatorProps {
   groupSize: string;
@@ -11,7 +14,9 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
   const [price, setPrice] = useState(0);
   const [discount, setDiscount] = useState(0);
   const [discountPercentage, setDiscountPercentage] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
   const isMobile = useIsMobile();
+  const { toast } = useToast();
 
   useEffect(() => {
     const calculatePrice = () => {
@@ -61,6 +66,52 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
     calculatePrice();
   }, [groupSize, duration, onPriceCalculated]);
 
+  const handlePayment = async () => {
+    try {
+      setIsLoading(true);
+      console.log('Initiating payment process...');
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        toast({
+          title: "Erreur",
+          description: "Vous devez être connecté pour effectuer une réservation.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: {
+          price,
+          groupSize,
+          duration,
+        }
+      });
+
+      console.log('Response from create-checkout:', data);
+
+      if (error) {
+        throw error;
+      }
+
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("URL de paiement non reçue");
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la redirection vers le paiement. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className={`${isMobile ? 'mt-3 p-4' : 'mt-4 p-6'} bg-gradient-to-br from-violet-50/50 to-violet-100/50 backdrop-blur-sm rounded-2xl border border-violet-100/50 shadow-lg animate-fadeIn`}>
       <p className="text-xl sm:text-2xl font-bold text-violet-900 mb-2">
@@ -74,9 +125,16 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
           </span>
         </p>
       )}
-      <p className="text-xs sm:text-sm text-gray-500">
+      <p className="text-xs sm:text-sm text-gray-500 mb-4">
         *Prix indicatif, peut varier selon les options choisies
       </p>
+      <Button
+        onClick={handlePayment}
+        className="w-full bg-violet-600 hover:bg-violet-700"
+        disabled={isLoading}
+      >
+        {isLoading ? "Redirection..." : "Procéder au paiement"}
+      </Button>
     </div>
   );
 };

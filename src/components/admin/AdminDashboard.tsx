@@ -104,11 +104,12 @@ export const AdminDashboard = () => {
           return;
         }
 
-        fetchBookings();
+        await fetchBookings();
 
-        // Set up realtime subscription
-        const channel = supabase
-          .channel('bookings_changes')
+        // Initialize realtime subscription
+        const channel = supabase.channel('bookings_changes');
+        
+        channel
           .on('postgres_changes', 
             { 
               event: '*', 
@@ -120,10 +121,12 @@ export const AdminDashboard = () => {
               fetchBookings();
             }
           )
-          .subscribe();
+          .subscribe((status) => {
+            console.log('Subscription status:', status);
+          });
 
-        // Cleanup function
         return () => {
+          console.log('Cleaning up subscription');
           channel.unsubscribe();
         };
 
@@ -153,24 +156,24 @@ export const AdminDashboard = () => {
     <div className="container mx-auto py-10">
       <h1 className="text-2xl font-bold mb-6">Tableau de bord administrateur</h1>
       
-      <div className="rounded-md border overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Réservation</TableHead>
-              <TableHead>Client</TableHead>
-              <TableHead>Détails</TableHead>
-              <TableHead>Prix</TableHead>
-              <TableHead>Statut</TableHead>
-              <TableHead>Message</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {bookings.map((booking) => (
-              <TableRow key={booking.id}>
-                <TableCell colSpan={7}>
-                  <div className="grid grid-cols-7 gap-4">
+      <div className="rounded-md border">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[200px]">Réservation</TableHead>
+                <TableHead className="w-[200px]">Client</TableHead>
+                <TableHead className="w-[200px]">Détails</TableHead>
+                <TableHead className="w-[100px]">Prix</TableHead>
+                <TableHead className="w-[120px]">Statut</TableHead>
+                <TableHead className="w-[200px]">Message</TableHead>
+                <TableHead className="w-[100px] text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {bookings.map((booking) => (
+                <TableRow key={booking.id}>
+                  <TableCell>
                     <BookingDetails
                       date={booking.date}
                       timeSlot={booking.time_slot}
@@ -181,26 +184,40 @@ export const AdminDashboard = () => {
                       userEmail={booking.user_email}
                       userPhone={booking.user_phone}
                     />
-                    <div>
-                      <BookingStatusBadge status={booking.status} />
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      <div className="font-medium">{booking.user_name}</div>
+                      <div className="text-sm text-gray-500">{booking.user_email}</div>
+                      <div className="text-sm text-gray-500">{booking.user_phone}</div>
                     </div>
-                    <div className="max-w-xs">
-                      <p className="truncate text-sm text-gray-500">
-                        {booking.message || "-"}
-                      </p>
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm">
+                      <div>{booking.group_size} personnes</div>
+                      <div>{booking.duration}h</div>
                     </div>
-                    <div className="text-right">
-                      <BookingActions
-                        bookingId={booking.id}
-                        onStatusChange={handleStatusChange}
-                      />
-                    </div>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                  </TableCell>
+                  <TableCell>{booking.price}€</TableCell>
+                  <TableCell>
+                    <BookingStatusBadge status={booking.status} />
+                  </TableCell>
+                  <TableCell>
+                    <p className="text-sm text-gray-500 max-w-[200px] truncate">
+                      {booking.message || "-"}
+                    </p>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <BookingActions
+                      bookingId={booking.id}
+                      onStatusChange={handleStatusChange}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );

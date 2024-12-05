@@ -69,10 +69,10 @@ export const BookingForm = () => {
           return;
         }
 
-        console.log('Making request to:', `${supabase.supabaseUrl}/functions/v1/create-checkout`);
+        console.log('Making request to:', 'https://lxkaosgjtqonrnlivzev.supabase.co/functions/v1/create-checkout');
         
         const response = await fetch(
-          `${supabase.supabaseUrl}/functions/v1/create-checkout`,
+          'https://lxkaosgjtqonrnlivzev.supabase.co/functions/v1/create-checkout',
           {
             method: "POST",
             headers: {

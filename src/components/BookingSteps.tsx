@@ -1,4 +1,4 @@
-import { Check, ChevronRight } from "lucide-react";
+import { User, Calendar, Users, Check } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export type BookingStep = {
@@ -18,40 +18,38 @@ export const BookingSteps = ({
 }) => {
   const isMobile = useIsMobile();
 
+  const getStepIcon = (stepId: number) => {
+    switch (stepId) {
+      case 1:
+        return <User className="w-5 h-5" />;
+      case 2:
+        return <Calendar className="w-5 h-5" />;
+      case 3:
+        return <Users className="w-5 h-5" />;
+      case 4:
+        return <Check className="w-5 h-5" />;
+      default:
+        return null;
+    }
+  };
+
   return (
-    <div className="space-y-4 pb-6 sm:pb-8">
+    <div className="pb-4">
       <nav aria-label="Progress">
-        <ol role="list" className={`${isMobile ? 'space-y-4' : 'md:flex md:space-x-8 md:space-y-0'}`}>
-          {steps.map((step, index) => (
-            <li key={step.id} className={`${isMobile ? 'flex-1' : 'md:flex-1'}`}>
+        <ol role="list" className="flex justify-between space-x-2">
+          {steps.map((step) => (
+            <li key={step.id} className="flex-1">
               <div
-                className={`group flex flex-col border-l-4 py-2 pl-4 transition-all duration-300 md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4 ${
+                className={`flex items-center justify-center p-2 rounded-full transition-all duration-300 ${
                   step.current
-                    ? "border-violet-600 cursor-default"
+                    ? "bg-violet-600 text-white"
                     : step.completed
-                    ? "border-violet-600/70 cursor-pointer hover:border-violet-700"
-                    : "border-gray-200/70 cursor-not-allowed"
+                    ? "bg-violet-100 text-violet-600"
+                    : "bg-gray-100 text-gray-400"
                 }`}
+                title={`${step.name}: ${step.description}`}
               >
-                <span className="text-sm font-medium flex items-center">
-                  {step.completed ? (
-                    <span className="flex items-center text-violet-600 group-hover:text-violet-700">
-                      <Check className="mr-2 h-5 w-5" />
-                      <span className="font-semibold">{step.name}</span>
-                    </span>
-                  ) : step.current ? (
-                    <span className="text-violet-600 flex items-center">
-                      <span className="font-semibold">{step.name}</span>
-                      <ChevronRight className="ml-2 h-5 w-5 animate-pulse" />
-                    </span>
-                  ) : (
-                    <span className="text-gray-400">{step.name}</span>
-                  )}
-                  {!isMobile && index < steps.length - 1 && !step.current && (
-                    <ChevronRight className="ml-2 h-5 w-5 text-gray-300" />
-                  )}
-                </span>
-                <span className="text-sm text-gray-500">{step.description}</span>
+                {getStepIcon(step.id)}
               </div>
             </li>
           ))}

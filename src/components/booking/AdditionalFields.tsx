@@ -7,24 +7,18 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { UseFormReturn } from "react-hook-form";
+import { PriceCalculator } from "../PriceCalculator";
 
 interface AdditionalFieldsProps {
   form: UseFormReturn<any>;
   calculatedPrice: number;
+  groupSize: string;
+  duration: string;
 }
 
-export const AdditionalFields = ({ form, calculatedPrice }: AdditionalFieldsProps) => {
+export const AdditionalFields = ({ form, calculatedPrice, groupSize, duration }: AdditionalFieldsProps) => {
   return (
     <div className="space-y-6">
-      <div className="bg-violet-50 p-4 rounded-lg mb-6">
-        <h3 className="text-lg font-semibold text-violet-900 mb-2">
-          Prix total : {calculatedPrice}€
-        </h3>
-        <p className="text-sm text-violet-700">
-          Ce montant sera débité lors de la confirmation de votre réservation
-        </p>
-      </div>
-
       <FormField
         control={form.control}
         name="message"
@@ -56,6 +50,12 @@ export const AdditionalFields = ({ form, calculatedPrice }: AdditionalFieldsProp
             </div>
           </FormItem>
         )}
+      />
+
+      <PriceCalculator 
+        groupSize={groupSize}
+        duration={duration}
+        onPriceCalculated={() => {}}
       />
     </div>
   );

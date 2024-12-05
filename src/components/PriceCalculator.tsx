@@ -20,79 +20,52 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
 
   useEffect(() => {
     const calculatePrice = () => {
-      console.log('Calculating price with:', { groupSize, duration });
-      
       const hours = parseInt(duration) || 0;
-      let basePrice = 0;
-
-      // Convert groupSize to number, handling "6+" case
       const size = groupSize === "6+" ? 6 : parseInt(groupSize) || 0;
-      console.log('Parsed size:', size);
 
-      // Base price per hour based on group size
-      if (size <= 3) {
-        basePrice = 30; // 1-3 people: 30€/hour
-      } else if (size === 4) {
-        basePrice = 40; // 4 people: 40€/hour
-      } else if (size >= 5) {
-        basePrice = 50; // 5+ people: 50€/hour
-      }
-      
-      console.log('Base price:', basePrice);
+      // Base price calculation
+      let basePrice = 0;
+      if (size <= 3) basePrice = 30;
+      else if (size === 4) basePrice = 40;
+      else if (size >= 5) basePrice = 50;
 
-      // Calculate total price with discount for additional hours
-      let totalPrice = basePrice; // First hour at full price
+      // Calculate total with discounts
+      let totalPrice = basePrice;
       let totalDiscount = 0;
-      
-      // Apply 10% discount for each additional hour
+
       if (hours > 1) {
         for (let i = 1; i < hours; i++) {
-          const discountedPrice = basePrice * 0.9;
-          totalPrice += discountedPrice;
+          const discountedHourPrice = basePrice * 0.9;
+          totalPrice += discountedHourPrice;
           totalDiscount += basePrice * 0.1;
         }
       }
 
-      console.log('Total price before rounding:', totalPrice);
-      console.log('Total discount before rounding:', totalDiscount);
-
-      // Calculate total discount percentage
+      const finalPrice = Math.round(totalPrice);
+      const finalDiscount = Math.round(totalDiscount);
       const discountPercent = hours > 1 
-        ? Math.round((totalDiscount / (totalPrice + totalDiscount)) * 100)
+        ? Math.round((totalDiscount / (basePrice * hours)) * 100)
         : 0;
 
-      const roundedPrice = Math.round(totalPrice);
-      const roundedDiscount = Math.round(totalDiscount);
-
-      console.log('Final calculations:', {
-        roundedPrice,
-        roundedDiscount,
-        discountPercent
-      });
-
-      setPrice(roundedPrice);
-      setDiscount(roundedDiscount);
+      setPrice(finalPrice);
+      setDiscount(finalDiscount);
       setDiscountPercentage(discountPercent);
       
       if (onPriceCalculated) {
-        onPriceCalculated(roundedPrice);
+        onPriceCalculated(finalPrice);
       }
     };
 
-    calculatePrice();
+    if (groupSize && duration) {
+      calculatePrice();
+    }
   }, [groupSize, duration, onPriceCalculated]);
 
   const handlePayment = async () => {
     try {
       setIsLoading(true);
-      console.log('Initiating payment process...');
       
-      const { data: { session }, error: authError } = await supabase.auth.getSession();
-      console.log('Auth session:', session);
-      if (authError) {
-        console.error('Auth error:', authError);
-        throw authError;
-      }
+      const { data: { session } } = await supabase.auth.getSession();
       
       if (!session?.access_token) {
         toast({
@@ -103,27 +76,12 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
         return;
       }
 
-      const payload = {
-        price,
-        groupSize,
-        duration,
-      };
-      console.log('Sending payload to create-checkout:', payload);
-
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: payload,
+        body: { price, groupSize, duration },
       });
 
-      console.log('Response from create-checkout:', data);
-
-      if (error) {
-        console.error('Edge function error:', error);
-        throw error;
-      }
-
-      if (!data?.url) {
-        throw new Error("URL de paiement non reçue");
-      }
+      if (error) throw error;
+      if (!data?.url) throw new Error("URL de paiement non reçue");
 
       window.location.href = data.url;
       
@@ -131,13 +89,15 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
       console.error('Payment error:', error);
       toast({
         title: "Erreur de paiement",
-        description: error.message || "Une erreur est survenue lors de la redirection vers le paiement. Veuillez réessayer.",
+        description: "Une erreur est survenue lors de la redirection vers le paiement.",
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (!price) return null;
 
   return (
     <div className={`${isMobile ? 'mt-3 p-4' : 'mt-4 p-6'} bg-gradient-to-br from-violet-50/50 to-violet-100/50 backdrop-blur-sm rounded-2xl border border-violet-100/50 shadow-lg animate-fadeIn`}>
@@ -146,15 +106,12 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
       </p>
       {discount > 0 && (
         <p className="text-sm text-green-600 font-medium mb-2 flex items-center gap-2">
-          Économie réalisée : {discount}€ 
-          <span className="bg-green-100/80 backdrop-blur-sm text-green-700 px-2 py-1 rounded-full text-xs font-semibold shadow-sm">
-            -{discountPercentage}% au total
+          Économie : {discount}€ 
+          <span className="bg-green-100/80 backdrop-blur-sm text-green-700 px-2 py-1 rounded-full text-xs font-semibold">
+            -{discountPercentage}%
           </span>
         </p>
       )}
-      <p className="text-xs sm:text-sm text-gray-500 mb-4">
-        *Prix indicatif, peut varier selon les options choisies
-      </p>
       <Button
         onClick={handlePayment}
         className="w-full bg-violet-600 hover:bg-violet-700"

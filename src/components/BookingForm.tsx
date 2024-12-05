@@ -9,6 +9,7 @@ import { DateTimeFields } from "./booking/DateTimeFields";
 import { GroupSizeAndDurationFields } from "./booking/GroupSizeAndDurationFields";
 import { AdditionalFields } from "./booking/AdditionalFields";
 import { BookingSteps, type BookingStep } from "./booking/BookingSteps";
+import { supabase } from "@/lib/supabase";
 
 export const BookingForm = () => {
   const { toast } = useToast();
@@ -58,27 +59,43 @@ export const BookingForm = () => {
       setCurrentStep(currentStep + 1);
     } else {
       try {
-        const response = await fetch('/api/create-checkout-session', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            ...data,
-            price: calculatedPrice,
-            groupSize,
-            duration
-          }),
-        });
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) {
+          toast({
+            title: "Erreur",
+            description: "Vous devez être connecté pour effectuer une réservation.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({
+              ...data,
+              price: calculatedPrice,
+              groupSize,
+              duration,
+            }),
+          }
+        );
 
         if (!response.ok) {
-          throw new Error('Erreur lors de la création de la session de paiement');
+          throw new Error("Erreur lors de la création de la session de paiement");
         }
 
         const { url } = await response.json();
-        window.location.href = url;
+        if (url) {
+          window.location.href = url;
+        }
       } catch (error) {
-        console.error('Erreur:', error);
+        console.error("Erreur:", error);
         toast({
           title: "Erreur",
           description: "Une erreur est survenue lors de la réservation. Veuillez réessayer.",

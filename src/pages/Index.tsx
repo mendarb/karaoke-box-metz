@@ -19,49 +19,44 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    let authListener: any = null;
-
-    const setupAuth = async () => {
+    // Initialize auth state
+    const initAuth = async () => {
       try {
-        setIsLoading(true);
         const { data: { session } } = await supabase.auth.getSession();
-        
         if (session?.user) {
           setUser(session.user);
           setIsAdmin(session.user.email === "mendar.bouchali@gmail.com");
         }
-
-        // Set up auth state listener
-        authListener = supabase.auth.onAuthStateChange((event, session) => {
-          if (session?.user) {
-            setUser(session.user);
-            setIsAdmin(session.user.email === "mendar.bouchali@gmail.com");
-          } else {
-            setUser(null);
-            setIsAdmin(false);
-            setShowAdminDashboard(false);
-          }
-        });
       } catch (error) {
-        console.error("Auth setup error:", error);
-        toast({
-          title: "Erreur",
-          description: "Impossible de vérifier l'authentification",
-          variant: "destructive",
-        });
+        console.error("Error initializing auth:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    setupAuth();
+    initAuth();
 
-    return () => {
-      if (authListener) {
-        authListener.data.subscription.unsubscribe();
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        console.log("Auth state changed:", event);
+        
+        if (session?.user) {
+          setUser(session.user);
+          setIsAdmin(session.user.email === "mendar.bouchali@gmail.com");
+        } else {
+          setUser(null);
+          setIsAdmin(false);
+          setShowAdminDashboard(false);
+        }
       }
+    );
+
+    // Cleanup subscription
+    return () => {
+      subscription.unsubscribe();
     };
-  }, [toast]);
+  }, []);
 
   // Reset admin dashboard when user is not admin
   useEffect(() => {

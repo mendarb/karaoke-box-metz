@@ -29,8 +29,8 @@ export const useBookings = () => {
       console.log("Fetching bookings...");
       setIsLoading(true);
       
-      const { data: session } = await supabase.auth.getSession();
-      if (!session?.session?.access_token) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
         console.error("No session found");
         throw new Error("No session found");
       }

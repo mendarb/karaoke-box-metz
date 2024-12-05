@@ -24,7 +24,7 @@ export const AdminDashboard = () => {
         console.log("Checking admin access...");
         const { data: { session } } = await supabase.auth.getSession();
         
-        if (!session?.access_token) {
+        if (!session) {
           console.log("No session found, redirecting to login");
           navigate("/login");
           return;

@@ -35,33 +35,47 @@ export const AdminDashboard = () => {
 
   useEffect(() => {
     const fetchBookings = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session?.user.email || session.user.email !== "mendar.bouchali@gmail.com") {
-        toast({
-          title: "Accès refusé",
-          description: "Vous n'avez pas les droits d'accès à cette page.",
-          variant: "destructive",
-        });
-        return;
-      }
+      try {
+        // First check if user is authenticated
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user || user.email !== "mendar.bouchali@gmail.com") {
+          toast({
+            title: "Accès refusé",
+            description: "Vous n'avez pas les droits d'accès à cette page.",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
 
-      const { data, error } = await supabase
-        .from('bookings')
-        .select('*')
-        .order('created_at', { ascending: false });
+        // Then fetch bookings
+        const { data, error } = await supabase
+          .from('bookings')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-      if (error) {
+        if (error) {
+          console.error('Error fetching bookings:', error);
+          toast({
+            title: "Erreur",
+            description: "Impossible de charger les réservations.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        setBookings(data || []);
+      } catch (error) {
+        console.error('Error:', error);
         toast({
           title: "Erreur",
-          description: "Impossible de charger les réservations.",
+          description: "Une erreur est survenue lors du chargement des données.",
           variant: "destructive",
         });
-        return;
+      } finally {
+        setIsLoading(false);
       }
-
-      setBookings(data);
-      setIsLoading(false);
     };
 
     fetchBookings();

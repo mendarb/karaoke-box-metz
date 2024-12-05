@@ -8,7 +8,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { format, isMonday } from "date-fns";
 import { fr } from "date-fns/locale";
 import { UseFormReturn } from "react-hook-form";
 import { useState } from "react";
@@ -19,11 +19,15 @@ interface DateTimeFieldsProps {
 }
 
 const timeSlots = [
-  { id: "10", label: "10:00" },
-  { id: "14", label: "14:00" },
+  { id: "17", label: "17:00" },
   { id: "18", label: "18:00" },
+  { id: "19", label: "19:00" },
   { id: "20", label: "20:00" },
+  { id: "21", label: "21:00" },
+  { id: "22", label: "22:00" },
 ];
+
+const OPENING_DATE = new Date(2024, 0, 7); // January 7, 2024
 
 export const DateTimeFields = ({ form }: DateTimeFieldsProps) => {
   const [selectedDate, setSelectedDate] = useState<Date>();
@@ -45,9 +49,8 @@ export const DateTimeFields = ({ form }: DateTimeFieldsProps) => {
                   setSelectedDate(date);
                 }}
                 disabled={(date) => {
-                  const today = new Date();
-                  today.setHours(0, 0, 0, 0);
-                  return date < today;
+                  // Disable dates before opening date and Mondays
+                  return date < OPENING_DATE || isMonday(date);
                 }}
                 locale={fr}
                 className="rounded-xl border border-violet-100 p-4 mx-auto"

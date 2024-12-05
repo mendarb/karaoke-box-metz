@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -24,31 +24,7 @@ export const useBookings = () => {
 
   const fetchBookings = async () => {
     try {
-      // First check if we have a valid session
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError) {
-        console.error('Session error:', sessionError);
-        toast({
-          title: "Erreur d'authentification",
-          description: "Veuillez vous reconnecter pour accéder aux réservations.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (!session) {
-        toast({
-          title: "Non autorisé",
-          description: "Vous devez être connecté pour voir les réservations.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Add console logs to track the request
-      console.log('Fetching bookings with session:', session.access_token);
-      
+      console.log('Fetching bookings...');
       const { data: bookingsData, error: bookingsError } = await supabase
         .from('bookings')
         .select('*')
@@ -74,28 +50,6 @@ export const useBookings = () => {
       setIsLoading(false);
     }
   };
-
-  // Fetch bookings on mount and when auth state changes
-  useEffect(() => {
-    const setupInitialFetch = async () => {
-      const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          console.log('Auth state changed, fetching bookings');
-          fetchBookings();
-        }
-      });
-
-      // Initial fetch
-      await fetchBookings();
-
-      // Cleanup
-      return () => {
-        authListener.subscription.unsubscribe();
-      };
-    };
-
-    setupInitialFetch();
-  }, []);
 
   return {
     bookings,

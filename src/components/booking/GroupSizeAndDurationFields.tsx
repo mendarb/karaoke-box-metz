@@ -8,11 +8,13 @@ import { Button } from "@/components/ui/button";
 import { UseFormReturn } from "react-hook-form";
 import { User, Clock, BadgePercent } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PriceCalculator } from "../PriceCalculator";
 
 interface GroupSizeAndDurationFieldsProps {
   form: UseFormReturn<any>;
   onGroupSizeChange: (value: string) => void;
   onDurationChange: (value: string) => void;
+  onPriceCalculated: (price: number) => void;
 }
 
 const groupSizes = [
@@ -35,6 +37,7 @@ export const GroupSizeAndDurationFields = ({
   form,
   onGroupSizeChange,
   onDurationChange,
+  onPriceCalculated,
 }: GroupSizeAndDurationFieldsProps) => {
   return (
     <div className="space-y-8 animate-fadeIn">
@@ -111,6 +114,14 @@ export const GroupSizeAndDurationFields = ({
           </FormItem>
         )}
       />
+
+      {form.watch("groupSize") && form.watch("duration") && (
+        <PriceCalculator
+          groupSize={form.watch("groupSize")}
+          duration={form.watch("duration")}
+          onPriceCalculated={onPriceCalculated}
+        />
+      )}
     </div>
   );
 };

@@ -71,40 +71,58 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
       setIsLoading(true);
       console.log('Initiating payment process...');
       
-      const { data: { session } } = await supabase.auth.getSession();
+      // Vérifier l'authentification
+      const { data: { session }, error: authError } = await supabase.auth.getSession();
+      console.log('Auth session:', session);
+      if (authError) {
+        console.error('Auth error:', authError);
+        throw authError;
+      }
+      
       if (!session?.access_token) {
         toast({
-          title: "Erreur",
+          title: "Erreur d'authentification",
           description: "Vous devez être connecté pour effectuer une réservation.",
           variant: "destructive",
         });
         return;
       }
 
+      // Préparer les données pour la fonction Edge
+      const payload = {
+        price,
+        groupSize,
+        duration,
+      };
+      console.log('Sending payload to create-checkout:', payload);
+
+      // Appeler la fonction Edge
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: {
-          price,
-          groupSize,
-          duration,
-        }
+        body: payload,
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
       });
 
       console.log('Response from create-checkout:', data);
 
       if (error) {
+        console.error('Edge function error:', error);
         throw error;
       }
 
-      if (data?.url) {
-        window.location.href = data.url;
-      } else {
+      if (!data?.url) {
         throw new Error("URL de paiement non reçue");
       }
-    } catch (error) {
+
+      // Rediriger vers Stripe
+      window.location.href = data.url;
+      
+    } catch (error: any) {
       console.error('Payment error:', error);
       toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la redirection vers le paiement. Veuillez réessayer.",
+        title: "Erreur de paiement",
+        description: error.message || "Une erreur est survenue lors de la redirection vers le paiement. Veuillez réessayer.",
         variant: "destructive",
       });
     } finally {

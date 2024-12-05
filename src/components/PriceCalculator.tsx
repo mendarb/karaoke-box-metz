@@ -20,20 +20,25 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
 
   useEffect(() => {
     const calculatePrice = () => {
+      console.log('Calculating price with:', { groupSize, duration });
+      
       const hours = parseInt(duration) || 0;
       let basePrice = 0;
 
       // Convert groupSize to number, handling "6+" case
       const size = groupSize === "6+" ? 6 : parseInt(groupSize) || 0;
+      console.log('Parsed size:', size);
 
       // Base price per hour based on group size
       if (size <= 3) {
         basePrice = 30; // 1-3 people: 30€/hour
       } else if (size === 4) {
         basePrice = 40; // 4 people: 40€/hour
-      } else if (size >= 5 && size <= 10) {
-        basePrice = 50; // 5-10 people: 50€/hour
+      } else if (size >= 5) {
+        basePrice = 50; // 5+ people: 50€/hour
       }
+      
+      console.log('Base price:', basePrice);
 
       // Calculate total price with discount for additional hours
       let totalPrice = basePrice; // First hour at full price
@@ -48,17 +53,29 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
         }
       }
 
+      console.log('Total price before rounding:', totalPrice);
+      console.log('Total discount before rounding:', totalDiscount);
+
       // Calculate total discount percentage
       const discountPercent = hours > 1 
         ? Math.round((totalDiscount / (totalPrice + totalDiscount)) * 100)
         : 0;
 
-      setPrice(Math.round(totalPrice));
-      setDiscount(Math.round(totalDiscount));
+      const roundedPrice = Math.round(totalPrice);
+      const roundedDiscount = Math.round(totalDiscount);
+
+      console.log('Final calculations:', {
+        roundedPrice,
+        roundedDiscount,
+        discountPercent
+      });
+
+      setPrice(roundedPrice);
+      setDiscount(roundedDiscount);
       setDiscountPercentage(discountPercent);
       
       if (onPriceCalculated) {
-        onPriceCalculated(Math.round(totalPrice));
+        onPriceCalculated(roundedPrice);
       }
     };
 
@@ -95,10 +112,6 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
 
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: payload,
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
-        },
       });
 
       console.log('Response from create-checkout:', data);

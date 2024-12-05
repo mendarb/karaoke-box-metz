@@ -104,11 +104,19 @@ export const BookingForm = () => {
       const isAvailable = await checkTimeSlotAvailability(data.date, data.timeSlot);
       if (!isAvailable) return;
 
-      // Sauvegarder la réservation
+      // Récupérer les informations de l'utilisateur
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error("Utilisateur non trouvé");
+      }
+
+      console.log('User data:', { user });
+
+      // Sauvegarder la réservation avec les informations utilisateur
       const { error: bookingError } = await supabase
         .from('bookings')
         .insert([{
-          user_id: session.user.id,
+          user_id: user.id,
           date: data.date,
           time_slot: data.timeSlot,
           duration: duration,
@@ -116,9 +124,15 @@ export const BookingForm = () => {
           status: 'pending',
           price: calculatedPrice,
           message: data.message || null,
+          user_email: data.email || user.email,
+          user_name: data.fullName,
+          user_phone: data.phone,
         }]);
 
-      if (bookingError) throw bookingError;
+      if (bookingError) {
+        console.error('Booking error:', bookingError);
+        throw bookingError;
+      }
 
       // Créer la session de paiement
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
@@ -129,6 +143,9 @@ export const BookingForm = () => {
           date: data.date,
           timeSlot: data.timeSlot,
           message: data.message,
+          userEmail: data.email || user.email,
+          userName: data.fullName,
+          userPhone: data.phone,
         })
       });
 
@@ -169,6 +186,7 @@ export const BookingForm = () => {
             form={form}
             onGroupSizeChange={setGroupSize}
             onDurationChange={setDuration}
+            onPriceCalculated={handlePriceCalculated}
           />
         );
       case 4:

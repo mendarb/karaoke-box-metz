@@ -36,9 +36,19 @@ export const AdminDashboard = () => {
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        // First check if user is authenticated
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
         
+        if (authError) {
+          console.error('Auth error:', authError);
+          toast({
+            title: "Erreur d'authentification",
+            description: "Veuillez vous reconnecter.",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
+
         if (!user || user.email !== "mendar.bouchali@gmail.com") {
           toast({
             title: "Accès refusé",
@@ -49,7 +59,7 @@ export const AdminDashboard = () => {
           return;
         }
 
-        // Then fetch bookings
+        console.log('Fetching bookings for user:', user.email);
         const { data, error } = await supabase
           .from('bookings')
           .select('*')
@@ -59,18 +69,19 @@ export const AdminDashboard = () => {
           console.error('Error fetching bookings:', error);
           toast({
             title: "Erreur",
-            description: "Impossible de charger les réservations.",
+            description: "Impossible de charger les réservations: " + error.message,
             variant: "destructive",
           });
           return;
         }
 
+        console.log('Bookings fetched:', data);
         setBookings(data || []);
       } catch (error) {
-        console.error('Error:', error);
+        console.error('Unexpected error:', error);
         toast({
           title: "Erreur",
-          description: "Une erreur est survenue lors du chargement des données.",
+          description: "Une erreur inattendue est survenue.",
           variant: "destructive",
         });
       } finally {

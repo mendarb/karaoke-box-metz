@@ -38,6 +38,7 @@ export const AdminDashboard = () => {
   useEffect(() => {
     const checkAdminAndFetchBookings = async () => {
       try {
+        console.log("Checking admin status and fetching bookings...");
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         
         if (authError) {
@@ -52,6 +53,7 @@ export const AdminDashboard = () => {
         }
 
         if (!user || user.email !== "mendar.bouchali@gmail.com") {
+          console.log("Access denied - not admin");
           toast({
             title: "Accès refusé",
             description: "Vous n'avez pas les droits d'accès à cette page.",
@@ -61,9 +63,10 @@ export const AdminDashboard = () => {
           return;
         }
 
+        console.log("Fetching bookings...");
         const { data, error } = await supabase
           .from('bookings')
-          .select()
+          .select('*')
           .order('created_at', { ascending: false });
 
         if (error) {
@@ -76,6 +79,7 @@ export const AdminDashboard = () => {
           return;
         }
 
+        console.log("Bookings fetched:", data);
         setBookings(data || []);
       } catch (error) {
         console.error('Unexpected error:', error);
@@ -109,14 +113,18 @@ export const AdminDashboard = () => {
   };
 
   if (isLoading) {
-    return <div className="flex justify-center items-center min-h-screen">Chargement...</div>;
+    return (
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+      </div>
+    );
   }
 
   return (
     <div className="container mx-auto py-10">
       <h1 className="text-2xl font-bold mb-6">Tableau de bord administrateur</h1>
       
-      <div className="rounded-md border">
+      <div className="rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -146,7 +154,7 @@ export const AdminDashboard = () => {
                 <TableCell>{booking.duration}h</TableCell>
                 <TableCell>{booking.price}€</TableCell>
                 <TableCell>{getStatusBadge(booking.status)}</TableCell>
-                <TableCell>{booking.message || "-"}</TableCell>
+                <TableCell className="max-w-xs truncate">{booking.message || "-"}</TableCell>
               </TableRow>
             ))}
           </TableBody>

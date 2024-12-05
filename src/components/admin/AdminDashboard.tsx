@@ -65,20 +65,37 @@ export const AdminDashboard = () => {
     return () => subscription.unsubscribe();
   }, [toast, navigate, fetchBookings]);
 
-  if (isCheckingAuth || isLoading) {
-    return (
-      <div className="flex min-h-screen bg-background">
-        <div className="w-1/5">
-          <DashboardSidebar />
-        </div>
+  const renderContent = () => {
+    if (isCheckingAuth || isLoading) {
+      return (
         <div className="flex-1 p-6">
-          <div className="flex justify-center items-center min-h-[calc(100vh-3rem)]">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+          <div className="h-8 w-48 bg-gray-200 rounded animate-pulse mb-6"></div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-24 bg-gray-200 rounded animate-pulse"></div>
+            ))}
           </div>
+          <div className="bg-gray-200 rounded h-[500px] animate-pulse"></div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex-1 p-6">
+        <h1 className="text-2xl font-bold mb-6">Tableau de bord administrateur</h1>
+        <div className="mb-8">
+          <DashboardStats bookings={bookings} />
+        </div>
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <BookingsTable
+            data={bookings}
+            onStatusChange={updateBookingStatus}
+            onViewDetails={setSelectedBooking}
+          />
         </div>
       </div>
     );
-  }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -86,23 +103,8 @@ export const AdminDashboard = () => {
         <ResizablePanel defaultSize={20} minSize={15} maxSize={25}>
           <DashboardSidebar />
         </ResizablePanel>
-        
         <ResizablePanel defaultSize={80}>
-          <div className="p-6">
-            <h1 className="text-2xl font-bold mb-6">Tableau de bord administrateur</h1>
-            
-            <div className="mb-8">
-              <DashboardStats bookings={bookings} />
-            </div>
-            
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <BookingsTable
-                data={bookings}
-                onStatusChange={updateBookingStatus}
-                onViewDetails={setSelectedBooking}
-              />
-            </div>
-          </div>
+          {renderContent()}
         </ResizablePanel>
       </ResizablePanelGroup>
 

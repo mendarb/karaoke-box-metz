@@ -51,7 +51,7 @@ export const AdminDashboard = () => {
 
   const sendBookingEmail = async (booking: Booking) => {
     try {
-      const { data, error } = await supabase.functions.invoke('send-booking-email', {
+      const { error } = await supabase.functions.invoke('send-booking-email', {
         body: {
           to: booking.user_email,
           userName: booking.user_name,
@@ -65,7 +65,7 @@ export const AdminDashboard = () => {
       });
 
       if (error) throw error;
-      console.log('Email sent successfully:', data);
+      console.log('Email sent successfully for booking:', booking.id);
     } catch (error) {
       console.error('Error sending email:', error);
       toast({
@@ -83,21 +83,24 @@ export const AdminDashboard = () => {
         .update({ status: newStatus })
         .eq('id', bookingId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
-      toast({
-        title: "Succès",
-        description: "Statut de la réservation mis à jour",
-      });
-
-      // Send email notification
       if (data) {
+        toast({
+          title: "Succès",
+          description: "Statut de la réservation mis à jour",
+        });
         await sendBookingEmail(data);
+        await fetchBookings();
+      } else {
+        toast({
+          title: "Erreur",
+          description: "Réservation non trouvée",
+          variant: "destructive",
+        });
       }
-
-      fetchBookings();
     } catch (error: any) {
       console.error('Error updating booking status:', error);
       toast({
@@ -109,7 +112,9 @@ export const AdminDashboard = () => {
   };
 
   useEffect(() => {
-    const checkAdminAndFetchBookings = async () => {
+    let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
+
+    const setupRealtimeAndFetchBookings = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         
@@ -132,7 +137,8 @@ export const AdminDashboard = () => {
 
         await fetchBookings();
 
-        const channel = supabase.channel('bookings_changes')
+        // Configuration du canal realtime
+        realtimeChannel = supabase.channel('bookings_changes')
           .on('postgres_changes', 
             { 
               event: '*', 
@@ -146,10 +152,6 @@ export const AdminDashboard = () => {
           )
           .subscribe();
 
-        return () => {
-          channel.unsubscribe();
-        };
-
       } catch (error: any) {
         console.error('Error in admin dashboard:', error);
         toast({
@@ -161,7 +163,15 @@ export const AdminDashboard = () => {
       }
     };
 
-    checkAdminAndFetchBookings();
+    setupRealtimeAndFetchBookings();
+
+    // Cleanup function
+    return () => {
+      if (realtimeChannel) {
+        console.log('Unsubscribing from realtime channel');
+        realtimeChannel.unsubscribe();
+      }
+    };
   }, [toast, navigate]);
 
   if (isLoading) {

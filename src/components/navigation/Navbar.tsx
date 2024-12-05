@@ -3,13 +3,29 @@ import { Button } from "@/components/ui/button";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
+import { useToast } from "@/components/ui/use-toast";
 
 export const Navbar = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setUser(session?.user ?? null);
+      } catch (error) {
+        console.error("Session check error:", error);
+        setUser(null);
+      }
+    };
+
+    checkSession();
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("Auth state changed:", _event, session?.user?.email);
       setUser(session?.user ?? null);
     });
 
@@ -17,7 +33,37 @@ export const Navbar = () => {
   }, []);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      setIsLoading(true);
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Sign out error:", error);
+        if (error.message.includes("session_not_found")) {
+          // If session is invalid, force clear it locally
+          setUser(null);
+          setShowAuthModal(true);
+          toast({
+            title: "Session expirée",
+            description: "Veuillez vous reconnecter",
+            variant: "destructive",
+          });
+        } else {
+          throw error;
+        }
+      } else {
+        setUser(null);
+        setShowAuthModal(true);
+      }
+    } catch (error: any) {
+      console.error("Sign out error:", error);
+      toast({
+        title: "Erreur de déconnexion",
+        description: "Une erreur est survenue, veuillez réessayer",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -34,8 +80,9 @@ export const Navbar = () => {
               <Button
                 variant="outline"
                 onClick={handleSignOut}
+                disabled={isLoading}
               >
-                Se déconnecter
+                {isLoading ? "Déconnexion..." : "Se déconnecter"}
               </Button>
             ) : (
               <Button

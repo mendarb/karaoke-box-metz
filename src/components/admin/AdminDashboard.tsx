@@ -106,7 +106,8 @@ export const AdminDashboard = () => {
 
         fetchBookings();
 
-        const bookingsSubscription = supabase
+        // Set up realtime subscription
+        const channel = supabase
           .channel('bookings_changes')
           .on('postgres_changes', 
             { 
@@ -115,13 +116,15 @@ export const AdminDashboard = () => {
               table: 'bookings' 
             }, 
             () => {
+              console.log('Received realtime update');
               fetchBookings();
             }
           )
           .subscribe();
 
+        // Cleanup function
         return () => {
-          bookingsSubscription.unsubscribe();
+          channel.unsubscribe();
         };
 
       } catch (error: any) {

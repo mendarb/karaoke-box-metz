@@ -6,20 +6,35 @@ import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
+import { Button } from "@/components/ui/button";
 
 const Index = () => {
   const isMobile = useIsMobile();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showAdminDashboard, setShowAdminDashboard] = useState(false);
 
   useEffect(() => {
     const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      setIsAdmin(user?.email === "mendar.bouchali@gmail.com");
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        console.log("Current user:", user);
+        setUser(user);
+        setIsAdmin(user?.email === "mendar.bouchali@gmail.com");
+      } catch (error) {
+        console.error("Error checking user:", error);
+      }
     };
     checkUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("Auth state changed:", session);
+      setUser(session?.user ?? null);
+      setIsAdmin(session?.user?.email === "mendar.bouchali@gmail.com");
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   return (
@@ -28,7 +43,19 @@ const Index = () => {
       
       <div className="py-6 sm:py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto">
-          {isAdmin ? (
+          {isAdmin && (
+            <div className="mb-6 flex justify-end">
+              <Button
+                onClick={() => setShowAdminDashboard(!showAdminDashboard)}
+                variant="outline"
+                className="mb-4"
+              >
+                {showAdminDashboard ? "Voir le formulaire" : "Voir le tableau de bord"}
+              </Button>
+            </div>
+          )}
+
+          {isAdmin && showAdminDashboard ? (
             <AdminDashboard />
           ) : (
             <>

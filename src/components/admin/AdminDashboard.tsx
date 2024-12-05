@@ -9,18 +9,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
-import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Calendar, Clock, Users, Euro } from "lucide-react";
+import { BookingStatusBadge } from "./BookingStatusBadge";
+import { BookingActions } from "./BookingActions";
+import { BookingDetails } from "./BookingDetails";
 
 type Booking = {
   id: string;
@@ -65,6 +57,31 @@ export const AdminDashboard = () => {
     }
   };
 
+  const handleStatusChange = async (bookingId: string, newStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from('bookings')
+        .update({ status: newStatus })
+        .eq('id', bookingId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Succès",
+        description: "Statut de la réservation mis à jour",
+      });
+
+      fetchBookings();
+    } catch (error: any) {
+      console.error('Error updating booking status:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour le statut",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
     const checkAdminAndFetchBookings = async () => {
       try {
@@ -89,7 +106,6 @@ export const AdminDashboard = () => {
 
         fetchBookings();
 
-        // Subscribe to realtime changes
         const bookingsSubscription = supabase
           .channel('bookings_changes')
           .on('postgres_changes', 
@@ -122,47 +138,6 @@ export const AdminDashboard = () => {
     checkAdminAndFetchBookings();
   }, [toast, navigate]);
 
-  const handleStatusChange = async (bookingId: string, newStatus: string) => {
-    try {
-      const { error } = await supabase
-        .from('bookings')
-        .update({ status: newStatus })
-        .eq('id', bookingId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Succès",
-        description: "Statut de la réservation mis à jour",
-      });
-
-      fetchBookings();
-    } catch (error: any) {
-      console.error('Error updating booking status:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de mettre à jour le statut",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      pending: { label: "En attente", className: "bg-yellow-500" },
-      confirmed: { label: "Confirmé", className: "bg-green-500" },
-      cancelled: { label: "Annulé", className: "bg-red-500" },
-    };
-
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
-
-    return (
-      <Badge className={config.className}>
-        {config.label}
-      </Badge>
-    );
-  };
-
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[50vh]">
@@ -191,70 +166,33 @@ export const AdminDashboard = () => {
           <TableBody>
             {bookings.map((booking) => (
               <TableRow key={booking.id}>
-                <TableCell>
-                  <div className="space-y-1">
-                    <div className="flex items-center text-sm">
-                      <Calendar className="mr-2 h-4 w-4" />
-                      {format(new Date(booking.date), "d MMMM yyyy", { locale: fr })}
+                <TableCell colSpan={7}>
+                  <div className="grid grid-cols-7 gap-4">
+                    <BookingDetails
+                      date={booking.date}
+                      timeSlot={booking.time_slot}
+                      duration={booking.duration}
+                      groupSize={booking.group_size}
+                      price={booking.price}
+                      userName={booking.user_name}
+                      userEmail={booking.user_email}
+                      userPhone={booking.user_phone}
+                    />
+                    <div>
+                      <BookingStatusBadge status={booking.status} />
                     </div>
-                    <div className="flex items-center text-sm text-gray-500">
-                      <Clock className="mr-2 h-4 w-4" />
-                      {booking.time_slot}h - {parseInt(booking.time_slot) + parseInt(booking.duration)}h
+                    <div className="max-w-xs">
+                      <p className="truncate text-sm text-gray-500">
+                        {booking.message || "-"}
+                      </p>
                     </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="space-y-1">
-                    <div className="font-medium">{booking.user_name}</div>
-                    <div className="text-sm text-gray-500">{booking.user_email}</div>
-                    <div className="text-sm text-gray-500">{booking.user_phone}</div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="space-y-1">
-                    <div className="flex items-center text-sm">
-                      <Users className="mr-2 h-4 w-4" />
-                      {booking.group_size} personnes
-                    </div>
-                    <div className="flex items-center text-sm text-gray-500">
-                      <Clock className="mr-2 h-4 w-4" />
-                      {booking.duration}h
+                    <div className="text-right">
+                      <BookingActions
+                        bookingId={booking.id}
+                        onStatusChange={handleStatusChange}
+                      />
                     </div>
                   </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center">
-                    <Euro className="mr-1 h-4 w-4" />
-                    {booking.price}
-                  </div>
-                </TableCell>
-                <TableCell>{getStatusBadge(booking.status)}</TableCell>
-                <TableCell className="max-w-xs">
-                  <p className="truncate text-sm text-gray-500">
-                    {booking.message || "-"}
-                  </p>
-                </TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={() => handleStatusChange(booking.id, 'confirmed')}
-                      >
-                        Confirmer
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => handleStatusChange(booking.id, 'cancelled')}
-                      >
-                        Annuler
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}

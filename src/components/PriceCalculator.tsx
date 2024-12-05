@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Badge } from "lucide-react";
 
 interface PriceCalculatorProps {
   groupSize: string;
@@ -8,6 +9,7 @@ interface PriceCalculatorProps {
 
 export const PriceCalculator = ({ groupSize, duration }: PriceCalculatorProps) => {
   const [price, setPrice] = useState(0);
+  const [discount, setDiscount] = useState(0);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -18,7 +20,7 @@ export const PriceCalculator = ({ groupSize, duration }: PriceCalculatorProps) =
       // Convert groupSize to number, handling "6+" case
       const size = groupSize === "6+" ? 6 : parseInt(groupSize) || 0;
 
-      // New pricing logic
+      // Base price per hour based on group size
       if (size <= 3) {
         basePrice = 30; // 1-3 people: 30€/hour
       } else if (size === 4) {
@@ -27,7 +29,21 @@ export const PriceCalculator = ({ groupSize, duration }: PriceCalculatorProps) =
         basePrice = 50; // 5-10 people: 50€/hour
       }
 
-      setPrice(basePrice * hours);
+      // Calculate total price with discount for additional hours
+      let totalPrice = basePrice; // First hour at full price
+      let totalDiscount = 0;
+      
+      // Apply 10% discount for each additional hour
+      if (hours > 1) {
+        for (let i = 1; i < hours; i++) {
+          const discountedPrice = basePrice * 0.9;
+          totalPrice += discountedPrice;
+          totalDiscount += basePrice * 0.1;
+        }
+      }
+
+      setPrice(Math.round(totalPrice));
+      setDiscount(Math.round(totalDiscount));
     };
 
     calculatePrice();
@@ -36,8 +52,13 @@ export const PriceCalculator = ({ groupSize, duration }: PriceCalculatorProps) =
   return (
     <div className={`${isMobile ? 'mt-3 p-4' : 'mt-4 p-6'} bg-violet-50 rounded-lg animate-fadeIn`}>
       <p className="text-xl sm:text-2xl font-semibold text-karaoke-primary mb-2">
-        Prix total estimé : {price}€
+        Prix total : {price}€
       </p>
+      {discount > 0 && (
+        <p className="text-sm text-green-600 font-medium mb-2">
+          Économie réalisée : {discount}€
+        </p>
+      )}
       <p className="text-xs sm:text-sm text-gray-600">
         *Prix indicatif, peut varier selon les options choisies
       </p>

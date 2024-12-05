@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { UseFormReturn } from "react-hook-form";
-import { User, Clock } from "lucide-react";
+import { User, Clock, BadgePercent } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface GroupSizeAndDurationFieldsProps {
@@ -25,10 +25,10 @@ const groupSizes = [
 ];
 
 const durations = [
-  { value: "1", label: "1h" },
-  { value: "2", label: "2h" },
-  { value: "3", label: "3h" },
-  { value: "4", label: "4h" },
+  { value: "1", label: "1h", discount: false },
+  { value: "2", label: "2h", discount: true },
+  { value: "3", label: "3h", discount: true },
+  { value: "4", label: "4h", discount: true },
 ];
 
 export const GroupSizeAndDurationFields = ({
@@ -84,7 +84,7 @@ export const GroupSizeAndDurationFields = ({
                     type="button"
                     variant={field.value === duration.value ? "default" : "outline"}
                     className={cn(
-                      "w-full h-14 text-base gap-2 transition-all duration-200",
+                      "w-full h-14 text-base gap-2 transition-all duration-200 relative",
                       field.value === duration.value 
                         ? "bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-100 scale-105" 
                         : "hover:border-violet-300 hover:scale-105"
@@ -96,6 +96,9 @@ export const GroupSizeAndDurationFields = ({
                   >
                     <Clock className="w-5 h-5" />
                     {duration.label}
+                    {duration.discount && (
+                      <BadgePercent className="w-4 h-4 absolute top-1 right-1 text-green-500" />
+                    )}
                   </Button>
                 </FormControl>
               ))}

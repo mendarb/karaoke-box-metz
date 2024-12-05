@@ -8,7 +8,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { format, isMonday } from "date-fns";
+import { format, isMonday, addDays } from "date-fns";
 import { fr } from "date-fns/locale";
 import { UseFormReturn } from "react-hook-form";
 import { useState } from "react";
@@ -30,6 +30,7 @@ const timeSlots = [
 export const DateTimeFields = ({ form }: DateTimeFieldsProps) => {
   const [selectedDate, setSelectedDate] = useState<Date>();
   const minDate = new Date();
+  const maxDate = addDays(new Date(), 90); // Permet de réserver jusqu'à 90 jours à l'avance
 
   return (
     <div className="space-y-8 animate-fadeIn">
@@ -49,7 +50,7 @@ export const DateTimeFields = ({ form }: DateTimeFieldsProps) => {
                   setSelectedDate(date);
                 }}
                 disabled={(date) => {
-                  return isMonday(date) || date < minDate;
+                  return isMonday(date) || date < minDate || date > maxDate;
                 }}
                 locale={fr}
                 required

@@ -66,9 +66,9 @@ export const AdminDashboard = () => {
   }, [toast, navigate, fetchBookings]);
 
   const renderContent = () => {
-    if (isCheckingAuth || isLoading) {
+    if (isCheckingAuth) {
       return (
-        <div className="flex-1 p-6">
+        <div className="flex-1 p-6 animate-fadeIn">
           <div className="h-8 w-48 bg-gray-200 rounded animate-pulse mb-6"></div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
             {[...Array(4)].map((_, i) => (
@@ -81,17 +81,36 @@ export const AdminDashboard = () => {
     }
 
     return (
-      <div className="flex-1 p-6">
+      <div className="flex-1 p-6 animate-fadeIn">
         <h1 className="text-2xl font-bold mb-6">Tableau de bord administrateur</h1>
         <div className="mb-8">
-          <DashboardStats bookings={bookings} />
+          {isLoading ? (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-24 bg-gray-200 rounded animate-pulse"></div>
+              ))}
+            </div>
+          ) : (
+            <DashboardStats bookings={bookings} />
+          )}
         </div>
         <div className="bg-white rounded-lg shadow-lg p-6">
-          <BookingsTable
-            data={bookings}
-            onStatusChange={updateBookingStatus}
-            onViewDetails={setSelectedBooking}
-          />
+          {isLoading ? (
+            <div className="space-y-4">
+              <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
+              <div className="space-y-3">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="h-12 bg-gray-200 rounded animate-pulse"></div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <BookingsTable
+              data={bookings}
+              onStatusChange={updateBookingStatus}
+              onViewDetails={setSelectedBooking}
+            />
+          )}
         </div>
       </div>
     );

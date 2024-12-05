@@ -15,27 +15,16 @@ export const PriceCalculator = ({ groupSize, duration }: PriceCalculatorProps) =
       const hours = parseInt(duration) || 0;
       let basePrice = 0;
 
-      // Handle "6+" case
-      const size = parseInt(groupSize) || 0;
-      if (groupSize === "6+" || size >= 6) {
-        basePrice = 60; // Price for 6 or more people
-      } else {
-        switch (size) {
-          case 2:
-            basePrice = 30;
-            break;
-          case 3:
-            basePrice = 35;
-            break;
-          case 4:
-            basePrice = 40;
-            break;
-          case 5:
-            basePrice = 45;
-            break;
-          default:
-            basePrice = 0;
-        }
+      // Convert groupSize to number, handling "6+" case
+      const size = groupSize === "6+" ? 6 : parseInt(groupSize) || 0;
+
+      // New pricing logic
+      if (size <= 3) {
+        basePrice = 30; // 1-3 people: 30€/hour
+      } else if (size === 4) {
+        basePrice = 40; // 4 people: 40€/hour
+      } else if (size >= 5 && size <= 10) {
+        basePrice = 50; // 5-10 people: 50€/hour
       }
 
       setPrice(basePrice * hours);

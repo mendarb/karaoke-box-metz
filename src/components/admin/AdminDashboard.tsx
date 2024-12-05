@@ -38,27 +38,29 @@ export const AdminDashboard = () => {
   useEffect(() => {
     const checkAdminAndFetchBookings = async () => {
       try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        // First, check if we have a valid session
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
           console.error('Session error:', sessionError);
           throw sessionError;
         }
 
-        if (!session) {
+        if (!sessionData.session) {
           console.log("No session found");
           navigate("/");
           return;
         }
 
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        // Then get the user details
+        const { data: userData, error: userError } = await supabase.auth.getUser();
         
         if (userError) {
           console.error('User error:', userError);
           throw userError;
         }
 
-        if (!user || user.email !== "mendar.bouchali@gmail.com") {
+        if (!userData.user || userData.user.email !== "mendar.bouchali@gmail.com") {
           console.log("Access denied - not admin");
           toast({
             title: "Accès refusé",
@@ -69,8 +71,9 @@ export const AdminDashboard = () => {
           return;
         }
 
-        console.log("Fetching bookings...");
-        const { data, error: bookingsError } = await supabase
+        // Finally fetch the bookings
+        console.log("Fetching bookings with session:", sessionData.session);
+        const { data: bookingsData, error: bookingsError } = await supabase
           .from('bookings')
           .select('*')
           .order('created_at', { ascending: false });
@@ -80,8 +83,8 @@ export const AdminDashboard = () => {
           throw bookingsError;
         }
 
-        console.log("Bookings fetched:", data);
-        setBookings(data || []);
+        console.log("Bookings fetched successfully:", bookingsData);
+        setBookings(bookingsData || []);
       } catch (error: any) {
         console.error('Error in admin dashboard:', error);
         toast({

@@ -10,6 +10,7 @@ interface PriceCalculatorProps {
 export const PriceCalculator = ({ groupSize, duration }: PriceCalculatorProps) => {
   const [price, setPrice] = useState(0);
   const [discount, setDiscount] = useState(0);
+  const [discountPercentage, setDiscountPercentage] = useState(0);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -42,8 +43,14 @@ export const PriceCalculator = ({ groupSize, duration }: PriceCalculatorProps) =
         }
       }
 
+      // Calculate total discount percentage
+      const discountPercent = hours > 1 
+        ? Math.round((totalDiscount / (totalPrice + totalDiscount)) * 100)
+        : 0;
+
       setPrice(Math.round(totalPrice));
       setDiscount(Math.round(totalDiscount));
+      setDiscountPercentage(discountPercent);
     };
 
     calculatePrice();
@@ -55,8 +62,11 @@ export const PriceCalculator = ({ groupSize, duration }: PriceCalculatorProps) =
         Prix total : {price}€
       </p>
       {discount > 0 && (
-        <p className="text-sm text-green-600 font-medium mb-2">
-          Économie réalisée : {discount}€
+        <p className="text-sm text-green-600 font-medium mb-2 flex items-center gap-2">
+          Économie réalisée : {discount}€ 
+          <span className="bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full text-xs">
+            -{discountPercentage}% au total
+          </span>
         </p>
       )}
       <p className="text-xs sm:text-sm text-gray-600">

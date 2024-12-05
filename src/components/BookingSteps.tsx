@@ -25,30 +25,30 @@ export const BookingSteps = ({
           {steps.map((step, index) => (
             <li key={step.id} className={`${isMobile ? 'flex-1' : 'md:flex-1'}`}>
               <div
-                className={`group flex flex-col border-l-4 py-2 pl-4 transition-all duration-200 md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4 ${
+                className={`group flex flex-col border-l-4 py-2 pl-4 transition-all duration-300 md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4 ${
                   step.current
                     ? "border-violet-600 cursor-default"
                     : step.completed
-                    ? "border-violet-600 cursor-pointer hover:border-violet-700"
-                    : "border-gray-200 cursor-not-allowed"
+                    ? "border-violet-600/70 cursor-pointer hover:border-violet-700"
+                    : "border-gray-200/70 cursor-not-allowed"
                 }`}
               >
                 <span className="text-sm font-medium flex items-center">
                   {step.completed ? (
                     <span className="flex items-center text-violet-600 group-hover:text-violet-700">
                       <Check className="mr-2 h-5 w-5" />
-                      {step.name}
+                      <span className="font-semibold">{step.name}</span>
                     </span>
                   ) : step.current ? (
                     <span className="text-violet-600 flex items-center">
-                      {step.name}
+                      <span className="font-semibold">{step.name}</span>
                       <ChevronRight className="ml-2 h-5 w-5 animate-pulse" />
                     </span>
                   ) : (
-                    <span className="text-gray-500">{step.name}</span>
+                    <span className="text-gray-400">{step.name}</span>
                   )}
                   {!isMobile && index < steps.length - 1 && !step.current && (
-                    <ChevronRight className="ml-2 h-5 w-5 text-gray-400" />
+                    <ChevronRight className="ml-2 h-5 w-5 text-gray-300" />
                   )}
                 </span>
                 <span className="text-sm text-gray-500">{step.description}</span>

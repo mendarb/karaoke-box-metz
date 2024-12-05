@@ -57,19 +57,19 @@ export const PriceCalculator = ({ groupSize, duration }: PriceCalculatorProps) =
   }, [groupSize, duration]);
 
   return (
-    <div className={`${isMobile ? 'mt-3 p-4' : 'mt-4 p-6'} bg-violet-50 rounded-lg animate-fadeIn`}>
-      <p className="text-xl sm:text-2xl font-semibold text-karaoke-primary mb-2">
+    <div className={`${isMobile ? 'mt-3 p-4' : 'mt-4 p-6'} bg-gradient-to-br from-violet-50/50 to-violet-100/50 backdrop-blur-sm rounded-2xl border border-violet-100/50 shadow-lg animate-fadeIn`}>
+      <p className="text-xl sm:text-2xl font-bold text-violet-900 mb-2">
         Prix total : {price}€
       </p>
       {discount > 0 && (
         <p className="text-sm text-green-600 font-medium mb-2 flex items-center gap-2">
           Économie réalisée : {discount}€ 
-          <span className="bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full text-xs">
+          <span className="bg-green-100/80 backdrop-blur-sm text-green-700 px-2 py-1 rounded-full text-xs font-semibold shadow-sm">
             -{discountPercentage}% au total
           </span>
         </p>
       )}
-      <p className="text-xs sm:text-sm text-gray-600">
+      <p className="text-xs sm:text-sm text-gray-500">
         *Prix indicatif, peut varier selon les options choisies
       </p>
     </div>

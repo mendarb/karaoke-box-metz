@@ -23,7 +23,7 @@
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
-    --radius: 0.5rem;
+    --radius: 1rem;
   }
 }
 
@@ -35,7 +35,7 @@
     @apply bg-background text-foreground antialiased;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply tracking-tight;
+    @apply tracking-tight font-bold;
   }
 }
 
@@ -52,4 +52,13 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Glassmorphism effects */
+.glass {
+  @apply bg-white/70 backdrop-blur-sm border border-white/20;
+}
+
+.glass-hover {
+  @apply hover:bg-white/80 transition-all duration-300;
 }

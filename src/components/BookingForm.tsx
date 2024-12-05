@@ -8,43 +8,120 @@ import { PersonalInfoFields } from "./booking/PersonalInfoFields";
 import { DateTimeFields } from "./booking/DateTimeFields";
 import { GroupSizeAndDurationFields } from "./booking/GroupSizeAndDurationFields";
 import { AdditionalFields } from "./booking/AdditionalFields";
+import { BookingSteps, type BookingStep } from "./booking/BookingSteps";
 
 export const BookingForm = () => {
   const { toast } = useToast();
   const [groupSize, setGroupSize] = useState("");
   const [duration, setDuration] = useState("");
+  const [currentStep, setCurrentStep] = useState(1);
   const form = useForm();
 
+  const steps: BookingStep[] = [
+    {
+      id: 1,
+      name: "Informations personnelles",
+      description: "Vos coordonnées",
+      completed: currentStep > 1,
+      current: currentStep === 1,
+    },
+    {
+      id: 2,
+      name: "Date et heure",
+      description: "Choisissez votre créneau",
+      completed: currentStep > 2,
+      current: currentStep === 2,
+    },
+    {
+      id: 3,
+      name: "Groupe et durée",
+      description: "Taille du groupe et durée",
+      completed: currentStep > 3,
+      current: currentStep === 3,
+    },
+    {
+      id: 4,
+      name: "Finalisation",
+      description: "Informations complémentaires",
+      completed: currentStep > 4,
+      current: currentStep === 4,
+    },
+  ];
+
   const onSubmit = (data: any) => {
-    console.log(data);
-    toast({
-      title: "Réservation envoyée !",
-      description: "Nous vous contacterons sous 24 heures pour confirmer votre créneau.",
-    });
+    if (currentStep < 4) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      console.log(data);
+      toast({
+        title: "Réservation envoyée !",
+        description:
+          "Nous vous contacterons sous 24 heures pour confirmer votre créneau.",
+      });
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 1:
+        return <PersonalInfoFields form={form} />;
+      case 2:
+        return <DateTimeFields form={form} />;
+      case 3:
+        return (
+          <GroupSizeAndDurationFields
+            form={form}
+            onGroupSizeChange={setGroupSize}
+            onDurationChange={setDuration}
+          />
+        );
+      case 4:
+        return (
+          <>
+            <AdditionalFields form={form} />
+            {groupSize && duration && (
+              <PriceCalculator groupSize={groupSize} duration={duration} />
+            )}
+          </>
+        );
+      default:
+        return null;
+    }
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 animate-fadeIn">
-        <PersonalInfoFields form={form} />
-        <DateTimeFields form={form} />
-        <GroupSizeAndDurationFields
-          form={form}
-          onGroupSizeChange={setGroupSize}
-          onDurationChange={setDuration}
-        />
-        <AdditionalFields form={form} />
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <BookingSteps steps={steps} currentStep={currentStep} />
+        
+        <div className="min-h-[300px]">
+          {renderStepContent()}
+        </div>
 
-        {groupSize && duration && (
-          <PriceCalculator groupSize={groupSize} duration={duration} />
-        )}
-
-        <Button
-          type="submit"
-          className="w-full bg-karaoke-primary hover:bg-karaoke-accent transition-colors"
-        >
-          Réserver ma cabine
-        </Button>
+        <div className="flex justify-between space-x-4">
+          {currentStep > 1 && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handlePrevious}
+              className="w-full"
+            >
+              Précédent
+            </Button>
+          )}
+          <Button
+            type="submit"
+            className="w-full bg-violet-600 hover:bg-violet-700"
+          >
+            {currentStep === 4 ? "Réserver ma cabine" : "Suivant"}
+          </Button>
+        </div>
       </form>
     </Form>
   );

@@ -22,12 +22,12 @@ export const BookingSteps = ({
           {steps.map((step) => (
             <li key={step.id} className="md:flex-1">
               <div
-                className={`group flex flex-col border-l-4 py-2 pl-4 md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4 ${
+                className={`group relative flex flex-col border-l-4 py-2 pl-4 hover:bg-gray-50 md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4 ${
                   step.current
-                    ? "border-violet-600"
+                    ? "border-violet-600 cursor-default"
                     : step.completed
-                    ? "border-violet-600"
-                    : "border-gray-200"
+                    ? "border-violet-600 cursor-pointer"
+                    : "border-gray-200 cursor-not-allowed"
                 }`}
               >
                 <span className="text-sm font-medium">
@@ -43,6 +43,9 @@ export const BookingSteps = ({
                   )}
                 </span>
                 <span className="text-sm text-gray-500">{step.description}</span>
+                {step.current && (
+                  <div className="absolute -bottom-px left-0 h-0.5 w-full bg-violet-600" />
+                )}
               </div>
             </li>
           ))}

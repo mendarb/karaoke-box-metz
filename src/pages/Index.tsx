@@ -1,12 +1,25 @@
+import { useState } from "react";
 import { BookingForm } from "@/components/BookingForm";
+import { AuthModal } from "@/components/auth/AuthModal";
+import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const Index = () => {
   const isMobile = useIsMobile();
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-violet-50 py-6 sm:py-12 px-3 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
+        <div className="flex justify-end mb-4">
+          <Button 
+            onClick={() => setShowAuthModal(true)}
+            variant="outline"
+            className="bg-white"
+          >
+            Se connecter
+          </Button>
+        </div>
         <div className="text-center mb-8 sm:mb-12 animate-fadeIn">
           <img 
             src="/lovable-uploads/59d9c366-5156-416c-a63a-8ab38e3fe556.png" 
@@ -24,6 +37,10 @@ const Index = () => {
           <BookingForm />
         </div>
       </div>
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)} 
+      />
     </div>
   );
 };

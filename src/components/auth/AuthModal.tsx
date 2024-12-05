@@ -70,7 +70,9 @@ export function AuthModal({
           email,
           password,
           options: {
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: window.location.origin.includes('localhost') 
+              ? 'https://lxkaosgjtqonrnlivzev.supabase.co' 
+              : window.location.origin,
           },
         })
         if (error) {

@@ -29,6 +29,7 @@ const timeSlots = [
 
 export const DateTimeFields = ({ form }: DateTimeFieldsProps) => {
   const [selectedDate, setSelectedDate] = useState<Date>();
+  const minDate = new Date('2025-01-07');
 
   return (
     <div className="space-y-6 animate-fadeIn">
@@ -39,20 +40,21 @@ export const DateTimeFields = ({ form }: DateTimeFieldsProps) => {
           <FormItem className="flex flex-col">
             <FormLabel className="text-lg font-medium mb-2">Date de réservation</FormLabel>
             <FormControl>
-              <Calendar
-                mode="single"
-                selected={field.value}
-                onSelect={(date) => {
-                  field.onChange(date);
-                  setSelectedDate(date);
-                }}
-                disabled={(date) => {
-                  // Disable only Mondays and dates in the past
-                  return isMonday(date) || date < new Date();
-                }}
-                locale={fr}
-                className="rounded-xl border border-violet-100 p-4 mx-auto"
-              />
+              <div className="flex justify-center">
+                <Calendar
+                  mode="single"
+                  selected={field.value}
+                  onSelect={(date) => {
+                    field.onChange(date);
+                    setSelectedDate(date);
+                  }}
+                  disabled={(date) => {
+                    return isMonday(date) || date < minDate;
+                  }}
+                  locale={fr}
+                  className="rounded-xl border border-violet-100 p-4 w-auto"
+                />
+              </div>
             </FormControl>
             <FormMessage />
           </FormItem>

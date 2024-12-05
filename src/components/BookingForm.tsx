@@ -3,12 +3,11 @@ import { useToast } from "@/components/ui/use-toast";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
-import { PriceCalculator } from "./PriceCalculator";
 import { PersonalInfoFields } from "./booking/PersonalInfoFields";
 import { DateTimeFields } from "./booking/DateTimeFields";
 import { GroupSizeAndDurationFields } from "./booking/GroupSizeAndDurationFields";
 import { AdditionalFields } from "./booking/AdditionalFields";
-import { BookingSteps, type BookingStep } from "./booking/BookingSteps";
+import { BookingSteps, type BookingStep } from "./BookingSteps";
 import { supabase } from "@/lib/supabase";
 
 export const BookingForm = () => {
@@ -54,6 +53,31 @@ export const BookingForm = () => {
     setCalculatedPrice(price);
   };
 
+  const checkTimeSlotAvailability = async (date: Date, timeSlot: string, duration: string) => {
+    const { data: bookings, error } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('date', date.toISOString().split('T')[0])
+      .eq('time_slot', timeSlot);
+
+    if (error) {
+      console.error('Error checking availability:', error);
+      return false;
+    }
+
+    // Si des réservations existent pour ce créneau
+    if (bookings && bookings.length > 0) {
+      toast({
+        title: "Créneau non disponible",
+        description: "Ce créneau est déjà réservé. Veuillez choisir un autre horaire.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    return true;
+  };
+
   const onSubmit = async (data: any) => {
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
@@ -69,13 +93,33 @@ export const BookingForm = () => {
           return;
         }
 
-        console.log('Making request to create-checkout with data:', {
-          ...data,
-          price: calculatedPrice,
-          groupSize,
-          duration,
-        });
-        
+        // Vérifier la disponibilité du créneau
+        const isAvailable = await checkTimeSlotAvailability(data.date, data.timeSlot, duration);
+        if (!isAvailable) {
+          return;
+        }
+
+        // Sauvegarder la réservation dans la base de données
+        const { error: bookingError } = await supabase
+          .from('bookings')
+          .insert([
+            {
+              user_id: session.user.id,
+              date: data.date,
+              time_slot: data.timeSlot,
+              duration: duration,
+              group_size: groupSize,
+              status: 'pending',
+              price: calculatedPrice,
+            }
+          ]);
+
+        if (bookingError) {
+          console.error('Booking error:', bookingError);
+          throw bookingError;
+        }
+
+        // Créer la session de paiement
         const { data: response, error } = await supabase.functions.invoke('create-checkout', {
           body: {
             ...data,
@@ -89,8 +133,6 @@ export const BookingForm = () => {
           console.error('Supabase function error:', error);
           throw error;
         }
-
-        console.log('Response from create-checkout:', response);
 
         if (response?.url) {
           window.location.href = response.url;
@@ -130,16 +172,7 @@ export const BookingForm = () => {
         );
       case 4:
         return (
-          <>
-            <AdditionalFields form={form} />
-            {groupSize && duration && (
-              <PriceCalculator 
-                groupSize={groupSize} 
-                duration={duration} 
-                onPriceCalculated={handlePriceCalculated}
-              />
-            )}
-          </>
+          <AdditionalFields form={form} calculatedPrice={calculatedPrice} />
         );
       default:
         return null;

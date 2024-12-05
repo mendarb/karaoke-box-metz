@@ -1,24 +1,64 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BookingForm } from "@/components/BookingForm";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { supabase } from "@/lib/supabase";
+import { User } from "@supabase/supabase-js";
+import { LogOut } from "lucide-react";
 
 const Index = () => {
   const isMobile = useIsMobile();
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    // Vérifier l'état de connexion initial
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    // Écouter les changements d'état de connexion
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-violet-50 py-6 sm:py-12 px-3 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <Button 
-            onClick={() => setShowAuthModal(true)}
-            variant="outline"
-            className="bg-white"
-          >
-            Se connecter
-          </Button>
+          {user ? (
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-600">
+                {user.email}
+              </span>
+              <Button 
+                onClick={handleLogout}
+                variant="outline"
+                size="sm"
+                className="bg-white"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Déconnexion
+              </Button>
+            </div>
+          ) : (
+            <Button 
+              onClick={() => setShowAuthModal(true)}
+              variant="outline"
+              className="bg-white"
+            >
+              Se connecter
+            </Button>
+          )}
           <img 
             src="/lovable-uploads/59d9c366-5156-416c-a63a-8ab38e3fe556.png" 
             alt="Kara-OK Box Privatif"

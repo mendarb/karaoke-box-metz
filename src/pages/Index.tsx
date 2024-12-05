@@ -6,21 +6,25 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
 import { LogOut } from "lucide-react";
+import { AdminDashboard } from "@/components/admin/AdminDashboard";
 
 const Index = () => {
   const isMobile = useIsMobile();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     // Vérifier l'état de connexion initial
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      setIsAdmin(session?.user?.email === "mendar.bouchali@gmail.com");
     });
 
     // Écouter les changements d'état de connexion
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      setIsAdmin(session?.user?.email === "mendar.bouchali@gmail.com");
     });
 
     return () => subscription.unsubscribe();
@@ -29,6 +33,7 @@ const Index = () => {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setUser(null);
+    setIsAdmin(false);
   };
 
   return (
@@ -65,17 +70,24 @@ const Index = () => {
             className="h-10 sm:h-12 drop-shadow-lg"
           />
         </div>
-        <div className="mb-6 sm:mb-8 animate-fadeIn">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
-            Réservez votre box karaoké
-          </h1>
-          <p className="text-sm sm:text-base text-gray-600 max-w-lg">
-            Indiquez vos préférences pour réserver votre cabine de karaoké privatif à Metz.
-          </p>
-        </div>
-        <div className={`bg-white/70 backdrop-blur-sm shadow-2xl rounded-3xl ${isMobile ? 'p-4' : 'p-6 sm:p-8'} border border-violet-100/50`}>
-          <BookingForm />
-        </div>
+
+        {isAdmin ? (
+          <AdminDashboard />
+        ) : (
+          <>
+            <div className="mb-6 sm:mb-8 animate-fadeIn">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+                Réservez votre box karaoké
+              </h1>
+              <p className="text-sm sm:text-base text-gray-600 max-w-lg">
+                Indiquez vos préférences pour réserver votre cabine de karaoké privatif à Metz.
+              </p>
+            </div>
+            <div className={`bg-white/70 backdrop-blur-sm shadow-2xl rounded-3xl ${isMobile ? 'p-4' : 'p-6 sm:p-8'} border border-violet-100/50`}>
+              <BookingForm />
+            </div>
+          </>
+        )}
       </div>
       <AuthModal 
         isOpen={showAuthModal} 

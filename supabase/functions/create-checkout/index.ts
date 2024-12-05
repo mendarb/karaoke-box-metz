@@ -12,8 +12,8 @@ serve(async (req) => {
   }
 
   try {
-    const { price, groupSize, duration, date, timeSlot, message } = await req.json();
-    console.log('Request data:', { price, groupSize, duration, date, timeSlot, message });
+    const { price, groupSize, duration, date, timeSlot, message, userEmail, userName, userPhone } = await req.json();
+    console.log('Request data:', { price, groupSize, duration, date, timeSlot, message, userEmail, userName, userPhone });
 
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
       apiVersion: '2023-10-16',
@@ -37,12 +37,15 @@ serve(async (req) => {
       mode: 'payment',
       success_url: `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get('origin')}/cancel`,
+      customer_email: userEmail,
       metadata: {
         date,
         timeSlot,
         groupSize,
         duration,
         message: message || '',
+        userName,
+        userPhone,
       },
     });
 

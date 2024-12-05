@@ -21,14 +21,17 @@ export const AdminDashboard = () => {
   useEffect(() => {
     const checkAdminAccess = async () => {
       try {
+        console.log("Checking admin access...");
         const { data: { session } } = await supabase.auth.getSession();
         
         if (!session?.access_token) {
+          console.log("No session found, redirecting to login");
           navigate("/login");
           return;
         }
 
         const { data: { user } } = await supabase.auth.getUser();
+        console.log("Current user:", user?.email);
         
         if (!user || user.email !== "mendar.bouchali@gmail.com") {
           toast({
@@ -40,6 +43,7 @@ export const AdminDashboard = () => {
           return;
         }
 
+        setIsCheckingAuth(false);
         await fetchBookings();
       } catch (error: any) {
         console.error('Error in admin dashboard:', error);
@@ -49,8 +53,6 @@ export const AdminDashboard = () => {
           variant: "destructive",
         });
         navigate("/login");
-      } finally {
-        setIsCheckingAuth(false);
       }
     };
 

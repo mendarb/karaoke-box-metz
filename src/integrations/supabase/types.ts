@@ -17,6 +17,7 @@ export type Database = {
           group_size: string
           id: string
           message: string | null
+          payment_status: string
           price: number
           status: string
           time_slot: string
@@ -32,6 +33,7 @@ export type Database = {
           group_size: string
           id?: string
           message?: string | null
+          payment_status?: string
           price: number
           status?: string
           time_slot: string
@@ -47,6 +49,7 @@ export type Database = {
           group_size?: string
           id?: string
           message?: string | null
+          payment_status?: string
           price?: number
           status?: string
           time_slot?: string

@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Badge } from "lucide-react";
 
 interface PriceCalculatorProps {
   groupSize: string;
   duration: string;
+  onPriceCalculated?: (price: number) => void;
 }
 
-export const PriceCalculator = ({ groupSize, duration }: PriceCalculatorProps) => {
+export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: PriceCalculatorProps) => {
   const [price, setPrice] = useState(0);
   const [discount, setDiscount] = useState(0);
   const [discountPercentage, setDiscountPercentage] = useState(0);
@@ -51,10 +51,15 @@ export const PriceCalculator = ({ groupSize, duration }: PriceCalculatorProps) =
       setPrice(Math.round(totalPrice));
       setDiscount(Math.round(totalDiscount));
       setDiscountPercentage(discountPercent);
+      
+      // Notify parent component of the calculated price
+      if (onPriceCalculated) {
+        onPriceCalculated(Math.round(totalPrice));
+      }
     };
 
     calculatePrice();
-  }, [groupSize, duration]);
+  }, [groupSize, duration, onPriceCalculated]);
 
   return (
     <div className={`${isMobile ? 'mt-3 p-4' : 'mt-4 p-6'} bg-gradient-to-br from-violet-50/50 to-violet-100/50 backdrop-blur-sm rounded-2xl border border-violet-100/50 shadow-lg animate-fadeIn`}>

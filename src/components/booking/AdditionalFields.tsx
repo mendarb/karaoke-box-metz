@@ -3,11 +3,15 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { UseFormReturn } from "react-hook-form";
-import { PriceCalculator } from "../PriceCalculator";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { useToast } from "@/components/ui/use-toast";
+import { Input } from "@/components/ui/input";
 
 interface AdditionalFieldsProps {
   form: UseFormReturn<any>;
@@ -16,48 +20,107 @@ interface AdditionalFieldsProps {
   duration: string;
 }
 
-export const AdditionalFields = ({ form, calculatedPrice, groupSize, duration }: AdditionalFieldsProps) => {
+export const AdditionalFields = ({ 
+  form, 
+  calculatedPrice, 
+  groupSize, 
+  duration 
+}: AdditionalFieldsProps) => {
+  const [createAccount, setCreateAccount] = useState(false);
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const { toast } = useToast();
+  const email = form.getValues("email");
+  const fullName = form.getValues("fullName");
+
+  const handleCreateAccountChange = async (checked: boolean) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (session) {
+      toast({
+        title: "Vous êtes déjà connecté",
+        description: "Pas besoin de créer un compte",
+      });
+      setCreateAccount(false);
+      return;
+    }
+
+    setCreateAccount(checked);
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fadeIn">
+      <div className="bg-violet-50 p-4 rounded-lg space-y-2">
+        <h3 className="font-semibold text-violet-900">Récapitulatif de votre réservation</h3>
+        <div className="text-sm text-violet-700">
+          <p>Nombre de personnes : {groupSize}</p>
+          <p>Durée : {duration} heure{parseInt(duration) > 1 ? 's' : ''}</p>
+          <p className="font-semibold">Prix total : {calculatedPrice}€</p>
+        </div>
+      </div>
+
       <FormField
         control={form.control}
         name="message"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Message ou demande spéciale (facultatif)</FormLabel>
+            <FormLabel>Message (optionnel)</FormLabel>
             <FormControl>
-              <Textarea
-                placeholder="Exemple : Anniversaire, besoin d'une table supplémentaire"
-                {...field}
+              <Textarea 
+                placeholder="Informations complémentaires pour votre réservation..." 
+                className="resize-none" 
+                {...field} 
               />
             </FormControl>
+            <FormMessage />
           </FormItem>
         )}
       />
 
-      <FormField
-        control={form.control}
-        name="terms"
-        rules={{ required: "Vous devez accepter les conditions" }}
-        render={({ field }) => (
-          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-            <FormControl>
-              <Checkbox checked={field.value} onCheckedChange={field.onChange} required />
-            </FormControl>
-            <div className="space-y-1 leading-none">
-              <FormLabel>
-                J'accepte les conditions générales et la politique d'annulation *
-              </FormLabel>
+      {!supabase.auth.getSession() && (
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="createAccount"
+              checked={createAccount}
+              onCheckedChange={handleCreateAccountChange}
+            />
+            <label
+              htmlFor="createAccount"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Créer un compte pour gérer mes réservations
+            </label>
+          </div>
+
+          {createAccount && (
+            <div className="space-y-4 animate-fadeIn">
+              <p className="text-sm text-gray-600">
+                Un compte sera créé avec votre email : {email}
+              </p>
+              <FormItem>
+                <FormLabel>Mot de passe</FormLabel>
+                <FormControl>
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Choisissez un mot de passe"
+                    className="pr-10"
+                  />
+                </FormControl>
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="text-xs text-violet-600 hover:text-violet-700"
+                >
+                  {showPassword ? "Masquer" : "Afficher"} le mot de passe
+                </button>
+              </FormItem>
             </div>
-          </FormItem>
-        )}
-      />
-
-      <PriceCalculator 
-        groupSize={groupSize}
-        duration={duration}
-        onPriceCalculated={() => {}}
-      />
+          )}
+        </div>
+      )}
     </div>
   );
 };

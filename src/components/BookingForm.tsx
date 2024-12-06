@@ -120,7 +120,47 @@ export const BookingForm = () => {
       console.log('Starting submission with data:', { ...data, groupSize, duration, calculatedPrice });
 
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
+      
+      // Si l'utilisateur a choisi de créer un compte
+      if (!session?.access_token && data.createAccount && data.password) {
+        const { error: signUpError } = await supabase.auth.signUp({
+          email: data.email,
+          password: data.password,
+          options: {
+            data: {
+              full_name: data.fullName,
+            },
+          },
+        });
+
+        if (signUpError) {
+          toast({
+            title: "Erreur lors de la création du compte",
+            description: signUpError.message,
+            variant: "destructive",
+          });
+          return;
+        }
+
+        // Attendre que la session soit créée
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: data.email,
+          password: data.password,
+        });
+
+        if (signInError) {
+          toast({
+            title: "Erreur lors de la connexion",
+            description: signInError.message,
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+
+      // Vérifier à nouveau la session après la création potentielle du compte
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      if (!currentSession?.access_token) {
         toast({
           title: "Erreur",
           description: "Vous devez être connecté pour effectuer une réservation.",

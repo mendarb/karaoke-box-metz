@@ -32,7 +32,7 @@ export const DashboardSidebar = () => {
         <h2 className="text-lg font-semibold px-4 mb-4">Karaoke Admin</h2>
       </div>
 
-      <nav className="space-y-2">
+      <nav className="space-y-2 flex-1">
         <Button 
           variant={isActive("/admin") ? "secondary" : "ghost"} 
           className="w-full justify-start" 
@@ -59,7 +59,7 @@ export const DashboardSidebar = () => {
         </Button>
       </nav>
 
-      <div className="fixed bottom-0 left-0 w-[inherit] p-4 bg-card border-t">
+      <div className="border-t bg-card p-4">
         <Button
           variant="ghost"
           className="w-full justify-start mb-2"

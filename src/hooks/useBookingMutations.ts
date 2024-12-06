@@ -22,44 +22,20 @@ export const useBookingMutations = () => {
         throw new Error('Permission refusée');
       }
 
-      // Update booking status directly
-      const { data, error } = await supabase
+      const { error: updateError } = await supabase
         .from('bookings')
         .update({ status: newStatus })
-        .eq('id', bookingId)
-        .select()
-        .single();
+        .eq('id', bookingId);
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
-      // Send email notification
-      await supabase.functions.invoke('send-booking-email', {
-        body: {
-          type: newStatus === 'confirmed' ? 'booking_confirmed' : 'booking_cancelled',
-          booking: {
-            ...data,
-            status: newStatus
-          }
-        }
-      });
-
-      // Update cache
-      queryClient.setQueryData(['bookings'], (old: Booking[] | undefined) => {
-        if (!old) return [];
-        return old.map(booking => 
-          booking.id === bookingId 
-            ? { ...booking, status: newStatus }
-            : booking
-        );
-      });
+      // Refresh data
+      await queryClient.invalidateQueries({ queryKey: ['bookings'] });
 
       toast({
         title: "Succès",
         description: "Le statut a été mis à jour",
       });
-
-      // Refresh data
-      await queryClient.invalidateQueries({ queryKey: ['bookings'] });
 
     } catch (error: any) {
       console.error('Error in updateBookingStatus:', error);

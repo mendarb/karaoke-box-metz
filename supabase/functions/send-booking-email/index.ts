@@ -3,6 +3,7 @@ import { format } from "https://deno.land/x/date_fns@v2.22.1/format/index.js";
 import { fr } from "https://deno.land/x/date_fns@v2.22.1/locale/index.js";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+console.log('RESEND_API_KEY configured:', !!RESEND_API_KEY);
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -23,7 +24,7 @@ interface BookingEmailRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  console.log('Email function called');
+  console.log('Request received:', req.method);
   
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -96,7 +97,7 @@ const handler = async (req: Request): Promise<Response> => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "Karaoke Box Metz <onboarding@resend.dev>", // Using the default sender during testing
+        from: "Karaoke Box Metz <onboarding@resend.dev>",
         to: [booking.user_email],
         subject: emailSubject,
         html: emailHtml,
@@ -118,7 +119,11 @@ const handler = async (req: Request): Promise<Response> => {
 
   } catch (error: any) {
     console.error('Error in send-booking-email function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ 
+      error: error.message,
+      type: error.constructor.name,
+      stack: error.stack
+    }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

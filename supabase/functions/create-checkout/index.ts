@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from 'https://esm.sh/stripe@14.21.0';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,23 +16,44 @@ serve(async (req) => {
     const { price, groupSize, duration, date, timeSlot, message, userEmail, userName, userPhone, isTestMode } = await req.json();
     console.log('Request data:', { price, groupSize, duration, date, timeSlot, message, userEmail, userName, userPhone, isTestMode });
 
-    // Utiliser la clé de test ou de production selon le mode
-    const stripeSecretKey = isTestMode 
+    // Créer le client Supabase
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    );
+
+    // Récupérer les paramètres de test depuis la base de données
+    const { data: settingsData, error: settingsError } = await supabaseClient
+      .from('settings')
+      .select('value')
+      .eq('key', 'booking_settings')
+      .single();
+
+    if (settingsError) {
+      console.error('Error fetching settings:', settingsError);
+      throw new Error('Impossible de récupérer les paramètres');
+    }
+
+    const dbIsTestMode = settingsData?.value?.isTestMode ?? true;
+    console.log('Database test mode setting:', dbIsTestMode);
+
+    // Utiliser la clé appropriée selon le mode
+    const stripeSecretKey = dbIsTestMode 
       ? Deno.env.get('STRIPE_TEST_SECRET_KEY')
       : Deno.env.get('STRIPE_SECRET_KEY');
 
     if (!stripeSecretKey) {
-      console.error('Stripe secret key not found in environment variables');
+      console.error('Stripe secret key not found for mode:', dbIsTestMode ? 'test' : 'production');
       throw new Error('Configuration Stripe manquante');
     }
 
-    console.log('Using Stripe key for mode:', isTestMode ? 'test' : 'production');
+    console.log('Using Stripe mode:', dbIsTestMode ? 'test' : 'production');
     const stripe = new Stripe(stripeSecretKey, {
       apiVersion: '2023-10-16',
       typescript: true
     });
 
-    const successUrl = `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}&test_mode=${isTestMode}`;
+    const successUrl = `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}&test_mode=${dbIsTestMode}`;
 
     console.log('Creating Stripe checkout session...');
     const session = await stripe.checkout.sessions.create({
@@ -61,7 +83,7 @@ serve(async (req) => {
         message: message || '',
         userName,
         userPhone,
-        isTestMode: isTestMode ? 'true' : 'false'
+        isTestMode: dbIsTestMode ? 'true' : 'false'
       },
     });
 

@@ -10,15 +10,21 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-interface EmailData {
-  to: string;
-  userName: string;
+interface Booking {
+  id: string;
+  user_name: string;
+  user_email: string;
   date: string;
-  timeSlot: string;
+  time_slot: string;
   duration: string;
-  groupSize: string;
+  group_size: string;
   price: number;
   status: string;
+}
+
+interface EmailRequest {
+  type: 'booking_confirmed' | 'booking_cancelled';
+  booking: Booking;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -30,14 +36,13 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const emailData: EmailData = await req.json();
-    console.log("Received email data:", emailData);
+    const { type, booking }: EmailRequest = await req.json();
+    console.log("Received email data:", { type, booking });
 
-    const formattedDate = format(new Date(emailData.date), "d MMMM yyyy", { locale: fr });
-    const endTime = parseInt(emailData.timeSlot) + parseInt(emailData.duration);
+    const formattedDate = format(new Date(booking.date), "d MMMM yyyy", { locale: fr });
+    const endTime = parseInt(booking.time_slot) + parseInt(booking.duration);
 
-    // Send email to customer
-    const customerEmailRes = await fetch("https://api.resend.com/emails", {
+    const emailRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -45,16 +50,16 @@ const handler = async (req: Request): Promise<Response> => {
       },
       body: JSON.stringify({
         from: "Karaoke Box Metz <no-reply@karaoke-box-metz.fr>",
-        to: [emailData.to],
+        to: [booking.user_email],
         subject: `Karaoke Box Metz - ${
-          emailData.status === 'confirmed' ? 'Réservation confirmée' : 'Réservation reçue'
+          type === 'booking_confirmed' ? 'Réservation confirmée' : 'Réservation annulée'
         }`,
         html: `
           <!DOCTYPE html>
           <html>
             <head>
               <meta charset="utf-8">
-              <title>Confirmation de réservation - Karaoke Box Metz</title>
+              <title>${type === 'booking_confirmed' ? 'Confirmation' : 'Annulation'} de réservation - Karaoke Box Metz</title>
               <style>
                 body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
                 .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -67,20 +72,20 @@ const handler = async (req: Request): Promise<Response> => {
               <div class="container">
                 <div class="header">
                   <h1>Karaoke Box Metz</h1>
-                  <h2>${emailData.status === 'confirmed' ? 'Réservation confirmée' : 'Réservation reçue'}</h2>
+                  <h2>${type === 'booking_confirmed' ? 'Réservation confirmée' : 'Réservation annulée'}</h2>
                 </div>
-                <p>Bonjour ${emailData.userName},</p>
+                <p>Bonjour ${booking.user_name},</p>
                 <p>${
-                  emailData.status === 'confirmed'
+                  type === 'booking_confirmed'
                     ? 'Votre réservation a été confirmée.'
-                    : 'Nous avons bien reçu votre réservation. Notre équipe la validera dans les plus brefs délais.'
+                    : 'Votre réservation a été annulée.'
                 }</p>
                 <div class="details">
                   <h3>Détails de votre réservation :</h3>
                   <p>📅 Date : ${formattedDate}</p>
-                  <p>🕒 Horaire : ${emailData.timeSlot}h - ${endTime}h</p>
-                  <p>👥 Nombre de personnes : ${emailData.groupSize}</p>
-                  <p>💶 Prix total : ${emailData.price}€</p>
+                  <p>🕒 Horaire : ${booking.time_slot}h - ${endTime}h</p>
+                  <p>👥 Nombre de personnes : ${booking.group_size}</p>
+                  <p>💶 Prix total : ${booking.price}€</p>
                 </div>
                 <div class="footer">
                   <p>Karaoke Box Metz<br>
@@ -95,75 +100,21 @@ const handler = async (req: Request): Promise<Response> => {
       }),
     });
 
-    console.log("Customer email response:", await customerEmailRes.text());
+    console.log("Email response:", await emailRes.text());
 
-    // Send notification to admin
-    const adminEmailRes = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-      },
-      body: JSON.stringify({
-        from: "Karaoke Box Metz <no-reply@karaoke-box-metz.fr>",
-        to: ["mendar.bouchali@gmail.com"],
-        subject: "Nouvelle réservation - Karaoke Box Metz",
-        html: `
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <meta charset="utf-8">
-              <title>Nouvelle réservation - Karaoke Box Metz</title>
-              <style>
-                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                .header { text-align: center; margin-bottom: 30px; }
-                .details { background-color: #f9f9f9; padding: 20px; border-radius: 8px; }
-                .footer { text-align: center; margin-top: 30px; font-size: 14px; color: #666; }
-              </style>
-            </head>
-            <body>
-              <div class="container">
-                <div class="header">
-                  <h1>Nouvelle réservation reçue</h1>
-                </div>
-                <div class="details">
-                  <h3>Détails de la réservation :</h3>
-                  <p>👤 Client : ${emailData.userName}</p>
-                  <p>📅 Date : ${formattedDate}</p>
-                  <p>🕒 Horaire : ${emailData.timeSlot}h - ${endTime}h</p>
-                  <p>👥 Nombre de personnes : ${emailData.groupSize}</p>
-                  <p>💶 Prix total : ${emailData.price}€</p>
-                  <p>📊 Statut : ${emailData.status}</p>
-                </div>
-                <div class="footer">
-                  <p>Karaoke Box Metz - Panel Administrateur</p>
-                </div>
-              </div>
-            </body>
-          </html>
-        `,
-      }),
-    });
-
-    console.log("Admin email response:", await adminEmailRes.text());
-
-    if (customerEmailRes.ok && adminEmailRes.ok) {
+    if (emailRes.ok) {
       return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     } else {
-      throw new Error("Failed to send one or more emails");
+      throw new Error("Failed to send email");
     }
   } catch (error: any) {
     console.error("Error in send-booking-email function:", error);
-    return new Response(
-      JSON.stringify({ error: error.message || "Failed to send email" }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 };
 

@@ -55,7 +55,7 @@ export const useBookingMutations = () => {
 
       // Send email notification
       try {
-        await supabase.functions.invoke('send-booking-email', {
+        const { error: emailError } = await supabase.functions.invoke('send-booking-email', {
           body: {
             type: newStatus === 'confirmed' ? 'booking_confirmed' : 'booking_cancelled',
             booking: {
@@ -64,13 +64,22 @@ export const useBookingMutations = () => {
             }
           }
         });
+
+        if (emailError) {
+          console.error('Email notification error:', emailError);
+          toast({
+            title: "Attention",
+            description: "Le statut a été mis à jour mais l'envoi de l'email a échoué",
+            variant: "destructive",
+          });
+          return;
+        }
       } catch (emailError) {
         console.error('Email notification error:', emailError);
-        // Don't throw here as the status update was successful
         toast({
           title: "Attention",
           description: "Le statut a été mis à jour mais l'envoi de l'email a échoué",
-          variant: "warning",
+          variant: "destructive",
         });
         return;
       }

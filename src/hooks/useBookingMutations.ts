@@ -22,15 +22,27 @@ export const useBookingMutations = () => {
         );
       });
 
+      // Vérifier d'abord si la réservation existe
+      const { data: existingBooking, error: fetchError } = await supabase
+        .from('bookings')
+        .select()
+        .eq('id', bookingId);
+
+      if (fetchError) throw fetchError;
+      
+      if (!existingBooking || existingBooking.length === 0) {
+        throw new Error("Réservation non trouvée");
+      }
+
       // Effectuer la mise à jour dans Supabase
-      const { error, data } = await supabase
+      const { error: updateError, data } = await supabase
         .from('bookings')
         .update({ status: newStatus })
         .eq('id', bookingId)
         .select()
         .single();
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
       // Mettre à jour le cache avec les données réelles
       queryClient.setQueryData(['bookings'], (old: Booking[] | undefined) => {
@@ -47,7 +59,7 @@ export const useBookingMutations = () => {
         description: "Le statut a été mis à jour",
       });
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating booking status:', error);
       
       // Restaurer l'état précédent en cas d'erreur
@@ -55,7 +67,7 @@ export const useBookingMutations = () => {
       
       toast({
         title: "Erreur",
-        description: "Impossible de mettre à jour le statut",
+        description: error.message || "Impossible de mettre à jour le statut",
         variant: "destructive",
       });
     }

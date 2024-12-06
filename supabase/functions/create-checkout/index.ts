@@ -15,15 +15,23 @@ serve(async (req) => {
     const { price, groupSize, duration, date, timeSlot, message, userEmail, userName, userPhone } = await req.json();
     console.log('Request data:', { price, groupSize, duration, date, timeSlot, message, userEmail, userName, userPhone });
 
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+    const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY');
+    if (!stripeSecretKey) {
+      console.error('STRIPE_SECRET_KEY not found in environment variables');
+      throw new Error('Configuration Stripe manquante');
+    }
+
+    console.log('Initializing Stripe with secret key length:', stripeSecretKey.length);
+    const stripe = new Stripe(stripeSecretKey, {
       apiVersion: '2023-10-16',
     });
 
-    const isTestMode = Deno.env.get('IS_TEST_MODE') === 'true';
+    const isTestMode = true; // Mode test activé par défaut pour le développement
     const successUrl = isTestMode 
       ? `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}&test_mode=true`
       : `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}`;
 
+    console.log('Creating Stripe checkout session...');
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -51,10 +59,11 @@ serve(async (req) => {
         message: message || '',
         userName,
         userPhone,
-        isTestMode: isTestMode ? 'true' : 'false'
+        isTestMode: 'true'
       },
     });
 
+    console.log('Checkout session created successfully:', session.id);
     return new Response(
       JSON.stringify({ url: session.url }),
       { 
@@ -63,9 +72,12 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error in create-checkout function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message || 'Une erreur est survenue lors de la création de la session de paiement',
+        details: error.toString()
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,

@@ -11,33 +11,18 @@ export const useBookingMutations = () => {
     console.log('Updating booking status:', { bookingId, newStatus });
     
     try {
-      // Check session first
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError) throw sessionError;
+      const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
         throw new Error('Vous devez être connecté pour effectuer cette action');
       }
 
-      // Check if user is admin
       const isAdmin = session.user.email === 'mendar.bouchali@gmail.com';
       if (!isAdmin) {
         throw new Error('Permission refusée');
       }
 
-      // First check if booking exists
-      const { data: bookings, error: fetchError } = await supabase
-        .from('bookings')
-        .select()
-        .eq('id', bookingId);
-
-      if (fetchError) throw fetchError;
-
-      if (!bookings || bookings.length === 0) {
-        throw new Error('Cette réservation n\'existe plus');
-      }
-
-      // Update booking status
+      // Update booking status directly
       const { data, error } = await supabase
         .from('bookings')
         .update({ status: newStatus })
@@ -48,7 +33,6 @@ export const useBookingMutations = () => {
       if (error) throw error;
 
       // Send email notification
-      console.log('Sending email notification for status change');
       await supabase.functions.invoke('send-booking-email', {
         body: {
           type: newStatus === 'confirmed' ? 'booking_confirmed' : 'booking_cancelled',
@@ -80,14 +64,9 @@ export const useBookingMutations = () => {
     } catch (error: any) {
       console.error('Error in updateBookingStatus:', error);
       
-      // Handle specific error cases
-      const errorMessage = error.message === 'Cette réservation n\'existe plus'
-        ? error.message
-        : "Une erreur est survenue lors de la mise à jour";
-
       toast({
         title: "Erreur",
-        description: errorMessage,
+        description: "Une erreur est survenue lors de la mise à jour",
         variant: "destructive",
       });
 

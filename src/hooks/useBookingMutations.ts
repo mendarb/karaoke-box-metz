@@ -26,26 +26,36 @@ export const useBookingMutations = () => {
           throw new Error('Permission refusée');
         }
 
-        // Mettre à jour la réservation avec une seule requête
-        const { data, error } = await supabase
+        // Mettre à jour la réservation
+        const { error: updateError } = await supabase
           .from('bookings')
           .update({ status: newStatus })
-          .eq('id', bookingId)
-          .select()
-          .maybeSingle();
+          .eq('id', bookingId);
 
-        if (error) {
-          console.error('Error updating booking:', error);
+        if (updateError) {
+          console.error('Error updating booking:', updateError);
           throw new Error('Erreur lors de la mise à jour de la réservation');
         }
 
-        if (!data) {
-          console.error('No booking found with id:', bookingId);
-          throw new Error('Réservation non trouvée');
+        // Récupérer la réservation mise à jour
+        const { data: updatedBooking, error: fetchError } = await supabase
+          .from('bookings')
+          .select()
+          .eq('id', bookingId)
+          .maybeSingle();
+
+        if (fetchError) {
+          console.error('Error fetching updated booking:', fetchError);
+          throw new Error('Erreur lors de la récupération de la réservation mise à jour');
         }
 
-        console.log('Successfully updated booking:', data);
-        return data;
+        if (!updatedBooking) {
+          console.error('No booking found after update:', bookingId);
+          throw new Error('Réservation non trouvée après la mise à jour');
+        }
+
+        console.log('Successfully updated booking:', updatedBooking);
+        return updatedBooking;
 
       } catch (error: any) {
         console.error('Error in updateBookingStatus:', error);

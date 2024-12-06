@@ -8,11 +8,10 @@ export const useBookingMutations = () => {
   const { toast } = useToast();
 
   const updateBookingStatus = async (bookingId: string, newStatus: string) => {
-    // Récupérer les données actuelles avant la mise à jour
     const previousBookings = queryClient.getQueryData<Booking[]>(['bookings']) || [];
     
     try {
-      // Mettre à jour l'interface de manière optimiste
+      // Optimistic update
       queryClient.setQueryData(['bookings'], (old: Booking[] | undefined) => {
         if (!old) return [];
         return old.map(booking => 
@@ -22,29 +21,21 @@ export const useBookingMutations = () => {
         );
       });
 
-      // Vérifier d'abord si la réservation existe
-      const { data: existingBooking, error: fetchError } = await supabase
-        .from('bookings')
-        .select()
-        .eq('id', bookingId);
-
-      if (fetchError) throw fetchError;
-      
-      if (!existingBooking || existingBooking.length === 0) {
-        throw new Error("Réservation non trouvée");
-      }
-
-      // Effectuer la mise à jour dans Supabase
-      const { error: updateError, data } = await supabase
+      // Update in Supabase
+      const { data, error } = await supabase
         .from('bookings')
         .update({ status: newStatus })
         .eq('id', bookingId)
         .select()
-        .single();
+        .maybeSingle();
 
-      if (updateError) throw updateError;
+      if (error) throw error;
+      
+      if (!data) {
+        throw new Error("Réservation non trouvée");
+      }
 
-      // Mettre à jour le cache avec les données réelles
+      // Update cache with actual data
       queryClient.setQueryData(['bookings'], (old: Booking[] | undefined) => {
         if (!old) return [];
         return old.map(booking => 
@@ -62,7 +53,7 @@ export const useBookingMutations = () => {
     } catch (error: any) {
       console.error('Error updating booking status:', error);
       
-      // Restaurer l'état précédent en cas d'erreur
+      // Restore previous state on error
       queryClient.setQueryData(['bookings'], previousBookings);
       
       toast({

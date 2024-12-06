@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/ui/use-toast";
 import { Booking } from "./useBookings";
+import { sendBookingEmail } from "@/services/emailService";
 
 export const useBookingMutations = () => {
   const { toast } = useToast();
@@ -27,29 +28,33 @@ export const useBookingMutations = () => {
         }
 
         // Mettre à jour la réservation
-        const { error: updateError } = await supabase
+        const { data: updatedBooking, error: updateError } = await supabase
           .from('bookings')
           .update({ status: newStatus })
-          .eq('id', bookingId);
+          .eq('id', bookingId)
+          .select()
+          .single();
 
         if (updateError) {
           console.error('Error updating booking:', updateError);
           throw new Error('Erreur lors de la mise à jour de la réservation');
         }
 
-        // Récupérer la réservation mise à jour
-        const { data: updatedBooking, error: fetchError } = await supabase
-          .from('bookings')
-          .select()
-          .eq('id', bookingId)
-          .single();
-
-        if (fetchError) {
-          console.error('Error fetching updated booking:', fetchError);
-          throw new Error('Erreur lors de la récupération de la réservation mise à jour');
+        if (!updatedBooking) {
+          throw new Error('Réservation non trouvée');
         }
 
         console.log('Successfully updated booking:', updatedBooking);
+
+        // Envoyer l'email de confirmation
+        try {
+          await sendBookingEmail(updatedBooking);
+          console.log('Email sent successfully');
+        } catch (emailError) {
+          console.error('Error sending email:', emailError);
+          // On continue même si l'email échoue
+        }
+
         return updatedBooking;
 
       } catch (error: any) {

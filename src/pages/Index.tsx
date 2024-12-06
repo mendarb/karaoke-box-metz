@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { BookingForm } from "@/components/BookingForm";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { Navbar } from "@/components/navigation/Navbar";

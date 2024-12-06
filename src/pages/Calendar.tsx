@@ -52,22 +52,15 @@ export const Calendar = () => {
 
       return data || [];
     },
-    refetchOnWindowFocus: true, // Recharge les données quand la fenêtre reprend le focus
-    refetchOnMount: true, // Recharge les données au montage du composant
-    refetchInterval: 30000, // Recharge automatique toutes les 30 secondes
-    staleTime: 10000, // Considère les données comme périmées après 10 secondes
-    gcTime: 300000, // Garde les données en cache pendant 5 minutes
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    refetchInterval: 30000,
+    staleTime: 0,
+    gcTime: 0,
   });
 
   const updateBookingStatus = async (bookingId: string, newStatus: string) => {
     try {
-      const { error } = await supabase
-        .from('bookings')
-        .update({ status: newStatus })
-        .eq('id', bookingId);
-
-      if (error) throw error;
-
       // Mise à jour optimiste du cache
       queryClient.setQueryData(['bookings'], (oldData: Booking[] | undefined) => {
         if (!oldData) return [];
@@ -78,13 +71,20 @@ export const Calendar = () => {
         );
       });
 
+      const { error } = await supabase
+        .from('bookings')
+        .update({ status: newStatus })
+        .eq('id', bookingId);
+
+      if (error) throw error;
+
       toast({
         title: "Succès",
         description: "Le statut a été mis à jour",
       });
 
-      // Force un nouveau chargement des données
-      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      // Force un nouveau chargement des données après la mise à jour
+      await queryClient.invalidateQueries({ queryKey: ['bookings'] });
     } catch (error) {
       console.error('Error updating booking status:', error);
       toast({
@@ -92,7 +92,8 @@ export const Calendar = () => {
         description: "Impossible de mettre à jour le statut",
         variant: "destructive",
       });
-      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      // En cas d'erreur, on recharge les données pour revenir à l'état correct
+      await queryClient.invalidateQueries({ queryKey: ['bookings'] });
     }
   };
 

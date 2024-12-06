@@ -7,63 +7,73 @@ export const useBookingMutations = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const updateBookingStatus = async (bookingId: string, newStatus: string) => {
-    console.log('Starting booking status update:', { bookingId, newStatus });
-    
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
+  const updateBookingMutation = useMutation({
+    mutationFn: async ({ bookingId, newStatus }: { bookingId: string, newStatus: string }) => {
+      console.log('Starting booking status update:', { bookingId, newStatus });
       
-      if (!session) {
-        throw new Error('Vous devez être connecté pour effectuer cette action');
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          throw new Error('Vous devez être connecté pour effectuer cette action');
+        }
+
+        const isAdmin = session.user.email === 'mendar.bouchali@gmail.com';
+        if (!isAdmin) {
+          throw new Error('Permission refusée');
+        }
+
+        const { data, error: updateError } = await supabase
+          .from('bookings')
+          .update({ status: newStatus })
+          .eq('id', bookingId)
+          .select()
+          .single();
+
+        if (updateError) {
+          console.error('Error updating booking:', updateError);
+          throw updateError;
+        }
+
+        console.log('Successfully updated booking:', data);
+        return data;
+
+      } catch (error: any) {
+        console.error('Error in updateBookingStatus:', error);
+        throw error;
       }
-
-      const isAdmin = session.user.email === 'mendar.bouchali@gmail.com';
-      if (!isAdmin) {
-        throw new Error('Permission refusée');
-      }
-
-      // Effectuer la mise à jour directement
-      const { data, error: updateError } = await supabase
-        .from('bookings')
-        .update({ status: newStatus })
-        .eq('id', bookingId)
-        .select()
-        .single();
-
-      if (updateError) {
-        console.error('Error updating booking:', updateError);
-        throw updateError;
-      }
-
-      console.log('Successfully updated booking:', data);
-
-      // Mettre à jour le cache avec les nouvelles données
+    },
+    onSuccess: (updatedBooking) => {
+      // Update the cache optimistically
       queryClient.setQueryData(['bookings'], (old: Booking[] | undefined) => {
-        if (!old) return [data];
+        if (!old) return [updatedBooking];
         return old.map(booking => 
-          booking.id === bookingId ? data : booking
+          booking.id === updatedBooking.id ? updatedBooking : booking
         );
       });
 
-      // Forcer un rafraîchissement pour assurer la cohérence
-      await queryClient.invalidateQueries({ queryKey: ['bookings'] });
-
+      // Show success toast
       toast({
         title: "Succès",
         description: "Le statut a été mis à jour",
       });
-
-    } catch (error: any) {
-      console.error('Error in updateBookingStatus:', error);
-      
+    },
+    onError: (error: any) => {
+      console.error('Mutation error:', error);
       toast({
         title: "Erreur",
         description: error.message || "Une erreur est survenue lors de la mise à jour",
         variant: "destructive",
       });
-
-      throw error;
+    },
+    onSettled: () => {
+      // Always refetch after error or success
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
     }
+  });
+
+  const updateBookingStatus = async (bookingId: string, newStatus: string) => {
+    return updateBookingMutation.mutateAsync({ bookingId, newStatus });
   };
 
   return {

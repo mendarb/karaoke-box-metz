@@ -12,22 +12,26 @@ serve(async (req) => {
   }
 
   try {
-    const { price, groupSize, duration, date, timeSlot, message, userEmail, userName, userPhone } = await req.json();
-    console.log('Request data:', { price, groupSize, duration, date, timeSlot, message, userEmail, userName, userPhone });
+    const { price, groupSize, duration, date, timeSlot, message, userEmail, userName, userPhone, isTestMode } = await req.json();
+    console.log('Request data:', { price, groupSize, duration, date, timeSlot, message, userEmail, userName, userPhone, isTestMode });
 
-    const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY');
+    // Utiliser la clé de test ou de production selon le mode
+    const stripeSecretKey = isTestMode 
+      ? Deno.env.get('STRIPE_TEST_SECRET_KEY')
+      : Deno.env.get('STRIPE_SECRET_KEY');
+
     if (!stripeSecretKey) {
-      console.error('STRIPE_SECRET_KEY not found in environment variables');
+      console.error('Stripe secret key not found in environment variables');
       throw new Error('Configuration Stripe manquante');
     }
 
-    console.log('Initializing Stripe with secret key length:', stripeSecretKey.length);
+    console.log('Using Stripe key for mode:', isTestMode ? 'test' : 'production');
     const stripe = new Stripe(stripeSecretKey, {
       apiVersion: '2023-10-16',
       typescript: true
     });
 
-    const successUrl = `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}&test_mode=true`;
+    const successUrl = `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}&test_mode=${isTestMode}`;
 
     console.log('Creating Stripe checkout session...');
     const session = await stripe.checkout.sessions.create({
@@ -57,7 +61,7 @@ serve(async (req) => {
         message: message || '',
         userName,
         userPhone,
-        isTestMode: 'true'
+        isTestMode: isTestMode ? 'true' : 'false'
       },
     });
 

@@ -11,13 +11,16 @@ import { Badge } from "@/components/ui/badge";
 import { BookingDetailsDialog } from "@/components/admin/BookingDetailsDialog";
 import { Booking } from "@/hooks/useBookings";
 import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
+import { BookingStatusBadge } from "@/components/admin/BookingStatusBadge";
+import { BookingActions } from "@/components/admin/BookingActions";
 
 export const Calendar = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const { toast } = useToast();
 
-  const { data: bookings = [] } = useQuery({
+  const { data: bookings = [], refetch } = useQuery({
     queryKey: ['bookings'],
     queryFn: async () => {
       const { data: session } = await supabase.auth.getSession();
@@ -49,6 +52,32 @@ export const Calendar = () => {
       return data || [];
     },
   });
+
+  // Gestion de la mise à jour du statut
+  const updateBookingStatus = async (bookingId: string, newStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from('bookings')
+        .update({ status: newStatus })
+        .eq('id', bookingId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Succès",
+        description: "Le statut a été mis à jour",
+      });
+
+      refetch(); // Recharge les données après la mise à jour
+    } catch (error) {
+      console.error('Error updating booking status:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour le statut",
+        variant: "destructive",
+      });
+    }
+  };
 
   // Filtrer les réservations pour la date sélectionnée
   const bookingsForSelectedDate = selectedDate 
@@ -117,20 +146,36 @@ export const Calendar = () => {
                     bookingsForSelectedDate.map((booking) => (
                       <div
                         key={booking.id}
-                        className="flex items-center justify-between p-4 rounded-lg border hover:bg-accent cursor-pointer transition-colors"
-                        onClick={() => setSelectedBooking(booking)}
+                        className="flex flex-col space-y-3 p-4 rounded-lg border hover:bg-accent/50 transition-colors"
                       >
-                        <div>
-                          <p className="font-medium">{booking.user_name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {booking.time_slot}h - {parseInt(booking.time_slot) + parseInt(booking.duration)}h
-                          </p>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-medium">{booking.user_name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {booking.time_slot}h - {parseInt(booking.time_slot) + parseInt(booking.duration)}h
+                            </p>
+                          </div>
+                          <BookingStatusBadge status={booking.status} />
                         </div>
+                        
                         <div className="flex items-center gap-2">
-                          <Badge variant={booking.status === 'confirmed' ? 'default' : 'secondary'}>
-                            {booking.status === 'confirmed' ? 'Confirmé' : 'En attente'}
-                          </Badge>
                           <Badge variant="outline">{booking.group_size} pers.</Badge>
+                          <Badge variant="outline">{booking.duration}h</Badge>
+                          <Badge variant="outline">{booking.price}€</Badge>
+                        </div>
+
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedBooking(booking)}
+                          >
+                            Détails
+                          </Button>
+                          <BookingActions
+                            bookingId={booking.id}
+                            onStatusChange={updateBookingStatus}
+                          />
                         </div>
                       </div>
                     ))

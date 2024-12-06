@@ -25,24 +25,17 @@ export const useBookings = () => {
   const { toast } = useToast();
 
   const fetchBookings = async () => {
-    console.log("Fetching bookings...");
     try {
       setIsLoading(true);
-      
       const { data, error } = await supabase
         .from('bookings')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error("Supabase error:", error);
-        throw error;
-      }
-
-      console.log("Bookings fetched:", data?.length);
+      if (error) throw error;
       setBookings(data || []);
     } catch (error: any) {
-      console.error("Error in fetchBookings:", error);
+      console.error('Error fetching bookings:', error);
       toast({
         title: "Erreur",
         description: "Impossible de charger les réservations",

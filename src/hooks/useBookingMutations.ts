@@ -22,33 +22,32 @@ export const useBookingMutations = () => {
         throw new Error('Permission refusée');
       }
 
-      // Optimistic update
-      const previousBookings = queryClient.getQueryData<Booking[]>(['bookings']);
-      
-      // Update local cache optimistically
-      queryClient.setQueryData(['bookings'], (old: Booking[] | undefined) => {
-        if (!old) return [];
-        return old.map(booking => 
-          booking.id === bookingId 
-            ? { ...booking, status: newStatus }
-            : booking
-        );
-      });
-
-      // Perform the actual update
-      const { error: updateError } = await supabase
+      // Effectuer d'abord la mise à jour dans Supabase
+      const { data: updatedBooking, error: updateError } = await supabase
         .from('bookings')
         .update({ status: newStatus })
-        .eq('id', bookingId);
+        .eq('id', bookingId)
+        .select()
+        .single();
 
       if (updateError) {
         console.error('Update error:', updateError);
-        // Revert optimistic update on error
-        queryClient.setQueryData(['bookings'], previousBookings);
         throw updateError;
       }
 
-      // Refresh the data to ensure UI is in sync
+      if (!updatedBooking) {
+        throw new Error('La réservation n\'a pas pu être mise à jour');
+      }
+
+      // Mettre à jour le cache local avec les données de la base de données
+      queryClient.setQueryData(['bookings'], (old: Booking[] | undefined) => {
+        if (!old) return [updatedBooking];
+        return old.map(booking => 
+          booking.id === bookingId ? updatedBooking : booking
+        );
+      });
+
+      // Rafraîchir les données pour s'assurer que l'UI est synchronisée
       await queryClient.invalidateQueries({ queryKey: ['bookings'] });
 
       toast({
@@ -65,7 +64,7 @@ export const useBookingMutations = () => {
         variant: "destructive",
       });
 
-      // Refresh data in case of error to ensure UI is in sync
+      // Rafraîchir les données en cas d'erreur pour s'assurer que l'UI est synchronisée
       await queryClient.invalidateQueries({ queryKey: ['bookings'] });
     }
   };

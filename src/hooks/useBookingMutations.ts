@@ -11,21 +11,37 @@ export const useBookingMutations = () => {
     console.log('Updating booking status:', { bookingId, newStatus });
     
     try {
-      const { data, error } = await supabase
+      // First check if the booking exists and is accessible
+      const { data: existingBooking, error: fetchError } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('id', bookingId)
+        .limit(1)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching booking:', fetchError);
+        if (fetchError.code === 'PGRST116') {
+          throw new Error('Réservation non trouvée ou accès non autorisé');
+        }
+        throw fetchError;
+      }
+
+      if (!existingBooking) {
+        throw new Error('Réservation non trouvée');
+      }
+
+      // If we found the booking, proceed with the update
+      const { data: updatedBooking, error: updateError } = await supabase
         .from('bookings')
         .update({ status: newStatus })
         .eq('id', bookingId)
         .select()
-        .maybeSingle();
+        .single();
 
-      if (error) {
-        console.error('Error updating booking:', error);
-        throw error;
-      }
-
-      if (!data) {
-        console.error('Booking not found:', bookingId);
-        throw new Error('Booking not found');
+      if (updateError) {
+        console.error('Error updating booking:', updateError);
+        throw updateError;
       }
 
       // Update cache optimistically
@@ -51,9 +67,7 @@ export const useBookingMutations = () => {
       
       toast({
         title: "Erreur",
-        description: error.message === 'Booking not found' 
-          ? "La réservation n'existe plus."
-          : "Impossible de mettre à jour le statut.",
+        description: error.message || "Impossible de mettre à jour le statut.",
         variant: "destructive",
       });
 

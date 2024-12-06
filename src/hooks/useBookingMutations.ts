@@ -23,28 +23,36 @@ export const useBookingMutations = () => {
           throw new Error('Permission refusée');
         }
 
-        // Mettre à jour directement la réservation
-        const { data, error } = await supabase
+        // Vérifier d'abord si la réservation existe
+        const { data: existingBooking, error: checkError } = await supabase
+          .from('bookings')
+          .select()
+          .eq('id', bookingId)
+          .single();
+
+        if (checkError) {
+          console.error('Error checking booking:', checkError);
+          if (checkError.code === 'PGRST116') {
+            throw new Error('Réservation non trouvée');
+          }
+          throw new Error('Erreur lors de la vérification de la réservation');
+        }
+
+        // Si on arrive ici, la réservation existe, on peut la mettre à jour
+        const { data: updatedBooking, error: updateError } = await supabase
           .from('bookings')
           .update({ status: newStatus })
           .eq('id', bookingId)
           .select()
-          .maybeSingle();
+          .single();
 
-        if (error) {
-          console.error('Error updating booking:', error);
-          if (error.code === 'PGRST116') {
-            throw new Error('Réservation non trouvée');
-          }
+        if (updateError) {
+          console.error('Error updating booking:', updateError);
           throw new Error('Erreur lors de la mise à jour de la réservation');
         }
 
-        if (!data) {
-          throw new Error('Réservation non trouvée');
-        }
-
-        console.log('Successfully updated booking:', data);
-        return data;
+        console.log('Successfully updated booking:', updatedBooking);
+        return updatedBooking;
 
       } catch (error: any) {
         console.error('Error in updateBookingStatus:', error);

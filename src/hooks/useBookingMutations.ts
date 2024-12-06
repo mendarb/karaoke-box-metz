@@ -27,16 +27,19 @@ export const useBookingMutations = () => {
           .from('bookings')
           .update({ status: newStatus })
           .eq('id', bookingId)
-          .select('*')
-          .maybeSingle();
+          .select()
+          .single();
 
         if (error) {
           console.error('Error updating booking:', error);
+          if (error.code === 'PGRST116') {
+            throw new Error('Réservation non trouvée');
+          }
           throw error;
         }
 
         if (!data) {
-          throw new Error('Réservation non trouvée');
+          throw new Error('La mise à jour a échoué');
         }
 
         console.log('Successfully updated booking:', data);

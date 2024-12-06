@@ -11,6 +11,17 @@ export const useBookingMutations = () => {
     const previousBookings = queryClient.getQueryData<Booking[]>(['bookings']) || [];
     
     try {
+      // First check if booking exists
+      const { data: existingBooking } = await supabase
+        .from('bookings')
+        .select()
+        .eq('id', bookingId)
+        .maybeSingle();
+
+      if (!existingBooking) {
+        throw new Error("Réservation non trouvée");
+      }
+
       // Optimistic update
       queryClient.setQueryData(['bookings'], (old: Booking[] | undefined) => {
         if (!old) return [];
@@ -27,13 +38,9 @@ export const useBookingMutations = () => {
         .update({ status: newStatus })
         .eq('id', bookingId)
         .select()
-        .maybeSingle();
+        .single();
 
       if (error) throw error;
-      
-      if (!data) {
-        throw new Error("Réservation non trouvée");
-      }
 
       // Update cache with actual data
       queryClient.setQueryData(['bookings'], (old: Booking[] | undefined) => {

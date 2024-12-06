@@ -2,7 +2,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { SettingsCard } from "./SettingsCard";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
@@ -12,6 +12,29 @@ export const BookingSettings = () => {
   const [minGroupSize, setMinGroupSize] = useState("1");
   const [maxGroupSize, setMaxGroupSize] = useState("10");
   const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      const { data, error } = await supabase
+        .from('settings')
+        .select()
+        .eq('key', 'booking_settings')
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching settings:', error);
+        return;
+      }
+
+      if (data?.value) {
+        setAutoConfirm(data.value.autoConfirm);
+        setMinGroupSize(data.value.minGroupSize.toString());
+        setMaxGroupSize(data.value.maxGroupSize.toString());
+      }
+    };
+
+    fetchSettings();
+  }, []);
 
   const handleSave = async () => {
     try {
@@ -24,6 +47,8 @@ export const BookingSettings = () => {
             minGroupSize: parseInt(minGroupSize),
             maxGroupSize: parseInt(maxGroupSize),
           }
+        }, {
+          onConflict: 'key'
         });
 
       if (error) throw error;

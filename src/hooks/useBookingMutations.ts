@@ -32,7 +32,7 @@ export const useBookingMutations = () => {
           .update({ status: newStatus })
           .eq('id', bookingId)
           .select()
-          .single();
+          .maybeSingle();
 
         if (updateError) {
           console.error('Error updating booking:', updateError);
@@ -40,7 +40,7 @@ export const useBookingMutations = () => {
         }
 
         if (!updatedBooking) {
-          console.error('No booking returned after update');
+          console.error('No booking found with id:', bookingId);
           throw new Error('Réservation non trouvée');
         }
 

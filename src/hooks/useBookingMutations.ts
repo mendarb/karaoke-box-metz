@@ -42,16 +42,11 @@ export const useBookingMutations = () => {
           .from('bookings')
           .select()
           .eq('id', bookingId)
-          .maybeSingle();
+          .single();
 
         if (fetchError) {
           console.error('Error fetching updated booking:', fetchError);
           throw new Error('Erreur lors de la récupération de la réservation mise à jour');
-        }
-
-        if (!updatedBooking) {
-          console.error('No booking found after update:', bookingId);
-          throw new Error('Réservation non trouvée après la mise à jour');
         }
 
         console.log('Successfully updated booking:', updatedBooking);
@@ -70,12 +65,16 @@ export const useBookingMutations = () => {
       }
     },
     onSuccess: (updatedBooking) => {
+      // Mettre à jour le cache immédiatement
       queryClient.setQueryData(['bookings'], (old: Booking[] | undefined) => {
         if (!old) return [updatedBooking];
         return old.map(booking => 
           booking.id === updatedBooking.id ? updatedBooking : booking
         );
       });
+
+      // Invalider le cache pour forcer un rafraîchissement
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
 
       toast({
         title: "Succès",
@@ -89,9 +88,6 @@ export const useBookingMutations = () => {
         description: error.message || "Une erreur est survenue lors de la mise à jour",
         variant: "destructive",
       });
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['bookings'] });
     }
   });
 

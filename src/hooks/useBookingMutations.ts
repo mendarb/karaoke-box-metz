@@ -12,15 +12,10 @@ export const useBookingMutations = () => {
       console.log('Starting booking status update:', { bookingId, newStatus });
       
       try {
-        // Vérifier la session et les permissions
+        // Vérifier la session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) {
+        if (sessionError || !session) {
           console.error('Session error:', sessionError);
-          throw new Error('Session expirée. Veuillez vous reconnecter.');
-        }
-
-        if (!session) {
-          console.error('No session found');
           throw new Error('Session expirée. Veuillez vous reconnecter.');
         }
 
@@ -31,41 +26,26 @@ export const useBookingMutations = () => {
           throw new Error('Permission refusée');
         }
 
-        // Vérifier d'abord si la réservation existe
-        const { data: bookings, error: checkError } = await supabase
-          .from('bookings')
-          .select()
-          .eq('id', bookingId);
-
-        if (checkError) {
-          console.error('Error checking booking:', checkError);
-          throw new Error('Erreur lors de la vérification de la réservation');
-        }
-
-        if (!bookings || bookings.length === 0) {
-          console.error('No booking found with id:', bookingId);
-          throw new Error('Réservation non trouvée');
-        }
-
         // Mettre à jour la réservation
-        const { data: updatedBookings, error: updateError } = await supabase
+        const { data: updatedBooking, error: updateError } = await supabase
           .from('bookings')
           .update({ status: newStatus })
           .eq('id', bookingId)
-          .select();
+          .select()
+          .single();
 
         if (updateError) {
           console.error('Error updating booking:', updateError);
           throw new Error('Erreur lors de la mise à jour de la réservation');
         }
 
-        if (!updatedBookings || updatedBookings.length === 0) {
+        if (!updatedBooking) {
           console.error('No booking returned after update');
-          throw new Error('Erreur lors de la mise à jour de la réservation');
+          throw new Error('Réservation non trouvée');
         }
 
-        console.log('Successfully updated booking:', updatedBookings[0]);
-        return updatedBookings[0];
+        console.log('Successfully updated booking:', updatedBooking);
+        return updatedBooking;
 
       } catch (error: any) {
         console.error('Error in updateBookingStatus:', error);

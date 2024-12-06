@@ -1,5 +1,7 @@
 import { DashboardSidebar } from "@/components/admin/DashboardSidebar";
 import { ResizablePanelGroup, ResizablePanel } from "@/components/ui/resizable";
+import { BookingSettings } from "@/components/admin/settings/BookingSettings";
+import { NotificationSettings } from "@/components/admin/settings/NotificationSettings";
 
 export const Settings = () => {
   return (
@@ -12,9 +14,9 @@ export const Settings = () => {
         <ResizablePanel defaultSize={80}>
           <div className="p-6">
             <h1 className="text-2xl font-bold mb-6">Paramètres</h1>
-            <div className="bg-card rounded-lg shadow-lg p-6">
-              {/* Settings content will be implemented in a future update */}
-              <p className="text-muted-foreground">Les paramètres seront bientôt disponibles.</p>
+            <div className="grid gap-6 md:grid-cols-2">
+              <BookingSettings />
+              <NotificationSettings />
             </div>
           </div>
         </ResizablePanel>

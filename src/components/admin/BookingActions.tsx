@@ -5,7 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Loader2 } from "lucide-react";
 import { useState } from "react";
 
 interface BookingActionsProps {
@@ -15,18 +15,22 @@ interface BookingActionsProps {
 
 export const BookingActions = ({ bookingId, onStatusChange }: BookingActionsProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleStatusChange = async (status: string) => {
     try {
       setIsLoading(true);
       await onStatusChange(bookingId, status);
+      setIsOpen(false);
+    } catch (error) {
+      console.error('Status change error:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button 
           variant="ghost" 
@@ -34,7 +38,11 @@ export const BookingActions = ({ bookingId, onStatusChange }: BookingActionsProp
           disabled={isLoading}
         >
           <span className="sr-only">Menu</span>
-          <MoreHorizontal className="h-4 w-4" />
+          {isLoading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <MoreHorizontal className="h-4 w-4" />
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[160px]">

@@ -11,19 +11,24 @@ export const useBookingMutations = () => {
     console.log('Updating booking status:', { bookingId, newStatus });
     
     try {
-      // Vérifier la session d'abord
-      const { data: { session } } = await supabase.auth.getSession();
+      // Check session first
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) {
+        console.error('Session error:', sessionError);
+        throw new Error('Session error: ' + sessionError.message);
+      }
+      
       if (!session) {
         throw new Error('Vous devez être connecté pour effectuer cette action');
       }
 
-      // Vérifier si l'utilisateur est admin
+      // Check if user is admin
       const isAdmin = session.user.email === 'mendar.bouchali@gmail.com';
       if (!isAdmin) {
         throw new Error('Permission refusée');
       }
 
-      // Mettre à jour le statut
+      // Update booking status
       const { data, error } = await supabase
         .from('bookings')
         .update({ status: newStatus })
@@ -33,6 +38,9 @@ export const useBookingMutations = () => {
 
       if (error) {
         console.error('Error updating booking:', error);
+        if (error.code === 'PGRST116') {
+          throw new Error('Réservation non trouvée');
+        }
         throw error;
       }
 
@@ -40,7 +48,7 @@ export const useBookingMutations = () => {
         throw new Error('Erreur lors de la mise à jour');
       }
 
-      // Envoyer l'email de notification
+      // Send email notification
       console.log('Sending email notification for status change');
       const { error: emailError } = await supabase.functions.invoke('send-booking-email', {
         body: {
@@ -64,7 +72,7 @@ export const useBookingMutations = () => {
         });
       }
 
-      // Mettre à jour le cache
+      // Update cache
       queryClient.setQueryData(['bookings'], (old: Booking[] | undefined) => {
         if (!old) return [];
         return old.map(booking => 
@@ -79,7 +87,7 @@ export const useBookingMutations = () => {
         description: "Le statut a été mis à jour",
       });
 
-      // Rafraîchir les données
+      // Refresh data
       await queryClient.invalidateQueries({ queryKey: ['bookings'] });
 
     } catch (error: any) {
@@ -91,7 +99,7 @@ export const useBookingMutations = () => {
         variant: "destructive",
       });
 
-      // Rafraîchir les données pour s'assurer que l'UI est synchronisée
+      // Refresh data to ensure UI is in sync
       await queryClient.invalidateQueries({ queryKey: ['bookings'] });
     }
   };

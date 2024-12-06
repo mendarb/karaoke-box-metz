@@ -28,7 +28,6 @@ export const useBookingMutations = () => {
         .update({ status: newStatus })
         .eq('id', bookingId)
         .select()
-        .limit(1)
         .single();
 
       if (updateError) {

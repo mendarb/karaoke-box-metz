@@ -26,10 +26,15 @@ export const useBookingMutations = () => {
         .from('bookings')
         .update({ status: newStatus })
         .eq('id', bookingId)
-        .select()
-        .single();
+        .select();
 
       if (error) throw error;
+
+      if (!data || data.length === 0) {
+        throw new Error('Réservation non trouvée');
+      }
+
+      const updatedBooking = data[0];
 
       // Optimistic update
       queryClient.setQueryData(['bookings'], (old: Booking[] | undefined) => {
@@ -46,7 +51,7 @@ export const useBookingMutations = () => {
         body: {
           type: newStatus === 'confirmed' ? 'booking_confirmed' : 'booking_cancelled',
           booking: {
-            ...data,
+            ...updatedBooking,
             status: newStatus
           }
         }
@@ -65,7 +70,7 @@ export const useBookingMutations = () => {
       
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de la mise à jour",
+        description: error.message || "Une erreur est survenue lors de la mise à jour",
         variant: "destructive",
       });
 

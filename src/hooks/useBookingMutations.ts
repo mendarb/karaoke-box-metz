@@ -11,7 +11,7 @@ export const useBookingMutations = () => {
     console.log('Updating booking status:', { bookingId, newStatus });
     
     try {
-      // First check if the booking exists and is accessible
+      // First check if the booking exists and get its details
       const { data: existingBooking, error: fetchError } = await supabase
         .from('bookings')
         .select('*')
@@ -27,7 +27,7 @@ export const useBookingMutations = () => {
         throw new Error('Réservation non trouvée ou accès non autorisé');
       }
 
-      // If booking exists, proceed with update
+      // Update the booking status
       const { data, error } = await supabase
         .from('bookings')
         .update({ status: newStatus })
@@ -42,6 +42,31 @@ export const useBookingMutations = () => {
 
       if (!data) {
         throw new Error('Erreur lors de la mise à jour');
+      }
+
+      // Send email notification about the status change
+      console.log('Sending email notification for status change');
+      const { error: emailError } = await supabase.functions.invoke('send-booking-email', {
+        body: {
+          to: data.user_email,
+          userName: data.user_name,
+          date: data.date,
+          timeSlot: data.time_slot,
+          duration: data.duration,
+          groupSize: data.group_size,
+          price: data.price,
+          status: newStatus,
+        },
+      });
+
+      if (emailError) {
+        console.error('Error sending email:', emailError);
+        // Don't throw here, we still want to update the UI
+        toast({
+          title: "Attention",
+          description: "Le statut a été mis à jour mais l'envoi de l'email a échoué.",
+          variant: "warning",
+        });
       }
 
       // Update cache optimistically

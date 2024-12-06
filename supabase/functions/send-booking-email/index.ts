@@ -19,116 +19,25 @@ interface EmailData {
   groupSize: string;
   price: number;
   status: string;
-  isAdmin?: boolean;
 }
 
-const generateEmailHTML = ({
-  userName,
-  date,
-  timeSlot,
-  duration,
-  groupSize,
-  price,
-  status,
-  isAdmin,
-}: Omit<EmailData, "to">) => {
-  const formattedDate = format(new Date(date), "d MMMM yyyy", { locale: fr });
-  const endTime = parseInt(timeSlot) + parseInt(duration);
-
-  if (isAdmin) {
-    return `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <title>Nouvelle réservation - Karaoke Box Metz</title>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { text-align: center; margin-bottom: 30px; }
-            .details { background-color: #f9f9f9; padding: 20px; border-radius: 8px; }
-            .footer { text-align: center; margin-top: 30px; font-size: 14px; color: #666; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>Nouvelle réservation reçue</h1>
-            </div>
-            <div class="details">
-              <h3>Détails de la réservation :</h3>
-              <p>👤 Client : ${userName}</p>
-              <p>📅 Date : ${formattedDate}</p>
-              <p>🕒 Horaire : ${timeSlot}h - ${endTime}h</p>
-              <p>👥 Nombre de personnes : ${groupSize}</p>
-              <p>💶 Prix total : ${price}€</p>
-              <p>📊 Statut : ${status}</p>
-            </div>
-            <div class="footer">
-              <p>Karaoke Box Metz - Panel Administrateur</p>
-            </div>
-          </div>
-        </body>
-      </html>
-    `;
-  }
-
-  return `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="utf-8">
-        <title>Confirmation de réservation - Karaoke Box Metz</title>
-        <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { text-align: center; margin-bottom: 30px; }
-          .details { background-color: #f9f9f9; padding: 20px; border-radius: 8px; }
-          .footer { text-align: center; margin-top: 30px; font-size: 14px; color: #666; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <h1>Karaoke Box Metz</h1>
-            <h2>${status === 'confirmed' ? 'Réservation confirmée' : 'Réservation reçue'}</h2>
-          </div>
-          <p>Bonjour ${userName},</p>
-          <p>${
-            status === 'confirmed'
-              ? 'Votre réservation a été confirmée.'
-              : 'Nous avons bien reçu votre réservation. Notre équipe la validera dans les plus brefs délais.'
-          }</p>
-          <div class="details">
-            <h3>Détails de votre réservation :</h3>
-            <p>📅 Date : ${formattedDate}</p>
-            <p>🕒 Horaire : ${timeSlot}h - ${endTime}h</p>
-            <p>👥 Nombre de personnes : ${groupSize}</p>
-            <p>💶 Prix total : ${price}€</p>
-          </div>
-          <div class="footer">
-            <p>Karaoke Box Metz<br>
-            📍 [Adresse]<br>
-            📞 [Téléphone]<br>
-            ✉️ contact@karaoke-box-metz.fr</p>
-          </div>
-        </div>
-      </body>
-    </html>
-  `;
-};
-
 const handler = async (req: Request): Promise<Response> => {
+  console.log("Email function called");
+  
+  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const emailData: EmailData = await req.json();
-    console.log("Sending email with data:", emailData);
+    console.log("Received email data:", emailData);
 
-    // Envoyer l'email au client
-    const clientRes = await fetch("https://api.resend.com/emails", {
+    const formattedDate = format(new Date(emailData.date), "d MMMM yyyy", { locale: fr });
+    const endTime = parseInt(emailData.timeSlot) + parseInt(emailData.duration);
+
+    // Send email to customer
+    const customerEmailRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -140,12 +49,56 @@ const handler = async (req: Request): Promise<Response> => {
         subject: `Karaoke Box Metz - ${
           emailData.status === 'confirmed' ? 'Réservation confirmée' : 'Réservation reçue'
         }`,
-        html: generateEmailHTML(emailData),
+        html: `
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <title>Confirmation de réservation - Karaoke Box Metz</title>
+              <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { text-align: center; margin-bottom: 30px; }
+                .details { background-color: #f9f9f9; padding: 20px; border-radius: 8px; }
+                .footer { text-align: center; margin-top: 30px; font-size: 14px; color: #666; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                  <h1>Karaoke Box Metz</h1>
+                  <h2>${emailData.status === 'confirmed' ? 'Réservation confirmée' : 'Réservation reçue'}</h2>
+                </div>
+                <p>Bonjour ${emailData.userName},</p>
+                <p>${
+                  emailData.status === 'confirmed'
+                    ? 'Votre réservation a été confirmée.'
+                    : 'Nous avons bien reçu votre réservation. Notre équipe la validera dans les plus brefs délais.'
+                }</p>
+                <div class="details">
+                  <h3>Détails de votre réservation :</h3>
+                  <p>📅 Date : ${formattedDate}</p>
+                  <p>🕒 Horaire : ${emailData.timeSlot}h - ${endTime}h</p>
+                  <p>👥 Nombre de personnes : ${emailData.groupSize}</p>
+                  <p>💶 Prix total : ${emailData.price}€</p>
+                </div>
+                <div class="footer">
+                  <p>Karaoke Box Metz<br>
+                  📍 [Adresse]<br>
+                  📞 [Téléphone]<br>
+                  ✉️ contact@karaoke-box-metz.fr</p>
+                </div>
+              </div>
+            </body>
+          </html>
+        `,
       }),
     });
 
-    // Envoyer une notification à l'administrateur
-    const adminRes = await fetch("https://api.resend.com/emails", {
+    console.log("Customer email response:", await customerEmailRes.text());
+
+    // Send notification to admin
+    const adminEmailRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -155,31 +108,62 @@ const handler = async (req: Request): Promise<Response> => {
         from: "Karaoke Box Metz <no-reply@karaoke-box-metz.fr>",
         to: ["mendar.bouchali@gmail.com"],
         subject: "Nouvelle réservation - Karaoke Box Metz",
-        html: generateEmailHTML({ ...emailData, isAdmin: true }),
+        html: `
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <title>Nouvelle réservation - Karaoke Box Metz</title>
+              <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { text-align: center; margin-bottom: 30px; }
+                .details { background-color: #f9f9f9; padding: 20px; border-radius: 8px; }
+                .footer { text-align: center; margin-top: 30px; font-size: 14px; color: #666; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                  <h1>Nouvelle réservation reçue</h1>
+                </div>
+                <div class="details">
+                  <h3>Détails de la réservation :</h3>
+                  <p>👤 Client : ${emailData.userName}</p>
+                  <p>📅 Date : ${formattedDate}</p>
+                  <p>🕒 Horaire : ${emailData.timeSlot}h - ${endTime}h</p>
+                  <p>👥 Nombre de personnes : ${emailData.groupSize}</p>
+                  <p>💶 Prix total : ${emailData.price}€</p>
+                  <p>📊 Statut : ${emailData.status}</p>
+                </div>
+                <div class="footer">
+                  <p>Karaoke Box Metz - Panel Administrateur</p>
+                </div>
+              </div>
+            </body>
+          </html>
+        `,
       }),
     });
 
-    if (clientRes.ok && adminRes.ok) {
-      const data = await clientRes.json();
-      console.log("Emails sent successfully:", data);
-      return new Response(JSON.stringify(data), {
-        status: 200,
+    console.log("Admin email response:", await adminEmailRes.text());
+
+    if (customerEmailRes.ok && adminEmailRes.ok) {
+      return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     } else {
-      const error = await clientRes.text();
-      console.error("Error sending emails:", error);
-      return new Response(JSON.stringify({ error }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      throw new Error("Failed to send one or more emails");
     }
   } catch (error: any) {
     console.error("Error in send-booking-email function:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ error: error.message || "Failed to send email" }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
   }
 };
 

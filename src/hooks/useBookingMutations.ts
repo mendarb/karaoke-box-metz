@@ -11,12 +11,29 @@ export const useBookingMutations = () => {
     console.log('Updating booking status:', { bookingId, newStatus });
     
     try {
+      // First check if the booking exists and is accessible
+      const { data: existingBooking, error: fetchError } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('id', bookingId)
+        .maybeSingle();
+
+      if (fetchError) {
+        console.error('Error fetching booking:', fetchError);
+        throw fetchError;
+      }
+
+      if (!existingBooking) {
+        throw new Error('Réservation non trouvée ou accès non autorisé');
+      }
+
+      // If booking exists, proceed with update
       const { data, error } = await supabase
         .from('bookings')
         .update({ status: newStatus })
         .eq('id', bookingId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error updating booking:', error);
@@ -24,7 +41,7 @@ export const useBookingMutations = () => {
       }
 
       if (!data) {
-        throw new Error('Réservation non trouvée');
+        throw new Error('Erreur lors de la mise à jour');
       }
 
       // Update cache optimistically

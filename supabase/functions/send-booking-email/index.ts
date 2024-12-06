@@ -3,7 +3,11 @@ import { format } from "https://deno.land/x/date_fns@v2.22.1/format/index.js";
 import { fr } from "https://deno.land/x/date_fns@v2.22.1/locale/index.js";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+console.log('Starting send-booking-email function');
 console.log('RESEND_API_KEY configured:', !!RESEND_API_KEY);
+if (!RESEND_API_KEY) {
+  console.error('RESEND_API_KEY is not configured');
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -33,7 +37,6 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     if (!RESEND_API_KEY) {
-      console.error('RESEND_API_KEY is not configured');
       throw new Error("RESEND_API_KEY is not configured");
     }
 
@@ -122,7 +125,8 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(JSON.stringify({ 
       error: error.message,
       type: error.constructor.name,
-      stack: error.stack
+      stack: error.stack,
+      resendKeyConfigured: !!RESEND_API_KEY
     }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

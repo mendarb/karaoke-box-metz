@@ -39,6 +39,10 @@ const handler = async (req: Request): Promise<Response> => {
     const { type, booking }: EmailRequest = await req.json();
     console.log("Received email data:", { type, booking });
 
+    if (!RESEND_API_KEY) {
+      throw new Error("RESEND_API_KEY is not configured");
+    }
+
     const formattedDate = format(new Date(booking.date), "d MMMM yyyy", { locale: fr });
     const endTime = parseInt(booking.time_slot) + parseInt(booking.duration);
 
@@ -100,21 +104,27 @@ const handler = async (req: Request): Promise<Response> => {
       }),
     });
 
-    console.log("Email response:", await emailRes.text());
+    const responseData = await emailRes.json();
+    console.log("Resend API response:", responseData);
 
-    if (emailRes.ok) {
-      return new Response(JSON.stringify({ success: true }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    } else {
-      throw new Error("Failed to send email");
+    if (!emailRes.ok) {
+      throw new Error(`Resend API error: ${JSON.stringify(responseData)}`);
     }
-  } catch (error: any) {
-    console.error("Error in send-booking-email function:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
+
+    return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
+  } catch (error: any) {
+    console.error("Error in send-booking-email function:", error);
+    return new Response(
+      JSON.stringify({ 
+        error: error.message,
+        details: error.stack
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
   }
 };
 

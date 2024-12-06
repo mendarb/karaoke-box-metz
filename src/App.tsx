@@ -18,7 +18,7 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
-      staleTime: 5000, // Ajoute un délai avant de considérer les données comme périmées
+      staleTime: 5000,
     },
   },
 });
@@ -34,27 +34,47 @@ const App = () => {
 
     const checkSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error("Session check error:", error);
-          throw error;
-        }
+        // First, try to get the session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        if (mounted) {
-          if (!session) {
-            console.log("No session found, keeping auth modal open");
+        if (sessionError) {
+          console.error("Session check error:", sessionError);
+          throw sessionError;
+        }
+
+        if (!session) {
+          console.log("No session found, keeping auth modal open");
+          if (mounted) {
             setIsAuthOpen(true);
-          } else {
-            console.log("Session found, closing auth modal");
-            setIsAuthOpen(false);
+            setSessionChecked(true);
           }
+          return;
+        }
+
+        // Verify the session is still valid by making a test request
+        const { error: userError } = await supabase.auth.getUser();
+        if (userError) {
+          console.error("User verification failed:", userError);
+          if (userError.message.includes("session_not_found")) {
+            console.log("Session invalid, signing out...");
+            await supabase.auth.signOut();
+            throw new Error("Session expired");
+          }
+          throw userError;
+        }
+
+        console.log("Session valid, closing auth modal");
+        if (mounted) {
+          setIsAuthOpen(false);
           setSessionChecked(true);
         }
       } catch (error: any) {
-        console.error("Session check failed:", error);
+        console.error("Session verification failed:", error);
         if (mounted) {
+          // Clear the invalid session
+          await supabase.auth.signOut();
           toast({
-            title: "Erreur de session",
+            title: "Session expirée",
             description: "Veuillez vous reconnecter",
             variant: "destructive",
           });
@@ -70,14 +90,28 @@ const App = () => {
 
     checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event, session?.user?.email);
+      
       if (mounted) {
         if (!session) {
           console.log("Auth state changed: no session");
           setIsAuthOpen(true);
         } else {
-          console.log("Auth state changed: session found");
-          setIsAuthOpen(false);
+          try {
+            // Verify the new session is valid
+            const { error: userError } = await supabase.auth.getUser();
+            if (userError) {
+              console.error("New session verification failed:", userError);
+              throw userError;
+            }
+            console.log("Auth state changed: valid session found");
+            setIsAuthOpen(false);
+          } catch (error) {
+            console.error("New session verification failed:", error);
+            await supabase.auth.signOut();
+            setIsAuthOpen(true);
+          }
         }
       }
     });

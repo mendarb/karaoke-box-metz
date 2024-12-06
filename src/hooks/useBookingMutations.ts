@@ -1,11 +1,11 @@
-import { useQueryClient } from "@tanstack/react-query";
-import { useToast } from "@/components/ui/use-toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { Booking } from "@/hooks/useBookings";
+import { useToast } from "@/components/ui/use-toast";
+import { Booking } from "./useBookings";
 
 export const useBookingMutations = () => {
-  const queryClient = useQueryClient();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const updateBookingStatus = async (bookingId: string, newStatus: string) => {
     console.log('Updating booking status:', { bookingId, newStatus });
@@ -28,6 +28,25 @@ export const useBookingMutations = () => {
         throw new Error('Permission refusée');
       }
 
+      // First check if booking exists
+      const { data: existingBooking, error: fetchError } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('id', bookingId)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching booking:', fetchError);
+        if (fetchError.code === 'PGRST116') {
+          throw new Error('Cette réservation n\'existe plus ou a été supprimée');
+        }
+        throw fetchError;
+      }
+
+      if (!existingBooking) {
+        throw new Error('Réservation non trouvée');
+      }
+
       // Update booking status
       const { data, error } = await supabase
         .from('bookings')
@@ -38,9 +57,6 @@ export const useBookingMutations = () => {
 
       if (error) {
         console.error('Error updating booking:', error);
-        if (error.code === 'PGRST116') {
-          throw new Error('Réservation non trouvée');
-        }
         throw error;
       }
 
@@ -52,23 +68,20 @@ export const useBookingMutations = () => {
       console.log('Sending email notification for status change');
       const { error: emailError } = await supabase.functions.invoke('send-booking-email', {
         body: {
-          to: data.user_email,
-          userName: data.user_name,
-          date: data.date,
-          timeSlot: data.time_slot,
-          duration: data.duration,
-          groupSize: data.group_size,
-          price: data.price,
-          status: newStatus,
-        },
+          type: newStatus === 'confirmed' ? 'booking_confirmed' : 'booking_cancelled',
+          booking: {
+            ...data,
+            status: newStatus
+          }
+        }
       });
 
       if (emailError) {
         console.error('Error sending email:', emailError);
         toast({
-          title: "Note",
-          description: "Le statut a été mis à jour mais l'envoi de l'email a échoué.",
-          variant: "default",
+          title: "Attention",
+          description: "Le statut a été mis à jour mais l'email n'a pas pu être envoyé",
+          variant: "destructive",
         });
       }
 
@@ -91,11 +104,10 @@ export const useBookingMutations = () => {
       await queryClient.invalidateQueries({ queryKey: ['bookings'] });
 
     } catch (error: any) {
-      console.error('Error updating booking status:', error);
-      
+      console.error('Error in updateBookingStatus:', error);
       toast({
         title: "Erreur",
-        description: error.message || "Impossible de mettre à jour le statut.",
+        description: error.message || "Une erreur est survenue",
         variant: "destructive",
       });
 
@@ -104,5 +116,7 @@ export const useBookingMutations = () => {
     }
   };
 
-  return { updateBookingStatus };
+  return {
+    updateBookingStatus,
+  };
 };

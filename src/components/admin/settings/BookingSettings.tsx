@@ -11,6 +11,7 @@ export const BookingSettings = () => {
   const [autoConfirm, setAutoConfirm] = useState(false);
   const [minGroupSize, setMinGroupSize] = useState("1");
   const [maxGroupSize, setMaxGroupSize] = useState("10");
+  const [isTestMode, setIsTestMode] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -30,6 +31,7 @@ export const BookingSettings = () => {
         setAutoConfirm(data.value.autoConfirm);
         setMinGroupSize(data.value.minGroupSize.toString());
         setMaxGroupSize(data.value.maxGroupSize.toString());
+        setIsTestMode(data.value.isTestMode ?? true);
       }
     };
 
@@ -46,6 +48,7 @@ export const BookingSettings = () => {
             autoConfirm,
             minGroupSize: parseInt(minGroupSize),
             maxGroupSize: parseInt(maxGroupSize),
+            isTestMode,
           }
         }, {
           onConflict: 'key'
@@ -79,6 +82,15 @@ export const BookingSettings = () => {
             id="auto-confirm"
             checked={autoConfirm}
             onCheckedChange={setAutoConfirm}
+          />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <Label htmlFor="test-mode">Mode Test</Label>
+          <Switch
+            id="test-mode"
+            checked={isTestMode}
+            onCheckedChange={setIsTestMode}
           />
         </div>
 

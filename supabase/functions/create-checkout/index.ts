@@ -16,10 +16,10 @@ serve(async (req) => {
     const { price, groupSize, duration, date, timeSlot, message, userEmail, userName, userPhone, isTestMode } = await req.json();
     console.log('Request data:', { price, groupSize, duration, date, timeSlot, message, userEmail, userName, userPhone, isTestMode });
 
-    // Créer le client Supabase
+    // Créer le client Supabase avec la clé service_role
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     );
 
     // Récupérer les paramètres de test depuis la base de données

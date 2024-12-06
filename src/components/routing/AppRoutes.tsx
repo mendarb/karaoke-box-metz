@@ -6,6 +6,7 @@ import { Settings } from "@/pages/Settings";
 import { Success } from "@/pages/Success";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { ProtectedRoute } from "./ProtectedRoute";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 interface AppRoutesProps {
   isAuthOpen: boolean;
@@ -20,6 +21,12 @@ export const AppRoutes = ({
   isLoading,
   sessionChecked,
 }: AppRoutesProps) => {
+  console.log("AppRoutes render:", { isLoading, sessionChecked, isAuthOpen });
+
+  if (isLoading && !sessionChecked) {
+    return <LoadingSpinner />;
+  }
+
   const protectedRouteProps = {
     isLoading,
     sessionChecked,

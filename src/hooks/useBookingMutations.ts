@@ -9,10 +9,22 @@ export const useBookingMutations = () => {
 
   const updateBookingStatus = async (bookingId: string, newStatus: string) => {
     console.log('Updating booking status:', { bookingId, newStatus });
-    const previousBookings = queryClient.getQueryData<Booking[]>(['bookings']) || [];
     
     try {
-      // Optimistic update
+      // Update in Supabase
+      const { data, error } = await supabase
+        .from('bookings')
+        .update({ status: newStatus })
+        .eq('id', bookingId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error updating booking:', error);
+        throw error;
+      }
+
+      // Update cache with actual data
       queryClient.setQueryData(['bookings'], (old: Booking[] | undefined) => {
         if (!old) return [];
         return old.map(booking => 
@@ -22,48 +34,25 @@ export const useBookingMutations = () => {
         );
       });
 
-      // Update in Supabase
-      const { data, error } = await supabase
-        .from('bookings')
-        .update({ status: newStatus })
-        .eq('id', bookingId)
-        .select()
-        .maybeSingle();
-
-      if (error) {
-        throw error;
-      }
-
-      if (!data) {
-        throw new Error("Réservation non trouvée");
-      }
-
-      // Update cache with actual data
-      queryClient.setQueryData(['bookings'], (old: Booking[] | undefined) => {
-        if (!old) return [];
-        return old.map(booking => 
-          booking.id === bookingId 
-            ? data
-            : booking
-        );
-      });
-
       toast({
         title: "Succès",
         description: "Le statut a été mis à jour",
       });
 
+      // Invalidate and refetch
+      await queryClient.invalidateQueries({ queryKey: ['bookings'] });
+
     } catch (error: any) {
       console.error('Error updating booking status:', error);
       
-      // Restore previous state on error
-      queryClient.setQueryData(['bookings'], previousBookings);
-      
       toast({
         title: "Erreur",
-        description: error.message || "Impossible de mettre à jour le statut",
+        description: "Impossible de mettre à jour le statut. La réservation n'existe peut-être plus.",
         variant: "destructive",
       });
+
+      // Refresh the data to ensure UI is in sync
+      await queryClient.invalidateQueries({ queryKey: ['bookings'] });
     }
   };
 

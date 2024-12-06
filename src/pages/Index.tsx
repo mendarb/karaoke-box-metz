@@ -17,28 +17,42 @@ const Index = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [sessionChecked, setSessionChecked] = useState(false);
 
   useEffect(() => {
     let mounted = true;
 
     const initializeAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error } = await supabase.auth.getSession();
         
+        if (error) {
+          console.error("Session error:", error);
+          if (mounted) {
+            setIsLoading(false);
+            setSessionChecked(true);
+          }
+          return;
+        }
+
         if (mounted) {
           if (session?.user) {
+            console.log("Session found for user:", session.user.email);
             setUser(session.user);
             setIsAdmin(session.user.email === "mendar.bouchali@gmail.com");
           } else {
+            console.log("No session found");
             setUser(null);
             setIsAdmin(false);
           }
           setIsLoading(false);
+          setSessionChecked(true);
         }
       } catch (error) {
         console.error("Auth initialization error:", error);
         if (mounted) {
           setIsLoading(false);
+          setSessionChecked(true);
           toast({
             title: "Erreur d'authentification",
             description: "Une erreur est survenue lors de l'initialisation",
@@ -51,7 +65,8 @@ const Index = () => {
     initializeAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      async (event, session) => {
+        console.log("Auth state changed:", event, session?.user?.email);
         if (mounted) {
           if (session?.user) {
             setUser(session.user);
@@ -60,6 +75,8 @@ const Index = () => {
             setUser(null);
             setIsAdmin(false);
           }
+          setIsLoading(false);
+          setSessionChecked(true);
         }
       }
     );
@@ -70,7 +87,8 @@ const Index = () => {
     };
   }, [toast]);
 
-  if (isLoading) {
+  // Show loading spinner only during initial load
+  if (isLoading && !sessionChecked) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-violet-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>

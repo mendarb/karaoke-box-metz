@@ -2,41 +2,38 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { format } from "https://deno.land/x/date_fns@v2.22.1/format/index.js";
 import { fr } from "https://deno.land/x/date_fns@v2.22.1/locale/index.js";
 
-const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface BookingEmailRequest {
-  type: 'booking_confirmed' | 'booking_cancelled';
-  booking: {
-    user_name: string;
-    user_email: string;
-    date: string;
-    time_slot: string;
-    duration: string;
-    group_size: string;
-    price: number;
-    status: string;
-  };
+interface Booking {
+  user_name: string;
+  user_email: string;
+  date: string;
+  time_slot: string;
+  duration: string;
+  group_size: string;
+  price: number;
+  status: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
   console.log('Email function called');
-
+  
   // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     if (!RESEND_API_KEY) {
-      throw new Error('RESEND_API_KEY is not configured');
+      throw new Error("RESEND_API_KEY is not configured");
     }
 
-    const { type, booking }: BookingEmailRequest = await req.json();
+    const { type, booking }: { type: 'booking_confirmed' | 'booking_cancelled', booking: Booking } = await req.json();
     console.log('Received email request:', { type, booking });
 
     const formattedDate = format(new Date(booking.date), "d MMMM yyyy", { locale: fr });
@@ -89,14 +86,14 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     console.log('Sending email with Resend...');
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: 'Karaoke Box Metz <no-reply@karaoke-box-metz.fr>',
+        from: "Karaoke Box Metz <no-reply@karaoke-box-metz.fr>",
         to: [booking.user_email],
         subject: emailSubject,
         html: emailHtml,
@@ -112,7 +109,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     return new Response(JSON.stringify(data), {
       status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
 
   } catch (error: any) {
@@ -122,10 +119,9 @@ const handler = async (req: Request): Promise<Response> => {
         error: error.message,
         details: error.stack
       }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 };
 

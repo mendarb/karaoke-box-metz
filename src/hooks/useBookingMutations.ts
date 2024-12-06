@@ -65,7 +65,7 @@ export const useBookingMutations = () => {
         toast({
           title: "Attention",
           description: "Le statut a été mis à jour mais l'envoi de l'email a échoué.",
-          variant: "warning",
+          variant: "destructive", // Changed from "warning" to "destructive"
         });
       }
 

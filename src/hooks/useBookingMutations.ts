@@ -13,7 +13,12 @@ export const useBookingMutations = () => {
       
       try {
         // Vérifier la session et les permissions
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          throw new Error('Session expirée. Veuillez vous reconnecter.');
+        }
+
         if (!session) {
           console.error('No session found');
           throw new Error('Session expirée. Veuillez vous reconnecter.');
@@ -29,7 +34,7 @@ export const useBookingMutations = () => {
         // Vérifier d'abord si la réservation existe
         const { data: bookings, error: checkError } = await supabase
           .from('bookings')
-          .select('*')
+          .select()
           .eq('id', bookingId);
 
         if (checkError) {
@@ -42,13 +47,10 @@ export const useBookingMutations = () => {
           throw new Error('Réservation non trouvée');
         }
 
-        // Mettre à jour la réservation avec la politique RLS appropriée
+        // Mettre à jour la réservation
         const { data: updatedBookings, error: updateError } = await supabase
           .from('bookings')
-          .update({ 
-            status: newStatus,
-            updated_at: new Date().toISOString()
-          })
+          .update({ status: newStatus })
           .eq('id', bookingId)
           .select();
 

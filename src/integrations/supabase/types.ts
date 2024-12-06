@@ -21,6 +21,7 @@ export type Database = {
           price: number
           status: string
           time_slot: string
+          updated_at: string | null
           user_email: string
           user_id: string
           user_name: string
@@ -37,6 +38,7 @@ export type Database = {
           price: number
           status?: string
           time_slot: string
+          updated_at?: string | null
           user_email: string
           user_id: string
           user_name: string
@@ -53,6 +55,7 @@ export type Database = {
           price?: number
           status?: string
           time_slot?: string
+          updated_at?: string | null
           user_email?: string
           user_id?: string
           user_name?: string

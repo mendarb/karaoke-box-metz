@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { format } from "https://deno.land/x/date_fns@v2.22.1/format/index.js";
-import { fr } from "https://deno.land/x/date_fns@v2.22.1/locale/index.js";
+import { format } from "npm:date-fns@3.3.1";
+import { fr } from "npm:date-fns/locale";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 console.log('Starting send-booking-email function');

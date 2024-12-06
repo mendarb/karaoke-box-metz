@@ -22,13 +22,29 @@ export const useBookingMutations = () => {
         throw new Error('Permission refusée');
       }
 
-      // Effectuer la mise à jour dans Supabase
+      // First, check if the booking exists
+      const { data: existingBooking, error: fetchError } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('id', bookingId)
+        .maybeSingle();
+
+      if (fetchError) {
+        console.error('Fetch error:', fetchError);
+        throw fetchError;
+      }
+
+      if (!existingBooking) {
+        throw new Error('Réservation non trouvée');
+      }
+
+      // Perform the update
       const { data: updatedBooking, error: updateError } = await supabase
         .from('bookings')
         .update({ status: newStatus })
         .eq('id', bookingId)
         .select('*')
-        .single();
+        .maybeSingle();
 
       if (updateError) {
         console.error('Update error:', updateError);
@@ -41,13 +57,16 @@ export const useBookingMutations = () => {
 
       console.log('Successfully updated booking:', updatedBooking);
 
-      // Mettre à jour le cache avec la nouvelle donnée
+      // Update the cache with the new data
       queryClient.setQueryData(['bookings'], (old: Booking[] | undefined) => {
         if (!old) return [updatedBooking];
         return old.map(booking => 
           booking.id === bookingId ? updatedBooking : booking
         );
       });
+
+      // Invalidate queries to ensure UI is in sync
+      await queryClient.invalidateQueries({ queryKey: ['bookings'] });
 
       toast({
         title: "Succès",
@@ -63,7 +82,7 @@ export const useBookingMutations = () => {
         variant: "destructive",
       });
 
-      // Rafraîchir les données en cas d'erreur
+      // Refresh data in case of error
       await queryClient.invalidateQueries({ queryKey: ['bookings'] });
     }
   };

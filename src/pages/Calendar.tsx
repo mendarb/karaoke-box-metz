@@ -1,4 +1,3 @@
-import { DashboardSidebar } from "@/components/admin/DashboardSidebar";
 import { ResizablePanelGroup, ResizablePanel } from "@/components/ui/resizable";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
@@ -14,6 +13,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { BookingStatusBadge } from "@/components/admin/BookingStatusBadge";
 import { BookingActions } from "@/components/admin/BookingActions";
+import { DashboardSidebar } from "@/components/admin/DashboardSidebar";
 
 export const Calendar = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
@@ -52,9 +52,10 @@ export const Calendar = () => {
 
       return data || [];
     },
+    staleTime: 0, // Les données sont toujours considérées comme périmées
+    cacheTime: 0, // Désactive le cache pour forcer le rechargement
   });
 
-  // Gestion de la mise à jour du statut
   const updateBookingStatus = async (bookingId: string, newStatus: string) => {
     try {
       const { error } = await supabase
@@ -74,13 +75,13 @@ export const Calendar = () => {
         );
       });
 
-      // Invalider et recharger les données en arrière-plan
-      queryClient.invalidateQueries({ queryKey: ['bookings'] });
-
       toast({
         title: "Succès",
         description: "Le statut a été mis à jour",
       });
+
+      // Force un nouveau chargement des données
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
     } catch (error) {
       console.error('Error updating booking status:', error);
       toast({
@@ -88,7 +89,6 @@ export const Calendar = () => {
         description: "Impossible de mettre à jour le statut",
         variant: "destructive",
       });
-      // En cas d'erreur, on recharge les données
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
     }
   };

@@ -56,9 +56,10 @@ export const AdminDashboard = () => {
 
       return data || [];
     },
+    staleTime: 0, // Les données sont toujours considérées comme périmées
+    cacheTime: 0, // Désactive le cache pour forcer le rechargement
   });
 
-  // Gestion de la mise à jour du statut
   const updateBookingStatus = async (bookingId: string, newStatus: string) => {
     try {
       const { error } = await supabase
@@ -78,13 +79,13 @@ export const AdminDashboard = () => {
         );
       });
 
-      // Invalider et recharger les données en arrière-plan
-      queryClient.invalidateQueries({ queryKey: ['bookings'] });
-
       toast({
         title: "Succès",
         description: "Le statut a été mis à jour",
       });
+
+      // Force un nouveau chargement des données
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
     } catch (error) {
       console.error('Error updating booking status:', error);
       toast({
@@ -92,7 +93,6 @@ export const AdminDashboard = () => {
         description: "Impossible de mettre à jour le statut",
         variant: "destructive",
       });
-      // En cas d'erreur, on recharge les données
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
     }
   };

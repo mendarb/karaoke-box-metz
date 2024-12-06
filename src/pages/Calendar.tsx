@@ -21,7 +21,7 @@ export const Calendar = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: bookings = [] } = useQuery({
+  const { data: bookings = [], isLoading } = useQuery({
     queryKey: ['bookings'],
     queryFn: async () => {
       const { data: session } = await supabase.auth.getSession();
@@ -52,8 +52,11 @@ export const Calendar = () => {
 
       return data || [];
     },
-    staleTime: 0, // Les données sont toujours considérées comme périmées
-    cacheTime: 0, // Désactive le cache pour forcer le rechargement
+    refetchOnWindowFocus: true, // Recharge les données quand la fenêtre reprend le focus
+    refetchOnMount: true, // Recharge les données au montage du composant
+    refetchInterval: 30000, // Recharge automatique toutes les 30 secondes
+    staleTime: 10000, // Considère les données comme périmées après 10 secondes
+    gcTime: 300000, // Garde les données en cache pendant 5 minutes
   });
 
   const updateBookingStatus = async (bookingId: string, newStatus: string) => {

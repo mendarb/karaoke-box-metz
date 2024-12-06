@@ -56,8 +56,11 @@ export const AdminDashboard = () => {
 
       return data || [];
     },
-    staleTime: 0, // Les données sont toujours considérées comme périmées
-    cacheTime: 0, // Désactive le cache pour forcer le rechargement
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    refetchInterval: 30000,
+    staleTime: 10000,
+    gcTime: 300000,
   });
 
   const updateBookingStatus = async (bookingId: string, newStatus: string) => {

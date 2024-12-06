@@ -59,7 +59,7 @@ export const DashboardSidebar = () => {
         </Button>
       </nav>
 
-      <div className="absolute bottom-0 left-0 right-0 p-4 bg-card border-t">
+      <div className="fixed bottom-0 left-0 w-[inherit] p-4 bg-card border-t">
         <Button
           variant="ghost"
           className="w-full justify-start mb-2"

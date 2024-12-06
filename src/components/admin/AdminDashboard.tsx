@@ -4,17 +4,18 @@ import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
 import { BookingsTable } from "./BookingsTable";
 import { BookingDetailsDialog } from "./BookingDetailsDialog";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { DashboardStats } from "./DashboardStats";
-import { ResizablePanelGroup, ResizablePanel } from "@/components/ui/resizable";
+import { ResizablePanelGroup, ResizablePanel, ResizeHandle } from "@/components/ui/resizable";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { Booking } from "@/hooks/useBookings";
+import { useBookingMutations } from "@/hooks/useBookingMutations";
 
 export const AdminDashboard = () => {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const { updateBookingStatus } = useBookingMutations();
 
   const { data: bookings = [], isLoading } = useQuery({
     queryKey: ['bookings'],
@@ -59,47 +60,7 @@ export const AdminDashboard = () => {
     refetchOnWindowFocus: true,
     refetchOnMount: true,
     refetchInterval: 30000,
-    staleTime: 0,
-    gcTime: 0,
   });
-
-  const updateBookingStatus = async (bookingId: string, newStatus: string) => {
-    try {
-      // Mise à jour optimiste du cache
-      queryClient.setQueryData(['bookings'], (oldData: Booking[] | undefined) => {
-        if (!oldData) return [];
-        return oldData.map(booking => 
-          booking.id === bookingId 
-            ? { ...booking, status: newStatus }
-            : booking
-        );
-      });
-
-      const { error } = await supabase
-        .from('bookings')
-        .update({ status: newStatus })
-        .eq('id', bookingId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Succès",
-        description: "Le statut a été mis à jour",
-      });
-
-      // Force un nouveau chargement des données après la mise à jour
-      await queryClient.invalidateQueries({ queryKey: ['bookings'] });
-    } catch (error) {
-      console.error('Error updating booking status:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de mettre à jour le statut",
-        variant: "destructive",
-      });
-      // En cas d'erreur, on recharge les données pour revenir à l'état correct
-      await queryClient.invalidateQueries({ queryKey: ['bookings'] });
-    }
-  };
 
   if (isLoading) {
     return (
@@ -115,6 +76,7 @@ export const AdminDashboard = () => {
         <ResizablePanel defaultSize={20} minSize={15} maxSize={25}>
           <DashboardSidebar />
         </ResizablePanel>
+        <ResizeHandle />
         <ResizablePanel defaultSize={80}>
           <div className="p-6">
             <h1 className="text-2xl font-bold mb-6">Tableau de bord administrateur</h1>

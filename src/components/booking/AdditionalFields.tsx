@@ -29,22 +29,34 @@ export const AdditionalFields = ({
   const [createAccount, setCreateAccount] = useState(false);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        setCreateAccount(false);
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        console.log('Session check result:', { session, error });
+        
+        if (session?.user) {
+          console.log('User is authenticated:', session.user.email);
+          setIsAuthenticated(true);
+          setCreateAccount(false);
+        } else {
+          console.log('No active session found');
+          setIsAuthenticated(false);
+        }
+      } catch (error) {
+        console.error('Error checking session:', error);
+        setIsAuthenticated(false);
       }
     };
+
     checkSession();
   }, []);
 
-  const handleCreateAccountChange = async (checked: boolean) => {
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (session) {
+  const handleCreateAccountChange = (checked: boolean) => {
+    if (isAuthenticated) {
       toast({
         title: "Vous êtes déjà connecté",
         description: "Pas besoin de créer un compte",
@@ -53,7 +65,9 @@ export const AdditionalFields = ({
       return;
     }
 
+    console.log('Setting create account to:', checked);
     setCreateAccount(checked);
+    
     if (checked) {
       form.setValue('createAccount', true);
       form.setValue('password', password);
@@ -92,7 +106,7 @@ export const AdditionalFields = ({
         )}
       />
 
-      {!supabase.auth.getSession() && (
+      {!isAuthenticated && (
         <div className="space-y-4">
           <div className="flex items-center space-x-2">
             <Checkbox

@@ -8,7 +8,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { UseFormReturn } from "react-hook-form";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input";
@@ -30,8 +30,16 @@ export const AdditionalFields = ({
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
-  const email = form.getValues("email");
-  const fullName = form.getValues("fullName");
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setCreateAccount(false);
+      }
+    };
+    checkSession();
+  }, []);
 
   const handleCreateAccountChange = async (checked: boolean) => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -46,6 +54,13 @@ export const AdditionalFields = ({
     }
 
     setCreateAccount(checked);
+    if (checked) {
+      form.setValue('createAccount', true);
+      form.setValue('password', password);
+    } else {
+      form.setValue('createAccount', false);
+      form.setValue('password', '');
+    }
   };
 
   return (
@@ -89,14 +104,14 @@ export const AdditionalFields = ({
               htmlFor="createAccount"
               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
-              Créer un compte pour gérer mes réservations
+              Créer un compte avec mes informations pour gérer mes réservations
             </label>
           </div>
 
           {createAccount && (
             <div className="space-y-4 animate-fadeIn">
               <p className="text-sm text-gray-600">
-                Un compte sera créé avec votre email : {email}
+                Un compte sera créé avec votre email : {form.getValues("email")}
               </p>
               <FormItem>
                 <FormLabel>Mot de passe</FormLabel>
@@ -104,9 +119,14 @@ export const AdditionalFields = ({
                   <Input
                     type={showPassword ? "text" : "password"}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      form.setValue('password', e.target.value);
+                    }}
                     placeholder="Choisissez un mot de passe"
                     className="pr-10"
+                    minLength={6}
+                    required={createAccount}
                   />
                 </FormControl>
                 <button

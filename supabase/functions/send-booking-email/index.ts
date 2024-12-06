@@ -9,15 +9,17 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface Booking {
-  user_name: string;
-  user_email: string;
-  date: string;
-  time_slot: string;
-  duration: string;
-  group_size: string;
-  price: number;
-  status: string;
+interface BookingEmailRequest {
+  type: 'booking_confirmed' | 'booking_cancelled';
+  booking: {
+    user_name: string;
+    user_email: string;
+    date: string;
+    time_slot: string;
+    duration: string;
+    group_size: string;
+    price: number;
+  };
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -34,7 +36,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("RESEND_API_KEY is not configured");
     }
 
-    const { type, booking }: { type: 'booking_confirmed' | 'booking_cancelled', booking: Booking } = await req.json();
+    const { type, booking }: BookingEmailRequest = await req.json();
     console.log('Received email request:', { type, booking });
 
     const formattedDate = format(new Date(booking.date), "d MMMM yyyy", { locale: fr });
@@ -116,11 +118,7 @@ const handler = async (req: Request): Promise<Response> => {
 
   } catch (error: any) {
     console.error('Error in send-booking-email function:', error);
-    return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        details: error.stack
-      }), {
+    return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

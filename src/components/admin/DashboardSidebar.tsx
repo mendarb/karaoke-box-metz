@@ -1,4 +1,4 @@
-import { Home, Calendar, Settings, LogOut } from "lucide-react";
+import { Home, Calendar, Settings, LogOut, ArrowLeft } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -27,12 +27,12 @@ export const DashboardSidebar = () => {
   };
 
   return (
-    <div className="h-screen bg-card p-4 flex flex-col border-r">
+    <div className="h-screen bg-card p-4 flex flex-col border-r relative">
       <div className="mb-8">
         <h2 className="text-lg font-semibold px-4 mb-4">Karaoke Admin</h2>
       </div>
 
-      <nav className="space-y-2 flex-1">
+      <nav className="space-y-2">
         <Button 
           variant={isActive("/admin") ? "secondary" : "ghost"} 
           className="w-full justify-start" 
@@ -59,8 +59,20 @@ export const DashboardSidebar = () => {
         </Button>
       </nav>
 
-      <div className="border-t pt-4">
-        <Button variant="ghost" className="w-full justify-start text-red-500" onClick={handleLogout}>
+      <div className="absolute bottom-0 left-0 right-0 p-4 bg-card border-t">
+        <Button
+          variant="ghost"
+          className="w-full justify-start mb-2"
+          onClick={() => navigate("/")}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Retour au formulaire
+        </Button>
+        <Button 
+          variant="ghost" 
+          className="w-full justify-start text-red-500" 
+          onClick={handleLogout}
+        >
           <LogOut className="mr-2 h-4 w-4" />
           Déconnexion
         </Button>

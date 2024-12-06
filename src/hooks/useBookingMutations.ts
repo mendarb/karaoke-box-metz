@@ -22,51 +22,30 @@ export const useBookingMutations = () => {
         throw new Error('Permission refusée');
       }
 
-      // First, check if the booking exists and get its current data
-      const { data: booking, error: fetchError } = await supabase
-        .from('bookings')
-        .select()
-        .eq('id', bookingId)
-        .limit(1);
-
-      if (fetchError) {
-        console.error('Error fetching booking:', fetchError);
-        throw new Error('Erreur lors de la récupération de la réservation');
-      }
-
-      if (!booking || booking.length === 0) {
-        console.error('No booking found with ID:', bookingId);
-        throw new Error('Réservation non trouvée');
-      }
-
-      // Perform the update
-      const { data: updatedBookings, error: updateError } = await supabase
+      // Effectuer la mise à jour directement
+      const { data, error: updateError } = await supabase
         .from('bookings')
         .update({ status: newStatus })
         .eq('id', bookingId)
-        .select();
+        .select()
+        .single();
 
       if (updateError) {
         console.error('Error updating booking:', updateError);
         throw updateError;
       }
 
-      if (!updatedBookings || updatedBookings.length === 0) {
-        throw new Error('La mise à jour a échoué');
-      }
+      console.log('Successfully updated booking:', data);
 
-      const updatedBooking = updatedBookings[0];
-      console.log('Successfully updated booking:', updatedBooking);
-
-      // Update the cache
+      // Mettre à jour le cache avec les nouvelles données
       queryClient.setQueryData(['bookings'], (old: Booking[] | undefined) => {
-        if (!old) return [updatedBooking];
+        if (!old) return [data];
         return old.map(booking => 
-          booking.id === bookingId ? updatedBooking : booking
+          booking.id === bookingId ? data : booking
         );
       });
 
-      // Force a refetch to ensure consistency
+      // Forcer un rafraîchissement pour assurer la cohérence
       await queryClient.invalidateQueries({ queryKey: ['bookings'] });
 
       toast({
@@ -83,8 +62,7 @@ export const useBookingMutations = () => {
         variant: "destructive",
       });
 
-      // Refresh data in case of error
-      await queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      throw error;
     }
   };
 

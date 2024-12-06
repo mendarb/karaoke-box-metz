@@ -7,14 +7,42 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
+import { useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 
 interface PersonalInfoFieldsProps {
   form: UseFormReturn<any>;
 }
 
 export const PersonalInfoFields = ({ form }: PersonalInfoFieldsProps) => {
+  useEffect(() => {
+    const loadUserData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        // Pre-fill email from auth
+        form.setValue('email', user.email || '');
+        
+        // Get additional user data from the most recent booking
+        const { data: lastBooking } = await supabase
+          .from('bookings')
+          .select('user_name, user_phone')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (lastBooking) {
+          form.setValue('fullName', lastBooking.user_name);
+          form.setValue('phone', lastBooking.user_phone);
+        }
+      }
+    };
+
+    loadUserData();
+  }, [form]);
+
   return (
-    <>
+    <div className="space-y-4 animate-fadeIn">
       <FormField
         control={form.control}
         name="fullName"
@@ -71,6 +99,6 @@ export const PersonalInfoFields = ({ form }: PersonalInfoFieldsProps) => {
           </FormItem>
         )}
       />
-    </>
+    </div>
   );
 };

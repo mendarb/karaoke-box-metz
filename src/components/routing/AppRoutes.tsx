@@ -23,7 +23,7 @@ export const AppRoutes = ({
 }: AppRoutesProps) => {
   console.log("AppRoutes render:", { isLoading, sessionChecked, isAuthOpen });
 
-  if (isLoading && !sessionChecked) {
+  if (isLoading) {
     return <LoadingSpinner />;
   }
 

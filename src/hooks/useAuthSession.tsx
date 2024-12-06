@@ -3,7 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/ui/use-toast";
 
 export const useAuthSession = () => {
-  const [isAuthOpen, setIsAuthOpen] = useState(true);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [sessionChecked, setSessionChecked] = useState(false);
   const { toast } = useToast();

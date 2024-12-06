@@ -19,14 +19,6 @@ const queryClient = new QueryClient({
 const App = () => {
   const { isAuthOpen, setIsAuthOpen, isLoading, sessionChecked } = useAuthSession();
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
-      </div>
-    );
-  }
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>

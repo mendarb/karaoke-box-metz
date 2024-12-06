@@ -30,6 +30,7 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     if (!RESEND_API_KEY) {
+      console.error('RESEND_API_KEY is not configured');
       throw new Error("RESEND_API_KEY is not configured");
     }
 
@@ -85,7 +86,7 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
-    console.log('Sending email with Resend...');
+    console.log('Preparing to send email with Resend...');
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -93,7 +94,7 @@ const handler = async (req: Request): Promise<Response> => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "Karaoke Box Metz <no-reply@karaoke-box-metz.fr>",
+        from: "Karaoke Box Metz <onboarding@resend.dev>", // Using the default sender during testing
         to: [booking.user_email],
         subject: emailSubject,
         html: emailHtml,
@@ -104,6 +105,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log('Resend API response:', data);
 
     if (!res.ok) {
+      console.error('Resend API error:', data);
       throw new Error(`Resend API error: ${JSON.stringify(data)}`);
     }
 

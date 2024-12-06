@@ -11,29 +11,25 @@ export const useBookingMutations = () => {
     console.log('Updating booking status:', { bookingId, newStatus });
     
     try {
-      // First check if the booking exists and get its details
-      const { data: existingBooking, error: fetchError } = await supabase
-        .from('bookings')
-        .select('*')
-        .eq('id', bookingId)
-        .maybeSingle();
-
-      if (fetchError) {
-        console.error('Error fetching booking:', fetchError);
-        throw fetchError;
+      // Vérifier la session d'abord
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Vous devez être connecté pour effectuer cette action');
       }
 
-      if (!existingBooking) {
-        throw new Error('Réservation non trouvée ou accès non autorisé');
+      // Vérifier si l'utilisateur est admin
+      const isAdmin = session.user.email === 'mendar.bouchali@gmail.com';
+      if (!isAdmin) {
+        throw new Error('Permission refusée');
       }
 
-      // Update the booking status
+      // Mettre à jour le statut
       const { data, error } = await supabase
         .from('bookings')
         .update({ status: newStatus })
         .eq('id', bookingId)
         .select()
-        .maybeSingle();
+        .single();
 
       if (error) {
         console.error('Error updating booking:', error);
@@ -44,7 +40,7 @@ export const useBookingMutations = () => {
         throw new Error('Erreur lors de la mise à jour');
       }
 
-      // Send email notification about the status change
+      // Envoyer l'email de notification
       console.log('Sending email notification for status change');
       const { error: emailError } = await supabase.functions.invoke('send-booking-email', {
         body: {
@@ -61,15 +57,14 @@ export const useBookingMutations = () => {
 
       if (emailError) {
         console.error('Error sending email:', emailError);
-        // Don't throw here, we still want to update the UI
         toast({
-          title: "Attention",
+          title: "Note",
           description: "Le statut a été mis à jour mais l'envoi de l'email a échoué.",
-          variant: "destructive", // Changed from "warning" to "destructive"
+          variant: "default",
         });
       }
 
-      // Update cache optimistically
+      // Mettre à jour le cache
       queryClient.setQueryData(['bookings'], (old: Booking[] | undefined) => {
         if (!old) return [];
         return old.map(booking => 
@@ -84,7 +79,7 @@ export const useBookingMutations = () => {
         description: "Le statut a été mis à jour",
       });
 
-      // Invalidate and refetch to ensure data consistency
+      // Rafraîchir les données
       await queryClient.invalidateQueries({ queryKey: ['bookings'] });
 
     } catch (error: any) {
@@ -96,7 +91,7 @@ export const useBookingMutations = () => {
         variant: "destructive",
       });
 
-      // Refresh the data to ensure UI is in sync
+      // Rafraîchir les données pour s'assurer que l'UI est synchronisée
       await queryClient.invalidateQueries({ queryKey: ['bookings'] });
     }
   };

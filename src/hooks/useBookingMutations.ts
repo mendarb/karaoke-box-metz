@@ -22,20 +22,43 @@ export const useBookingMutations = () => {
         throw new Error('Permission refusée');
       }
 
-      const { error: updateError } = await supabase
+      const { data, error } = await supabase
         .from('bookings')
         .update({ status: newStatus })
-        .eq('id', bookingId);
+        .eq('id', bookingId)
+        .select()
+        .single();
 
-      if (updateError) throw updateError;
+      if (error) throw error;
 
-      // Refresh data
-      await queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      // Optimistic update
+      queryClient.setQueryData(['bookings'], (old: Booking[] | undefined) => {
+        if (!old) return [];
+        return old.map(booking => 
+          booking.id === bookingId 
+            ? { ...booking, status: newStatus }
+            : booking
+        );
+      });
+
+      // Send email notification
+      await supabase.functions.invoke('send-booking-email', {
+        body: {
+          type: newStatus === 'confirmed' ? 'booking_confirmed' : 'booking_cancelled',
+          booking: {
+            ...data,
+            status: newStatus
+          }
+        }
+      });
 
       toast({
         title: "Succès",
         description: "Le statut a été mis à jour",
       });
+
+      // Refresh data to ensure sync
+      await queryClient.invalidateQueries({ queryKey: ['bookings'] });
 
     } catch (error: any) {
       console.error('Error in updateBookingStatus:', error);
@@ -46,7 +69,7 @@ export const useBookingMutations = () => {
         variant: "destructive",
       });
 
-      // Refresh data to ensure UI is in sync
+      // Refresh data in case of error to ensure UI is in sync
       await queryClient.invalidateQueries({ queryKey: ['bookings'] });
     }
   };

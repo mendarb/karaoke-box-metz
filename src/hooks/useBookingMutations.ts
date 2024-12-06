@@ -24,12 +24,7 @@ export const useBookingMutations = () => {
 
       // Optimistic update
       const previousBookings = queryClient.getQueryData<Booking[]>(['bookings']);
-      const bookingToUpdate = previousBookings?.find(b => b.id === bookingId);
-
-      if (!bookingToUpdate) {
-        throw new Error('Réservation non trouvée');
-      }
-
+      
       // Update local cache optimistically
       queryClient.setQueryData(['bookings'], (old: Booking[] | undefined) => {
         if (!old) return [];
@@ -53,27 +48,8 @@ export const useBookingMutations = () => {
         throw updateError;
       }
 
-      // Send email notification
-      console.log('Sending email notification for booking:', bookingToUpdate);
-      const { error: emailError } = await supabase.functions.invoke('send-booking-email', {
-        body: {
-          type: newStatus === 'confirmed' ? 'booking_confirmed' : 'booking_cancelled',
-          booking: {
-            ...bookingToUpdate,
-            status: newStatus
-          }
-        }
-      });
-
-      if (emailError) {
-        console.error('Email notification error:', emailError);
-        toast({
-          title: "Attention",
-          description: "Le statut a été mis à jour mais l'envoi de l'email a échoué",
-          variant: "destructive",
-        });
-        return;
-      }
+      // Refresh the data to ensure UI is in sync
+      await queryClient.invalidateQueries({ queryKey: ['bookings'] });
 
       toast({
         title: "Succès",

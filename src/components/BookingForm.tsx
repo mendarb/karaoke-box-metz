@@ -119,21 +119,26 @@ export const BookingForm = () => {
       setIsSubmitting(true);
       console.log('Starting submission with data:', { ...data, groupSize, duration, calculatedPrice });
 
+      // Vérifier si l'utilisateur est déjà connecté
       const { data: { session } } = await supabase.auth.getSession();
       
-      // Si l'utilisateur a choisi de créer un compte
+      // Si l'utilisateur n'est pas connecté et souhaite créer un compte
       if (!session?.access_token && data.createAccount && data.password) {
-        const { error: signUpError } = await supabase.auth.signUp({
+        console.log('Creating new account for:', data.email);
+        
+        const { error: signUpError, data: signUpData } = await supabase.auth.signUp({
           email: data.email,
           password: data.password,
           options: {
             data: {
               full_name: data.fullName,
+              phone: data.phone
             },
           },
         });
 
         if (signUpError) {
+          console.error('Sign up error:', signUpError);
           toast({
             title: "Erreur lors de la création du compte",
             description: signUpError.message,
@@ -142,6 +147,8 @@ export const BookingForm = () => {
           return;
         }
 
+        console.log('Account created successfully:', signUpData);
+
         // Attendre que la session soit créée
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email: data.email,
@@ -149,6 +156,7 @@ export const BookingForm = () => {
         });
 
         if (signInError) {
+          console.error('Sign in error:', signInError);
           toast({
             title: "Erreur lors de la connexion",
             description: signInError.message,
@@ -156,11 +164,14 @@ export const BookingForm = () => {
           });
           return;
         }
+
+        console.log('User signed in after account creation');
       }
 
       // Vérifier à nouveau la session après la création potentielle du compte
       const { data: { session: currentSession } } = await supabase.auth.getSession();
       if (!currentSession?.access_token) {
+        console.error('No session found after account creation/login');
         toast({
           title: "Erreur",
           description: "Vous devez être connecté pour effectuer une réservation.",
@@ -170,14 +181,18 @@ export const BookingForm = () => {
       }
 
       const isAvailable = await checkTimeSlotAvailability(data.date, data.timeSlot, duration);
-      if (!isAvailable) return;
+      if (!isAvailable) {
+        console.log('Time slot not available');
+        return;
+      }
 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
+        console.error('User not found after session check');
         throw new Error("Utilisateur non trouvé");
       }
 
-      console.log('User data:', { user });
+      console.log('Creating booking for user:', user.id);
 
       const { error: bookingError } = await supabase
         .from('bookings')
@@ -190,15 +205,17 @@ export const BookingForm = () => {
           status: 'pending',
           price: calculatedPrice,
           message: data.message || null,
-          user_email: data.email || user.email,
+          user_email: data.email,
           user_name: data.fullName,
           user_phone: data.phone,
         }]);
 
       if (bookingError) {
-        console.error('Booking error:', bookingError);
+        console.error('Booking creation error:', bookingError);
         throw bookingError;
       }
+
+      console.log('Booking created successfully, creating checkout session');
 
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
         body: JSON.stringify({
@@ -208,7 +225,7 @@ export const BookingForm = () => {
           date: data.date,
           timeSlot: data.timeSlot,
           message: data.message,
-          userEmail: data.email || user.email,
+          userEmail: data.email,
           userName: data.fullName,
           userPhone: data.phone,
         })
@@ -221,8 +238,8 @@ export const BookingForm = () => {
 
       window.location.href = checkoutData.url;
       
-    } catch (error) {
-      console.error("Erreur lors de la soumission:", error);
+    } catch (error: any) {
+      console.error("Submission error:", error);
       toast({
         title: "Erreur",
         description: "Une erreur est survenue lors de la réservation. Veuillez réessayer.",

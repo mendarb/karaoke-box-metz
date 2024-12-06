@@ -21,30 +21,20 @@ export interface Booking {
 
 export const useBookings = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const fetchBookings = async () => {
     try {
       setIsLoading(true);
-      
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        throw new Error("No session found");
-      }
-
       const { data, error } = await supabase
         .from('bookings')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
-      }
-
+      if (error) throw error;
       setBookings(data || []);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error fetching bookings:', error);
       toast({
         title: "Erreur",

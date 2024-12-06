@@ -19,43 +19,41 @@ export const AdminDashboard = () => {
 
   useEffect(() => {
     const checkAdminAccess = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session) {
-          console.log("No session found, redirecting to login");
-          navigate("/login");
-          return;
-        }
-
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (!user || user.email !== "mendar.bouchali@gmail.com") {
-          console.log("User not authorized");
-          toast({
-            title: "Accès refusé",
-            description: "Vous n'avez pas les droits d'accès à cette page.",
-            variant: "destructive",
-          });
-          navigate("/");
-          return;
-        }
-
-        console.log("Admin access granted, fetching bookings");
-        await fetchBookings();
-      } catch (error) {
-        console.error('Error checking admin access:', error);
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user || user.email !== "mendar.bouchali@gmail.com") {
         toast({
-          title: "Erreur d'authentification",
-          description: "Une erreur est survenue lors de la vérification des droits d'accès",
+          title: "Accès refusé",
+          description: "Vous n'avez pas les droits d'accès à cette page.",
           variant: "destructive",
         });
-        navigate("/login");
+        navigate("/");
+        return;
       }
+
+      fetchBookings();
     };
 
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session) {
+        navigate("/login");
+      }
+    });
+
     checkAdminAccess();
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [navigate, toast, fetchBookings]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">

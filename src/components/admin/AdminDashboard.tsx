@@ -1,88 +1,90 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
 import { BookingsTable } from "./BookingsTable";
 import { BookingDetailsDialog } from "./BookingDetailsDialog";
-import { useBookings, Booking } from "@/hooks/useBookings";
-import { useBookingStatus } from "@/hooks/useBookingStatus";
+import { useQuery } from "@tanstack/react-query";
 import { DashboardStats } from "./DashboardStats";
 import { ResizablePanelGroup, ResizablePanel } from "@/components/ui/resizable";
 import { DashboardSidebar } from "./DashboardSidebar";
+import { Booking } from "@/hooks/useBookings";
 
 export const AdminDashboard = () => {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [sessionChecked, setSessionChecked] = useState(false);
-  const { bookings, fetchBookings } = useBookings();
-  const { updateBookingStatus } = useBookingStatus(fetchBookings);
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    let mounted = true;
+  // Utilise useQuery pour gérer le chargement et la mise en cache des données
+  const { data: bookings = [], isLoading, refetch } = useQuery({
+    queryKey: ['bookings'],
+    queryFn: async () => {
+      const { data: session } = await supabase.auth.getSession();
+      
+      if (!session.session) {
+        console.log("No session found, redirecting to login");
+        navigate("/login");
+        return [];
+      }
 
-    const checkSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) throw error;
-
-        if (!session) {
-          console.log("No session found, redirecting to login");
-          navigate("/login");
-          return;
-        }
-
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError) throw userError;
-
-        if (!user || user.email !== "mendar.bouchali@gmail.com") {
-          console.log("Not admin user:", user?.email);
-          toast({
-            title: "Accès refusé",
-            description: "Vous n'avez pas les droits d'accès à cette page.",
-            variant: "destructive",
-          });
-          navigate("/");
-          return;
-        }
-
-        if (mounted) {
-          console.log("Admin session verified, fetching bookings");
-          await fetchBookings();
-          setSessionChecked(true);
-        }
-      } catch (error: any) {
-        console.error("Session check failed:", error);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || user.email !== "mendar.bouchali@gmail.com") {
+        console.log("Not admin user:", user?.email);
         toast({
-          title: "Erreur",
-          description: "Impossible de vérifier vos droits d'accès",
+          title: "Accès refusé",
+          description: "Vous n'avez pas les droits d'accès à cette page.",
           variant: "destructive",
         });
-        navigate("/login");
-      } finally {
-        if (mounted) {
-          setIsLoading(false);
-        }
+        navigate("/");
+        return [];
       }
-    };
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        console.log("Auth state changed: no session");
-        navigate("/login");
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching bookings:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les réservations",
+          variant: "destructive",
+        });
+        return [];
       }
-    });
 
-    checkSession();
+      return data || [];
+    },
+  });
 
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
-  }, [navigate, toast, fetchBookings]);
+  // Gestion de la mise à jour du statut
+  const updateBookingStatus = async (bookingId: string, newStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from('bookings')
+        .update({ status: newStatus })
+        .eq('id', bookingId);
 
-  if (isLoading || !sessionChecked) {
+      if (error) throw error;
+
+      toast({
+        title: "Succès",
+        description: "Le statut a été mis à jour",
+      });
+
+      refetch(); // Recharge les données après la mise à jour
+    } catch (error) {
+      console.error('Error updating booking status:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour le statut",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>

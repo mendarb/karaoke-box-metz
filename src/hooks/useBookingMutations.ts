@@ -22,42 +22,43 @@ export const useBookingMutations = () => {
         throw new Error('Permission refusée');
       }
 
-      // First, check if the booking exists
-      const { data: existingBooking, error: fetchError } = await supabase
+      // First, check if the booking exists and get its current data
+      const { data: booking, error: fetchError } = await supabase
         .from('bookings')
-        .select('*')
+        .select()
         .eq('id', bookingId)
-        .maybeSingle();
+        .limit(1);
 
       if (fetchError) {
-        console.error('Fetch error:', fetchError);
-        throw fetchError;
+        console.error('Error fetching booking:', fetchError);
+        throw new Error('Erreur lors de la récupération de la réservation');
       }
 
-      if (!existingBooking) {
+      if (!booking || booking.length === 0) {
+        console.error('No booking found with ID:', bookingId);
         throw new Error('Réservation non trouvée');
       }
 
       // Perform the update
-      const { data: updatedBooking, error: updateError } = await supabase
+      const { data: updatedBookings, error: updateError } = await supabase
         .from('bookings')
         .update({ status: newStatus })
         .eq('id', bookingId)
-        .select('*')
-        .maybeSingle();
+        .select();
 
       if (updateError) {
-        console.error('Update error:', updateError);
+        console.error('Error updating booking:', updateError);
         throw updateError;
       }
 
-      if (!updatedBooking) {
-        throw new Error('La réservation n\'a pas pu être mise à jour');
+      if (!updatedBookings || updatedBookings.length === 0) {
+        throw new Error('La mise à jour a échoué');
       }
 
+      const updatedBooking = updatedBookings[0];
       console.log('Successfully updated booking:', updatedBooking);
 
-      // Update the cache with the new data
+      // Update the cache
       queryClient.setQueryData(['bookings'], (old: Booking[] | undefined) => {
         if (!old) return [updatedBooking];
         return old.map(booking => 
@@ -65,7 +66,7 @@ export const useBookingMutations = () => {
         );
       });
 
-      // Invalidate queries to ensure UI is in sync
+      // Force a refetch to ensure consistency
       await queryClient.invalidateQueries({ queryKey: ['bookings'] });
 
       toast({

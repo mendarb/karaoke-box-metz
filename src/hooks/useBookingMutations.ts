@@ -15,18 +15,21 @@ export const useBookingMutations = () => {
         // Vérifier la session et les permissions
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
+          console.error('No session found');
           throw new Error('Session expirée. Veuillez vous reconnecter.');
         }
 
-        const isAdmin = session.user.email === 'mendar.bouchali@gmail.com';
-        if (!isAdmin) {
+        // Vérifier si l'utilisateur est admin
+        const userEmail = session.user.email;
+        if (!userEmail || userEmail !== 'mendar.bouchali@gmail.com') {
+          console.error('User not admin:', userEmail);
           throw new Error('Permission refusée');
         }
 
         // Vérifier d'abord si la réservation existe
         const { data: bookings, error: checkError } = await supabase
           .from('bookings')
-          .select()
+          .select('*')
           .eq('id', bookingId);
 
         if (checkError) {
@@ -35,13 +38,17 @@ export const useBookingMutations = () => {
         }
 
         if (!bookings || bookings.length === 0) {
+          console.error('No booking found with id:', bookingId);
           throw new Error('Réservation non trouvée');
         }
 
-        // Si on arrive ici, la réservation existe, on peut la mettre à jour
+        // Mettre à jour la réservation avec la politique RLS appropriée
         const { data: updatedBookings, error: updateError } = await supabase
           .from('bookings')
-          .update({ status: newStatus })
+          .update({ 
+            status: newStatus,
+            updated_at: new Date().toISOString()
+          })
           .eq('id', bookingId)
           .select();
 
@@ -51,6 +58,7 @@ export const useBookingMutations = () => {
         }
 
         if (!updatedBookings || updatedBookings.length === 0) {
+          console.error('No booking returned after update');
           throw new Error('Erreur lors de la mise à jour de la réservation');
         }
 
@@ -59,16 +67,17 @@ export const useBookingMutations = () => {
 
       } catch (error: any) {
         console.error('Error in updateBookingStatus:', error);
-        // Si l'erreur est liée à la session, on force la déconnexion
+        
+        // Gérer la déconnexion si la session est expirée
         if (error.message.includes('Session expirée')) {
           await supabase.auth.signOut();
-          window.location.reload(); // Recharger la page pour réinitialiser l'état
+          window.location.reload();
         }
+        
         throw error;
       }
     },
     onSuccess: (updatedBooking) => {
-      // Mettre à jour le cache optimistiquement
       queryClient.setQueryData(['bookings'], (old: Booking[] | undefined) => {
         if (!old) return [updatedBooking];
         return old.map(booking => 
@@ -90,7 +99,6 @@ export const useBookingMutations = () => {
       });
     },
     onSettled: () => {
-      // Rafraîchir les données après la mutation
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
     }
   });

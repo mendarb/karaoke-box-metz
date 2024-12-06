@@ -10,7 +10,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-interface BookingEmailData {
+interface EmailData {
   to: string;
   userName: string;
   date: string;
@@ -19,6 +19,7 @@ interface BookingEmailData {
   groupSize: string;
   price: number;
   status: string;
+  isAdmin?: boolean;
 }
 
 const generateEmailHTML = ({
@@ -29,9 +30,48 @@ const generateEmailHTML = ({
   groupSize,
   price,
   status,
-}: Omit<BookingEmailData, "to">) => {
+  isAdmin,
+}: Omit<EmailData, "to">) => {
   const formattedDate = format(new Date(date), "d MMMM yyyy", { locale: fr });
   const endTime = parseInt(timeSlot) + parseInt(duration);
+
+  if (isAdmin) {
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Nouvelle réservation - Karaoke Box Metz</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { text-align: center; margin-bottom: 30px; }
+            .details { background-color: #f9f9f9; padding: 20px; border-radius: 8px; }
+            .footer { text-align: center; margin-top: 30px; font-size: 14px; color: #666; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Nouvelle réservation reçue</h1>
+            </div>
+            <div class="details">
+              <h3>Détails de la réservation :</h3>
+              <p>👤 Client : ${userName}</p>
+              <p>📅 Date : ${formattedDate}</p>
+              <p>🕒 Horaire : ${timeSlot}h - ${endTime}h</p>
+              <p>👥 Nombre de personnes : ${groupSize}</p>
+              <p>💶 Prix total : ${price}€</p>
+              <p>📊 Statut : ${status}</p>
+            </div>
+            <div class="footer">
+              <p>Karaoke Box Metz - Panel Administrateur</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+  }
 
   return `
     <!DOCTYPE html>
@@ -79,16 +119,16 @@ const generateEmailHTML = ({
 };
 
 const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const emailData: BookingEmailData = await req.json();
+    const emailData: EmailData = await req.json();
     console.log("Sending email with data:", emailData);
 
-    const res = await fetch("https://api.resend.com/emails", {
+    // Envoyer l'email au client
+    const clientRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -104,16 +144,31 @@ const handler = async (req: Request): Promise<Response> => {
       }),
     });
 
-    if (res.ok) {
-      const data = await res.json();
-      console.log("Email sent successfully:", data);
+    // Envoyer une notification à l'administrateur
+    const adminRes = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: "Karaoke Box Metz <no-reply@karaoke-box-metz.fr>",
+        to: ["mendar.bouchali@gmail.com"],
+        subject: "Nouvelle réservation - Karaoke Box Metz",
+        html: generateEmailHTML({ ...emailData, isAdmin: true }),
+      }),
+    });
+
+    if (clientRes.ok && adminRes.ok) {
+      const data = await clientRes.json();
+      console.log("Emails sent successfully:", data);
       return new Response(JSON.stringify(data), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     } else {
-      const error = await res.text();
-      console.error("Error sending email:", error);
+      const error = await clientRes.text();
+      console.error("Error sending emails:", error);
       return new Response(JSON.stringify({ error }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

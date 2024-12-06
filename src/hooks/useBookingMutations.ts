@@ -22,10 +22,22 @@ export const useBookingMutations = () => {
         throw new Error('Permission refusée');
       }
 
-      // Optimistic update
-      const previousBookings = queryClient.getQueryData<Booking[]>(['bookings']);
-      
-      // Update local cache optimistically
+      // Perform the actual update first
+      const { data, error: updateError } = await supabase
+        .from('bookings')
+        .update({ status: newStatus })
+        .eq('id', bookingId)
+        .select()
+        .single();
+
+      if (updateError) {
+        console.error('Update error:', updateError);
+        throw updateError;
+      }
+
+      console.log('Booking status updated successfully:', data);
+
+      // Update local cache after successful database update
       queryClient.setQueryData(['bookings'], (old: Booking[] | undefined) => {
         if (!old) return [];
         return old.map(booking => 
@@ -35,19 +47,6 @@ export const useBookingMutations = () => {
         );
       });
 
-      // Perform the actual update
-      const { error: updateError } = await supabase
-        .from('bookings')
-        .update({ status: newStatus })
-        .eq('id', bookingId);
-
-      if (updateError) {
-        console.error('Update error:', updateError);
-        // Revert optimistic update on error
-        queryClient.setQueryData(['bookings'], previousBookings);
-        throw updateError;
-      }
-
       // Refresh the data to ensure UI is in sync
       await queryClient.invalidateQueries({ queryKey: ['bookings'] });
 
@@ -55,6 +54,8 @@ export const useBookingMutations = () => {
         title: "Succès",
         description: "Le statut a été mis à jour",
       });
+
+      return data;
 
     } catch (error: any) {
       console.error('Error in updateBookingStatus:', error);
@@ -67,6 +68,7 @@ export const useBookingMutations = () => {
 
       // Refresh data in case of error to ensure UI is in sync
       await queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      throw error;
     }
   };
 

@@ -27,9 +27,15 @@ interface BookingsTableProps {
   data: Booking[];
   onStatusChange: (bookingId: string, newStatus: string) => Promise<void>;
   onViewDetails: (booking: Booking) => void;
+  isLoading?: boolean;
 }
 
-export const BookingsTable = ({ data, onStatusChange, onViewDetails }: BookingsTableProps) => {
+export const BookingsTable = ({ 
+  data, 
+  onStatusChange, 
+  onViewDetails,
+  isLoading = false 
+}: BookingsTableProps) => {
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const columns: ColumnDef<Booking>[] = [
@@ -114,7 +120,7 @@ export const BookingsTable = ({ data, onStatusChange, onViewDetails }: BookingsT
   ];
 
   const table = useReactTable({
-    data,
+    data: data || [],
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -123,6 +129,16 @@ export const BookingsTable = ({ data, onStatusChange, onViewDetails }: BookingsT
       sorting,
     },
   });
+
+  if (isLoading) {
+    return (
+      <div className="rounded-md border bg-white">
+        <div className="p-8 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-md border bg-white">

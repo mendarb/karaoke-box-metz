@@ -16,7 +16,6 @@ export const AdminDashboard = () => {
   const { updateBookingStatus } = useBookingStatus(fetchBookings);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
     const checkAdminAccess = async () => {
@@ -48,36 +47,15 @@ export const AdminDashboard = () => {
         console.error('Error checking admin access:', error);
         toast({
           title: "Erreur d'authentification",
-          description: "Veuillez vous reconnecter",
+          description: "Une erreur est survenue lors de la vérification des droits d'accès",
           variant: "destructive",
         });
         navigate("/login");
-      } finally {
-        setIsCheckingAuth(false);
       }
     };
 
     checkAdminAccess();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth state changed:", event);
-      if (!session) {
-        navigate("/login");
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
   }, [navigate, toast, fetchBookings]);
-
-  if (isCheckingAuth) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -96,6 +74,7 @@ export const AdminDashboard = () => {
                 data={bookings}
                 onStatusChange={updateBookingStatus}
                 onViewDetails={setSelectedBooking}
+                isLoading={isLoading}
               />
             </div>
           </div>

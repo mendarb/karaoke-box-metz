@@ -26,17 +26,13 @@ export const useBookings = () => {
 
   const fetchBookings = async () => {
     try {
-      console.log("Fetching bookings...");
       setIsLoading(true);
       
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        console.error("No session found");
         throw new Error("No session found");
       }
 
-      console.log("Session found, fetching bookings with token:", session.access_token);
-      
       const { data, error } = await supabase
         .from('bookings')
         .select('*')
@@ -47,13 +43,12 @@ export const useBookings = () => {
         throw error;
       }
 
-      console.log("Bookings fetched successfully:", data);
       setBookings(data || []);
     } catch (error: any) {
       console.error('Error fetching bookings:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de charger les réservations. Veuillez réessayer.",
+        description: "Impossible de charger les réservations",
         variant: "destructive",
       });
       setBookings([]);

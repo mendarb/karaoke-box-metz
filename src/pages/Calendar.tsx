@@ -1,4 +1,4 @@
-import { ResizablePanelGroup, ResizablePanel, ResizeHandle } from "@/components/ui/resizable";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { useQuery } from "@tanstack/react-query";
@@ -85,7 +85,7 @@ export const Calendar = () => {
         <ResizablePanel defaultSize={20} minSize={15} maxSize={25}>
           <DashboardSidebar />
         </ResizablePanel>
-        <ResizeHandle />
+        <ResizableHandle />
         <ResizablePanel defaultSize={80}>
           <div className="p-6">
             <div className="flex items-center gap-2 mb-6">

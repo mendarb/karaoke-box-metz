@@ -6,7 +6,7 @@ import { BookingsTable } from "./BookingsTable";
 import { BookingDetailsDialog } from "./BookingDetailsDialog";
 import { useQuery } from "@tanstack/react-query";
 import { DashboardStats } from "./DashboardStats";
-import { ResizablePanelGroup, ResizablePanel, ResizeHandle } from "@/components/ui/resizable";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { Booking } from "@/hooks/useBookings";
 import { useBookingMutations } from "@/hooks/useBookingMutations";
@@ -76,7 +76,7 @@ export const AdminDashboard = () => {
         <ResizablePanel defaultSize={20} minSize={15} maxSize={25}>
           <DashboardSidebar />
         </ResizablePanel>
-        <ResizeHandle />
+        <ResizableHandle />
         <ResizablePanel defaultSize={80}>
           <div className="p-6">
             <h1 className="text-2xl font-bold mb-6">Tableau de bord administrateur</h1>

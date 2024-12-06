@@ -1,21 +1,14 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { format } from "npm:date-fns@3.3.1";
-import { fr } from "npm:date-fns/locale";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-console.log('Starting send-booking-email function');
-console.log('RESEND_API_KEY configured:', !!RESEND_API_KEY);
-if (!RESEND_API_KEY) {
-  console.error('RESEND_API_KEY is not configured');
-}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
 interface BookingEmailRequest {
-  type: 'booking_confirmed' | 'booking_cancelled';
   booking: {
     user_name: string;
     user_email: string;
@@ -24,6 +17,7 @@ interface BookingEmailRequest {
     duration: string;
     group_size: string;
     price: number;
+    status: string;
   };
 }
 
@@ -37,16 +31,24 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     if (!RESEND_API_KEY) {
+      console.error('RESEND_API_KEY is not configured');
       throw new Error("RESEND_API_KEY is not configured");
     }
 
-    const { type, booking }: BookingEmailRequest = await req.json();
-    console.log('Received email request:', { type, booking });
+    const { booking }: BookingEmailRequest = await req.json();
+    console.log('Received booking data:', booking);
 
-    const formattedDate = format(new Date(booking.date), "d MMMM yyyy", { locale: fr });
+    // Format the date without using date-fns
+    const date = new Date(booking.date);
+    const formattedDate = date.toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+    
     const endTime = parseInt(booking.time_slot) + parseInt(booking.duration);
 
-    const emailSubject = type === 'booking_confirmed' 
+    const emailSubject = booking.status === 'confirmed' 
       ? 'Votre réservation est confirmée !'
       : 'Votre réservation a été annulée';
 
@@ -71,7 +73,7 @@ const handler = async (req: Request): Promise<Response> => {
               <h2>${emailSubject}</h2>
             </div>
             <p>Bonjour ${booking.user_name},</p>
-            <p>${type === 'booking_confirmed' 
+            <p>${booking.status === 'confirmed' 
               ? 'Votre réservation a été confirmée.' 
               : 'Votre réservation a été annulée.'}</p>
             <div class="details">

@@ -22,12 +22,12 @@ export const useBookingMutations = () => {
         throw new Error('Permission refusée');
       }
 
-      // Effectuer d'abord la mise à jour dans Supabase
+      // Effectuer la mise à jour dans Supabase
       const { data: updatedBooking, error: updateError } = await supabase
         .from('bookings')
         .update({ status: newStatus })
         .eq('id', bookingId)
-        .select()
+        .select('*')
         .single();
 
       if (updateError) {
@@ -39,16 +39,15 @@ export const useBookingMutations = () => {
         throw new Error('La réservation n\'a pas pu être mise à jour');
       }
 
-      // Mettre à jour le cache local avec les données de la base de données
+      console.log('Successfully updated booking:', updatedBooking);
+
+      // Mettre à jour le cache avec la nouvelle donnée
       queryClient.setQueryData(['bookings'], (old: Booking[] | undefined) => {
         if (!old) return [updatedBooking];
         return old.map(booking => 
           booking.id === bookingId ? updatedBooking : booking
         );
       });
-
-      // Rafraîchir les données pour s'assurer que l'UI est synchronisée
-      await queryClient.invalidateQueries({ queryKey: ['bookings'] });
 
       toast({
         title: "Succès",
@@ -64,7 +63,7 @@ export const useBookingMutations = () => {
         variant: "destructive",
       });
 
-      // Rafraîchir les données en cas d'erreur pour s'assurer que l'UI est synchronisée
+      // Rafraîchir les données en cas d'erreur
       await queryClient.invalidateQueries({ queryKey: ['bookings'] });
     }
   };

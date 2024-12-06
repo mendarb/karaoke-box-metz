@@ -12,17 +12,18 @@ export const useBookingMutations = () => {
     
     try {
       // First check if the booking exists and is accessible
-      const { data: bookings, error: fetchError } = await supabase
+      const { data: booking, error: fetchError } = await supabase
         .from('bookings')
         .select('*')
-        .eq('id', bookingId);
+        .eq('id', bookingId)
+        .single(); // Utilisation de single() pour s'assurer d'avoir un seul résultat
 
       if (fetchError) {
         console.error('Error fetching booking:', fetchError);
         throw fetchError;
       }
 
-      if (!bookings || bookings.length === 0) {
+      if (!booking) {
         throw new Error('Réservation non trouvée ou accès non autorisé');
       }
 
@@ -31,14 +32,15 @@ export const useBookingMutations = () => {
         .from('bookings')
         .update({ status: newStatus })
         .eq('id', bookingId)
-        .select();
+        .select()
+        .single(); // Utilisation de single() ici aussi
 
       if (updateError) {
         console.error('Error updating booking:', updateError);
         throw updateError;
       }
 
-      if (!updatedBooking || updatedBooking.length === 0) {
+      if (!updatedBooking) {
         throw new Error('Erreur lors de la mise à jour');
       }
 

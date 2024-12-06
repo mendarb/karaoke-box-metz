@@ -13,10 +13,7 @@ export const useBookingMutations = () => {
     try {
       // Check session first
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError) {
-        console.error('Session error:', sessionError);
-        throw new Error('Session error: ' + sessionError.message);
-      }
+      if (sessionError) throw sessionError;
       
       if (!session) {
         throw new Error('Vous devez être connecté pour effectuer cette action');
@@ -29,22 +26,15 @@ export const useBookingMutations = () => {
       }
 
       // First check if booking exists
-      const { data: existingBooking, error: fetchError } = await supabase
+      const { data: bookings, error: fetchError } = await supabase
         .from('bookings')
-        .select('*')
-        .eq('id', bookingId)
-        .single();
+        .select()
+        .eq('id', bookingId);
 
-      if (fetchError) {
-        console.error('Error fetching booking:', fetchError);
-        if (fetchError.code === 'PGRST116') {
-          throw new Error('Cette réservation n\'existe plus ou a été supprimée');
-        }
-        throw fetchError;
-      }
+      if (fetchError) throw fetchError;
 
-      if (!existingBooking) {
-        throw new Error('Réservation non trouvée');
+      if (!bookings || bookings.length === 0) {
+        throw new Error('Cette réservation n\'existe plus');
       }
 
       // Update booking status
@@ -55,18 +45,11 @@ export const useBookingMutations = () => {
         .select()
         .single();
 
-      if (error) {
-        console.error('Error updating booking:', error);
-        throw error;
-      }
-
-      if (!data) {
-        throw new Error('Erreur lors de la mise à jour');
-      }
+      if (error) throw error;
 
       // Send email notification
       console.log('Sending email notification for status change');
-      const { error: emailError } = await supabase.functions.invoke('send-booking-email', {
+      await supabase.functions.invoke('send-booking-email', {
         body: {
           type: newStatus === 'confirmed' ? 'booking_confirmed' : 'booking_cancelled',
           booking: {
@@ -75,15 +58,6 @@ export const useBookingMutations = () => {
           }
         }
       });
-
-      if (emailError) {
-        console.error('Error sending email:', emailError);
-        toast({
-          title: "Attention",
-          description: "Le statut a été mis à jour mais l'email n'a pas pu être envoyé",
-          variant: "destructive",
-        });
-      }
 
       // Update cache
       queryClient.setQueryData(['bookings'], (old: Booking[] | undefined) => {
@@ -105,9 +79,15 @@ export const useBookingMutations = () => {
 
     } catch (error: any) {
       console.error('Error in updateBookingStatus:', error);
+      
+      // Handle specific error cases
+      const errorMessage = error.message === 'Cette réservation n\'existe plus'
+        ? error.message
+        : "Une erreur est survenue lors de la mise à jour";
+
       toast({
         title: "Erreur",
-        description: error.message || "Une erreur est survenue",
+        description: errorMessage,
         variant: "destructive",
       });
 

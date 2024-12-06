@@ -11,14 +11,11 @@ export const useAuthSession = () => {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        console.log("Checking session...");
         const { data: { session } } = await supabase.auth.getSession();
         
         if (!session) {
-          console.log("No session found, opening auth modal");
           setIsAuthOpen(true);
         } else {
-          console.log("Session found, user is authenticated");
           setIsAuthOpen(false);
         }
       } catch (error) {
@@ -33,13 +30,14 @@ export const useAuthSession = () => {
     checkSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth state changed:", event, session?.user?.email);
+      console.log("Auth state changed:", event);
       
-      if (!session) {
+      if (event === 'SIGNED_OUT' || !session) {
         setIsAuthOpen(true);
-      } else {
+      } else if (event === 'SIGNED_IN' && session) {
         setIsAuthOpen(false);
       }
+      
       setIsLoading(false);
       setSessionChecked(true);
     });
@@ -47,7 +45,7 @@ export const useAuthSession = () => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [toast]);
+  }, []);
 
   return { isAuthOpen, setIsAuthOpen, isLoading, sessionChecked };
 };

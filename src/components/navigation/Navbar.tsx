@@ -25,7 +25,6 @@ export const Navbar = () => {
     checkSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("Auth state changed:", _event, session?.user?.email);
       setUser(session?.user ?? null);
     });
 
@@ -36,17 +35,12 @@ export const Navbar = () => {
     try {
       setIsLoading(true);
       const { error } = await supabase.auth.signOut();
+      
       if (error) {
-        console.error("Sign out error:", error);
         if (error.message.includes("session_not_found")) {
-          // If session is invalid, force clear it locally
+          // Si la session est déjà invalide, on nettoie juste l'état local
           setUser(null);
           setShowAuthModal(true);
-          toast({
-            title: "Session expirée",
-            description: "Veuillez vous reconnecter",
-            variant: "destructive",
-          });
         } else {
           throw error;
         }
@@ -56,10 +50,13 @@ export const Navbar = () => {
       }
     } catch (error: any) {
       console.error("Sign out error:", error);
+      // En cas d'erreur, on force la déconnexion locale
+      setUser(null);
+      setShowAuthModal(true);
       toast({
-        title: "Erreur de déconnexion",
-        description: "Une erreur est survenue, veuillez réessayer",
-        variant: "destructive",
+        title: "Note",
+        description: "Vous avez été déconnecté",
+        variant: "default",
       });
     } finally {
       setIsLoading(false);

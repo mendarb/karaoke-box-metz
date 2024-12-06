@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
 import { BookingsTable } from "./BookingsTable";
 import { BookingDetailsDialog } from "./BookingDetailsDialog";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { DashboardStats } from "./DashboardStats";
 import { ResizablePanelGroup, ResizablePanel } from "@/components/ui/resizable";
 import { DashboardSidebar } from "./DashboardSidebar";
@@ -14,9 +14,9 @@ export const AdminDashboard = () => {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  // Utilise useQuery pour gérer le chargement et la mise en cache des données
-  const { data: bookings = [], isLoading, refetch } = useQuery({
+  const { data: bookings = [], isLoading } = useQuery({
     queryKey: ['bookings'],
     queryFn: async () => {
       const { data: session } = await supabase.auth.getSession();
@@ -68,12 +68,23 @@ export const AdminDashboard = () => {
 
       if (error) throw error;
 
+      // Mise à jour optimiste du cache
+      queryClient.setQueryData(['bookings'], (oldData: Booking[] | undefined) => {
+        if (!oldData) return [];
+        return oldData.map(booking => 
+          booking.id === bookingId 
+            ? { ...booking, status: newStatus }
+            : booking
+        );
+      });
+
+      // Invalider et recharger les données en arrière-plan
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+
       toast({
         title: "Succès",
         description: "Le statut a été mis à jour",
       });
-
-      refetch(); // Recharge les données après la mise à jour
     } catch (error) {
       console.error('Error updating booking status:', error);
       toast({
@@ -81,6 +92,8 @@ export const AdminDashboard = () => {
         description: "Impossible de mettre à jour le statut",
         variant: "destructive",
       });
+      // En cas d'erreur, on recharge les données
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
     }
   };
 

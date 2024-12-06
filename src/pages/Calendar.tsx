@@ -2,7 +2,7 @@ import { DashboardSidebar } from "@/components/admin/DashboardSidebar";
 import { ResizablePanelGroup, ResizablePanel } from "@/components/ui/resizable";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useState } from "react";
 import { format } from "date-fns";
@@ -19,8 +19,9 @@ export const Calendar = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const { data: bookings = [], refetch } = useQuery({
+  const { data: bookings = [] } = useQuery({
     queryKey: ['bookings'],
     queryFn: async () => {
       const { data: session } = await supabase.auth.getSession();
@@ -63,12 +64,23 @@ export const Calendar = () => {
 
       if (error) throw error;
 
+      // Mise à jour optimiste du cache
+      queryClient.setQueryData(['bookings'], (oldData: Booking[] | undefined) => {
+        if (!oldData) return [];
+        return oldData.map(booking => 
+          booking.id === bookingId 
+            ? { ...booking, status: newStatus }
+            : booking
+        );
+      });
+
+      // Invalider et recharger les données en arrière-plan
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+
       toast({
         title: "Succès",
         description: "Le statut a été mis à jour",
       });
-
-      refetch(); // Recharge les données après la mise à jour
     } catch (error) {
       console.error('Error updating booking status:', error);
       toast({
@@ -76,6 +88,8 @@ export const Calendar = () => {
         description: "Impossible de mettre à jour le statut",
         variant: "destructive",
       });
+      // En cas d'erreur, on recharge les données
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
     }
   };
 

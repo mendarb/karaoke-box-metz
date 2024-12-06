@@ -23,40 +23,24 @@ export const useBookingMutations = () => {
           throw new Error('Permission refusée');
         }
 
-        // First check if the booking exists
-        const { data: existingBooking, error: fetchError } = await supabase
-          .from('bookings')
-          .select()
-          .eq('id', bookingId)
-          .limit(1);
-
-        if (fetchError) {
-          console.error('Error fetching booking:', fetchError);
-          throw fetchError;
-        }
-
-        if (!existingBooking || existingBooking.length === 0) {
-          throw new Error('Réservation non trouvée');
-        }
-
-        // Now perform the update
-        const { data, error: updateError } = await supabase
+        const { data, error } = await supabase
           .from('bookings')
           .update({ status: newStatus })
           .eq('id', bookingId)
-          .select();
+          .select('*')
+          .maybeSingle();
 
-        if (updateError) {
-          console.error('Error updating booking:', updateError);
-          throw updateError;
+        if (error) {
+          console.error('Error updating booking:', error);
+          throw error;
         }
 
-        if (!data || data.length === 0) {
-          throw new Error('La mise à jour a échoué');
+        if (!data) {
+          throw new Error('Réservation non trouvée');
         }
 
-        console.log('Successfully updated booking:', data[0]);
-        return data[0];
+        console.log('Successfully updated booking:', data);
+        return data;
 
       } catch (error: any) {
         console.error('Error in updateBookingStatus:', error);
@@ -64,7 +48,6 @@ export const useBookingMutations = () => {
       }
     },
     onSuccess: (updatedBooking) => {
-      // Update the cache optimistically
       queryClient.setQueryData(['bookings'], (old: Booking[] | undefined) => {
         if (!old) return [updatedBooking];
         return old.map(booking => 
@@ -72,7 +55,6 @@ export const useBookingMutations = () => {
         );
       });
 
-      // Show success toast
       toast({
         title: "Succès",
         description: "Le statut a été mis à jour",
@@ -87,7 +69,6 @@ export const useBookingMutations = () => {
       });
     },
     onSettled: () => {
-      // Always refetch after error or success
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
     }
   });

@@ -8,7 +8,7 @@ export const useBookingMutations = () => {
   const queryClient = useQueryClient();
 
   const updateBookingStatus = async (bookingId: string, newStatus: string) => {
-    console.log('Updating booking status:', { bookingId, newStatus });
+    console.log('Starting booking status update:', { bookingId, newStatus });
     
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -22,24 +22,15 @@ export const useBookingMutations = () => {
         throw new Error('Permission refusée');
       }
 
-      // Update the booking status
-      const { data: updatedBooking, error: updateError } = await supabase
-        .from('bookings')
-        .update({ status: newStatus })
-        .eq('id', bookingId)
-        .select()
-        .single();
+      // Optimistic update
+      const previousBookings = queryClient.getQueryData<Booking[]>(['bookings']);
+      const bookingToUpdate = previousBookings?.find(b => b.id === bookingId);
 
-      if (updateError) {
-        console.error('Update error:', updateError);
-        throw updateError;
-      }
-
-      if (!updatedBooking) {
+      if (!bookingToUpdate) {
         throw new Error('Réservation non trouvée');
       }
 
-      // Optimistic update
+      // Update local cache optimistically
       queryClient.setQueryData(['bookings'], (old: Booking[] | undefined) => {
         if (!old) return [];
         return old.map(booking => 
@@ -49,24 +40,45 @@ export const useBookingMutations = () => {
         );
       });
 
+      // Perform the actual update
+      const { error: updateError } = await supabase
+        .from('bookings')
+        .update({ status: newStatus })
+        .eq('id', bookingId);
+
+      if (updateError) {
+        console.error('Update error:', updateError);
+        // Revert optimistic update on error
+        queryClient.setQueryData(['bookings'], previousBookings);
+        throw updateError;
+      }
+
       // Send email notification
-      await supabase.functions.invoke('send-booking-email', {
-        body: {
-          type: newStatus === 'confirmed' ? 'booking_confirmed' : 'booking_cancelled',
-          booking: {
-            ...updatedBooking,
-            status: newStatus
+      try {
+        await supabase.functions.invoke('send-booking-email', {
+          body: {
+            type: newStatus === 'confirmed' ? 'booking_confirmed' : 'booking_cancelled',
+            booking: {
+              ...bookingToUpdate,
+              status: newStatus
+            }
           }
-        }
-      });
+        });
+      } catch (emailError) {
+        console.error('Email notification error:', emailError);
+        // Don't throw here as the status update was successful
+        toast({
+          title: "Attention",
+          description: "Le statut a été mis à jour mais l'envoi de l'email a échoué",
+          variant: "warning",
+        });
+        return;
+      }
 
       toast({
         title: "Succès",
         description: "Le statut a été mis à jour",
       });
-
-      // Refresh data to ensure sync
-      await queryClient.invalidateQueries({ queryKey: ['bookings'] });
 
     } catch (error: any) {
       console.error('Error in updateBookingStatus:', error);

@@ -12,16 +12,39 @@ import { DashboardSidebar } from "./DashboardSidebar";
 
 export const AdminDashboard = () => {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const { bookings, isLoading, fetchBookings } = useBookings();
   const { updateBookingStatus } = useBookingStatus(fetchBookings);
   const { toast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
+    let mounted = true;
+
     const checkAdminAccess = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const session = await supabase.auth.getSession();
       
+      if (!session.data.session) {
+        console.log("No session found");
+        navigate("/login");
+        return;
+      }
+
+      const { data: { user }, error } = await supabase.auth.getUser();
+      
+      if (error) {
+        console.error("Error fetching user:", error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de vérifier vos droits d'accès",
+          variant: "destructive",
+        });
+        navigate("/login");
+        return;
+      }
+
       if (!user || user.email !== "mendar.bouchali@gmail.com") {
+        console.log("Not admin user:", user?.email);
         toast({
           title: "Accès refusé",
           description: "Vous n'avez pas les droits d'accès à cette page.",
@@ -31,11 +54,16 @@ export const AdminDashboard = () => {
         return;
       }
 
-      fetchBookings();
+      if (mounted) {
+        console.log("Setting admin status and fetching bookings");
+        setIsAdmin(true);
+        fetchBookings();
+      }
     };
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!session) {
+    const authListener = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        console.log("Auth state changed:", event);
         navigate("/login");
       }
     });
@@ -43,11 +71,12 @@ export const AdminDashboard = () => {
     checkAdminAccess();
 
     return () => {
-      subscription.unsubscribe();
+      mounted = false;
+      authListener.data.subscription.unsubscribe();
     };
   }, [navigate, toast, fetchBookings]);
 
-  if (isLoading) {
+  if (!isAdmin || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>

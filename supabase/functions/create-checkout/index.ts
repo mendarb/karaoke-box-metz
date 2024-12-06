@@ -24,12 +24,10 @@ serve(async (req) => {
     console.log('Initializing Stripe with secret key length:', stripeSecretKey.length);
     const stripe = new Stripe(stripeSecretKey, {
       apiVersion: '2023-10-16',
+      typescript: true
     });
 
-    const isTestMode = true; // Mode test activé par défaut pour le développement
-    const successUrl = isTestMode 
-      ? `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}&test_mode=true`
-      : `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}`;
+    const successUrl = `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}&test_mode=true`;
 
     console.log('Creating Stripe checkout session...');
     const session = await stripe.checkout.sessions.create({

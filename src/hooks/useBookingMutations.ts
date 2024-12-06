@@ -11,20 +11,24 @@ export const useBookingMutations = () => {
     console.log('Updating booking status:', { bookingId, newStatus });
     
     try {
-      // Update in Supabase
       const { data, error } = await supabase
         .from('bookings')
         .update({ status: newStatus })
         .eq('id', bookingId)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error updating booking:', error);
         throw error;
       }
 
-      // Update cache with actual data
+      if (!data) {
+        console.error('Booking not found:', bookingId);
+        throw new Error('Booking not found');
+      }
+
+      // Update cache optimistically
       queryClient.setQueryData(['bookings'], (old: Booking[] | undefined) => {
         if (!old) return [];
         return old.map(booking => 
@@ -39,7 +43,7 @@ export const useBookingMutations = () => {
         description: "Le statut a été mis à jour",
       });
 
-      // Invalidate and refetch
+      // Invalidate and refetch to ensure data consistency
       await queryClient.invalidateQueries({ queryKey: ['bookings'] });
 
     } catch (error: any) {
@@ -47,7 +51,9 @@ export const useBookingMutations = () => {
       
       toast({
         title: "Erreur",
-        description: "Impossible de mettre à jour le statut. La réservation n'existe peut-être plus.",
+        description: error.message === 'Booking not found' 
+          ? "La réservation n'existe plus."
+          : "Impossible de mettre à jour le statut.",
         variant: "destructive",
       });
 

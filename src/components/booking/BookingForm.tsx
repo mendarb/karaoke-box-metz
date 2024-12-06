@@ -170,7 +170,6 @@ export const BookingForm = () => {
           userEmail: data.email || user.email,
           userName: data.fullName,
           userPhone: data.phone,
-          isTestMode: true // Mettre à true pour le mode test, false pour la production
         })
       });
 

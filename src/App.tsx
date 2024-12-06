@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import { AdminDashboard } from "./components/admin/AdminDashboard";
 import { Calendar } from "./pages/Calendar";
 import { Settings } from "./pages/Settings";
+import { Success } from "./pages/Success";
 import { AuthModal } from "./components/auth/AuthModal";
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
@@ -91,6 +92,7 @@ const App = () => {
   const routes = useMemo(() => (
     <Routes>
       <Route path="/" element={<Index />} />
+      <Route path="/success" element={<Success />} />
       <Route 
         path="/admin" 
         element={

@@ -12,41 +12,39 @@ export const useBookingMutations = () => {
       console.log('Starting booking status update:', { bookingId, newStatus });
       
       try {
-        // First, check if the booking exists
-        const { data: existingBooking, error: fetchError } = await supabase
-          .from('bookings')
-          .select()
-          .eq('id', bookingId)
-          .maybeSingle();
-
-        if (fetchError) {
-          console.error('Error fetching booking:', fetchError);
-          throw new Error('Erreur lors de la vérification de la réservation');
+        // Vérifier la session et les permissions
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          throw new Error('Vous devez être connecté pour effectuer cette action');
         }
 
-        if (!existingBooking) {
-          throw new Error('Réservation non trouvée');
+        const isAdmin = session.user.email === 'mendar.bouchali@gmail.com';
+        if (!isAdmin) {
+          throw new Error('Permission refusée');
         }
 
-        // If booking exists, proceed with update
-        const { data: updatedBooking, error: updateError } = await supabase
+        // Mettre à jour directement la réservation
+        const { data, error } = await supabase
           .from('bookings')
           .update({ status: newStatus })
           .eq('id', bookingId)
           .select()
-          .single();
+          .maybeSingle();
 
-        if (updateError) {
-          console.error('Error updating booking:', updateError);
+        if (error) {
+          console.error('Error updating booking:', error);
+          if (error.code === 'PGRST116') {
+            throw new Error('Réservation non trouvée');
+          }
           throw new Error('Erreur lors de la mise à jour de la réservation');
         }
 
-        if (!updatedBooking) {
-          throw new Error('La mise à jour a échoué');
+        if (!data) {
+          throw new Error('Réservation non trouvée');
         }
 
-        console.log('Successfully updated booking:', updatedBooking);
-        return updatedBooking;
+        console.log('Successfully updated booking:', data);
+        return data;
 
       } catch (error: any) {
         console.error('Error in updateBookingStatus:', error);
@@ -54,7 +52,7 @@ export const useBookingMutations = () => {
       }
     },
     onSuccess: (updatedBooking) => {
-      // Update the cache with the new booking data
+      // Mettre à jour le cache optimistiquement
       queryClient.setQueryData(['bookings'], (old: Booking[] | undefined) => {
         if (!old) return [updatedBooking];
         return old.map(booking => 
@@ -76,7 +74,7 @@ export const useBookingMutations = () => {
       });
     },
     onSettled: () => {
-      // Always refresh the bookings data after a mutation
+      // Rafraîchir les données après la mutation
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
     }
   });

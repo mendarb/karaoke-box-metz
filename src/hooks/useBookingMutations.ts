@@ -15,17 +15,37 @@ export const useBookingMutations = () => {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
+        console.error('No session found');
         throw new Error('Session expirée');
       }
 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || user.email !== "mendar.bouchali@gmail.com") {
+        console.error('Not admin user:', user?.email);
         throw new Error('Accès refusé');
       }
 
       console.log('Tentative de mise à jour de la réservation:', bookingId);
 
-      const { data, error } = await supabase
+      // D'abord, vérifions si la réservation existe et est accessible
+      const { data: existingBooking, error: fetchError } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('id', bookingId)
+        .maybeSingle();
+
+      if (fetchError) {
+        console.error('Erreur lors de la vérification de la réservation:', fetchError);
+        throw fetchError;
+      }
+
+      if (!existingBooking) {
+        console.error('Réservation non trouvée:', bookingId);
+        throw new Error('Réservation non trouvée ou inaccessible');
+      }
+
+      // Si la réservation existe, procédons à la mise à jour
+      const { data: updatedBooking, error: updateError } = await supabase
         .from('bookings')
         .update({ 
           status: newStatus,
@@ -35,18 +55,18 @@ export const useBookingMutations = () => {
         .select()
         .maybeSingle();
 
-      if (error) {
-        console.error('Erreur Supabase:', error);
-        throw error;
+      if (updateError) {
+        console.error('Erreur lors de la mise à jour:', updateError);
+        throw updateError;
       }
       
-      if (!data) {
-        console.error('Réservation non trouvée:', bookingId);
-        throw new Error('Réservation non trouvée ou inaccessible');
+      if (!updatedBooking) {
+        console.error('Mise à jour échouée - réservation non trouvée:', bookingId);
+        throw new Error('La mise à jour a échoué');
       }
 
-      await sendEmail(data);
-      return data;
+      await sendEmail(updatedBooking);
+      return updatedBooking;
     },
     onSuccess: () => {
       invalidateBookings();

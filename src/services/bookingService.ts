@@ -10,7 +10,7 @@ export const updateBookingInDatabase = async (bookingId: string, newStatus: stri
     })
     .eq('id', bookingId)
     .select('*')
-    .single();
+    .maybeSingle();
 
   if (updateError) {
     console.error('Error updating booking:', updateError);

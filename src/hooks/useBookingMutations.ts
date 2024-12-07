@@ -22,32 +22,26 @@ export const useBookingMutations = () => {
           .from('bookings')
           .update({ status: newStatus })
           .eq('id', bookingId)
-          .select()
-          .maybeSingle();
+          .select('*')
+          .single();
 
         if (error) {
           console.error('Error updating booking:', error);
           throw new Error(error.message);
         }
 
-        if (!data) {
-          console.error('No booking found with id:', bookingId);
-          throw new Error('Réservation non trouvée');
-        }
-
-        const updatedBooking = data;
-        console.log('Successfully updated booking:', updatedBooking);
+        console.log('Successfully updated booking:', data);
 
         // Envoyer l'email
         try {
-          await sendBookingEmail(updatedBooking);
+          await sendBookingEmail(data);
           console.log('Email sent successfully');
         } catch (emailError) {
           console.error('Error sending email:', emailError);
           // On continue même si l'email échoue
         }
 
-        return updatedBooking;
+        return data;
 
       } catch (error: any) {
         console.error('Error in updateBookingStatus:', error);

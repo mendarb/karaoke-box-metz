@@ -18,23 +18,24 @@ export const useBookingMutations = () => {
         await verifyAdminAccess();
         
         // Mettre à jour la réservation
-        const { data: bookings, error } = await supabase
+        const { data, error } = await supabase
           .from('bookings')
           .update({ status: newStatus })
           .eq('id', bookingId)
-          .select('*');
+          .select()
+          .maybeSingle();
 
         if (error) {
           console.error('Error updating booking:', error);
           throw new Error(error.message);
         }
 
-        if (!bookings || bookings.length === 0) {
+        if (!data) {
           console.error('No booking found with id:', bookingId);
           throw new Error('Réservation non trouvée');
         }
 
-        const updatedBooking = bookings[0];
+        const updatedBooking = data;
         console.log('Successfully updated booking:', updatedBooking);
 
         // Envoyer l'email

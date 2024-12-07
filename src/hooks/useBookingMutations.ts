@@ -17,12 +17,29 @@ export const useBookingMutations = () => {
         // Vérifier l'accès admin
         await verifyAdminAccess();
         
+        // Vérifier d'abord si la réservation existe
+        const { data: existingBooking, error: checkError } = await supabase
+          .from('bookings')
+          .select('*')
+          .eq('id', bookingId)
+          .single();
+
+        if (checkError) {
+          console.error('Error checking booking:', checkError);
+          throw new Error('Réservation introuvable');
+        }
+
+        console.log('Found existing booking:', existingBooking);
+
         // Mettre à jour la réservation
         const { data, error } = await supabase
           .from('bookings')
-          .update({ status: newStatus })
+          .update({ 
+            status: newStatus,
+            updated_at: new Date().toISOString()
+          })
           .eq('id', bookingId)
-          .select('*')
+          .select()
           .single();
 
         if (error) {

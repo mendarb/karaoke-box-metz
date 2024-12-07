@@ -7,7 +7,7 @@ export const updateBookingInDatabase = async (bookingId: string, newStatus: stri
   // Vérifions d'abord si la réservation existe
   const { data: bookings, error: fetchError } = await supabase
     .from('bookings')
-    .select()
+    .select('*')
     .eq('id', bookingId);
 
   if (fetchError) {
@@ -29,7 +29,7 @@ export const updateBookingInDatabase = async (bookingId: string, newStatus: stri
       updated_at: new Date().toISOString()
     })
     .eq('id', bookingId)
-    .select();
+    .select('*');
 
   if (updateError) {
     console.error('Erreur lors de la mise à jour:', updateError);
@@ -37,7 +37,7 @@ export const updateBookingInDatabase = async (bookingId: string, newStatus: stri
   }
 
   if (!updatedBookings || updatedBookings.length === 0) {
-    console.error('Aucune réservation mise à jour avec l\'id:', bookingId);
+    console.error('Mise à jour échouée - réservation non trouvée:', bookingId);
     throw new Error('La mise à jour a échoué');
   }
 

@@ -30,7 +30,7 @@ export const useBookingMutations = () => {
       console.log('Vérification de l\'existence de la réservation:', bookingId);
       const { data: bookings, error: fetchError } = await supabase
         .from('bookings')
-        .select()
+        .select('*')
         .eq('id', bookingId);
 
       if (fetchError) {
@@ -53,7 +53,7 @@ export const useBookingMutations = () => {
           updated_at: new Date().toISOString()
         })
         .eq('id', bookingId)
-        .select();
+        .select('*');
 
       if (updateError) {
         console.error('Erreur lors de la mise à jour:', updateError);

@@ -31,8 +31,8 @@ export const useBookingMutations = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const updateBookingStatus = useMutation({
-    mutationFn: async ({ bookingId, newStatus }: { bookingId: string; newStatus: string }) => {
+  const mutation = useMutation({
+    mutationFn: async ({ bookingId, newStatus }: { bookingId: string; newStatus: string }): Promise<Booking> => {
       console.log('Starting booking status update:', { bookingId, newStatus });
       
       try {
@@ -95,6 +95,10 @@ export const useBookingMutations = () => {
       });
     },
   });
+
+  const updateBookingStatus = async (bookingId: string, newStatus: string): Promise<Booking> => {
+    return mutation.mutateAsync({ bookingId, newStatus });
+  };
 
   return {
     updateBookingStatus,

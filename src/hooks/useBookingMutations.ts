@@ -14,9 +14,30 @@ export const useBookingMutations = () => {
       console.log('Starting booking status update:', { bookingId, newStatus });
       
       try {
+        // Vérifier l'accès admin
         await verifyAdminAccess();
-        const updatedBooking = await updateBookingInDatabase(bookingId, newStatus);
+        
+        // Mettre à jour la réservation
+        const { data: updatedBooking, error } = await supabase
+          .from('bookings')
+          .update({ status: newStatus })
+          .eq('id', bookingId)
+          .select('*')
+          .single();
 
+        if (error) {
+          console.error('Error updating booking:', error);
+          throw new Error(error.message);
+        }
+
+        if (!updatedBooking) {
+          console.error('No booking found with id:', bookingId);
+          throw new Error('Réservation non trouvée');
+        }
+
+        console.log('Successfully updated booking:', updatedBooking);
+
+        // Envoyer l'email
         try {
           await sendBookingEmail(updatedBooking);
           console.log('Email sent successfully');
@@ -39,6 +60,7 @@ export const useBookingMutations = () => {
       }
     },
     onSuccess: (updatedBooking) => {
+      // Mettre à jour le cache immédiatement
       queryClient.setQueryData(['bookings'], (old: Booking[] | undefined) => {
         if (!old) return [updatedBooking];
         return old.map(booking => 
@@ -46,6 +68,7 @@ export const useBookingMutations = () => {
         );
       });
 
+      // Invalider la requête pour forcer un rafraîchissement
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
 
       toast({

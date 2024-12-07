@@ -9,7 +9,7 @@ export const updateBookingInDatabase = async (bookingId: string, newStatus: stri
       updated_at: new Date().toISOString()
     })
     .eq('id', bookingId)
-    .select()
+    .select('*')
     .single();
 
   if (updateError) {

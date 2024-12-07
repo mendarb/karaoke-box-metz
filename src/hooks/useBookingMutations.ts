@@ -36,9 +36,7 @@ export const useBookingMutations = () => {
           })
           .eq('id', bookingId)
           .select()
-          .order('id') // Add explicit ordering
-          .limit(1)
-          .single();
+          .maybeSingle();
 
         if (updateError) {
           console.error('Error updating booking:', updateError);
@@ -46,6 +44,7 @@ export const useBookingMutations = () => {
         }
 
         if (!data) {
+          console.error('Booking not found:', bookingId);
           throw new Error('Réservation non trouvée');
         }
 

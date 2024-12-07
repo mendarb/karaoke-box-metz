@@ -27,22 +27,27 @@ export const useBookingMutations = () => {
           throw new Error('Permission refusée');
         }
 
-        // Mettre à jour la réservation directement
-        const { data: updatedBooking, error: updateError } = await supabase
+        // Mettre à jour la réservation avec vérification
+        const { data: bookings, error: updateError } = await supabase
           .from('bookings')
           .update({ 
             status: newStatus,
             updated_at: new Date().toISOString()
           })
           .eq('id', bookingId)
-          .select()
-          .single();
+          .select();
 
         if (updateError) {
           console.error('Error updating booking:', updateError);
           throw new Error('Erreur lors de la mise à jour de la réservation');
         }
 
+        if (!bookings || bookings.length === 0) {
+          console.error('No booking found with id:', bookingId);
+          throw new Error('Réservation non trouvée');
+        }
+
+        const updatedBooking = bookings[0];
         console.log('Successfully updated booking:', updatedBooking);
 
         // Envoyer l'email de confirmation

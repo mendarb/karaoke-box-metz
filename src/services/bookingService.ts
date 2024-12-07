@@ -7,7 +7,7 @@ export const updateBookingInDatabase = async (bookingId: string, newStatus: stri
   // Vérifions d'abord si la réservation existe
   const { data: existingBookings, error: fetchError } = await supabase
     .from('bookings')
-    .select('*')
+    .select()
     .eq('id', bookingId);
 
   if (fetchError) {

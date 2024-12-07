@@ -27,19 +27,19 @@ export const useBookingMutations = () => {
       }
 
       // Vérifions d'abord si la réservation existe
-      const { data: bookings, error: fetchError } = await supabase
+      const { data: existingBookings, error: fetchError } = await supabase
         .from('bookings')
-        .select('*')
+        .select()
         .eq('id', bookingId);
 
       if (fetchError) {
         console.error('Erreur lors de la vérification de la réservation:', fetchError);
-        throw fetchError;
+        throw new Error('Erreur lors de la vérification de la réservation');
       }
 
-      if (!bookings || bookings.length === 0) {
-        console.error('Réservation non trouvée:', bookingId);
-        throw new Error('Réservation non trouvée ou inaccessible');
+      if (!existingBookings || existingBookings.length === 0) {
+        console.error('Aucune réservation trouvée avec l\'id:', bookingId);
+        throw new Error('Réservation introuvable');
       }
 
       console.log('Réservation trouvée, procédons à la mise à jour');

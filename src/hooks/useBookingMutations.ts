@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import { Booking } from "./useBookings";
 import { sendBookingEmail } from "@/services/emailService";
-import { updateBookingInDatabase, verifyAdminAccess } from "@/services/bookingService";
+import { verifyAdminAccess } from "@/services/bookingService";
 import { supabase } from "@/lib/supabase";
 
 export const useBookingMutations = () => {
@@ -18,23 +18,23 @@ export const useBookingMutations = () => {
         await verifyAdminAccess();
         
         // Mettre à jour la réservation
-        const { data: updatedBooking, error } = await supabase
+        const { data: bookings, error } = await supabase
           .from('bookings')
           .update({ status: newStatus })
           .eq('id', bookingId)
-          .select('*')
-          .single();
+          .select('*');
 
         if (error) {
           console.error('Error updating booking:', error);
           throw new Error(error.message);
         }
 
-        if (!updatedBooking) {
+        if (!bookings || bookings.length === 0) {
           console.error('No booking found with id:', bookingId);
           throw new Error('Réservation non trouvée');
         }
 
+        const updatedBooking = bookings[0];
         console.log('Successfully updated booking:', updatedBooking);
 
         // Envoyer l'email

@@ -1,20 +1,43 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useToast } from "@/components/ui/use-toast";
-import { Booking } from "./useBookings";
-import { sendBookingEmail } from "@/services/emailService";
-import { verifyAdminAccess } from "@/services/bookingService";
 import { supabase } from "@/lib/supabase";
+import { useToast } from "@/components/ui/use-toast";
+import { sendBookingEmail } from "@/services/emailService";
+import { Booking } from "./useBookings";
+
+const verifyAdminAccess = async () => {
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  
+  if (sessionError || !session) {
+    console.error('Session error:', sessionError);
+    throw new Error('Vous devez être connecté');
+  }
+
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  
+  if (userError || !user) {
+    console.error('User error:', userError);
+    throw new Error('Utilisateur non trouvé');
+  }
+
+  if (user.email !== 'mendar.bouchali@gmail.com') {
+    console.error('Not admin user:', user.email);
+    throw new Error('Accès non autorisé');
+  }
+
+  return user;
+};
 
 export const useBookingMutations = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const updateBookingMutation = useMutation({
-    mutationFn: async ({ bookingId, newStatus }: { bookingId: string, newStatus: string }) => {
+  const updateBookingStatus = useMutation({
+    mutationFn: async ({ bookingId, newStatus }: { bookingId: string; newStatus: string }) => {
       console.log('Starting booking status update:', { bookingId, newStatus });
       
       try {
-        await verifyAdminAccess();
+        const user = await verifyAdminAccess();
+        console.log('Admin access verified for user:', user.email);
         
         const { data, error } = await supabase
           .from('bookings')
@@ -43,17 +66,18 @@ export const useBookingMutations = () => {
         }
 
         return data;
-
       } catch (error: any) {
-        console.error('Error in updateBookingStatus:', error);
-        
-        if (error.message.includes('Session expirée')) {
-          await supabase.auth.signOut();
-          window.location.reload();
-        }
-        
-        throw error;
+        console.error('Mutation error:', error);
+        throw new Error(error.message || "Une erreur est survenue");
       }
+    },
+    onError: (error: Error) => {
+      console.error('Mutation error handler:', error);
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive",
+      });
     },
     onSuccess: (updatedBooking) => {
       queryClient.setQueryData(['bookings'], (old: Booking[] | undefined) => {
@@ -67,22 +91,10 @@ export const useBookingMutations = () => {
 
       toast({
         title: "Succès",
-        description: "Le statut a été mis à jour",
+        description: "Statut de la réservation mis à jour",
       });
     },
-    onError: (error: any) => {
-      console.error('Mutation error:', error);
-      toast({
-        title: "Erreur",
-        description: error.message || "Une erreur est survenue lors de la mise à jour",
-        variant: "destructive",
-      });
-    }
   });
-
-  const updateBookingStatus = async (bookingId: string, newStatus: string) => {
-    return updateBookingMutation.mutateAsync({ bookingId, newStatus });
-  };
 
   return {
     updateBookingStatus,

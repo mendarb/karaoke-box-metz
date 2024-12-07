@@ -27,25 +27,8 @@ export const useBookingMutations = () => {
           throw new Error('Permission refusée');
         }
 
-        // Vérifier si la réservation existe
-        const { data: existingBooking, error: checkError } = await supabase
-          .from('bookings')
-          .select()
-          .eq('id', bookingId)
-          .maybeSingle();
-
-        if (checkError) {
-          console.error('Error checking booking:', checkError);
-          throw new Error('Erreur lors de la vérification de la réservation');
-        }
-
-        if (!existingBooking) {
-          console.error('Booking not found:', bookingId);
-          throw new Error('Réservation non trouvée');
-        }
-
         // Mettre à jour la réservation
-        const { data: updatedBooking, error: updateError } = await supabase
+        const { data, error: updateError } = await supabase
           .from('bookings')
           .update({ 
             status: newStatus,
@@ -53,29 +36,30 @@ export const useBookingMutations = () => {
           })
           .eq('id', bookingId)
           .select()
-          .maybeSingle();
+          .limit(1)
+          .single();
 
         if (updateError) {
           console.error('Error updating booking:', updateError);
           throw new Error('Erreur lors de la mise à jour de la réservation');
         }
 
-        if (!updatedBooking) {
-          throw new Error('Erreur lors de la mise à jour');
+        if (!data) {
+          throw new Error('Réservation non trouvée');
         }
 
-        console.log('Successfully updated booking:', updatedBooking);
+        console.log('Successfully updated booking:', data);
 
         // Envoyer l'email de confirmation
         try {
-          await sendBookingEmail(updatedBooking);
+          await sendBookingEmail(data);
           console.log('Email sent successfully');
         } catch (emailError) {
           console.error('Error sending email:', emailError);
           // On continue même si l'email échoue
         }
 
-        return updatedBooking;
+        return data;
 
       } catch (error: any) {
         console.error('Error in updateBookingStatus:', error);

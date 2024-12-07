@@ -5,7 +5,7 @@ export const updateBookingInDatabase = async (bookingId: string, newStatus: stri
   console.log('Début de la mise à jour de la réservation:', bookingId, 'avec le statut:', newStatus);
 
   // Vérifions d'abord si la réservation existe
-  const { data: existingBookings, error: fetchError } = await supabase
+  const { data: bookings, error: fetchError } = await supabase
     .from('bookings')
     .select()
     .eq('id', bookingId);
@@ -15,7 +15,7 @@ export const updateBookingInDatabase = async (bookingId: string, newStatus: stri
     throw new Error('Erreur lors de la vérification de la réservation');
   }
 
-  if (!existingBookings || existingBookings.length === 0) {
+  if (!bookings || bookings.length === 0) {
     console.error('Aucune réservation trouvée avec l\'id:', bookingId);
     throw new Error('Réservation introuvable');
   }
@@ -43,21 +43,4 @@ export const updateBookingInDatabase = async (bookingId: string, newStatus: stri
 
   console.log('Mise à jour réussie:', updatedBookings[0]);
   return updatedBookings[0];
-};
-
-export const verifyAdminAccess = async () => {
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-  
-  if (sessionError || !session) {
-    console.error('Erreur de session:', sessionError);
-    throw new Error('Session expirée. Veuillez vous reconnecter.');
-  }
-
-  const userEmail = session.user.email;
-  if (!userEmail || userEmail !== 'mendar.bouchali@gmail.com') {
-    console.error('Utilisateur non admin:', userEmail);
-    throw new Error('Permission refusée');
-  }
-
-  return session;
 };

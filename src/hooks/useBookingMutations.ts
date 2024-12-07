@@ -27,7 +27,8 @@ export const useBookingMutations = () => {
       }
 
       // Vérifions d'abord si la réservation existe
-      const { data: existingBookings, error: fetchError } = await supabase
+      console.log('Vérification de l\'existence de la réservation:', bookingId);
+      const { data: bookings, error: fetchError } = await supabase
         .from('bookings')
         .select()
         .eq('id', bookingId);
@@ -37,7 +38,7 @@ export const useBookingMutations = () => {
         throw new Error('Erreur lors de la vérification de la réservation');
       }
 
-      if (!existingBookings || existingBookings.length === 0) {
+      if (!bookings || bookings.length === 0) {
         console.error('Aucune réservation trouvée avec l\'id:', bookingId);
         throw new Error('Réservation introuvable');
       }

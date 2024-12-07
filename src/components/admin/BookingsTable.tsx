@@ -25,7 +25,7 @@ import { Booking } from "@/hooks/useBookings";
 
 interface BookingsTableProps {
   data: Booking[];
-  onStatusChange: (bookingId: string, newStatus: string) => Promise<void>;
+  onStatusChange: (bookingId: string, newStatus: string) => Promise<Booking>;
   onViewDetails: (booking: Booking) => void;
   isLoading?: boolean;
 }

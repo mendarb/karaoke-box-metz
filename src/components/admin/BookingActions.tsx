@@ -7,10 +7,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { Booking } from "@/hooks/useBookings";
 
 interface BookingActionsProps {
   bookingId: string;
-  onStatusChange: (bookingId: string, newStatus: string) => Promise<void>;
+  onStatusChange: (bookingId: string, newStatus: string) => Promise<Booking>;
 }
 
 export const BookingActions = ({ bookingId, onStatusChange }: BookingActionsProps) => {

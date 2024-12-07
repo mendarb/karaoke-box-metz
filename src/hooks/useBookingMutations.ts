@@ -1,12 +1,14 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { useToast } from "@/components/ui/use-toast";
-import { sendBookingEmail } from "@/services/emailService";
 import { Booking } from "./useBookings";
+import { useBookingEmail } from "./useBookingEmail";
+import { useBookingCache } from "./useBookingCache";
+import { useBookingNotifications } from "./useBookingNotifications";
 
 export const useBookingMutations = () => {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const { sendEmail } = useBookingEmail();
+  const { invalidateBookings } = useBookingCache();
+  const { notifySuccess, notifyError } = useBookingNotifications();
 
   const mutation = useMutation({
     mutationFn: async ({ bookingId, newStatus }: { bookingId: string; newStatus: string }): Promise<Booking> => {
@@ -28,29 +30,16 @@ export const useBookingMutations = () => {
         throw new Error('Booking not found');
       }
 
-      try {
-        await sendBookingEmail(data);
-      } catch (error) {
-        console.error('Email sending error:', error);
-        // Continue even if email fails
-      }
-
+      await sendEmail(data);
       return data;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['bookings'] });
-      toast({
-        title: "Succès",
-        description: "Statut de la réservation mis à jour",
-      });
+      invalidateBookings();
+      notifySuccess();
     },
     onError: (error: Error) => {
       console.error('Mutation error:', error);
-      toast({
-        title: "Erreur",
-        description: error.message || "Une erreur est survenue",
-        variant: "destructive",
-      });
+      notifyError(error);
     }
   });
 

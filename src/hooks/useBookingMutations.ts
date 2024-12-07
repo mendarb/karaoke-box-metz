@@ -36,6 +36,7 @@ export const useBookingMutations = () => {
           })
           .eq('id', bookingId)
           .select()
+          .order('id') // Add explicit ordering
           .limit(1)
           .single();
 

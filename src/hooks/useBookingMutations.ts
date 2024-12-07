@@ -27,8 +27,25 @@ export const useBookingMutations = () => {
           throw new Error('Permission refusée');
         }
 
+        // Récupérer la réservation avant la mise à jour
+        const { data: existingBooking, error: fetchError } = await supabase
+          .from('bookings')
+          .select()
+          .eq('id', bookingId)
+          .maybeSingle();
+
+        if (fetchError) {
+          console.error('Error fetching booking:', fetchError);
+          throw new Error('Erreur lors de la récupération de la réservation');
+        }
+
+        if (!existingBooking) {
+          console.error('Booking not found:', bookingId);
+          throw new Error('Réservation non trouvée');
+        }
+
         // Mettre à jour la réservation
-        const { data, error: updateError } = await supabase
+        const { data: updatedBooking, error: updateError } = await supabase
           .from('bookings')
           .update({ 
             status: newStatus,
@@ -43,23 +60,23 @@ export const useBookingMutations = () => {
           throw new Error('Erreur lors de la mise à jour de la réservation');
         }
 
-        if (!data) {
-          console.error('Booking not found:', bookingId);
-          throw new Error('Réservation non trouvée');
+        if (!updatedBooking) {
+          console.error('Updated booking not found:', bookingId);
+          throw new Error('Erreur lors de la mise à jour de la réservation');
         }
 
-        console.log('Successfully updated booking:', data);
+        console.log('Successfully updated booking:', updatedBooking);
 
         // Envoyer l'email de confirmation
         try {
-          await sendBookingEmail(data);
+          await sendBookingEmail(updatedBooking);
           console.log('Email sent successfully');
         } catch (emailError) {
           console.error('Error sending email:', emailError);
           // On continue même si l'email échoue
         }
 
-        return data;
+        return updatedBooking;
 
       } catch (error: any) {
         console.error('Error in updateBookingStatus:', error);

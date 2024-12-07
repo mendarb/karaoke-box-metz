@@ -9,21 +9,20 @@ export const updateBookingInDatabase = async (bookingId: string, newStatus: stri
       updated_at: new Date().toISOString()
     })
     .eq('id', bookingId)
-    .select('*')
-    .maybeSingle();
+    .select('*');
 
   if (updateError) {
     console.error('Error updating booking:', updateError);
     throw new Error('Erreur lors de la mise à jour de la réservation');
   }
 
-  if (!bookings) {
+  if (!bookings || bookings.length === 0) {
     console.error('No booking found with id:', bookingId);
     throw new Error('Réservation non trouvée');
   }
 
-  console.log('Successfully updated booking:', bookings);
-  return bookings;
+  console.log('Successfully updated booking:', bookings[0]);
+  return bookings[0];
 };
 
 export const verifyAdminAccess = async () => {

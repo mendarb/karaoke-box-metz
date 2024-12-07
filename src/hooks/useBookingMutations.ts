@@ -27,44 +27,43 @@ export const useBookingMutations = () => {
 
       console.log('Tentative de mise à jour de la réservation:', bookingId);
 
-      // D'abord, vérifions si la réservation existe et est accessible
-      const { data: existingBooking, error: fetchError } = await supabase
+      // Vérifions d'abord si la réservation existe
+      const { data: bookings, error: fetchError } = await supabase
         .from('bookings')
         .select('*')
-        .eq('id', bookingId)
-        .maybeSingle();
+        .eq('id', bookingId);
 
       if (fetchError) {
         console.error('Erreur lors de la vérification de la réservation:', fetchError);
         throw fetchError;
       }
 
-      if (!existingBooking) {
+      if (!bookings || bookings.length === 0) {
         console.error('Réservation non trouvée:', bookingId);
         throw new Error('Réservation non trouvée ou inaccessible');
       }
 
       // Si la réservation existe, procédons à la mise à jour
-      const { data: updatedBooking, error: updateError } = await supabase
+      const { data: updatedBookings, error: updateError } = await supabase
         .from('bookings')
         .update({ 
           status: newStatus,
           updated_at: new Date().toISOString()
         })
         .eq('id', bookingId)
-        .select()
-        .maybeSingle();
+        .select();
 
       if (updateError) {
         console.error('Erreur lors de la mise à jour:', updateError);
         throw updateError;
       }
       
-      if (!updatedBooking) {
+      if (!updatedBookings || updatedBookings.length === 0) {
         console.error('Mise à jour échouée - réservation non trouvée:', bookingId);
         throw new Error('La mise à jour a échoué');
       }
 
+      const updatedBooking = updatedBookings[0];
       await sendEmail(updatedBooking);
       return updatedBooking;
     },

@@ -39,33 +39,51 @@ export const useBookingMutations = () => {
         const user = await verifyAdminAccess();
         console.log('Admin access verified for user:', user.email);
         
-        const { data, error } = await supabase
+        // First, check if the booking exists
+        const { data: existingBooking, error: fetchError } = await supabase
           .from('bookings')
-          .update({ status: newStatus })
+          .select('*')
           .eq('id', bookingId)
-          .select()
-          .maybeSingle();
+          .single();
 
-        if (error) {
-          console.error('Error updating booking:', error);
-          throw new Error("Erreur lors de la mise à jour de la réservation");
+        if (fetchError) {
+          console.error('Error fetching booking:', fetchError);
+          throw new Error("Réservation introuvable");
         }
 
-        if (!data) {
+        if (!existingBooking) {
           console.error('No booking found with id:', bookingId);
           throw new Error("Réservation introuvable");
         }
 
-        console.log('Successfully updated booking:', data);
+        // Then update it
+        const { data: updatedBooking, error: updateError } = await supabase
+          .from('bookings')
+          .update({ status: newStatus })
+          .eq('id', bookingId)
+          .select()
+          .single();
+
+        if (updateError) {
+          console.error('Error updating booking:', updateError);
+          throw new Error("Erreur lors de la mise à jour de la réservation");
+        }
+
+        if (!updatedBooking) {
+          console.error('No booking returned after update');
+          throw new Error("Erreur lors de la mise à jour de la réservation");
+        }
+
+        console.log('Successfully updated booking:', updatedBooking);
 
         try {
-          await sendBookingEmail(data);
+          await sendBookingEmail(updatedBooking);
           console.log('Email sent successfully');
         } catch (emailError) {
           console.error('Error sending email:', emailError);
         }
 
-        return data;
+        return updatedBooking;
       } catch (error: any) {
         console.error('Mutation error:', error);
         throw new Error(error.message || "Une erreur est survenue");

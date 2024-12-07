@@ -1,8 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/ui/use-toast";
 import { Booking } from "./useBookings";
 import { sendBookingEmail } from "@/services/emailService";
+import { updateBookingInDatabase, verifyAdminAccess } from "@/services/bookingService";
+import { supabase } from "@/lib/supabase";
 
 export const useBookingMutations = () => {
   const { toast } = useToast();
@@ -13,44 +14,9 @@ export const useBookingMutations = () => {
       console.log('Starting booking status update:', { bookingId, newStatus });
       
       try {
-        // Vérifier la session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError || !session) {
-          console.error('Session error:', sessionError);
-          throw new Error('Session expirée. Veuillez vous reconnecter.');
-        }
+        await verifyAdminAccess();
+        const updatedBooking = await updateBookingInDatabase(bookingId, newStatus);
 
-        // Vérifier si l'utilisateur est admin
-        const userEmail = session.user.email;
-        if (!userEmail || userEmail !== 'mendar.bouchali@gmail.com') {
-          console.error('User not admin:', userEmail);
-          throw new Error('Permission refusée');
-        }
-
-        // Mettre à jour la réservation avec vérification
-        const { data: bookings, error: updateError } = await supabase
-          .from('bookings')
-          .update({ 
-            status: newStatus,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', bookingId)
-          .select();
-
-        if (updateError) {
-          console.error('Error updating booking:', updateError);
-          throw new Error('Erreur lors de la mise à jour de la réservation');
-        }
-
-        if (!bookings || bookings.length === 0) {
-          console.error('No booking found with id:', bookingId);
-          throw new Error('Réservation non trouvée');
-        }
-
-        const updatedBooking = bookings[0];
-        console.log('Successfully updated booking:', updatedBooking);
-
-        // Envoyer l'email de confirmation
         try {
           await sendBookingEmail(updatedBooking);
           console.log('Email sent successfully');
@@ -64,7 +30,6 @@ export const useBookingMutations = () => {
       } catch (error: any) {
         console.error('Error in updateBookingStatus:', error);
         
-        // Gérer la déconnexion si la session est expirée
         if (error.message.includes('Session expirée')) {
           await supabase.auth.signOut();
           window.location.reload();
@@ -74,7 +39,6 @@ export const useBookingMutations = () => {
       }
     },
     onSuccess: (updatedBooking) => {
-      // Mettre à jour le cache immédiatement
       queryClient.setQueryData(['bookings'], (old: Booking[] | undefined) => {
         if (!old) return [updatedBooking];
         return old.map(booking => 
@@ -82,7 +46,6 @@ export const useBookingMutations = () => {
         );
       });
 
-      // Invalider le cache pour forcer un rafraîchissement
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
 
       toast({

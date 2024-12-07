@@ -8,6 +8,7 @@ import {
 import { MoreHorizontal, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Booking } from "@/hooks/useBookings";
+import { useToast } from "@/components/ui/use-toast";
 
 interface BookingActionsProps {
   bookingId: string;
@@ -17,14 +18,19 @@ interface BookingActionsProps {
 export const BookingActions = ({ bookingId, onStatusChange }: BookingActionsProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const { toast } = useToast();
 
   const handleStatusChange = async (status: string) => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
       await onStatusChange(bookingId, status);
       setIsOpen(false);
     } catch (error) {
-      console.error('Status change error:', error);
+      toast({
+        title: "Erreur",
+        description: error instanceof Error ? error.message : "Une erreur est survenue",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }

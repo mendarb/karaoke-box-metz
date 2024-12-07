@@ -43,7 +43,9 @@ export const useBookingMutations = () => {
         throw new Error('Réservation non trouvée ou inaccessible');
       }
 
-      // Si la réservation existe, procédons à la mise à jour
+      console.log('Réservation trouvée, procédons à la mise à jour');
+
+      // Procédons à la mise à jour
       const { data: updatedBookings, error: updateError } = await supabase
         .from('bookings')
         .update({ 
@@ -64,6 +66,8 @@ export const useBookingMutations = () => {
       }
 
       const updatedBooking = updatedBookings[0];
+      console.log('Mise à jour réussie:', updatedBooking);
+      
       await sendEmail(updatedBooking);
       return updatedBooking;
     },

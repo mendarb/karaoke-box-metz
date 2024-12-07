@@ -21,14 +21,20 @@ export const BookingActions = ({ bookingId, onStatusChange }: BookingActionsProp
   const { toast } = useToast();
 
   const handleStatusChange = async (status: string) => {
+    console.log('Tentative de changement de statut pour la réservation:', bookingId, 'vers:', status);
     setIsLoading(true);
     try {
-      await onStatusChange(bookingId, status);
+      const updatedBooking = await onStatusChange(bookingId, status);
+      if (!updatedBooking) {
+        throw new Error("La réservation n'a pas pu être mise à jour");
+      }
+      console.log('Réservation mise à jour avec succès:', updatedBooking);
       setIsOpen(false);
     } catch (error) {
+      console.error('Erreur lors de la mise à jour du statut:', error);
       toast({
         title: "Erreur",
-        description: error instanceof Error ? error.message : "Une erreur est survenue",
+        description: error instanceof Error ? error.message : "Une erreur est survenue lors de la mise à jour",
         variant: "destructive",
       });
     } finally {

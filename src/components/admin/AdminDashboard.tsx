@@ -17,36 +17,43 @@ export const AdminDashboard = () => {
   const navigate = useNavigate();
   const { updateBookingStatus } = useBookingMutations();
 
-  const { data: bookings = [], isLoading } = useQuery({
+  const { data: bookings = [], isLoading, error } = useQuery({
     queryKey: ['bookings'],
     queryFn: async () => {
-      const { data: session } = await supabase.auth.getSession();
-      
-      if (!session.session) {
-        console.log("No session found, redirecting to login");
-        navigate("/login");
-        return [];
-      }
+      try {
+        const { data: session } = await supabase.auth.getSession();
+        
+        if (!session.session) {
+          console.log("No session found, redirecting to login");
+          navigate("/login");
+          return [];
+        }
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user || user.email !== "mendar.bouchali@gmail.com") {
-        console.log("Not admin user:", user?.email);
-        toast({
-          title: "Accès refusé",
-          description: "Vous n'avez pas les droits d'accès à cette page.",
-          variant: "destructive",
-        });
-        navigate("/");
-        return [];
-      }
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user || user.email !== "mendar.bouchali@gmail.com") {
+          console.log("Not admin user:", user?.email);
+          toast({
+            title: "Accès refusé",
+            description: "Vous n'avez pas les droits d'accès à cette page.",
+            variant: "destructive",
+          });
+          navigate("/");
+          return [];
+        }
 
-      const { data, error } = await supabase
-        .from('bookings')
-        .select('*')
-        .order('created_at', { ascending: false });
+        const { data, error } = await supabase
+          .from('bookings')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching bookings:', error);
+        if (error) {
+          console.error('Error fetching bookings:', error);
+          throw error;
+        }
+
+        return data || [];
+      } catch (error) {
+        console.error('Error in query function:', error);
         toast({
           title: "Erreur",
           description: "Impossible de charger les réservations",
@@ -54,13 +61,16 @@ export const AdminDashboard = () => {
         });
         return [];
       }
-
-      return data || [];
     },
+    retry: false,
     refetchOnWindowFocus: true,
     refetchOnMount: true,
     refetchInterval: 30000,
   });
+
+  if (error) {
+    console.error('Query error:', error);
+  }
 
   if (isLoading) {
     return (

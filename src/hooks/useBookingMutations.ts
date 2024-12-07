@@ -23,6 +23,8 @@ export const useBookingMutations = () => {
         throw new Error('Accès refusé');
       }
 
+      console.log('Tentative de mise à jour de la réservation:', bookingId);
+
       const { data, error } = await supabase
         .from('bookings')
         .update({ 
@@ -31,10 +33,17 @@ export const useBookingMutations = () => {
         })
         .eq('id', bookingId)
         .select()
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
-      if (!data) throw new Error('Réservation non trouvée');
+      if (error) {
+        console.error('Erreur Supabase:', error);
+        throw error;
+      }
+      
+      if (!data) {
+        console.error('Réservation non trouvée:', bookingId);
+        throw new Error('Réservation non trouvée ou inaccessible');
+      }
 
       await sendEmail(data);
       return data;

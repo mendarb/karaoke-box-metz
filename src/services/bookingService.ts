@@ -29,7 +29,7 @@ export const updateBookingInDatabase = async (bookingId: string, newStatus: stri
       updated_at: new Date().toISOString()
     })
     .eq('id', bookingId)
-    .select('*');
+    .select();
 
   if (updateError) {
     console.error('Erreur lors de la mise à jour:', updateError);

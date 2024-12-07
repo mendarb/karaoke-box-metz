@@ -12,20 +12,19 @@ export const useBookingMutations = () => {
 
   const mutation = useMutation({
     mutationFn: async ({ bookingId, newStatus }: { bookingId: string; newStatus: string }): Promise<Booking> => {
-      const { data: { session } } = await supabase.auth.getSession();
+      console.log('Début de la mutation pour la réservation:', bookingId);
       
+      const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        console.error('No session found');
+        console.error('Pas de session trouvée');
         throw new Error('Session expirée');
       }
 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || user.email !== "mendar.bouchali@gmail.com") {
-        console.error('Not admin user:', user?.email);
+        console.error('Utilisateur non admin:', user?.email);
         throw new Error('Accès refusé');
       }
-
-      console.log('Tentative de mise à jour de la réservation:', bookingId);
 
       // Vérifions d'abord si la réservation existe
       const { data: bookings, error: fetchError } = await supabase
@@ -45,7 +44,7 @@ export const useBookingMutations = () => {
 
       console.log('Réservation trouvée, procédons à la mise à jour');
 
-      // Procédons à la mise à jour
+      // Mise à jour de la réservation
       const { data: updatedBookings, error: updateError } = await supabase
         .from('bookings')
         .update({ 
@@ -59,7 +58,7 @@ export const useBookingMutations = () => {
         console.error('Erreur lors de la mise à jour:', updateError);
         throw updateError;
       }
-      
+
       if (!updatedBookings || updatedBookings.length === 0) {
         console.error('Mise à jour échouée - réservation non trouvée:', bookingId);
         throw new Error('La mise à jour a échoué');

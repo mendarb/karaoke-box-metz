@@ -12,7 +12,7 @@ export const useBookingMutations = () => {
 
   const mutation = useMutation({
     mutationFn: async ({ bookingId, newStatus }: { bookingId: string; newStatus: string }): Promise<Booking> => {
-      console.log('Updating booking status:', { bookingId, newStatus });
+      console.log('Updating booking:', { bookingId, newStatus });
       
       const { data, error } = await supabase
         .from('bookings')
@@ -30,10 +30,12 @@ export const useBookingMutations = () => {
         throw new Error('Booking not found');
       }
 
+      console.log('Booking updated successfully:', data);
       await sendEmail(data);
       return data;
     },
     onSuccess: (data) => {
+      console.log('Mutation successful, invalidating cache');
       invalidateBookings();
       notifySuccess();
     },
@@ -44,6 +46,7 @@ export const useBookingMutations = () => {
   });
 
   const updateBookingStatus = async (bookingId: string, newStatus: string): Promise<Booking> => {
+    console.log('Starting booking status update:', { bookingId, newStatus });
     return mutation.mutateAsync({ bookingId, newStatus });
   };
 

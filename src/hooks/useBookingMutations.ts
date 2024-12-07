@@ -27,6 +27,18 @@ export const useBookingMutations = () => {
           throw new Error('Permission refusée');
         }
 
+        // First check if the booking exists
+        const { data: existingBooking, error: fetchError } = await supabase
+          .from('bookings')
+          .select()
+          .eq('id', bookingId)
+          .single();
+
+        if (fetchError) {
+          console.error('Error fetching booking:', fetchError);
+          throw new Error('Réservation non trouvée');
+        }
+
         // Mettre à jour la réservation
         const { data, error: updateError } = await supabase
           .from('bookings')
@@ -36,16 +48,11 @@ export const useBookingMutations = () => {
           })
           .eq('id', bookingId)
           .select()
-          .maybeSingle();
+          .single();
 
         if (updateError) {
           console.error('Error updating booking:', updateError);
           throw new Error('Erreur lors de la mise à jour de la réservation');
-        }
-
-        if (!data) {
-          console.error('Booking not found:', bookingId);
-          throw new Error('Réservation non trouvée');
         }
 
         console.log('Successfully updated booking:', data);

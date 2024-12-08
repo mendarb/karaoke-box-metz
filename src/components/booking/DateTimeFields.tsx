@@ -13,15 +13,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { supabase } from "@/lib/supabase";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-
-const timeSlots = [
-  "17:00",
-  "18:00",
-  "19:00",
-  "20:00",
-  "21:00",
-  "22:00",
-];
+import { useQuery } from "@tanstack/react-query";
 
 interface DateTimeFieldsProps {
   form: UseFormReturn<any>;
@@ -32,31 +24,90 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [bookedSlots, setBookedSlots] = useState<{ [key: string]: number }>({}); // Stocke la durée réservée pour chaque créneau
 
-  // Date minimum : aujourd'hui
+  // Récupérer les paramètres de réservation
+  const { data: settings } = useQuery({
+    queryKey: ['booking-settings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('booking_settings')
+        .select('*');
+
+      if (error) throw error;
+
+      const formattedSettings = {
+        bookingWindow: { startDays: 1, endDays: 60 },
+        openingHours: {},
+        excludedDays: [],
+      };
+
+      data?.forEach(setting => {
+        switch (setting.key) {
+          case 'booking_window':
+            formattedSettings.bookingWindow = setting.value;
+            break;
+          case 'opening_hours':
+            formattedSettings.openingHours = setting.value;
+            break;
+          case 'excluded_days':
+            formattedSettings.excludedDays = setting.value;
+            break;
+        }
+      });
+
+      return formattedSettings;
+    }
+  });
+
+  // Date minimum : aujourd'hui + délai minimum
   const minDate = new Date();
+  minDate.setDate(minDate.getDate() + (settings?.bookingWindow.startDays || 1));
   minDate.setHours(0, 0, 0, 0);
 
-  const isMonday = (date: Date) => {
-    return date.getDay() === 1; // 1 représente Lundi
+  // Date maximum : aujourd'hui + délai maximum
+  const maxDate = new Date();
+  maxDate.setDate(maxDate.getDate() + (settings?.bookingWindow.endDays || 60));
+  maxDate.setHours(23, 59, 59, 999);
+
+  // Fonction pour vérifier si un jour est exclu
+  const isDayExcluded = (date: Date) => {
+    const timestamp = date.getTime();
+    return settings?.excludedDays?.includes(timestamp);
+  };
+
+  // Fonction pour obtenir les créneaux disponibles pour un jour donné
+  const getAvailableSlots = (date: Date) => {
+    const dayOfWeek = date.getDay().toString();
+    return settings?.openingHours?.[dayOfWeek]?.isOpen 
+      ? settings.openingHours[dayOfWeek].slots 
+      : [];
   };
 
   // Fonction pour calculer les heures disponibles à partir d'un créneau
   const calculateAvailableHours = (timeSlot: string) => {
-    const slotTime = parseInt(timeSlot.split(':')[0]);
+    if (!selectedDate) return 0;
+    
+    const slots = getAvailableSlots(selectedDate);
+    const slotIndex = slots.indexOf(timeSlot);
     let availableHours = 0;
-    let currentSlot = slotTime;
-
-    while (currentSlot < 22) {
-      const nextSlot = `${currentSlot + 1}:00`;
-      if (bookedSlots[nextSlot]) break;
-      availableHours++;
-      currentSlot++;
+    
+    for (let i = slotIndex; i < slots.length - 1; i++) {
+      const currentSlot = slots[i];
+      const nextSlot = slots[i + 1];
+      
+      const currentHour = parseInt(currentSlot.split(':')[0]);
+      const nextHour = parseInt(nextSlot.split(':')[0]);
+      
+      if (nextHour - currentHour === 1 && !bookedSlots[nextSlot]) {
+        availableHours++;
+      } else {
+        break;
+      }
     }
-
+    
     return availableHours;
   };
 
-  // Fonction pour vérifier les réservations existantes
+  // Vérifier les réservations existantes
   const checkBookings = async (date: Date) => {
     if (!date) return;
 
@@ -72,9 +123,7 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
 
     const slots: { [key: string]: number } = {};
     bookings?.forEach(booking => {
-      const startTime = booking.time_slot;
-      const duration = parseInt(booking.duration);
-      slots[startTime] = duration;
+      slots[booking.time_slot] = parseInt(booking.duration);
     });
 
     setBookedSlots(slots);
@@ -82,18 +131,7 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
 
   // Vérifier si un créneau est disponible
   const isSlotAvailable = (slot: string) => {
-    const slotTime = parseInt(slot.split(':')[0]) * 60 + parseInt(slot.split(':')[1]);
-    
-    for (const [bookedSlot, duration] of Object.entries(bookedSlots)) {
-      const bookedTime = parseInt(bookedSlot.split(':')[0]) * 60 + parseInt(bookedSlot.split(':')[1]);
-      const bookedEndTime = bookedTime + duration * 60;
-      
-      if (slotTime >= bookedTime && slotTime < bookedEndTime) {
-        return false;
-      }
-    }
-
-    return true;
+    return !bookedSlots[slot];
   };
 
   // Mettre à jour les réservations quand la date change
@@ -131,7 +169,9 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
                 }}
                 disabled={(date) => 
                   date < minDate || 
-                  isMonday(date)
+                  date > maxDate ||
+                  isDayExcluded(date) ||
+                  !settings?.openingHours?.[date.getDay()]?.isOpen
                 }
                 initialFocus
                 locale={fr}
@@ -142,56 +182,58 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
         )}
       />
 
-      <FormField
-        control={form.control}
-        name="timeSlot"
-        rules={{ required: "L'heure est requise" }}
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Heure *</FormLabel>
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-              <TooltipProvider>
-                {timeSlots.map((slot) => {
-                  const isAvailable = isSlotAvailable(slot);
-                  return (
-                    <Tooltip key={slot}>
-                      <TooltipTrigger asChild>
-                        <div>
-                          <FormControl>
-                            <Button
-                              type="button"
-                              variant={field.value === slot ? "default" : "outline"}
-                              className={`w-full ${
-                                field.value === slot
-                                  ? "bg-violet-600 hover:bg-violet-700"
-                                  : ""
-                              } ${
-                                !isAvailable
-                                  ? "opacity-50 cursor-not-allowed"
-                                  : ""
-                              }`}
-                              onClick={() => isAvailable && field.onChange(slot)}
-                              disabled={!selectedDate || !isAvailable}
-                            >
-                              {slot}
-                            </Button>
-                          </FormControl>
-                        </div>
-                      </TooltipTrigger>
-                      {!isAvailable && (
-                        <TooltipContent>
-                          <p>Créneau déjà réservé</p>
-                        </TooltipContent>
-                      )}
-                    </Tooltip>
-                  );
-                })}
-              </TooltipProvider>
-            </div>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      {selectedDate && (
+        <FormField
+          control={form.control}
+          name="timeSlot"
+          rules={{ required: "L'heure est requise" }}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Heure *</FormLabel>
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                <TooltipProvider>
+                  {getAvailableSlots(selectedDate).map((slot) => {
+                    const isAvailable = isSlotAvailable(slot);
+                    return (
+                      <Tooltip key={slot}>
+                        <TooltipTrigger asChild>
+                          <div>
+                            <FormControl>
+                              <Button
+                                type="button"
+                                variant={field.value === slot ? "default" : "outline"}
+                                className={`w-full ${
+                                  field.value === slot
+                                    ? "bg-violet-600 hover:bg-violet-700"
+                                    : ""
+                                } ${
+                                  !isAvailable
+                                    ? "opacity-50 cursor-not-allowed"
+                                    : ""
+                                }`}
+                                onClick={() => isAvailable && field.onChange(slot)}
+                                disabled={!isAvailable}
+                              >
+                                {slot}
+                              </Button>
+                            </FormControl>
+                          </div>
+                        </TooltipTrigger>
+                        {!isAvailable && (
+                          <TooltipContent>
+                            <p>Créneau déjà réservé</p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    );
+                  })}
+                </TooltipProvider>
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      )}
 
       {selectedDate && (
         <p className="text-sm text-gray-500 mt-2">

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { addDays } from "date-fns";
+import { addDays, startOfDay, endOfDay } from "date-fns";
 
 export const useBookingDates = () => {
   const { data: settings } = useQuery({
@@ -36,30 +36,31 @@ export const useBookingDates = () => {
     }
   });
 
-  const minDate = addDays(new Date(), settings?.bookingWindow?.startDays || 1);
-  const maxDate = addDays(new Date(), settings?.bookingWindow?.endDays || 30);
-
-  // Reset hours to start of day for consistent comparison
-  minDate.setHours(0, 0, 0, 0);
-  maxDate.setHours(23, 59, 59, 999);
+  // Utiliser startOfDay pour s'assurer que la comparaison se fait au début de la journée
+  const minDate = startOfDay(addDays(new Date(), settings?.bookingWindow?.startDays || 1));
+  const maxDate = endOfDay(addDays(new Date(), settings?.bookingWindow?.endDays || 30));
 
   const isDayExcluded = (date: Date) => {
     if (!settings?.excludedDays) return false;
+    
+    const dateToCheck = startOfDay(date);
     return settings.excludedDays.some(excludedTimestamp => {
-      const excludedDate = new Date(excludedTimestamp);
-      return (
-        date.getDate() === excludedDate.getDate() &&
-        date.getMonth() === excludedDate.getMonth() &&
-        date.getFullYear() === excludedDate.getFullYear()
-      );
+      const excludedDate = startOfDay(new Date(excludedTimestamp));
+      return dateToCheck.getTime() === excludedDate.getTime();
     });
   };
 
   const getAvailableSlots = (date: Date) => {
+    console.log('Getting slots for date:', date);
+    console.log('Opening hours settings:', settings?.openingHours);
+    
     const dayOfWeek = date.getDay().toString();
-    return settings?.openingHours?.[dayOfWeek]?.isOpen 
+    const slots = settings?.openingHours?.[dayOfWeek]?.isOpen 
       ? settings.openingHours[dayOfWeek].slots 
       : [];
+      
+    console.log('Available slots:', slots);
+    return slots;
   };
 
   return {

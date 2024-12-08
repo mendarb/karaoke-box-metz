@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Booking } from "./useBookings";
 import { useBookingEmail } from "./useBookingEmail";
@@ -6,8 +6,8 @@ import { useBookingCache } from "./useBookingCache";
 import { useBookingNotifications } from "./useBookingNotifications";
 
 export const useBookingMutations = () => {
+  const queryClient = useQueryClient();
   const { sendEmail } = useBookingEmail();
-  const { invalidateBookings } = useBookingCache();
   const { notifySuccess, notifyError } = useBookingNotifications();
 
   const mutation = useMutation({
@@ -43,7 +43,8 @@ export const useBookingMutations = () => {
         throw new Error('Réservation introuvable');
       }
 
-      console.log('Réservation trouvée, procédons à la mise à jour');
+      const booking = bookings[0];
+      console.log('Réservation trouvée:', booking);
 
       // Mise à jour de la réservation
       const { data: updatedBookings, error: updateError } = await supabase
@@ -67,12 +68,21 @@ export const useBookingMutations = () => {
 
       const updatedBooking = updatedBookings[0];
       console.log('Mise à jour réussie:', updatedBooking);
-      
-      await sendEmail(updatedBooking);
+
+      // Envoi de l'email après la mise à jour réussie
+      try {
+        await sendEmail(updatedBooking);
+        console.log('Email envoyé avec succès');
+      } catch (emailError) {
+        console.error('Erreur lors de l\'envoi de l\'email:', emailError);
+        // On ne throw pas l'erreur ici pour ne pas annuler la mise à jour
+      }
+
       return updatedBooking;
     },
     onSuccess: () => {
-      invalidateBookings();
+      // Invalider le cache pour forcer un rafraîchissement
+      queryClient.invalidateQueries({ queryKey: ['bookings'] });
       notifySuccess();
     },
     onError: (error: Error) => {

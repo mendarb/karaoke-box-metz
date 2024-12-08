@@ -5,16 +5,7 @@ export const sendBookingEmail = async (booking: Booking) => {
   try {
     console.log('Sending booking email for:', booking);
     const { error } = await supabase.functions.invoke('send-booking-email', {
-      body: {
-        to: booking.user_email,
-        userName: booking.user_name,
-        date: booking.date,
-        timeSlot: booking.time_slot,
-        duration: booking.duration,
-        groupSize: booking.group_size,
-        price: booking.price,
-        status: booking.status,
-      },
+      body: { booking },
     });
 
     if (error) {

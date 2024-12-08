@@ -1,5 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { 
+  FormControl, 
+  FormField,  // Added this import
+  FormItem, 
+  FormLabel, 
+  FormMessage 
+} from "@/components/ui/form";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { UseFormReturn } from "react-hook-form";
 

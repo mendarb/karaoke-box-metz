@@ -16,15 +16,13 @@ serve(async (req) => {
     const { price, groupSize, duration, date, timeSlot, message, userEmail, userName, userPhone, isTestMode } = await req.json();
     console.log('Request data:', { price, groupSize, duration, date, timeSlot, message, userEmail, userName, userPhone, isTestMode });
 
-    // Créer le client Supabase avec la clé service_role
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     );
 
-    // Récupérer les paramètres de test depuis la base de données
     const { data: settingsData, error: settingsError } = await supabaseClient
-      .from('settings')
+      .from('booking_settings')
       .select('value')
       .eq('key', 'booking_settings')
       .single();
@@ -37,7 +35,6 @@ serve(async (req) => {
     const dbIsTestMode = settingsData?.value?.isTestMode ?? true;
     console.log('Database test mode setting:', dbIsTestMode);
 
-    // Utiliser la clé appropriée selon le mode
     const stripeSecretKey = dbIsTestMode 
       ? Deno.env.get('STRIPE_TEST_SECRET_KEY')
       : Deno.env.get('STRIPE_SECRET_KEY');
@@ -54,6 +51,12 @@ serve(async (req) => {
     });
 
     const successUrl = `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}&test_mode=${dbIsTestMode}`;
+    const formattedDate = new Date(date).toLocaleDateString('fr-FR', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
 
     console.log('Creating Stripe checkout session...');
     const session = await stripe.checkout.sessions.create({
@@ -63,8 +66,9 @@ serve(async (req) => {
           price_data: {
             currency: 'eur',
             product_data: {
-              name: `Réservation Karaoké - ${groupSize} personnes - ${duration}h`,
-              description: `Le ${new Date(date).toLocaleDateString('fr-FR')} à ${timeSlot}h`,
+              name: `Réservation Karaoké Box`,
+              description: `${groupSize} personnes - ${duration}h\nLe ${formattedDate} à ${timeSlot}`,
+              images: ['https://lxkaosgjtqonrnlivzev.supabase.co/storage/v1/object/public/assets/logo.png'],
             },
             unit_amount: price * 100,
           },
@@ -84,6 +88,33 @@ serve(async (req) => {
         userName,
         userPhone,
         isTestMode: dbIsTestMode ? 'true' : 'false'
+      },
+      custom_fields: [
+        {
+          key: 'special_requests',
+          label: { type: 'custom', custom: 'Demandes spéciales' },
+          type: 'text',
+          optional: true,
+        },
+      ],
+      custom_text: {
+        submit: { message: 'Nous traiterons votre paiement de manière sécurisée avec Stripe' },
+        shipping_address: { message: 'La réservation aura lieu à notre établissement' },
+      },
+      billing_address_collection: 'auto',
+      locale: 'fr',
+      phone_number_collection: {
+        enabled: true,
+      },
+      customer_creation: 'always',
+      payment_intent_data: {
+        description: `Réservation Karaoké Box - ${formattedDate} ${timeSlot}`,
+        metadata: {
+          booking_date: date,
+          time_slot: timeSlot,
+          duration: duration,
+          group_size: groupSize,
+        },
       },
     });
 

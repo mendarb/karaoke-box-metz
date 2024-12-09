@@ -1,15 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { useAuthSession } from "@/hooks/useAuthSession";
+import { useUserState } from "@/hooks/useUserState";
 import { CalendarDays } from "lucide-react";
 
 export const UserNav = () => {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuthSession();
+  const { user } = useUserState();
 
   return (
     <div className="flex items-center gap-4">
-      {isAuthenticated && (
+      {user && (
         <Button
           variant="ghost"
           className="flex items-center gap-2"

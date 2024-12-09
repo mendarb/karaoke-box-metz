@@ -3,7 +3,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
-import { useAuthSession } from "@/hooks/useAuthSession";
 import { AppRoutes } from "@/components/routing/AppRoutes";
 
 const queryClient = new QueryClient({
@@ -17,20 +16,13 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
-  const { isAuthOpen, setIsAuthOpen, isLoading, sessionChecked } = useAuthSession();
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <AppRoutes
-            isAuthOpen={isAuthOpen}
-            setIsAuthOpen={setIsAuthOpen}
-            isLoading={isLoading}
-            sessionChecked={sessionChecked}
-          />
+          <AppRoutes />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

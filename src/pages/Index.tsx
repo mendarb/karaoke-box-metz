@@ -12,7 +12,6 @@ const Index = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const { isAdmin, isLoading, sessionChecked } = useUserState();
 
-  // Show loading spinner only during initial load
   if (isLoading && !sessionChecked) {
     return <LoadingSpinner />;
   }

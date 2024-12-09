@@ -22,19 +22,17 @@ export const AdminDashboard = () => {
     queryFn: async () => {
       try {
         console.log("Starting to fetch bookings...");
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { user } } = await supabase.auth.getUser();
+        console.log("Current user:", user?.email);
         
-        if (!session) {
-          console.log("No session found, redirecting to login");
+        if (!user) {
+          console.log("No user found, redirecting to login");
           navigate("/");
           return [];
         }
 
-        const { data: { user } } = await supabase.auth.getUser();
-        console.log("Current user:", user?.email);
-        
-        if (!user || user.email !== "mendar.bouchali@gmail.com") {
-          console.log("Not admin user:", user?.email);
+        if (user.email !== "mendar.bouchali@gmail.com") {
+          console.log("Not admin user:", user.email);
           toast({
             title: "Accès refusé",
             description: "Vous n'avez pas les droits d'accès à cette page.",

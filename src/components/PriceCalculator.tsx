@@ -18,6 +18,7 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
   const { data: settings } = useQuery({
     queryKey: ['booking-settings'],
     queryFn: async () => {
+      console.log('Fetching price settings...');
       const { data, error } = await supabase
         .from('booking_settings')
         .select('*')
@@ -43,10 +44,10 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
       
       console.log('Calculating price with:', { groupSize, duration, settings });
       
-      const hours = parseFloat(duration) || 0;
-      const size = parseFloat(groupSize) || 0;
+      const hours = parseFloat(duration);
+      const size = parseFloat(groupSize);
       
-      if (hours === 0 || size === 0) {
+      if (isNaN(hours) || isNaN(size) || hours <= 0 || size <= 0) {
         console.log('Invalid hours or size:', { hours, size });
         setPrice(0);
         setDiscount(0);
@@ -57,7 +58,7 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
         return;
       }
 
-      // Parse settings values as numbers to ensure proper calculation
+      // Parse settings values as numbers
       const baseHourRate = parseFloat(settings.perHour);
       const basePersonRate = parseFloat(settings.perPerson);
 
@@ -107,9 +108,8 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
     calculatePrice();
   }, [groupSize, duration, settings, onPriceCalculated]);
 
-  // Format price with French number formatting
   const formatPrice = (value: number) => {
-    if (isNaN(value)) return "0,00 €";
+    if (isNaN(value) || value === 0) return "0,00 €";
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
       currency: 'EUR',

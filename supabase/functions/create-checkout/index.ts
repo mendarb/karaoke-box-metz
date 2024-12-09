@@ -13,9 +13,10 @@ serve(async (req) => {
   }
 
   try {
-    const { price, groupSize, duration, date, timeSlot, message, userEmail, userName, userPhone, isTestMode } = await req.json();
-    console.log('Request data:', { price, groupSize, duration, date, timeSlot, message, userEmail, userName, userPhone, isTestMode });
+    const { price, groupSize, duration, date, timeSlot, message, userEmail, userName, userPhone } = await req.json();
+    console.log('Request data:', { price, groupSize, duration, date, timeSlot, message, userEmail, userName, userPhone });
 
+    // Récupérer le mode test depuis les paramètres
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -32,25 +33,24 @@ serve(async (req) => {
       throw new Error('Impossible de récupérer les paramètres');
     }
 
-    const dbIsTestMode = settingsData?.value?.isTestMode ?? true;
-    console.log('Database test mode setting:', dbIsTestMode);
+    const isTestMode = settingsData?.value?.isTestMode ?? true;
+    console.log('Using test mode:', isTestMode);
 
-    const stripeSecretKey = dbIsTestMode 
+    const stripeSecretKey = isTestMode 
       ? Deno.env.get('STRIPE_TEST_SECRET_KEY')
       : Deno.env.get('STRIPE_SECRET_KEY');
 
     if (!stripeSecretKey) {
-      console.error('Stripe secret key not found for mode:', dbIsTestMode ? 'test' : 'production');
+      console.error('Stripe secret key not found for mode:', isTestMode ? 'test' : 'production');
       throw new Error('Configuration Stripe manquante');
     }
 
-    console.log('Using Stripe mode:', dbIsTestMode ? 'test' : 'production');
     const stripe = new Stripe(stripeSecretKey, {
       apiVersion: '2023-10-16',
       typescript: true
     });
 
-    const successUrl = `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}&test_mode=${dbIsTestMode}`;
+    const successUrl = `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}&test_mode=${isTestMode}`;
     const formattedDate = new Date(date).toLocaleDateString('fr-FR', {
       weekday: 'long',
       year: 'numeric',
@@ -70,7 +70,7 @@ serve(async (req) => {
               description: `${groupSize} personnes - ${duration}h\nLe ${formattedDate} à ${timeSlot}`,
               images: ['https://lxkaosgjtqonrnlivzev.supabase.co/storage/v1/object/public/assets/logo.png'],
             },
-            unit_amount: price * 100,
+            unit_amount: Math.round(price * 100), // Convertir en centimes
           },
           quantity: 1,
         },
@@ -87,7 +87,7 @@ serve(async (req) => {
         message: message || '',
         userName,
         userPhone,
-        isTestMode: dbIsTestMode ? 'true' : 'false'
+        isTestMode: isTestMode ? 'true' : 'false'
       },
       custom_fields: [
         {

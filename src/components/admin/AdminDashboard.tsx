@@ -24,7 +24,7 @@ export const AdminDashboard = () => {
         console.log("Starting to fetch bookings...");
         const { data: { session } } = await supabase.auth.getSession();
         
-        if (!session?.session) {
+        if (!session) {
           console.log("No session found, redirecting to login");
           navigate("/");
           return [];

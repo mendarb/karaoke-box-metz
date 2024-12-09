@@ -58,17 +58,15 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
       let totalPrice = 0;
       let totalDiscount = 0;
 
-      // First hour at full price
-      totalPrice = basePrice;
+      // Calculate total price for all hours
+      totalPrice = basePrice * hours;
 
-      // Additional hours with 10% discount
+      // Apply discount for additional hours
       if (hours > 1) {
-        const discountedPrice = basePrice * 0.9;
-        const additionalHours = hours - 1;
-        const additionalPrice = discountedPrice * additionalHours;
-        
-        totalPrice += additionalPrice;
-        totalDiscount = (basePrice * additionalHours) - additionalPrice;
+        const regularPrice = basePrice * hours;
+        const discountedPrice = basePrice + (basePrice * 0.9 * (hours - 1));
+        totalDiscount = regularPrice - discountedPrice;
+        totalPrice = discountedPrice;
       }
 
       const finalPrice = Math.round(totalPrice);

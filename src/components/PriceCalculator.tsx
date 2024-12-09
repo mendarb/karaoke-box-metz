@@ -51,37 +51,40 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
         return;
       }
 
-      // Base price calculation using settings
-      const basePrice = settings.perHour + (size * settings.perPerson);
-      console.log('Base price per hour:', basePrice);
+      // Base price calculation per hour
+      const baseHourlyPrice = settings.perHour + (size * settings.perPerson);
+      console.log('Base price per hour:', baseHourlyPrice);
 
-      // Calculate total with discounts
-      let totalPrice = basePrice;
+      // Calculate total price and discount
+      let totalPrice = 0;
       let totalDiscount = 0;
 
-      // Apply discount only for hours beyond the first hour
+      // First hour at full price
+      totalPrice = baseHourlyPrice;
+
+      // Additional hours with 10% discount
       if (hours > 1) {
-        // First hour at full price
-        totalPrice = basePrice;
+        const discountedHourPrice = baseHourlyPrice * 0.9;
+        const additionalHours = hours - 1;
+        const additionalPrice = discountedHourPrice * additionalHours;
+        const hourlyDiscount = baseHourlyPrice * 0.1;
         
-        // Additional hours with 10% discount
-        const discountedHourPrice = basePrice * 0.9;
-        totalPrice += discountedHourPrice * (hours - 1);
-        totalDiscount = (basePrice * 0.1) * (hours - 1);
+        totalPrice += additionalPrice;
+        totalDiscount = hourlyDiscount * additionalHours;
       }
 
       const finalPrice = Math.round(totalPrice);
       const finalDiscount = Math.round(totalDiscount);
-      const discountPercent = hours > 1 
-        ? Math.round((totalDiscount / (basePrice * hours)) * 100)
-        : 0;
+      const discountPercent = hours > 1 ? 10 : 0;
 
       console.log('Final calculation:', { 
-        basePrice,
+        baseHourlyPrice,
         totalPrice,
         finalPrice, 
         finalDiscount, 
-        discountPercent 
+        discountPercent,
+        hours,
+        size
       });
 
       setPrice(finalPrice);

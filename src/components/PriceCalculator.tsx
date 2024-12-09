@@ -43,20 +43,24 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
       
       console.log('Calculating price with:', { groupSize, duration, settings });
       
-      const hours = parseInt(duration) || 0;
-      const size = parseInt(groupSize) || 0;
+      const hours = parseFloat(duration) || 0;
+      const size = parseFloat(groupSize) || 0;
       
       if (hours === 0 || size === 0) {
         console.log('Invalid hours or size:', { hours, size });
         return;
       }
 
-      // Calculate base price for one hour (rounded to avoid floating point issues)
-      const basePrice = Math.round((settings.perHour + (size * settings.perPerson)) * 100) / 100;
+      // Parse settings values as numbers to ensure proper calculation
+      const baseHourRate = parseFloat(settings.perHour);
+      const basePersonRate = parseFloat(settings.perPerson);
+
+      // Calculate base price for one hour
+      const basePrice = baseHourRate + (size * basePersonRate);
       console.log('Base price per hour:', basePrice);
 
       // Calculate total price without discount
-      const totalWithoutDiscount = Math.round(basePrice * hours * 100) / 100;
+      const totalWithoutDiscount = basePrice * hours;
       console.log('Total without discount:', totalWithoutDiscount);
 
       let finalPrice = basePrice; // First hour at full price
@@ -64,14 +68,14 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
       // If more than 1 hour, apply 10% discount to additional hours
       if (hours > 1) {
         const additionalHours = hours - 1;
-        const discountedHourPrice = Math.round(basePrice * 0.9 * 100) / 100;
-        const additionalHoursPrice = Math.round(discountedHourPrice * additionalHours * 100) / 100;
+        const discountedHourPrice = basePrice * 0.9;
+        const additionalHoursPrice = discountedHourPrice * additionalHours;
         
-        finalPrice = Math.round((finalPrice + additionalHoursPrice) * 100) / 100;
+        finalPrice = finalPrice + additionalHoursPrice;
         console.log('Price after discount:', finalPrice);
       }
 
-      const totalDiscount = Math.round((totalWithoutDiscount - finalPrice) * 100) / 100;
+      const totalDiscount = totalWithoutDiscount - finalPrice;
 
       console.log('Final calculation:', { 
         basePrice,
@@ -101,6 +105,8 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
       currency: 'EUR',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     }).format(value);
   };
 

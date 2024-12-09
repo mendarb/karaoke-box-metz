@@ -1,11 +1,10 @@
 import { supabase } from "@/lib/supabase";
-import { Toast } from "@/components/ui/use-toast";
+import { toast } from "@/components/ui/use-toast";
 
 export const checkTimeSlotAvailability = async (
   date: Date, 
   timeSlot: string, 
-  duration: string,
-  toast: (props: { title: string; description: string; variant?: "default" | "destructive" }) => void
+  duration: string
 ) => {
   console.log('Checking availability for:', { date, timeSlot, duration });
   

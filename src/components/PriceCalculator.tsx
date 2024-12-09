@@ -52,19 +52,22 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
       }
 
       // Base price calculation using settings
-      const basePrice = (settings.perHour || 30) + (size * (settings.perPerson || 5));
+      const basePrice = settings.perHour + (size * settings.perPerson);
       console.log('Base price per hour:', basePrice);
 
       // Calculate total with discounts
       let totalPrice = basePrice;
       let totalDiscount = 0;
 
+      // Apply discount only for hours beyond the first hour
       if (hours > 1) {
-        for (let i = 1; i < hours; i++) {
-          const discountedHourPrice = basePrice * 0.9;
-          totalPrice += discountedHourPrice;
-          totalDiscount += basePrice * 0.1;
-        }
+        // First hour at full price
+        totalPrice = basePrice;
+        
+        // Additional hours with 10% discount
+        const discountedHourPrice = basePrice * 0.9;
+        totalPrice += discountedHourPrice * (hours - 1);
+        totalDiscount = (basePrice * 0.1) * (hours - 1);
       }
 
       const finalPrice = Math.round(totalPrice);
@@ -73,7 +76,13 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
         ? Math.round((totalDiscount / (basePrice * hours)) * 100)
         : 0;
 
-      console.log('Final calculation:', { finalPrice, finalDiscount, discountPercent });
+      console.log('Final calculation:', { 
+        basePrice,
+        totalPrice,
+        finalPrice, 
+        finalDiscount, 
+        discountPercent 
+      });
 
       setPrice(finalPrice);
       setDiscount(finalDiscount);

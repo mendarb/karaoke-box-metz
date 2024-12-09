@@ -104,15 +104,12 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
       }
     };
 
-    if (groupSize && duration && settings) {
-      calculatePrice();
-    }
+    calculatePrice();
   }, [groupSize, duration, settings, onPriceCalculated]);
 
   // Format price with French number formatting
   const formatPrice = (value: number) => {
-    if (isNaN(value) || value === 0) return "0,00 €";
-    
+    if (isNaN(value)) return "0,00 €";
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
       currency: 'EUR',

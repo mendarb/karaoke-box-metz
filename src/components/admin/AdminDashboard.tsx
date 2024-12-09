@@ -22,11 +22,11 @@ export const AdminDashboard = () => {
     queryFn: async () => {
       try {
         console.log("Starting to fetch bookings...");
-        const { data: session } = await supabase.auth.getSession();
+        const { data: { session } } = await supabase.auth.getSession();
         
-        if (!session.session) {
+        if (!session?.session) {
           console.log("No session found, redirecting to login");
-          navigate("/login");
+          navigate("/");
           return [];
         }
 

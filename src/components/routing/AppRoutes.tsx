@@ -1,82 +1,40 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-import Index from "@/pages/Index";
-import { AdminDashboard } from "@/components/admin/AdminDashboard";
+import { Routes, Route } from "react-router-dom";
+import { Index } from "@/pages/Index";
+import { Success } from "@/pages/Success";
 import { Calendar } from "@/pages/Calendar";
 import { Settings } from "@/pages/Settings";
-import { Success } from "@/pages/Success";
-import { AuthModal } from "@/components/auth/AuthModal";
 import { ProtectedRoute } from "./ProtectedRoute";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { BookingsPage } from "@/pages/Bookings";
 
-interface AppRoutesProps {
-  isAuthOpen: boolean;
-  setIsAuthOpen: (isOpen: boolean) => void;
-  isLoading: boolean;
-  sessionChecked: boolean;
-}
-
-export const AppRoutes = ({
-  isAuthOpen,
-  setIsAuthOpen,
-  isLoading,
-  sessionChecked,
-}: AppRoutesProps) => {
-  console.log("AppRoutes render:", { isLoading, sessionChecked, isAuthOpen });
-
-  if (!sessionChecked) {
-    return <LoadingSpinner />;
-  }
-
-  const protectedRouteProps = {
-    isLoading,
-    sessionChecked,
-    isAuthOpen,
-  };
-
+export const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<Index />} />
       <Route path="/success" element={<Success />} />
-      <Route
-        path="/admin"
+      <Route 
+        path="/calendar" 
         element={
-          <ProtectedRoute {...protectedRouteProps}>
-            <AdminDashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/calendar"
-        element={
-          <ProtectedRoute {...protectedRouteProps}>
+          <ProtectedRoute adminOnly>
             <Calendar />
           </ProtectedRoute>
-        }
+        } 
       />
-      <Route
-        path="/admin/settings"
+      <Route 
+        path="/settings" 
         element={
-          <ProtectedRoute {...protectedRouteProps}>
+          <ProtectedRoute adminOnly>
             <Settings />
           </ProtectedRoute>
-        }
+        } 
       />
-      <Route
-        path="/login"
+      <Route 
+        path="/bookings" 
         element={
-          <>
-            <AuthModal
-              isOpen={isAuthOpen}
-              onClose={() => {
-                setIsAuthOpen(false);
-                window.location.href = '/';
-              }}
-            />
-            {!isAuthOpen && <Navigate to="/" replace />}
-          </>
-        }
+          <ProtectedRoute>
+            <BookingsPage />
+          </ProtectedRoute>
+        } 
       />
-      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };

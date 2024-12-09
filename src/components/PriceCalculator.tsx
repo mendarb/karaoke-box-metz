@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
 
 interface PriceCalculatorProps {
   groupSize: string;
@@ -13,21 +15,38 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
   const [discountPercentage, setDiscountPercentage] = useState(0);
   const isMobile = useIsMobile();
 
+  const { data: settings } = useQuery({
+    queryKey: ['booking-settings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('booking_settings')
+        .select('*')
+        .eq('key', 'base_price')
+        .single();
+
+      if (error) {
+        console.error('Error fetching price settings:', error);
+        throw error;
+      }
+
+      console.log('Price settings:', data?.value);
+      return data?.value || { perHour: 30, perPerson: 5 };
+    }
+  });
+
   useEffect(() => {
     const calculatePrice = () => {
-      console.log('Calculating price with:', { groupSize, duration });
+      if (!settings) return;
+      
+      console.log('Calculating price with:', { groupSize, duration, settings });
       
       const hours = parseInt(duration) || 0;
       const size = groupSize === "6+" ? 6 : parseInt(groupSize) || 0;
 
       console.log('Parsed values:', { hours, size });
 
-      // Base price calculation
-      let basePrice = 0;
-      if (size <= 3) basePrice = 30;
-      else if (size === 4) basePrice = 40;
-      else if (size >= 5) basePrice = 50;
-
+      // Base price calculation using settings
+      const basePrice = settings.perHour + (size * settings.perPerson);
       console.log('Base price:', basePrice);
 
       // Calculate total with discounts
@@ -59,10 +78,10 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
       }
     };
 
-    if (groupSize && duration) {
+    if (groupSize && duration && settings) {
       calculatePrice();
     }
-  }, [groupSize, duration, onPriceCalculated]);
+  }, [groupSize, duration, settings, onPriceCalculated]);
 
   if (!price) return null;
 

@@ -37,17 +37,20 @@ export const useBookingDates = () => {
         console.log('Processing setting:', setting.key, setting.value);
         switch (setting.key) {
           case 'booking_window':
-            formattedSettings.bookingWindow = {
-              startDays: Math.max(0, setting.value.startDays || 0),
-              endDays: Math.max(1, setting.value.endDays || 30)
-            };
+            if (setting.value) {
+              formattedSettings.bookingWindow = setting.value;
+            }
             break;
           case 'opening_hours':
-            formattedSettings.openingHours = setting.value;
-            console.log('Updated opening hours:', setting.value);
+            if (setting.value) {
+              formattedSettings.openingHours = setting.value;
+              console.log('Updated opening hours:', setting.value);
+            }
             break;
           case 'excluded_days':
-            formattedSettings.excludedDays = setting.value;
+            if (setting.value) {
+              formattedSettings.excludedDays = setting.value;
+            }
             break;
           case 'is_test_mode':
             formattedSettings.isTestMode = setting.value === true;
@@ -62,13 +65,20 @@ export const useBookingDates = () => {
     refetchInterval: 5000
   });
 
-  const minDate = startOfDay(addDays(new Date(), settings?.bookingWindow?.startDays || 0));
-  const maxDate = endOfDay(addDays(new Date(), settings?.bookingWindow?.endDays || 30));
+  // En mode test, on ignore les délais
+  const minDate = settings?.isTestMode 
+    ? startOfDay(new Date()) 
+    : startOfDay(addDays(new Date(), settings?.bookingWindow?.startDays || 0));
+    
+  const maxDate = settings?.isTestMode
+    ? endOfDay(addDays(new Date(), 365))
+    : endOfDay(addDays(new Date(), settings?.bookingWindow?.endDays || 30));
 
-  console.log('Date range:', { minDate, maxDate });
+  console.log('Date range:', { minDate, maxDate, isTestMode: settings?.isTestMode });
 
   const isDayExcluded = (date: Date) => {
     if (!settings?.excludedDays) return false;
+    if (settings?.isTestMode) return false; // En mode test, on ignore les jours exclus
     
     const dateToCheck = startOfDay(date);
     const isExcluded = settings.excludedDays.some(excludedTimestamp => {
@@ -100,12 +110,12 @@ export const useBookingDates = () => {
     const daySettings = settings.openingHours[dayOfWeek];
     console.log('Day settings:', daySettings);
 
-    if (!daySettings?.isOpen) {
-      console.log('Day is closed');
+    if (!settings.isTestMode && !daySettings?.isOpen) {
+      console.log('Day is closed and not in test mode');
       return [];
     }
 
-    const slots = daySettings.slots || [];
+    const slots = daySettings?.slots || [];
     console.log('Available slots:', slots);
     return slots;
   };

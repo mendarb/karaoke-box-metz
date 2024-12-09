@@ -27,7 +27,6 @@ export const BookingWindowSettings = ({ form, defaultValue }: BookingWindowSetti
         <FormField
           control={form.control}
           name="isTestMode"
-          defaultValue={false}
           render={({ field }) => (
             <FormItem className="flex flex-row items-center justify-end space-x-2">
               <FormLabel className="!mt-0">Mode Test</FormLabel>
@@ -46,11 +45,7 @@ export const BookingWindowSettings = ({ form, defaultValue }: BookingWindowSetti
         <FormField
           control={form.control}
           name="bookingWindow.startDays"
-          defaultValue={defaultValue?.startDays || 0}
-          rules={{
-            required: "Ce champ est requis",
-            min: { value: 0, message: "Le délai minimum doit être positif" }
-          }}
+          defaultValue={defaultValue?.startDays}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Délai minimum (jours)</FormLabel>
@@ -72,11 +67,7 @@ export const BookingWindowSettings = ({ form, defaultValue }: BookingWindowSetti
         <FormField
           control={form.control}
           name="bookingWindow.endDays"
-          defaultValue={defaultValue?.endDays || 30}
-          rules={{
-            required: "Ce champ est requis",
-            min: { value: 1, message: "Le délai maximum doit être d'au moins 1 jour" }
-          }}
+          defaultValue={defaultValue?.endDays}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Délai maximum (jours)</FormLabel>

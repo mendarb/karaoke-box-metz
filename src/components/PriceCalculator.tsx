@@ -51,43 +51,40 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
         return;
       }
 
-      // Base price calculation
+      // Calculate base price for one hour
       const basePrice = settings.perHour + (size * settings.perPerson);
-      console.log('Base price:', basePrice);
+      console.log('Base price per hour:', basePrice);
 
-      let totalPrice = 0;
+      // Calculate total price without discount
+      const totalWithoutDiscount = basePrice * hours;
+      console.log('Total without discount:', totalWithoutDiscount);
+
+      let finalPrice = basePrice; // First hour at full price
       let totalDiscount = 0;
 
-      // Calculate total price for all hours
-      totalPrice = basePrice * hours;
-
-      // Apply discount for additional hours
+      // If more than 1 hour, apply 10% discount to additional hours
       if (hours > 1) {
-        const regularPrice = basePrice * hours;
-        const discountedPrice = basePrice + (basePrice * 0.9 * (hours - 1));
-        totalDiscount = regularPrice - discountedPrice;
-        totalPrice = discountedPrice;
+        const additionalHours = hours - 1;
+        const discountedHourPrice = basePrice * 0.9;
+        const additionalHoursPrice = discountedHourPrice * additionalHours;
+        
+        finalPrice += additionalHoursPrice;
+        totalDiscount = totalWithoutDiscount - finalPrice;
       }
-
-      const finalPrice = Math.round(totalPrice);
-      const finalDiscount = Math.round(totalDiscount);
-      const discountPercent = hours > 1 ? 10 : 0;
 
       console.log('Final calculation:', { 
         basePrice,
-        totalPrice: finalPrice, 
-        totalDiscount: finalDiscount, 
-        discountPercent,
-        hours,
-        size
+        finalPrice,
+        totalDiscount,
+        discountPercentage: hours > 1 ? 10 : 0
       });
 
-      setPrice(finalPrice);
-      setDiscount(finalDiscount);
-      setDiscountPercentage(discountPercent);
+      setPrice(Math.round(finalPrice));
+      setDiscount(Math.round(totalDiscount));
+      setDiscountPercentage(hours > 1 ? 10 : 0);
       
       if (onPriceCalculated) {
-        onPriceCalculated(finalPrice);
+        onPriceCalculated(Math.round(finalPrice));
       }
     };
 

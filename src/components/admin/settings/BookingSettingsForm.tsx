@@ -1,4 +1,4 @@
-import React, { useState } from "react";  // Add React and useState import
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +21,7 @@ import { ExcludedDaysSettings } from "./settings/ExcludedDaysSettings";
 import { PricingSettings } from "./settings/PricingSettings";
 
 interface BookingSettings {
+  isTestMode: boolean;
   bookingWindow: {
     startDays: number;
     endDays: number;
@@ -54,9 +55,10 @@ export const BookingSettingsForm = () => {
       if (error) throw error;
 
       const formattedSettings: BookingSettings = {
-        bookingWindow: { startDays: 1, endDays: 60 },
+        isTestMode: false,
+        bookingWindow: { startDays: 1, endDays: 30 },
         openingHours: {
-          1: { isOpen: false, slots: [] }, // Lundi
+          1: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
           2: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
           3: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
           4: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
@@ -82,22 +84,29 @@ export const BookingSettingsForm = () => {
           case 'base_price':
             formattedSettings.basePrice = setting.value;
             break;
+          case 'is_test_mode':
+            formattedSettings.isTestMode = setting.value;
+            break;
         }
       });
 
+      console.log("Loaded settings:", formattedSettings);
       return formattedSettings;
-    }
+    },
+    refetchOnWindowFocus: true,
   });
 
   const mutation = useMutation({
     mutationFn: async (data: BookingSettings) => {
       setIsLoading(true);
       try {
+        console.log("Saving settings:", data);
         const updates = [
           { key: 'booking_window', value: data.bookingWindow },
           { key: 'opening_hours', value: data.openingHours },
           { key: 'excluded_days', value: data.excludedDays },
-          { key: 'base_price', value: data.basePrice }
+          { key: 'base_price', value: data.basePrice },
+          { key: 'is_test_mode', value: data.isTestMode }
         ];
 
         for (const update of updates) {
@@ -130,6 +139,7 @@ export const BookingSettingsForm = () => {
   });
 
   const onSubmit = (data: BookingSettings) => {
+    console.log("Form submission data:", data);
     mutation.mutate(data);
   };
 

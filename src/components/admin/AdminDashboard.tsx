@@ -21,6 +21,7 @@ export const AdminDashboard = () => {
     queryKey: ['bookings'],
     queryFn: async () => {
       try {
+        console.log("Starting to fetch bookings...");
         const { data: session } = await supabase.auth.getSession();
         
         if (!session.session) {
@@ -30,6 +31,8 @@ export const AdminDashboard = () => {
         }
 
         const { data: { user } } = await supabase.auth.getUser();
+        console.log("Current user:", user?.email);
+        
         if (!user || user.email !== "mendar.bouchali@gmail.com") {
           console.log("Not admin user:", user?.email);
           toast({
@@ -51,6 +54,7 @@ export const AdminDashboard = () => {
           throw error;
         }
 
+        console.log("Fetched bookings:", data);
         return data || [];
       } catch (error) {
         console.error('Error in query function:', error);

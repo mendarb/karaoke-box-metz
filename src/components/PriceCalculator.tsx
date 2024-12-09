@@ -48,12 +48,23 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
       
       if (hours === 0 || size === 0) {
         console.log('Invalid hours or size:', { hours, size });
+        setPrice(0);
+        setDiscount(0);
+        setDiscountPercentage(0);
+        if (onPriceCalculated) {
+          onPriceCalculated(0);
+        }
         return;
       }
 
       // Parse settings values as numbers to ensure proper calculation
       const baseHourRate = parseFloat(settings.perHour);
       const basePersonRate = parseFloat(settings.perPerson);
+
+      if (isNaN(baseHourRate) || isNaN(basePersonRate)) {
+        console.error('Invalid base rates:', { baseHourRate, basePersonRate });
+        return;
+      }
 
       // Calculate base price for one hour
       const basePrice = baseHourRate + (size * basePersonRate);
@@ -98,10 +109,10 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
     }
   }, [groupSize, duration, settings, onPriceCalculated]);
 
-  if (!price) return null;
-
   // Format price with French number formatting
   const formatPrice = (value: number) => {
+    if (isNaN(value) || value === 0) return "0,00 €";
+    
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
       currency: 'EUR',

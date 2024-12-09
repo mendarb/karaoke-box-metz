@@ -29,22 +29,30 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
         throw error;
       }
 
+      console.log('Fetched price settings:', data);
       return data?.value || { perHour: 30, perPerson: 5 };
     }
   });
 
   useEffect(() => {
     const calculatePrice = () => {
-      if (!settings) return;
+      if (!settings) {
+        console.log('No settings available yet');
+        return;
+      }
       
       console.log('Calculating price with:', { groupSize, duration, settings });
       
       const hours = parseInt(duration) || 0;
       const size = parseInt(groupSize) || 0;
-      if (hours === 0 || size === 0) return;
+      
+      if (hours === 0 || size === 0) {
+        console.log('Invalid hours or size:', { hours, size });
+        return;
+      }
 
       // Base price calculation using settings
-      const basePrice = settings.perHour + (size * settings.perPerson);
+      const basePrice = (settings.perHour || 30) + (size * (settings.perPerson || 5));
       console.log('Base price per hour:', basePrice);
 
       // Calculate total with discounts

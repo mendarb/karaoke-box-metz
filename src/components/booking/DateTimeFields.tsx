@@ -22,21 +22,25 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
   const checkBookings = async (date: Date) => {
     if (!date) return;
 
+    console.log('Checking bookings for date:', date);
     const { data: bookings, error } = await supabase
       .from('bookings')
       .select('*')
-      .eq('date', date.toISOString().split('T')[0]);
+      .eq('date', date.toISOString().split('T')[0])
+      .neq('status', 'cancelled');
 
     if (error) {
       console.error('Error fetching bookings:', error);
       return;
     }
 
+    console.log('Found bookings:', bookings);
     const slots: { [key: string]: number } = {};
     bookings?.forEach(booking => {
       slots[booking.time_slot] = parseInt(booking.duration);
     });
 
+    console.log('Setting booked slots:', slots);
     setBookedSlots(slots);
   };
 
@@ -51,6 +55,7 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
   useEffect(() => {
     const timeSlot = form.watch("timeSlot");
     if (selectedDate && timeSlot) {
+      console.log('Calculating available hours for slot:', timeSlot);
       const availableSlots = getAvailableSlots(selectedDate);
       const slotIndex = availableSlots.indexOf(timeSlot);
       let availableHours = 0;
@@ -69,6 +74,7 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
         }
       }
       
+      console.log('Available hours calculated:', availableHours);
       onAvailabilityChange(selectedDate, availableHours);
     }
   }, [form.watch("timeSlot"), selectedDate, bookedSlots]);
@@ -86,15 +92,26 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
               mode="single"
               selected={field.value}
               onSelect={(date) => {
+                console.log('Date selected:', date);
                 field.onChange(date);
                 setSelectedDate(date);
               }}
-              disabled={(date) => 
-                date < minDate || 
-                date > maxDate ||
-                isDayExcluded(date) ||
-                !getAvailableSlots(date).length
-              }
+              disabled={(date) => {
+                const isDisabled = date < minDate || 
+                  date > maxDate ||
+                  isDayExcluded(date) ||
+                  !getAvailableSlots(date).length;
+                
+                if (isDisabled) {
+                  console.log('Date disabled:', date, {
+                    beforeMinDate: date < minDate,
+                    afterMaxDate: date > maxDate,
+                    isExcluded: isDayExcluded(date),
+                    noSlots: !getAvailableSlots(date).length
+                  });
+                }
+                return isDisabled;
+              }}
               initialFocus
               locale={fr}
             />

@@ -78,7 +78,7 @@ export const BookingForm = () => {
         return;
       }
 
-      const isAvailable = await checkTimeSlotAvailability(data.date, data.timeSlot, duration, toast);
+      const isAvailable = await checkTimeSlotAvailability(data.date, data.timeSlot, duration);
       if (!isAvailable) {
         console.log('Time slot not available');
         return;

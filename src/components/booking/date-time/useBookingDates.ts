@@ -19,7 +19,7 @@ export const useBookingDates = () => {
       console.log('Raw settings data:', data);
 
       const formattedSettings = {
-        bookingWindow: { startDays: 1, endDays: 30 },
+        bookingWindow: { startDays: 0, endDays: 30 },
         openingHours: {
           0: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
           1: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
@@ -30,13 +30,17 @@ export const useBookingDates = () => {
           6: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
         },
         excludedDays: [],
+        isTestMode: false
       };
 
       data?.forEach(setting => {
         console.log('Processing setting:', setting.key, setting.value);
         switch (setting.key) {
           case 'booking_window':
-            formattedSettings.bookingWindow = setting.value;
+            formattedSettings.bookingWindow = {
+              startDays: Math.max(0, setting.value.startDays || 0),
+              endDays: Math.max(1, setting.value.endDays || 30)
+            };
             break;
           case 'opening_hours':
             formattedSettings.openingHours = setting.value;
@@ -45,18 +49,20 @@ export const useBookingDates = () => {
           case 'excluded_days':
             formattedSettings.excludedDays = setting.value;
             break;
+          case 'is_test_mode':
+            formattedSettings.isTestMode = setting.value === true;
+            break;
         }
       });
 
       console.log('Formatted settings:', formattedSettings);
       return formattedSettings;
     },
-    // Ajout de refetchOnWindowFocus et refetchInterval pour s'assurer que les données sont à jour
     refetchOnWindowFocus: true,
     refetchInterval: 5000
   });
 
-  const minDate = startOfDay(addDays(new Date(), settings?.bookingWindow?.startDays || 1));
+  const minDate = startOfDay(addDays(new Date(), settings?.bookingWindow?.startDays || 0));
   const maxDate = endOfDay(addDays(new Date(), settings?.bookingWindow?.endDays || 30));
 
   console.log('Date range:', { minDate, maxDate });

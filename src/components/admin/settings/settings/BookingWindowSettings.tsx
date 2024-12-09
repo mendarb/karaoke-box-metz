@@ -27,9 +27,10 @@ export const BookingWindowSettings = ({ form, defaultValue }: BookingWindowSetti
         <FormField
           control={form.control}
           name="isTestMode"
+          defaultValue={false}
           render={({ field }) => (
-            <FormItem className="flex items-center space-x-2">
-              <FormLabel>Mode Test</FormLabel>
+            <FormItem className="flex flex-row items-center justify-end space-x-2">
+              <FormLabel className="!mt-0">Mode Test</FormLabel>
               <FormControl>
                 <Switch
                   checked={field.value}
@@ -45,7 +46,11 @@ export const BookingWindowSettings = ({ form, defaultValue }: BookingWindowSetti
         <FormField
           control={form.control}
           name="bookingWindow.startDays"
-          defaultValue={defaultValue?.startDays || 1}
+          defaultValue={defaultValue?.startDays || 0}
+          rules={{
+            required: "Ce champ est requis",
+            min: { value: 0, message: "Le délai minimum doit être positif" }
+          }}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Délai minimum (jours)</FormLabel>
@@ -54,7 +59,7 @@ export const BookingWindowSettings = ({ form, defaultValue }: BookingWindowSetti
                   type="number" 
                   min="0"
                   {...field}
-                  onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                  onChange={(e) => field.onChange(Math.max(0, parseInt(e.target.value) || 0))}
                 />
               </FormControl>
               <FormDescription>
@@ -68,6 +73,10 @@ export const BookingWindowSettings = ({ form, defaultValue }: BookingWindowSetti
           control={form.control}
           name="bookingWindow.endDays"
           defaultValue={defaultValue?.endDays || 30}
+          rules={{
+            required: "Ce champ est requis",
+            min: { value: 1, message: "Le délai maximum doit être d'au moins 1 jour" }
+          }}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Délai maximum (jours)</FormLabel>
@@ -76,7 +85,7 @@ export const BookingWindowSettings = ({ form, defaultValue }: BookingWindowSetti
                   type="number" 
                   min="1"
                   {...field}
-                  onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                  onChange={(e) => field.onChange(Math.max(1, parseInt(e.target.value) || 1))}
                 />
               </FormControl>
               <FormDescription>

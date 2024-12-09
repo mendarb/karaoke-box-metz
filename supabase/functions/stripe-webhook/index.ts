@@ -37,23 +37,36 @@ serve(async (req) => {
 
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
+      const metadata = session.metadata;
       
-      // Mettre à jour le statut de paiement de la réservation
-      const { error } = await supabase
-        .from('bookings')
-        .update({ 
-          payment_status: 'paid',
-          status: 'confirmed' 
-        })
-        .eq('user_email', session.customer_email)
-        .eq('payment_status', 'pending')
-        .order('created_at', { ascending: false })
-        .limit(1);
-
-      if (error) {
-        console.error('Error updating booking:', error);
-        throw error;
+      if (!metadata) {
+        throw new Error('No metadata found in session');
       }
+
+      // Créer la réservation une fois le paiement confirmé
+      const { error: bookingError } = await supabase
+        .from('bookings')
+        .insert([{
+          user_id: metadata.userId,
+          date: metadata.date,
+          time_slot: metadata.timeSlot,
+          duration: metadata.duration,
+          group_size: metadata.groupSize,
+          status: 'confirmed',
+          price: session.amount_total ? session.amount_total / 100 : 0,
+          message: metadata.message || null,
+          user_email: session.customer_email,
+          user_name: metadata.userName,
+          user_phone: metadata.userPhone,
+          payment_status: 'paid'
+        }]);
+
+      if (bookingError) {
+        console.error('Error creating booking:', bookingError);
+        throw bookingError;
+      }
+
+      console.log('Booking created successfully after payment');
     }
 
     return new Response(JSON.stringify({ received: true }), { status: 200 });

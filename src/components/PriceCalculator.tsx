@@ -29,7 +29,6 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
         throw error;
       }
 
-      console.log('Price settings:', data?.value);
       return data?.value || { perHour: 30, perPerson: 5 };
     }
   });
@@ -41,13 +40,12 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
       console.log('Calculating price with:', { groupSize, duration, settings });
       
       const hours = parseInt(duration) || 0;
-      const size = groupSize === "6+" ? 6 : parseInt(groupSize) || 0;
-
-      console.log('Parsed values:', { hours, size });
+      const size = parseInt(groupSize) || 0;
+      if (hours === 0 || size === 0) return;
 
       // Base price calculation using settings
       const basePrice = settings.perHour + (size * settings.perPerson);
-      console.log('Base price:', basePrice);
+      console.log('Base price per hour:', basePrice);
 
       // Calculate total with discounts
       let totalPrice = basePrice;

@@ -70,10 +70,21 @@ export const BookingForm = () => {
     const requestedDuration = parseInt(duration) * 60;
     const requestedEndTime = requestedStartTime + requestedDuration;
 
+    // Vérifier si le créneau demandé ne dépasse pas minuit
+    if (requestedEndTime > 24 * 60) {
+      toast({
+        title: "Créneau non disponible",
+        description: "Le créneau demandé dépasse minuit. Veuillez choisir un horaire plus tôt.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
     const { data: bookings, error } = await supabase
       .from('bookings')
       .select('*')
-      .eq('date', date.toISOString().split('T')[0]);
+      .eq('date', date.toISOString().split('T')[0])
+      .neq('status', 'cancelled');
 
     if (error) {
       console.error('Error checking availability:', error);
@@ -126,7 +137,7 @@ export const BookingForm = () => {
       if (!session?.access_token && data.createAccount && data.password) {
         console.log('Creating new account for:', data.email);
         
-        const { error: signUpError, data: signUpData } = await supabase.auth.signUp({
+        const { error: signUpError } = await supabase.auth.signUp({
           email: data.email,
           password: data.password,
           options: {
@@ -147,8 +158,6 @@ export const BookingForm = () => {
           return;
         }
 
-        console.log('Account created successfully:', signUpData);
-
         // Attendre que la session soit créée
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email: data.email,
@@ -164,11 +173,9 @@ export const BookingForm = () => {
           });
           return;
         }
-
-        console.log('User signed in after account creation');
       }
 
-      // Vérifier à nouveau la session après la création potentielle du compte
+      // Vérifier à nouveau la session
       const { data: { session: currentSession } } = await supabase.auth.getSession();
       if (!currentSession?.access_token) {
         console.error('No session found after account creation/login');
@@ -186,37 +193,7 @@ export const BookingForm = () => {
         return;
       }
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.error('User not found after session check');
-        throw new Error("Utilisateur non trouvé");
-      }
-
-      console.log('Creating booking for user:', user.id);
-
-      const { error: bookingError } = await supabase
-        .from('bookings')
-        .insert([{
-          user_id: user.id,
-          date: data.date,
-          time_slot: data.timeSlot,
-          duration: duration,
-          group_size: groupSize,
-          status: 'pending',
-          price: calculatedPrice,
-          message: data.message || null,
-          user_email: data.email,
-          user_name: data.fullName,
-          user_phone: data.phone,
-        }]);
-
-      if (bookingError) {
-        console.error('Booking creation error:', bookingError);
-        throw bookingError;
-      }
-
-      console.log('Booking created successfully, creating checkout session');
-
+      console.log('Creating checkout session...');
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
         body: JSON.stringify({
           price: calculatedPrice,

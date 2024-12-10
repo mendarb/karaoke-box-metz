@@ -29,8 +29,16 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
         throw error;
       }
 
-      console.log('Fetched price settings:', data);
-      return data?.value || { perHour: 30, perPerson: 5 };
+      // Default values if no settings are found
+      const defaultSettings = { perHour: 30, perPerson: 5 };
+      
+      if (!data?.value) {
+        console.log('No price settings found, using defaults:', defaultSettings);
+        return defaultSettings;
+      }
+
+      console.log('Fetched price settings:', data.value);
+      return data.value;
     }
   });
 
@@ -51,11 +59,11 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
     // Ensure settings.perHour and settings.perPerson are numbers
     const baseHourRate = typeof settings.perHour === 'string' 
       ? parseFloat(settings.perHour) 
-      : settings.perHour;
+      : settings.perHour || 30; // Fallback to default if undefined
       
     const basePersonRate = typeof settings.perPerson === 'string' 
       ? parseFloat(settings.perPerson) 
-      : settings.perPerson;
+      : settings.perPerson || 5; // Fallback to default if undefined
 
     console.log('Base rates:', { baseHourRate, basePersonRate });
 

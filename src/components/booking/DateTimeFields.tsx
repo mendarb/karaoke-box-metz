@@ -16,6 +16,7 @@ interface DateTimeFieldsProps {
 export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [bookedSlots, setBookedSlots] = useState<{ [key: string]: number }>({});
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const { minDate, maxDate, isDayExcluded, getAvailableSlots } = useBookingDates();
 
   // Vérifier les réservations existantes
@@ -44,11 +45,17 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
     setBookedSlots(slots);
   };
 
-  // Mettre à jour les réservations quand la date change
+  // Mettre à jour les réservations et les créneaux disponibles quand la date change
   useEffect(() => {
-    if (selectedDate) {
-      checkBookings(selectedDate);
-    }
+    const updateDateInfo = async () => {
+      if (selectedDate) {
+        await checkBookings(selectedDate);
+        const slots = await getAvailableSlots(selectedDate);
+        console.log('Setting available slots:', slots);
+        setAvailableSlots(slots);
+      }
+    };
+    updateDateInfo();
   }, [selectedDate]);
 
   // Mettre à jour les heures disponibles quand le créneau change
@@ -56,7 +63,6 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
     const timeSlot = form.watch("timeSlot");
     if (selectedDate && timeSlot) {
       console.log('Calculating available hours for slot:', timeSlot);
-      const availableSlots = getAvailableSlots(selectedDate);
       const slotIndex = availableSlots.indexOf(timeSlot);
       let availableHours = 0;
       
@@ -77,7 +83,7 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
       console.log('Available hours calculated:', availableHours);
       onAvailabilityChange(selectedDate, availableHours);
     }
-  }, [form.watch("timeSlot"), selectedDate, bookedSlots]);
+  }, [form.watch("timeSlot"), selectedDate, bookedSlots, availableSlots]);
 
   return (
     <div className="space-y-6">
@@ -91,23 +97,24 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
             <Calendar
               mode="single"
               selected={field.value}
-              onSelect={(date) => {
+              onSelect={async (date) => {
                 console.log('Date selected:', date);
                 field.onChange(date);
                 setSelectedDate(date);
               }}
-              disabled={(date) => {
+              disabled={async (date) => {
+                const slots = await getAvailableSlots(date);
                 const isDisabled = date < minDate || 
                   date > maxDate ||
                   isDayExcluded(date) ||
-                  !getAvailableSlots(date).length;
+                  !slots.length;
                 
                 if (isDisabled) {
                   console.log('Date disabled:', date, {
                     beforeMinDate: date < minDate,
                     afterMaxDate: date > maxDate,
                     isExcluded: isDayExcluded(date),
-                    noSlots: !getAvailableSlots(date).length
+                    noSlots: !slots.length
                   });
                 }
                 return isDisabled;
@@ -123,7 +130,7 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
       {selectedDate && (
         <TimeSlots
           form={form}
-          availableSlots={getAvailableSlots(selectedDate)}
+          availableSlots={availableSlots}
           bookedSlots={bookedSlots}
         />
       )}

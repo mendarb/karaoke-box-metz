@@ -23,17 +23,7 @@ export const AdminDashboard = () => {
       try {
         console.log("Starting to fetch bookings...");
         
-        // Vérifier d'abord la session
-        const { data: { session } } = await supabase.auth.getSession();
-        console.log("Session check:", session);
-
-        if (!session) {
-          console.log("No session found, redirecting to login");
-          navigate("/");
-          return [];
-        }
-
-        // Ensuite vérifier si l'utilisateur est admin
+        // Vérifier la session
         const { data: { user } } = await supabase.auth.getUser();
         console.log("User check:", user);
 
@@ -48,7 +38,7 @@ export const AdminDashboard = () => {
           return [];
         }
 
-        // Si tout est bon, récupérer les réservations
+        // Si l'utilisateur est admin, récupérer les réservations
         const { data, error } = await supabase
           .from('bookings')
           .select('*')

@@ -41,35 +41,27 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
         console.log('No settings available yet');
         return;
       }
+
+      if (!groupSize || !duration) {
+        console.log('Missing input:', { groupSize, duration });
+        return;
+      }
       
-      console.log('Starting price calculation with:', { groupSize, duration, settings });
+      console.log('Input values:', { groupSize, duration, settings });
       
       const hours = parseFloat(duration);
       const size = parseFloat(groupSize);
       
       if (isNaN(hours) || isNaN(size)) {
         console.log('Invalid input - NaN values:', { hours, size });
-        setPrice(0);
-        setDiscount(0);
-        setDiscountPercentage(0);
-        if (onPriceCalculated) {
-          onPriceCalculated(0);
-        }
         return;
       }
 
       if (hours <= 0 || size <= 0) {
         console.log('Invalid input - zero or negative values:', { hours, size });
-        setPrice(0);
-        setDiscount(0);
-        setDiscountPercentage(0);
-        if (onPriceCalculated) {
-          onPriceCalculated(0);
-        }
         return;
       }
 
-      // Parse settings values as numbers
       const baseHourRate = parseFloat(settings.perHour);
       const basePersonRate = parseFloat(settings.perPerson);
 
@@ -101,17 +93,18 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
       }
 
       const totalDiscount = totalWithoutDiscount - finalPrice;
+      const calculatedDiscountPercentage = hours > 1 ? 10 : 0;
 
       console.log('Final calculation:', { 
         basePrice,
         finalPrice,
         totalDiscount,
-        discountPercentage: hours > 1 ? 10 : 0
+        discountPercentage: calculatedDiscountPercentage
       });
 
       setPrice(finalPrice);
       setDiscount(totalDiscount);
-      setDiscountPercentage(hours > 1 ? 10 : 0);
+      setDiscountPercentage(calculatedDiscountPercentage);
       
       if (onPriceCalculated) {
         onPriceCalculated(finalPrice);

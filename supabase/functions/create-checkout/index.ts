@@ -16,6 +16,10 @@ serve(async (req) => {
     const { price, groupSize, duration, date, timeSlot, message, userEmail, userName, userPhone } = await req.json();
     console.log('Request data:', { price, groupSize, duration, date, timeSlot, message, userEmail, userName, userPhone });
 
+    if (!price || price <= 0) {
+      throw new Error('Prix invalide');
+    }
+
     // Récupérer le mode test depuis les paramètres
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',

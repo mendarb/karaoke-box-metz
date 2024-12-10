@@ -20,7 +20,7 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
   const [isLoadingDates, setIsLoadingDates] = useState(true);
   const { minDate, maxDate, isDayExcluded, getAvailableSlots } = useBookingDates();
 
-  // Vérifier les réservations existantes et mettre à jour les créneaux disponibles
+  // Mettre à jour les créneaux disponibles pour une date donnée
   const updateAvailableSlots = async (date: Date) => {
     try {
       console.log('Updating slots for date:', date);
@@ -30,6 +30,7 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
       return slots;
     } catch (error) {
       console.error('Error updating slots:', error);
+      setAvailableSlots([]);
       return [];
     }
   };
@@ -37,7 +38,7 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
   // Mettre à jour les heures disponibles quand le créneau change
   useEffect(() => {
     const timeSlot = form.watch("timeSlot");
-    if (selectedDate && timeSlot) {
+    if (selectedDate && timeSlot && availableSlots.length > 0) {
       console.log('Calculating available hours for slot:', timeSlot);
       const slotIndex = availableSlots.indexOf(timeSlot);
       let availableHours = 0;
@@ -61,7 +62,7 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
     }
   }, [form.watch("timeSlot"), selectedDate, bookedSlots, availableSlots]);
 
-  // Calculer les dates désactivées
+  // Calculer les dates désactivées une seule fois au chargement
   useEffect(() => {
     const calculateDisabledDates = async () => {
       setIsLoadingDates(true);
@@ -74,12 +75,10 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
         let currentDate = startOfDay(new Date(today));
         
         while (currentDate <= endDate) {
-          const slots = await getAvailableSlots(currentDate);
           if (
             currentDate < minDate || 
             currentDate > maxDate ||
-            isDayExcluded(currentDate) ||
-            !slots.length
+            isDayExcluded(currentDate)
           ) {
             disabledDates.push(new Date(currentDate));
           }

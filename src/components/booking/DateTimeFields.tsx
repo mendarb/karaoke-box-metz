@@ -2,9 +2,8 @@ import { useState, useEffect } from "react";
 import { FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Calendar } from "@/components/ui/calendar";
 import { UseFormReturn } from "react-hook-form";
-import { format } from "date-fns";
+import { format, startOfDay, isEqual } from "date-fns";
 import { fr } from "date-fns/locale";
-import { supabase } from "@/lib/supabase";
 import { TimeSlots } from "./date-time/TimeSlots";
 import { useBookingDates } from "./date-time/useBookingDates";
 
@@ -18,46 +17,22 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
   const [bookedSlots, setBookedSlots] = useState<{ [key: string]: number }>({});
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [disabledDates, setDisabledDates] = useState<Date[]>([]);
+  const [isLoadingDates, setIsLoadingDates] = useState(true);
   const { minDate, maxDate, isDayExcluded, getAvailableSlots } = useBookingDates();
 
-  // Vérifier les réservations existantes
-  const checkBookings = async (date: Date) => {
-    if (!date) return;
-
-    console.log('Checking bookings for date:', date);
-    const { data: bookings, error } = await supabase
-      .from('bookings')
-      .select('*')
-      .eq('date', date.toISOString().split('T')[0])
-      .neq('status', 'cancelled');
-
-    if (error) {
-      console.error('Error fetching bookings:', error);
-      return;
+  // Vérifier les réservations existantes et mettre à jour les créneaux disponibles
+  const updateAvailableSlots = async (date: Date) => {
+    try {
+      console.log('Updating slots for date:', date);
+      const slots = await getAvailableSlots(date);
+      console.log('Available slots:', slots);
+      setAvailableSlots(slots);
+      return slots;
+    } catch (error) {
+      console.error('Error updating slots:', error);
+      return [];
     }
-
-    console.log('Found bookings:', bookings);
-    const slots: { [key: string]: number } = {};
-    bookings?.forEach(booking => {
-      slots[booking.time_slot] = parseInt(booking.duration);
-    });
-
-    console.log('Setting booked slots:', slots);
-    setBookedSlots(slots);
   };
-
-  // Mettre à jour les réservations et les créneaux disponibles quand la date change
-  useEffect(() => {
-    const updateDateInfo = async () => {
-      if (selectedDate) {
-        await checkBookings(selectedDate);
-        const slots = await getAvailableSlots(selectedDate);
-        console.log('Setting available slots:', slots);
-        setAvailableSlots(slots);
-      }
-    };
-    updateDateInfo();
-  }, [selectedDate]);
 
   // Mettre à jour les heures disponibles quand le créneau change
   useEffect(() => {
@@ -86,30 +61,37 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
     }
   }, [form.watch("timeSlot"), selectedDate, bookedSlots, availableSlots]);
 
-  // Pre-calculate disabled dates
+  // Calculer les dates désactivées
   useEffect(() => {
     const calculateDisabledDates = async () => {
-      const today = new Date();
-      const endDate = new Date();
-      endDate.setMonth(endDate.getMonth() + 2); // Look ahead 2 months
-      
-      const disabledDates: Date[] = [];
-      let currentDate = new Date(today);
-      
-      while (currentDate <= endDate) {
-        const slots = await getAvailableSlots(currentDate);
-        if (
-          currentDate < minDate || 
-          currentDate > maxDate ||
-          isDayExcluded(currentDate) ||
-          !slots.length
-        ) {
-          disabledDates.push(new Date(currentDate));
+      setIsLoadingDates(true);
+      try {
+        const today = startOfDay(new Date());
+        const endDate = startOfDay(new Date());
+        endDate.setMonth(endDate.getMonth() + 2);
+        
+        const disabledDates: Date[] = [];
+        let currentDate = startOfDay(new Date(today));
+        
+        while (currentDate <= endDate) {
+          const slots = await getAvailableSlots(currentDate);
+          if (
+            currentDate < minDate || 
+            currentDate > maxDate ||
+            isDayExcluded(currentDate) ||
+            !slots.length
+          ) {
+            disabledDates.push(new Date(currentDate));
+          }
+          currentDate.setDate(currentDate.getDate() + 1);
         }
-        currentDate.setDate(currentDate.getDate() + 1);
+        
+        setDisabledDates(disabledDates);
+      } catch (error) {
+        console.error('Error calculating disabled dates:', error);
+      } finally {
+        setIsLoadingDates(false);
       }
-      
-      setDisabledDates(disabledDates);
     };
     
     calculateDisabledDates();
@@ -127,17 +109,19 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
             <Calendar
               mode="single"
               selected={field.value}
-              onSelect={(date) => {
-                console.log('Date selected:', date);
-                field.onChange(date);
-                setSelectedDate(date);
+              onSelect={async (date) => {
+                if (date) {
+                  console.log('Date selected:', date);
+                  const normalizedDate = startOfDay(date);
+                  field.onChange(normalizedDate);
+                  setSelectedDate(normalizedDate);
+                  await updateAvailableSlots(normalizedDate);
+                }
               }}
               disabled={(date) => {
-                return disabledDates.some(
-                  disabledDate => 
-                    disabledDate.getFullYear() === date.getFullYear() &&
-                    disabledDate.getMonth() === date.getMonth() &&
-                    disabledDate.getDate() === date.getDate()
+                const normalizedDate = startOfDay(date);
+                return disabledDates.some(disabledDate => 
+                  isEqual(startOfDay(disabledDate), normalizedDate)
                 );
               }}
               initialFocus

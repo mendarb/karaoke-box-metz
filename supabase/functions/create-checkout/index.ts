@@ -108,8 +108,7 @@ serve(async (req) => {
         },
       ],
       custom_text: {
-        submit: { message: 'Nous traiterons votre paiement de manière sécurisée avec Stripe' },
-        shipping_address: { message: 'La réservation aura lieu à notre établissement' },
+        submit: { message: 'Nous traiterons votre paiement de manière sécurisée avec Stripe' }
       },
       billing_address_collection: 'auto',
       locale: 'fr',

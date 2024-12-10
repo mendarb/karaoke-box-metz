@@ -17,6 +17,7 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [bookedSlots, setBookedSlots] = useState<{ [key: string]: number }>({});
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [disabledDates, setDisabledDates] = useState<Date[]>([]);
   const { minDate, maxDate, isDayExcluded, getAvailableSlots } = useBookingDates();
 
   // Vérifier les réservations existantes
@@ -85,6 +86,35 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
     }
   }, [form.watch("timeSlot"), selectedDate, bookedSlots, availableSlots]);
 
+  // Pre-calculate disabled dates
+  useEffect(() => {
+    const calculateDisabledDates = async () => {
+      const today = new Date();
+      const endDate = new Date();
+      endDate.setMonth(endDate.getMonth() + 2); // Look ahead 2 months
+      
+      const disabledDates: Date[] = [];
+      let currentDate = new Date(today);
+      
+      while (currentDate <= endDate) {
+        const slots = await getAvailableSlots(currentDate);
+        if (
+          currentDate < minDate || 
+          currentDate > maxDate ||
+          isDayExcluded(currentDate) ||
+          !slots.length
+        ) {
+          disabledDates.push(new Date(currentDate));
+        }
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+      
+      setDisabledDates(disabledDates);
+    };
+    
+    calculateDisabledDates();
+  }, [minDate, maxDate]);
+
   return (
     <div className="space-y-6">
       <FormField
@@ -97,27 +127,18 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
             <Calendar
               mode="single"
               selected={field.value}
-              onSelect={async (date) => {
+              onSelect={(date) => {
                 console.log('Date selected:', date);
                 field.onChange(date);
                 setSelectedDate(date);
               }}
-              disabled={async (date) => {
-                const slots = await getAvailableSlots(date);
-                const isDisabled = date < minDate || 
-                  date > maxDate ||
-                  isDayExcluded(date) ||
-                  !slots.length;
-                
-                if (isDisabled) {
-                  console.log('Date disabled:', date, {
-                    beforeMinDate: date < minDate,
-                    afterMaxDate: date > maxDate,
-                    isExcluded: isDayExcluded(date),
-                    noSlots: !slots.length
-                  });
-                }
-                return isDisabled;
+              disabled={(date) => {
+                return disabledDates.some(
+                  disabledDate => 
+                    disabledDate.getFullYear() === date.getFullYear() &&
+                    disabledDate.getMonth() === date.getMonth() &&
+                    disabledDate.getDate() === date.getDate()
+                );
               }}
               initialFocus
               locale={fr}

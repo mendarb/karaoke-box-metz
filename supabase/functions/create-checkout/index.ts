@@ -8,15 +8,21 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { 
+      headers: corsHeaders,
+      status: 204,
+    });
   }
 
   try {
+    console.log('Starting checkout process...');
     const { price, groupSize, duration, date, timeSlot, message, userEmail, userName, userPhone } = await req.json();
     console.log('Request data:', { price, groupSize, duration, date, timeSlot, message, userEmail, userName, userPhone });
 
     if (!price || price <= 0) {
+      console.error('Invalid price:', price);
       throw new Error('Prix invalide');
     }
 
@@ -25,8 +31,9 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     );
 
+    console.log('Fetching settings...');
     const { data: settingsData, error: settingsError } = await supabaseClient
-      .from('booking_settings')
+      .from('settings')
       .select('value')
       .eq('key', 'is_test_mode')
       .single();

@@ -21,14 +21,21 @@ export const AdminDashboard = () => {
     queryKey: ['bookings'],
     queryFn: async () => {
       try {
-        console.log("Starting to fetch bookings...");
-        
-        // Vérifier la session
-        const { data: { user } } = await supabase.auth.getUser();
-        console.log("User check:", user);
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          console.log("No session found");
+          toast({
+            title: "Session expirée",
+            description: "Veuillez vous reconnecter",
+            variant: "destructive",
+          });
+          navigate("/");
+          return [];
+        }
 
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user || user.email !== "mendar.bouchali@gmail.com") {
-          console.log("Not admin user:", user?.email);
+          console.log("Unauthorized access attempt:", user?.email);
           toast({
             title: "Accès refusé",
             description: "Vous n'avez pas les droits d'accès à cette page.",
@@ -38,18 +45,15 @@ export const AdminDashboard = () => {
           return [];
         }
 
-        // Si l'utilisateur est admin, récupérer les réservations
         const { data, error } = await supabase
           .from('bookings')
           .select('*')
           .order('created_at', { ascending: false });
 
         if (error) {
-          console.error('Error fetching bookings:', error);
           throw error;
         }
 
-        console.log("Fetched bookings:", data);
         return data || [];
       } catch (error) {
         console.error('Error in query function:', error);

@@ -20,7 +20,6 @@ serve(async (req) => {
       throw new Error('Prix invalide');
     }
 
-    // Récupérer le mode test depuis les paramètres
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -74,7 +73,7 @@ serve(async (req) => {
               description: `${groupSize} personnes - ${duration}h\nLe ${formattedDate} à ${timeSlot}`,
               images: ['https://lxkaosgjtqonrnlivzev.supabase.co/storage/v1/object/public/assets/logo.png'],
             },
-            unit_amount: Math.round(price * 100), // Convertir en centimes
+            unit_amount: Math.round(price * 100),
           },
           quantity: 1,
         },

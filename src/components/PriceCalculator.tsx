@@ -18,7 +18,6 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
   const { data: settings } = useQuery({
     queryKey: ['booking-settings'],
     queryFn: async () => {
-      console.log('Fetching price settings...');
       const { data, error } = await supabase
         .from('booking_settings')
         .select('*')
@@ -30,92 +29,63 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
         throw error;
       }
 
-      console.log('Fetched price settings:', data);
       return data?.value || { perHour: 30, perPerson: 5 };
     }
   });
 
   useEffect(() => {
-    const calculatePrice = () => {
-      if (!settings) {
-        console.log('No settings available yet');
-        return;
-      }
+    if (!settings || !groupSize || !duration) {
+      console.log('Missing required data:', { settings, groupSize, duration });
+      return;
+    }
 
-      if (!groupSize || !duration) {
-        console.log('Missing input:', { groupSize, duration });
-        return;
-      }
-      
-      console.log('Input values:', { groupSize, duration, settings });
-      
-      const hours = parseFloat(duration);
-      const size = parseFloat(groupSize);
-      
-      if (isNaN(hours) || isNaN(size)) {
-        console.log('Invalid input - NaN values:', { hours, size });
-        return;
-      }
+    const hours = parseFloat(duration);
+    const size = parseFloat(groupSize);
 
-      if (hours <= 0 || size <= 0) {
-        console.log('Invalid input - zero or negative values:', { hours, size });
-        return;
-      }
+    if (isNaN(hours) || isNaN(size) || hours <= 0 || size <= 0) {
+      console.log('Invalid input values:', { hours, size });
+      return;
+    }
 
-      const baseHourRate = parseFloat(settings.perHour);
-      const basePersonRate = parseFloat(settings.perPerson);
+    const baseHourRate = parseFloat(settings.perHour);
+    const basePersonRate = parseFloat(settings.perPerson);
 
-      console.log('Base rates:', { baseHourRate, basePersonRate });
+    if (isNaN(baseHourRate) || isNaN(basePersonRate)) {
+      console.error('Invalid base rates:', { baseHourRate, basePersonRate });
+      return;
+    }
 
-      if (isNaN(baseHourRate) || isNaN(basePersonRate)) {
-        console.error('Invalid base rates:', { baseHourRate, basePersonRate });
-        return;
-      }
+    const basePrice = baseHourRate + (size * basePersonRate);
+    const totalWithoutDiscount = basePrice * hours;
+    let finalPrice = basePrice;
 
-      // Calculate base price for one hour
-      const basePrice = baseHourRate + (size * basePersonRate);
-      console.log('Base price per hour:', basePrice);
+    if (hours > 1) {
+      const additionalHours = hours - 1;
+      const discountedHourPrice = basePrice * 0.9;
+      finalPrice += discountedHourPrice * additionalHours;
+    }
 
-      // Calculate total price without discount
-      const totalWithoutDiscount = basePrice * hours;
-      console.log('Total without discount:', totalWithoutDiscount);
+    const totalDiscount = totalWithoutDiscount - finalPrice;
+    const calculatedDiscountPercentage = hours > 1 ? 10 : 0;
 
-      let finalPrice = basePrice; // First hour at full price
+    console.log('Price calculation:', {
+      basePrice,
+      totalWithoutDiscount,
+      finalPrice,
+      totalDiscount,
+      discountPercentage: calculatedDiscountPercentage
+    });
 
-      // If more than 1 hour, apply 10% discount to additional hours
-      if (hours > 1) {
-        const additionalHours = hours - 1;
-        const discountedHourPrice = basePrice * 0.9;
-        const additionalHoursPrice = discountedHourPrice * additionalHours;
-        
-        finalPrice = finalPrice + additionalHoursPrice;
-        console.log('Price after discount:', finalPrice);
-      }
+    setPrice(finalPrice);
+    setDiscount(totalDiscount);
+    setDiscountPercentage(calculatedDiscountPercentage);
 
-      const totalDiscount = totalWithoutDiscount - finalPrice;
-      const calculatedDiscountPercentage = hours > 1 ? 10 : 0;
-
-      console.log('Final calculation:', { 
-        basePrice,
-        finalPrice,
-        totalDiscount,
-        discountPercentage: calculatedDiscountPercentage
-      });
-
-      setPrice(finalPrice);
-      setDiscount(totalDiscount);
-      setDiscountPercentage(calculatedDiscountPercentage);
-      
-      if (onPriceCalculated) {
-        onPriceCalculated(finalPrice);
-      }
-    };
-
-    calculatePrice();
+    if (onPriceCalculated) {
+      onPriceCalculated(finalPrice);
+    }
   }, [groupSize, duration, settings, onPriceCalculated]);
 
   const formatPrice = (value: number) => {
-    if (isNaN(value) || value === 0) return "0,00 €";
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
       currency: 'EUR',

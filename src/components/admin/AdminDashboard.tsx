@@ -22,17 +22,23 @@ export const AdminDashboard = () => {
     queryFn: async () => {
       try {
         console.log("Starting to fetch bookings...");
-        const { data: { user } } = await supabase.auth.getUser();
-        console.log("Current user:", user?.email);
         
-        if (!user) {
-          console.log("No user found, redirecting to login");
+        // Vérifier d'abord la session
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log("Session check:", session);
+
+        if (!session) {
+          console.log("No session found, redirecting to login");
           navigate("/");
           return [];
         }
 
-        if (user.email !== "mendar.bouchali@gmail.com") {
-          console.log("Not admin user:", user.email);
+        // Ensuite vérifier si l'utilisateur est admin
+        const { data: { user } } = await supabase.auth.getUser();
+        console.log("User check:", user);
+
+        if (!user || user.email !== "mendar.bouchali@gmail.com") {
+          console.log("Not admin user:", user?.email);
           toast({
             title: "Accès refusé",
             description: "Vous n'avez pas les droits d'accès à cette page.",
@@ -42,6 +48,7 @@ export const AdminDashboard = () => {
           return [];
         }
 
+        // Si tout est bon, récupérer les réservations
         const { data, error } = await supabase
           .from('bookings')
           .select('*')

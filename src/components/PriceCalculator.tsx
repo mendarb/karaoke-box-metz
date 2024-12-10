@@ -42,13 +42,24 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
         return;
       }
       
-      console.log('Calculating price with:', { groupSize, duration, settings });
+      console.log('Starting price calculation with:', { groupSize, duration, settings });
       
       const hours = parseFloat(duration);
       const size = parseFloat(groupSize);
       
-      if (isNaN(hours) || isNaN(size) || hours <= 0 || size <= 0) {
-        console.log('Invalid hours or size:', { hours, size });
+      if (isNaN(hours) || isNaN(size)) {
+        console.log('Invalid input - NaN values:', { hours, size });
+        setPrice(0);
+        setDiscount(0);
+        setDiscountPercentage(0);
+        if (onPriceCalculated) {
+          onPriceCalculated(0);
+        }
+        return;
+      }
+
+      if (hours <= 0 || size <= 0) {
+        console.log('Invalid input - zero or negative values:', { hours, size });
         setPrice(0);
         setDiscount(0);
         setDiscountPercentage(0);
@@ -61,6 +72,8 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
       // Parse settings values as numbers
       const baseHourRate = parseFloat(settings.perHour);
       const basePersonRate = parseFloat(settings.perPerson);
+
+      console.log('Base rates:', { baseHourRate, basePersonRate });
 
       if (isNaN(baseHourRate) || isNaN(basePersonRate)) {
         console.error('Invalid base rates:', { baseHourRate, basePersonRate });

@@ -29,6 +29,7 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
         throw error;
       }
 
+      console.log('Fetched price settings:', data);
       return data?.value || { perHour: 30, perPerson: 5 };
     }
   });
@@ -47,8 +48,16 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
       return;
     }
 
-    const baseHourRate = parseFloat(settings.perHour);
-    const basePersonRate = parseFloat(settings.perPerson);
+    // Ensure settings.perHour and settings.perPerson are numbers
+    const baseHourRate = typeof settings.perHour === 'string' 
+      ? parseFloat(settings.perHour) 
+      : settings.perHour;
+      
+    const basePersonRate = typeof settings.perPerson === 'string' 
+      ? parseFloat(settings.perPerson) 
+      : settings.perPerson;
+
+    console.log('Base rates:', { baseHourRate, basePersonRate });
 
     if (isNaN(baseHourRate) || isNaN(basePersonRate)) {
       console.error('Invalid base rates:', { baseHourRate, basePersonRate });

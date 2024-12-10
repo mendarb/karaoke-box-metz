@@ -8,7 +8,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { 
       headers: corsHeaders,
@@ -87,7 +86,7 @@ serve(async (req) => {
       ],
       mode: 'payment',
       success_url: successUrl,
-      cancel_url: `${req.headers.get('origin')}/cancel`,
+      cancel_url: `${req.headers.get('origin')}/bookings`,
       customer_email: userEmail,
       metadata: {
         date,

@@ -1,13 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { 
   FormControl, 
-  FormField,  // Added this import
+  FormField,
   FormItem, 
   FormLabel, 
   FormMessage 
 } from "@/components/ui/form";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { UseFormReturn } from "react-hook-form";
+import { Clock } from "lucide-react";
 
 interface TimeSlotsProps {
   form: UseFormReturn<any>;
@@ -50,6 +51,7 @@ export const TimeSlots = ({ form, availableSlots, bookedSlots }: TimeSlotsProps)
                             onClick={() => isAvailable && field.onChange(slot)}
                             disabled={!isAvailable}
                           >
+                            <Clock className="w-4 h-4 mr-2" />
                             {slot}
                           </Button>
                         </FormControl>

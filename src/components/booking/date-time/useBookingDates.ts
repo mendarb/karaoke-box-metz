@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { addDays, startOfDay, endOfDay } from "date-fns";
+import { addDays, startOfDay, endOfDay, parse, addHours } from "date-fns";
 
 export const useBookingDates = () => {
   const { data: settings } = useQuery({
@@ -65,7 +65,6 @@ export const useBookingDates = () => {
     refetchInterval: 5000
   });
 
-  // En mode test, on ignore les délais
   const minDate = settings?.isTestMode 
     ? startOfDay(new Date()) 
     : startOfDay(addDays(new Date(), settings?.bookingWindow?.startDays || 0));
@@ -78,7 +77,7 @@ export const useBookingDates = () => {
 
   const isDayExcluded = (date: Date) => {
     if (!settings?.excludedDays) return false;
-    if (settings?.isTestMode) return false; // En mode test, on ignore les jours exclus
+    if (settings?.isTestMode) return false;
     
     const dateToCheck = startOfDay(date);
     const isExcluded = settings.excludedDays.some(excludedTimestamp => {
@@ -95,7 +94,49 @@ export const useBookingDates = () => {
     return isExcluded;
   };
 
-  const getAvailableSlots = (date: Date) => {
+  const getAvailableHoursForSlot = async (date: Date, timeSlot: string) => {
+    const slotTime = parse(timeSlot, "HH:mm", date);
+    const maxPossibleHours = 4; // Maximum booking duration
+    
+    // Check existing bookings
+    const { data: bookings } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('date', date.toISOString().split('T')[0])
+      .neq('status', 'cancelled');
+
+    if (!bookings) return 0;
+
+    // Convert slot time to minutes for easier comparison
+    const slotMinutes = slotTime.getHours() * 60 + slotTime.getMinutes();
+    
+    // Find the next booking after this slot
+    const nextBooking = bookings
+      .filter(booking => {
+        const bookingMinutes = parseInt(booking.time_slot.split(':')[0]) * 60 + 
+                             parseInt(booking.time_slot.split(':')[1]);
+        return bookingMinutes > slotMinutes;
+      })
+      .sort((a, b) => {
+        const aMinutes = parseInt(a.time_slot.split(':')[0]) * 60 + parseInt(a.time_slot.split(':')[1]);
+        const bMinutes = parseInt(b.time_slot.split(':')[0]) * 60 + parseInt(b.time_slot.split(':')[1]);
+        return aMinutes - bMinutes;
+      })[0];
+
+    if (!nextBooking) {
+      // No next booking, check until midnight
+      const minutesUntilMidnight = 24 * 60 - slotMinutes;
+      return Math.min(maxPossibleHours, Math.floor(minutesUntilMidnight / 60));
+    }
+
+    // Calculate available hours until next booking
+    const nextBookingMinutes = parseInt(nextBooking.time_slot.split(':')[0]) * 60 + 
+                              parseInt(nextBooking.time_slot.split(':')[1]);
+    const availableMinutes = nextBookingMinutes - slotMinutes;
+    return Math.min(maxPossibleHours, Math.floor(availableMinutes / 60));
+  };
+
+  const getAvailableSlots = async (date: Date) => {
     console.log('Getting slots for date:', date);
     console.log('Opening hours settings:', settings?.openingHours);
     
@@ -116,8 +157,22 @@ export const useBookingDates = () => {
     }
 
     const slots = daySettings?.slots || [];
-    console.log('Available slots:', slots);
-    return slots;
+    console.log('Available slots before filtering:', slots);
+
+    // Filter slots that have at least 1 hour available
+    const availableSlots = await Promise.all(
+      slots.map(async (slot) => {
+        const availableHours = await getAvailableHoursForSlot(date, slot);
+        return { slot, availableHours };
+      })
+    );
+
+    const filteredSlots = availableSlots
+      .filter(({ availableHours }) => availableHours >= 1)
+      .map(({ slot }) => slot);
+
+    console.log('Filtered available slots:', filteredSlots);
+    return filteredSlots;
   };
 
   return {

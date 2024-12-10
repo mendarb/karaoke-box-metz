@@ -28,7 +28,7 @@ serve(async (req) => {
     const { data: settingsData, error: settingsError } = await supabaseClient
       .from('booking_settings')
       .select('value')
-      .eq('key', 'booking_settings')
+      .eq('key', 'is_test_mode')
       .single();
 
     if (settingsError) {
@@ -36,7 +36,7 @@ serve(async (req) => {
       throw new Error('Impossible de récupérer les paramètres');
     }
 
-    const isTestMode = settingsData?.value?.isTestMode ?? true;
+    const isTestMode = settingsData?.value ?? true;
     console.log('Using test mode:', isTestMode);
 
     const stripeSecretKey = isTestMode 

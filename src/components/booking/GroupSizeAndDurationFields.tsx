@@ -41,6 +41,8 @@ export const GroupSizeAndDurationFields = ({
   onPriceCalculated,
   availableHours = 4,
 }: GroupSizeAndDurationFieldsProps) => {
+  console.log('Available hours in GroupSizeAndDurationFields:', availableHours);
+
   return (
     <div className="space-y-8 animate-fadeIn">
       <FormField
@@ -81,47 +83,63 @@ export const GroupSizeAndDurationFields = ({
         control={form.control}
         name="duration"
         rules={{ required: "La durée est requise" }}
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel className="text-lg font-medium">Durée de la session *</FormLabel>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
-              {durations.map((duration) => {
-                const isAvailable = parseInt(duration.value) <= availableHours;
-                return (
-                  <FormControl key={duration.value}>
-                    <Button
-                      type="button"
-                      variant={field.value === duration.value ? "default" : "outline"}
-                      className={cn(
-                        "w-full h-14 text-base gap-2 transition-all duration-200 relative",
-                        field.value === duration.value 
-                          ? "bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-100 scale-105" 
-                          : "hover:border-violet-300 hover:scale-105",
-                        !isAvailable && "opacity-50 cursor-not-allowed"
-                      )}
-                      onClick={() => {
-                        if (isAvailable) {
-                          field.onChange(duration.value);
-                          onDurationChange(duration.value);
-                        }
-                      }}
-                      disabled={!isAvailable}
-                    >
-                      <Clock className="w-5 h-5" />
-                      {duration.label}
-                      {duration.discount && isAvailable && (
-                        <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs font-bold rounded-full px-1.5 py-0.5 flex items-center gap-0.5">
-                          -10%
-                          <BadgePercent className="w-3 h-3" />
-                        </div>
-                      )}
-                    </Button>
-                  </FormControl>
-                );
-              })}
-            </div>
-          </FormItem>
-        )}
+        render={({ field }) => {
+          // Reset duration if current selection is no longer available
+          if (field.value && parseInt(field.value) > availableHours) {
+            field.onChange("");
+            onDurationChange("");
+          }
+
+          return (
+            <FormItem>
+              <FormLabel className="text-lg font-medium">Durée de la session *</FormLabel>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
+                {durations.map((duration) => {
+                  const isAvailable = parseInt(duration.value) <= availableHours;
+                  const isSelected = field.value === duration.value;
+
+                  // Si la durée n'est pas disponible et est sélectionnée, on désélectionne
+                  if (!isAvailable && isSelected) {
+                    field.onChange("");
+                    onDurationChange("");
+                  }
+
+                  return (
+                    <FormControl key={duration.value}>
+                      <Button
+                        type="button"
+                        variant={isSelected ? "default" : "outline"}
+                        className={cn(
+                          "w-full h-14 text-base gap-2 transition-all duration-200 relative",
+                          isSelected 
+                            ? "bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-100 scale-105" 
+                            : "hover:border-violet-300 hover:scale-105",
+                          !isAvailable && "opacity-50 cursor-not-allowed bg-gray-100 hover:bg-gray-100 hover:scale-100"
+                        )}
+                        onClick={() => {
+                          if (isAvailable) {
+                            field.onChange(duration.value);
+                            onDurationChange(duration.value);
+                          }
+                        }}
+                        disabled={!isAvailable}
+                      >
+                        <Clock className="w-5 h-5" />
+                        {duration.label}
+                        {duration.discount && isAvailable && (
+                          <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs font-bold rounded-full px-1.5 py-0.5 flex items-center gap-0.5">
+                            -10%
+                            <BadgePercent className="w-3 h-3" />
+                          </div>
+                        )}
+                      </Button>
+                    </FormControl>
+                  );
+                })}
+              </div>
+            </FormItem>
+          );
+        }}
       />
 
       {form.watch("groupSize") && form.watch("duration") && (

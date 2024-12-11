@@ -30,8 +30,12 @@ export function AuthModal({
     setIsLoading(true)
 
     try {
+      // Ensure clean state before authentication
       await supabase.auth.signOut();
-
+      
+      // Clear any existing session data
+      localStorage.removeItem('supabase.auth.token');
+      
       if (isLogin) {
         const { data, error } = await supabase.auth.signInWithPassword({
           email,

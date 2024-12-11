@@ -15,26 +15,40 @@ export const useUserState = () => {
 
     const initializeAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
+        if (sessionError) {
+          console.error("Session error:", sessionError);
+          await handleInvalidSession();
+          return;
+        }
+
         if (!session) {
           if (mounted) {
-            setUser(null);
-            setIsAdmin(false);
-            setSessionChecked(true);
+            resetState();
           }
           return;
         }
 
-        if (mounted) {
-          setUser(session.user);
-          setIsAdmin(session.user.email === "mendar.bouchali@gmail.com");
+        // Validate the session by attempting to get the user
+        const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser();
+        
+        if (userError) {
+          console.error("User fetch error:", userError);
+          if (userError.message.includes('session_not_found') || userError.status === 403) {
+            await handleInvalidSession();
+            return;
+          }
+        }
+
+        if (mounted && currentUser) {
+          console.log("Valid session found for user:", currentUser.email);
+          updateUserState(currentUser);
         }
       } catch (error) {
         console.error("Auth initialization error:", error);
         if (mounted) {
-          setUser(null);
-          setIsAdmin(false);
+          resetState();
           toast({
             title: "Erreur d'authentification",
             description: "Une erreur est survenue lors de l'initialisation",
@@ -49,6 +63,38 @@ export const useUserState = () => {
       }
     };
 
+    const handleInvalidSession = async () => {
+      console.log("Handling invalid session");
+      try {
+        await supabase.auth.signOut();
+      } catch (error) {
+        console.error("Error during sign out:", error);
+      }
+      
+      if (mounted) {
+        resetState();
+        toast({
+          title: "Session expirée",
+          description: "Votre session a expiré. Veuillez vous reconnecter.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    const resetState = () => {
+      setUser(null);
+      setIsAdmin(false);
+      setSessionChecked(true);
+      setIsLoading(false);
+    };
+
+    const updateUserState = (currentUser: User) => {
+      setUser(currentUser);
+      setIsAdmin(currentUser.email === "mendar.bouchali@gmail.com");
+      setSessionChecked(true);
+      setIsLoading(false);
+    };
+
     initializeAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -57,14 +103,10 @@ export const useUserState = () => {
         
         if (mounted) {
           if (event === 'SIGNED_OUT' || !session) {
-            setUser(null);
-            setIsAdmin(false);
+            resetState();
           } else if (session?.user) {
-            setUser(session.user);
-            setIsAdmin(session.user.email === "mendar.bouchali@gmail.com");
+            updateUserState(session.user);
           }
-          setIsLoading(false);
-          setSessionChecked(true);
         }
       }
     );

@@ -20,14 +20,23 @@ export const useUserState = () => {
         if (sessionError) {
           console.error("Session error:", sessionError);
           if (mounted) {
-            handleSessionError();
+            await handleSessionError();
           }
           return;
         }
 
         if (!session) {
           if (mounted) {
-            resetState();
+            await resetState();
+          }
+          return;
+        }
+
+        // Vérifier si la session est valide avant de récupérer l'utilisateur
+        if (!session.access_token || !session.refresh_token) {
+          console.log("Session tokens missing, resetting state");
+          if (mounted) {
+            await handleSessionError();
           }
           return;
         }
@@ -37,7 +46,7 @@ export const useUserState = () => {
         if (userError) {
           console.error("User validation error:", userError);
           if (mounted) {
-            handleSessionError();
+            await handleSessionError();
           }
           return;
         }
@@ -59,18 +68,26 @@ export const useUserState = () => {
       } catch (error) {
         console.error("Session check error:", error);
         if (mounted) {
-          handleSessionError();
+          await handleSessionError();
         }
       }
     };
 
     const handleSessionError = async () => {
       try {
-        await supabase.auth.signOut();
+        // Nettoyer d'abord le state
+        await resetState();
+        
+        // Ensuite tenter de se déconnecter proprement
+        try {
+          await supabase.auth.signOut();
+        } catch (signOutError) {
+          console.error("Error during sign out:", signOutError);
+        }
+
+        // Nettoyer le stockage local
         localStorage.clear();
         sessionStorage.clear();
-        
-        resetState();
         
         toast({
           title: "Session expirée",
@@ -79,26 +96,28 @@ export const useUserState = () => {
         });
       } catch (error) {
         console.error("Error handling session error:", error);
-        resetState();
+        await resetState();
       }
     };
 
-    const resetState = () => {
+    const resetState = async () => {
       setUser(null);
       setIsAdmin(false);
       setSessionChecked(true);
       setIsLoading(false);
     };
 
+    // Vérifier la session initiale
     checkSession();
 
+    // Mettre en place l'écouteur d'événements d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log("Auth state changed:", event, session?.user?.email);
         
         if (mounted) {
           if (event === 'SIGNED_OUT' || !session) {
-            resetState();
+            await resetState();
           } else if (session?.user) {
             const adminEmail = 'mendar.bouchali@gmail.com';
             const isUserAdmin = session.user.email === adminEmail;

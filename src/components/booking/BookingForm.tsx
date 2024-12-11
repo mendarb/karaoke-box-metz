@@ -81,12 +81,17 @@ export const BookingForm = () => {
       const isAvailable = await checkTimeSlotAvailability(data.date, data.timeSlot, duration);
       if (!isAvailable) {
         console.log('Time slot not available');
+        toast({
+          title: "Erreur",
+          description: "Ce créneau n'est plus disponible.",
+          variant: "destructive",
+        });
         return;
       }
 
       console.log('Creating checkout session...');
-      const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
-        body: JSON.stringify({
+      const response = await supabase.functions.invoke('create-checkout', {
+        body: {
           price: calculatedPrice,
           groupSize,
           duration,
@@ -96,15 +101,15 @@ export const BookingForm = () => {
           userEmail: data.email,
           userName: data.fullName,
           userPhone: data.phone,
-        })
+        }
       });
 
-      console.log('Checkout response:', { checkoutData, checkoutError });
+      console.log('Checkout response:', response);
 
-      if (checkoutError) throw checkoutError;
-      if (!checkoutData?.url) throw new Error("URL de paiement non reçue");
+      if (response.error) throw response.error;
+      if (!response.data?.url) throw new Error("URL de paiement non reçue");
 
-      window.location.href = checkoutData.url;
+      window.location.href = response.data.url;
       
     } catch (error: any) {
       console.error("Submission error:", error);

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
@@ -17,13 +17,16 @@ export const AdminDashboard = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { updateBookingStatus } = useBookingMutations();
-  const { isAdmin } = useUserState();
+  const { isAdmin, user } = useUserState();
 
-  const { data: bookings = [], isLoading, error } = useQuery({
-    queryKey: ['bookings'],
-    queryFn: async () => {
+  useEffect(() => {
+    const checkAdminAccess = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
+        console.log("Current session:", session);
+        console.log("Current user email:", session?.user?.email);
+        console.log("Is admin?", session?.user?.email === 'mendar.bouchali@gmail.com');
+
         if (!session) {
           console.log("No session found");
           toast({
@@ -32,10 +35,10 @@ export const AdminDashboard = () => {
             variant: "destructive",
           });
           navigate("/");
-          return [];
+          return;
         }
 
-        if (!isAdmin) {
+        if (session.user.email !== 'mendar.bouchali@gmail.com') {
           console.log("Unauthorized access attempt");
           toast({
             title: "Accès refusé",
@@ -43,6 +46,28 @@ export const AdminDashboard = () => {
             variant: "destructive",
           });
           navigate("/");
+          return;
+        }
+      } catch (error) {
+        console.error("Admin access check error:", error);
+        toast({
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la vérification des droits d'accès",
+          variant: "destructive",
+        });
+        navigate("/");
+      }
+    };
+
+    checkAdminAccess();
+  }, [navigate, toast]);
+
+  const { data: bookings = [], isLoading, error } = useQuery({
+    queryKey: ['bookings'],
+    queryFn: async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session || session.user.email !== 'mendar.bouchali@gmail.com') {
           return [];
         }
 
@@ -66,16 +91,8 @@ export const AdminDashboard = () => {
         return [];
       }
     },
-    retry: false,
-    refetchOnWindowFocus: true,
-    refetchOnMount: true,
-    refetchInterval: 30000,
+    enabled: !!user && isAdmin,
   });
-
-  if (!isAdmin) {
-    navigate("/");
-    return null;
-  }
 
   if (error) {
     console.error('Query error:', error);

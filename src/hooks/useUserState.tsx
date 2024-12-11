@@ -32,7 +32,6 @@ export const useUserState = () => {
           return;
         }
 
-        // Validate user session
         const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser();
         
         if (userError) {
@@ -44,10 +43,13 @@ export const useUserState = () => {
         }
 
         if (mounted && currentUser) {
-          console.log("Current user email:", currentUser.email); // Debug log
           const adminEmail = 'mendar.bouchali@gmail.com';
           const isUserAdmin = currentUser.email === adminEmail;
-          console.log("Is user admin?", isUserAdmin); // Debug log
+          console.log("Current user:", {
+            email: currentUser.email,
+            isAdmin: isUserAdmin,
+            sessionId: session.access_token
+          });
           
           setUser(currentUser);
           setIsAdmin(isUserAdmin);
@@ -88,10 +90,8 @@ export const useUserState = () => {
       setIsLoading(false);
     };
 
-    // Initial session check
     checkSession();
 
-    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log("Auth state changed:", event, session?.user?.email);
@@ -102,7 +102,11 @@ export const useUserState = () => {
           } else if (session?.user) {
             const adminEmail = 'mendar.bouchali@gmail.com';
             const isUserAdmin = session.user.email === adminEmail;
-            console.log("Auth change - Is user admin?", isUserAdmin); // Debug log
+            console.log("Auth change - User state:", {
+              email: session.user.email,
+              isAdmin: isUserAdmin,
+              event: event
+            });
             
             setUser(session.user);
             setIsAdmin(isUserAdmin);

@@ -1,95 +1,40 @@
-import { useState, useEffect } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { useNavigate } from "react-router-dom";
 import { BookingsTable } from "./BookingsTable";
 import { BookingDetailsDialog } from "./BookingDetailsDialog";
-import { useQuery } from "@tanstack/react-query";
 import { DashboardStats } from "./DashboardStats";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { Booking } from "@/hooks/useBookings";
 import { useBookingMutations } from "@/hooks/useBookingMutations";
 import { useUserState } from "@/hooks/useUserState";
+import { useAdminCheck } from "@/hooks/useAdminCheck";
+import { AdminLoadingState } from "./AdminLoadingState";
 
 export const AdminDashboard = () => {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const { toast } = useToast();
-  const navigate = useNavigate();
   const { updateBookingStatus } = useBookingMutations();
   const { isAdmin, user } = useUserState();
-
-  useEffect(() => {
-    const checkAdminAccess = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        console.log("Current session:", session);
-        console.log("Current user email:", session?.user?.email);
-        console.log("Is admin?", session?.user?.email === 'mendar.bouchali@gmail.com');
-
-        if (!session) {
-          console.log("No session found");
-          toast({
-            title: "Session expirée",
-            description: "Veuillez vous reconnecter",
-            variant: "destructive",
-          });
-          navigate("/");
-          return;
-        }
-
-        if (session.user.email !== 'mendar.bouchali@gmail.com') {
-          console.log("Unauthorized access attempt");
-          toast({
-            title: "Accès refusé",
-            description: "Vous n'avez pas les droits d'accès à cette page.",
-            variant: "destructive",
-          });
-          navigate("/");
-          return;
-        }
-      } catch (error) {
-        console.error("Admin access check error:", error);
-        toast({
-          title: "Erreur",
-          description: "Une erreur est survenue lors de la vérification des droits d'accès",
-          variant: "destructive",
-        });
-        navigate("/");
-      }
-    };
-
-    checkAdminAccess();
-  }, [navigate, toast]);
+  
+  // Vérifie les droits d'accès admin
+  useAdminCheck();
 
   const { data: bookings = [], isLoading, error } = useQuery({
     queryKey: ['bookings'],
     queryFn: async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session || session.user.email !== 'mendar.bouchali@gmail.com') {
-          return [];
-        }
-
-        const { data, error } = await supabase
-          .from('bookings')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (error) {
-          throw error;
-        }
-
-        return data || [];
-      } catch (error) {
-        console.error('Error in query function:', error);
-        toast({
-          title: "Erreur",
-          description: "Impossible de charger les réservations",
-          variant: "destructive",
-        });
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user?.email || session.user.email !== 'mendar.bouchali@gmail.com') {
         return [];
       }
+
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
     },
     enabled: !!user && isAdmin,
   });
@@ -99,11 +44,7 @@ export const AdminDashboard = () => {
   }
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
-      </div>
-    );
+    return <AdminLoadingState />;
   }
 
   return (

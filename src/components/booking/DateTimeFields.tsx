@@ -28,38 +28,36 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
     const timeSlot = form.watch("timeSlot");
     if (selectedDate && timeSlot && availableSlots.length > 0) {
       const slotIndex = availableSlots.indexOf(timeSlot);
-      let availableHours = 0;
       
       // Vérifier si c'est le dernier créneau de la journée
       const isLastSlot = slotIndex === availableSlots.length - 1;
       
       if (isLastSlot) {
         // Si c'est le dernier créneau, on ne peut réserver que pour 1h
-        availableHours = 1;
         console.log('Dernier créneau sélectionné, limitation à 1h');
-      } else {
-        // Sinon, on compte les créneaux consécutifs disponibles
-        // en commençant par 1 pour le créneau actuel
-        availableHours = 1;
-        
-        // On vérifie les créneaux suivants
-        for (let i = slotIndex + 1; i < availableSlots.length && availableHours < 4; i++) {
-          const currentSlot = availableSlots[i - 1];
-          const nextSlot = availableSlots[i];
-          
-          const currentHour = parseInt(currentSlot.split(':')[0]);
-          const nextHour = parseInt(nextSlot.split(':')[0]);
-          
-          if (nextHour - currentHour === 1 && !bookedSlots[nextSlot]) {
-            availableHours++;
-          } else {
-            break;
-          }
+        onAvailabilityChange(selectedDate, 1);
+        return;
+      }
+
+      // Pour les autres créneaux, calculer les heures disponibles
+      let consecutiveHours = 1;
+      const currentHour = parseInt(timeSlot.split(':')[0]);
+
+      // Vérifier les créneaux suivants
+      for (let i = slotIndex + 1; i < availableSlots.length && consecutiveHours < 4; i++) {
+        const nextSlot = availableSlots[i];
+        const nextHour = parseInt(nextSlot.split(':')[0]);
+
+        // Vérifier si le créneau suivant est consécutif
+        if (nextHour === currentHour + consecutiveHours) {
+          consecutiveHours++;
+        } else {
+          break;
         }
       }
-      
-      console.log('Available hours for slot', timeSlot, ':', availableHours);
-      onAvailabilityChange(selectedDate, availableHours);
+
+      console.log('Heures consécutives disponibles:', consecutiveHours);
+      onAvailabilityChange(selectedDate, consecutiveHours);
     }
   };
 

@@ -1,17 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
-import { User } from "@supabase/supabase-js";
 import { useToast } from "@/components/ui/use-toast";
 import { Link } from "react-router-dom";
 import { AuthModal } from "@/components/auth/AuthModal";
-import { Menu, X, Home, Calendar, User as UserIcon } from "lucide-react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Home, Calendar, User as UserIcon } from "lucide-react";
 import { useUserState } from "@/hooks/useUserState";
 
 export const Navbar = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { toast } = useToast();
   const { user, isAdmin } = useUserState();
 
@@ -24,7 +21,6 @@ export const Navbar = () => {
         title: "Déconnexion réussie",
         description: "À bientôt !",
       });
-      setIsMenuOpen(false);
     } catch (error: any) {
       console.error("Sign out error:", error);
       toast({
@@ -37,12 +33,21 @@ export const Navbar = () => {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-2 px-4 md:relative md:border-t-0 md:border-b md:py-4">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-2 px-4 md:relative md:border-t-0 md:border-b md:py-4 z-50">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center">
-            {/* Logo - visible on all screens */}
-            <Link to="/" className="text-xl font-bold text-violet-600 hover:text-violet-700 md:flex-1">
-              Karaoké Box
+            {/* Logo - different versions for mobile and desktop */}
+            <Link to="/" className="flex-1">
+              <div className="hidden md:block text-xl font-bold text-violet-600 hover:text-violet-700">
+                Karaoké Box
+              </div>
+              <div className="md:hidden">
+                <img 
+                  src="/lovable-uploads/d45fd1b9-de1b-40a3-ae6b-4072948883a6.png" 
+                  alt="Karaoké Box" 
+                  className="h-8 w-8"
+                />
+              </div>
             </Link>
 
             {/* Mobile Navigation */}

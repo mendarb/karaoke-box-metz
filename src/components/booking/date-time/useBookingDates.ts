@@ -6,7 +6,6 @@ export const useBookingDates = () => {
   const { data: settings } = useQuery({
     queryKey: ['booking-settings'],
     queryFn: async () => {
-      console.log('Fetching booking settings');
       const { data, error } = await supabase
         .from('booking_settings')
         .select('*');
@@ -15,8 +14,6 @@ export const useBookingDates = () => {
         console.error('Error fetching settings:', error);
         throw error;
       }
-
-      console.log('Raw settings data:', data);
 
       const formattedSettings = {
         bookingWindow: { startDays: 0, endDays: 30 },
@@ -34,23 +31,15 @@ export const useBookingDates = () => {
       };
 
       data?.forEach(setting => {
-        console.log('Processing setting:', setting.key, setting.value);
         switch (setting.key) {
           case 'booking_window':
-            if (setting.value) {
-              formattedSettings.bookingWindow = setting.value;
-            }
+            if (setting.value) formattedSettings.bookingWindow = setting.value;
             break;
           case 'opening_hours':
-            if (setting.value) {
-              formattedSettings.openingHours = setting.value;
-              console.log('Updated opening hours:', setting.value);
-            }
+            if (setting.value) formattedSettings.openingHours = setting.value;
             break;
           case 'excluded_days':
-            if (setting.value) {
-              formattedSettings.excludedDays = setting.value;
-            }
+            if (setting.value) formattedSettings.excludedDays = setting.value;
             break;
           case 'is_test_mode':
             formattedSettings.isTestMode = setting.value === true;
@@ -58,11 +47,8 @@ export const useBookingDates = () => {
         }
       });
 
-      console.log('Formatted settings:', formattedSettings);
       return formattedSettings;
     },
-    refetchOnWindowFocus: true,
-    refetchInterval: 5000
   });
 
   const today = startOfDay(new Date());
@@ -79,36 +65,28 @@ export const useBookingDates = () => {
     if (settings?.isTestMode) return false;
     
     const dateToCheck = startOfDay(date);
-
-    if (isBefore(dateToCheck, today)) {
-      console.log('Date is in the past:', dateToCheck);
-      return true;
-    }
-    
-    const isExcluded = settings.excludedDays.some(excludedTimestamp => {
+    return isBefore(dateToCheck, today) || settings.excludedDays.some(excludedTimestamp => {
       const excludedDate = startOfDay(new Date(excludedTimestamp));
       return dateToCheck.getTime() === excludedDate.getTime();
     });
-
-    return isExcluded;
   };
 
   const getAvailableHoursForSlot = async (date: Date, timeSlot: string) => {
     const daySettings = settings?.openingHours?.[date.getDay().toString()];
     if (!daySettings?.slots) return 0;
 
-    const slotIndex = daySettings.slots.indexOf(timeSlot);
+    const slots = daySettings.slots;
+    const slotIndex = slots.indexOf(timeSlot);
     if (slotIndex === -1) return 0;
 
     // Si c'est le dernier créneau, on ne permet qu'une heure
-    if (slotIndex === daySettings.slots.length - 1) {
+    if (slotIndex === slots.length - 1) {
       console.log('Last slot of the day, limiting to 1 hour');
       return 1;
     }
 
-    // Pour les autres créneaux, on calcule combien d'heures sont disponibles
-    // en fonction de la position du créneau
-    const remainingSlots = daySettings.slots.length - slotIndex - 1;
+    // Pour les autres créneaux, calculer les heures disponibles en fonction de la position
+    const remainingSlots = slots.length - slotIndex - 1;
     const maxPossibleHours = Math.min(4, remainingSlots + 1);
 
     // Vérifier les réservations existantes
@@ -135,33 +113,19 @@ export const useBookingDates = () => {
       return availableHours;
     }
 
-    console.log(`No blocking bookings found, ${maxPossibleHours} hours available`);
     return maxPossibleHours;
   };
 
   const getAvailableSlots = async (date: Date) => {
-    console.log('Getting slots for date:', date);
-    console.log('Opening hours settings:', settings?.openingHours);
-    
-    if (!settings?.openingHours) {
-      console.log('No opening hours settings found');
-      return [];
-    }
+    if (!settings?.openingHours) return [];
 
     const dayOfWeek = date.getDay().toString();
-    console.log('Day of week:', dayOfWeek);
-    
     const daySettings = settings.openingHours[dayOfWeek];
-    console.log('Day settings:', daySettings);
 
-    if (!settings.isTestMode && !daySettings?.isOpen) {
-      console.log('Day is closed and not in test mode');
-      return [];
-    }
+    if (!settings.isTestMode && !daySettings?.isOpen) return [];
 
     const slots = daySettings?.slots || [];
-    console.log('Available slots before filtering:', slots);
-
+    
     // Filter slots that have at least 1 hour available
     const availableSlots = await Promise.all(
       slots.map(async (slot) => {
@@ -170,12 +134,9 @@ export const useBookingDates = () => {
       })
     );
 
-    const filteredSlots = availableSlots
+    return availableSlots
       .filter(({ availableHours }) => availableHours >= 1)
       .map(({ slot }) => slot);
-
-    console.log('Filtered available slots:', filteredSlots);
-    return filteredSlots;
   };
 
   return {

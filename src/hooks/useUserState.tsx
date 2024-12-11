@@ -44,24 +44,26 @@ export const useUserState = () => {
         }
 
         if (mounted && currentUser) {
-          updateUserState(currentUser);
+          console.log("Current user email:", currentUser.email); // Debug log
+          const adminEmail = 'mendar.bouchali@gmail.com';
+          const isUserAdmin = currentUser.email === adminEmail;
+          console.log("Is user admin?", isUserAdmin); // Debug log
+          
+          setUser(currentUser);
+          setIsAdmin(isUserAdmin);
+          setSessionChecked(true);
+          setIsLoading(false);
         }
       } catch (error) {
         console.error("Session check error:", error);
         if (mounted) {
           handleSessionError();
         }
-      } finally {
-        if (mounted) {
-          setIsLoading(false);
-          setSessionChecked(true);
-        }
       }
     };
 
     const handleSessionError = async () => {
       try {
-        // Clear all session data
         await supabase.auth.signOut();
         localStorage.clear();
         sessionStorage.clear();
@@ -86,13 +88,6 @@ export const useUserState = () => {
       setIsLoading(false);
     };
 
-    const updateUserState = (currentUser: User) => {
-      setUser(currentUser);
-      setIsAdmin(currentUser.email === "mendar.bouchali@gmail.com");
-      setSessionChecked(true);
-      setIsLoading(false);
-    };
-
     // Initial session check
     checkSession();
 
@@ -105,7 +100,14 @@ export const useUserState = () => {
           if (event === 'SIGNED_OUT' || !session) {
             resetState();
           } else if (session?.user) {
-            updateUserState(session.user);
+            const adminEmail = 'mendar.bouchali@gmail.com';
+            const isUserAdmin = session.user.email === adminEmail;
+            console.log("Auth change - Is user admin?", isUserAdmin); // Debug log
+            
+            setUser(session.user);
+            setIsAdmin(isUserAdmin);
+            setSessionChecked(true);
+            setIsLoading(false);
           }
         }
       }

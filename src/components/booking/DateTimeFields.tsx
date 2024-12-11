@@ -21,44 +21,44 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
     setSelectedDate(date);
     const slots = await getAvailableSlots(date);
     setAvailableSlots(slots);
+    console.log('Available slots updated:', slots);
   };
 
-  // Mettre à jour les heures disponibles quand le créneau change
   const handleTimeSlotChange = () => {
     const timeSlot = form.watch("timeSlot");
-    if (selectedDate && timeSlot && availableSlots.length > 0) {
-      const slotIndex = availableSlots.indexOf(timeSlot);
-      
-      // Vérifier si c'est le dernier créneau de la journée
-      const isLastSlot = slotIndex === availableSlots.length - 1;
-      
-      if (isLastSlot) {
-        // Si c'est le dernier créneau, on ne peut réserver que pour 1h
-        console.log('Dernier créneau sélectionné, limitation à 1h');
-        onAvailabilityChange(selectedDate, 1);
-        return;
-      }
+    if (!selectedDate || !timeSlot || availableSlots.length === 0) return;
 
-      // Pour les autres créneaux, calculer les heures disponibles
-      let consecutiveHours = 1;
-      const currentHour = parseInt(timeSlot.split(':')[0]);
+    const slotIndex = availableSlots.indexOf(timeSlot);
+    if (slotIndex === -1) return;
 
-      // Vérifier les créneaux suivants
-      for (let i = slotIndex + 1; i < availableSlots.length && consecutiveHours < 4; i++) {
-        const nextSlot = availableSlots[i];
-        const nextHour = parseInt(nextSlot.split(':')[0]);
-
-        // Vérifier si le créneau suivant est consécutif
-        if (nextHour === currentHour + consecutiveHours) {
-          consecutiveHours++;
-        } else {
-          break;
-        }
-      }
-
-      console.log('Heures consécutives disponibles:', consecutiveHours);
-      onAvailabilityChange(selectedDate, consecutiveHours);
+    // Vérifier si c'est le dernier créneau disponible de la journée
+    const isLastSlot = slotIndex === availableSlots.length - 1;
+    
+    if (isLastSlot) {
+      console.log('Dernier créneau sélectionné (21h), limitation à 1h');
+      onAvailabilityChange(selectedDate, 1);
+      return;
     }
+
+    // Pour les autres créneaux, calculer les heures disponibles
+    const currentHour = parseInt(timeSlot.split(':')[0]);
+    let availableHours = 1;
+
+    // Vérifier les créneaux suivants
+    for (let i = slotIndex + 1; i < availableSlots.length && availableHours < 4; i++) {
+      const nextSlot = availableSlots[i];
+      const nextHour = parseInt(nextSlot.split(':')[0]);
+
+      // Vérifier si le créneau suivant est consécutif
+      if (nextHour === currentHour + availableHours) {
+        availableHours++;
+      } else {
+        break;
+      }
+    }
+
+    console.log(`Heures disponibles pour ${timeSlot}:`, availableHours);
+    onAvailabilityChange(selectedDate, availableHours);
   };
 
   // Surveiller les changements de créneau horaire

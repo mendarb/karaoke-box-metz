@@ -4,6 +4,7 @@ import { AuthModal } from "@/components/auth/AuthModal";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
 import { useToast } from "@/components/ui/use-toast";
+import { Link } from "react-router-dom";
 
 export const Navbar = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -38,7 +39,6 @@ export const Navbar = () => {
       
       if (error) {
         if (error.message.includes("session_not_found")) {
-          // Si la session est déjà invalide, on nettoie juste l'état local
           setUser(null);
           setShowAuthModal(true);
         } else {
@@ -50,7 +50,6 @@ export const Navbar = () => {
       }
     } catch (error: any) {
       console.error("Sign out error:", error);
-      // En cas d'erreur, on force la déconnexion locale
       setUser(null);
       setShowAuthModal(true);
       toast({
@@ -68,11 +67,18 @@ export const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <span className="text-xl font-bold text-violet-600">
+            <Link to="/" className="text-xl font-bold text-violet-600">
               Karaoké Box
-            </span>
+            </Link>
           </div>
           <div className="flex items-center space-x-4">
+            {user && (
+              <Link to="/bookings">
+                <Button variant="ghost">
+                  Mes réservations
+                </Button>
+              </Link>
+            )}
             {user ? (
               <Button
                 variant="outline"

@@ -13,15 +13,14 @@ export const useUserState = () => {
   useEffect(() => {
     let mounted = true;
 
-    const initializeAuth = async () => {
+    const checkSession = async () => {
       try {
-        // Get initial session state
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
           console.error("Session error:", sessionError);
           if (mounted) {
-            resetState();
+            handleSessionError();
           }
           return;
         }
@@ -33,14 +32,50 @@ export const useUserState = () => {
           return;
         }
 
-        if (mounted) {
-          updateUserState(session.user);
+        // Validate user session
+        const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser();
+        
+        if (userError) {
+          console.error("User validation error:", userError);
+          if (mounted) {
+            handleSessionError();
+          }
+          return;
+        }
+
+        if (mounted && currentUser) {
+          updateUserState(currentUser);
         }
       } catch (error) {
-        console.error("Auth initialization error:", error);
+        console.error("Session check error:", error);
         if (mounted) {
-          resetState();
+          handleSessionError();
         }
+      } finally {
+        if (mounted) {
+          setIsLoading(false);
+          setSessionChecked(true);
+        }
+      }
+    };
+
+    const handleSessionError = async () => {
+      try {
+        // Clear all session data
+        await supabase.auth.signOut();
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        resetState();
+        
+        toast({
+          title: "Session expirée",
+          description: "Veuillez vous reconnecter",
+          variant: "destructive",
+        });
+      } catch (error) {
+        console.error("Error handling session error:", error);
+        resetState();
       }
     };
 
@@ -58,10 +93,10 @@ export const useUserState = () => {
       setIsLoading(false);
     };
 
-    // Initialize auth state
-    initializeAuth();
+    // Initial session check
+    checkSession();
 
-    // Listen for auth changes
+    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log("Auth state changed:", event, session?.user?.email);

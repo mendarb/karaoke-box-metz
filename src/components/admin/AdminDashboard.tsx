@@ -17,30 +17,48 @@ export const AdminDashboard = () => {
   const { updateBookingStatus } = useBookingMutations();
   const { isAdmin, user } = useUserState();
   
-  // Vérifie les droits d'accès admin
   useAdminCheck();
 
   const { data: bookings = [], isLoading, error } = useQuery({
     queryKey: ['bookings'],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user?.email || session.user.email !== 'mendar.bouchali@gmail.com') {
-        return [];
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log("Current session:", session);
+        
+        if (!session?.user?.email) {
+          console.log("No session or email found");
+          return [];
+        }
+
+        const { data, error: fetchError } = await supabase
+          .from('bookings')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (fetchError) {
+          console.error('Fetch error:', fetchError);
+          throw fetchError;
+        }
+
+        console.log("Fetched bookings:", data);
+        return data || [];
+      } catch (err) {
+        console.error('Query error:', err);
+        throw err;
       }
-
-      const { data, error } = await supabase
-        .from('bookings')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data || [];
     },
     enabled: !!user && isAdmin,
   });
 
   if (error) {
     console.error('Query error:', error);
+    return (
+      <div className="p-6">
+        <h1>Erreur de chargement</h1>
+        <p>Une erreur est survenue lors du chargement des données.</p>
+      </div>
+    );
   }
 
   if (isLoading) {

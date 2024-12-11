@@ -31,50 +31,40 @@ export function AuthModal({
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         })
 
         if (error) {
-          console.log("Auth error:", error)
-          if (error.message.includes("Email not confirmed")) {
-            toast({
-              title: "Email non confirmé",
-              description: "Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte de réception.",
-              variant: "destructive",
-            })
-          } else if (error.message === "Invalid login credentials") {
-            toast({
-              title: "Erreur",
-              description: "Email ou mot de passe incorrect",
-              variant: "destructive",
-            })
-          } else {
-            toast({
-              title: "Erreur",
-              description: error.message,
-              variant: "destructive",
-            })
-          }
+          console.error("Auth error:", error)
+          toast({
+            title: "Erreur de connexion",
+            description: error.message === "Invalid login credentials" 
+              ? "Email ou mot de passe incorrect"
+              : error.message,
+            variant: "destructive",
+          })
           return
         }
 
-        toast({
-          title: "Connexion réussie",
-          description: "Vous êtes maintenant connecté",
-        })
-        onClose()
+        if (data.user) {
+          console.log("Connexion réussie pour:", data.user.email)
+          toast({
+            title: "Connexion réussie",
+            description: "Vous êtes maintenant connecté",
+          })
+          onClose()
+        }
       } else {
         const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            emailRedirectTo: window.location.origin.includes('localhost') 
-              ? 'https://lxkaosgjtqonrnlivzev.supabase.co' 
-              : window.location.origin,
+            emailRedirectTo: window.location.origin,
           },
         })
+
         if (error) {
           toast({
             title: "Erreur",
@@ -83,9 +73,10 @@ export function AuthModal({
           })
           return
         }
+
         toast({
           title: "Inscription réussie",
-          description: "Vérifiez votre email pour confirmer votre compte. Un email vous a été envoyé.",
+          description: "Vérifiez votre email pour confirmer votre compte",
         })
         onClose()
       }

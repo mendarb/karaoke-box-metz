@@ -10,12 +10,14 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/componen
 import { DashboardSidebar } from "./DashboardSidebar";
 import { Booking } from "@/hooks/useBookings";
 import { useBookingMutations } from "@/hooks/useBookingMutations";
+import { useUserState } from "@/hooks/useUserState";
 
 export const AdminDashboard = () => {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { updateBookingStatus } = useBookingMutations();
+  const { isAdmin } = useUserState();
 
   const { data: bookings = [], isLoading, error } = useQuery({
     queryKey: ['bookings'],
@@ -33,9 +35,8 @@ export const AdminDashboard = () => {
           return [];
         }
 
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user || user.email !== "mendar.bouchali@gmail.com") {
-          console.log("Unauthorized access attempt:", user?.email);
+        if (!isAdmin) {
+          console.log("Unauthorized access attempt");
           toast({
             title: "Accès refusé",
             description: "Vous n'avez pas les droits d'accès à cette page.",
@@ -70,6 +71,11 @@ export const AdminDashboard = () => {
     refetchOnMount: true,
     refetchInterval: 30000,
   });
+
+  if (!isAdmin) {
+    navigate("/");
+    return null;
+  }
 
   if (error) {
     console.error('Query error:', error);

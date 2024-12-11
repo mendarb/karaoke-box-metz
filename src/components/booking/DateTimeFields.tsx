@@ -30,20 +30,30 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
       const slotIndex = availableSlots.indexOf(timeSlot);
       let availableHours = 0;
       
-      for (let i = slotIndex; i < availableSlots.length - 1; i++) {
-        const currentSlot = availableSlots[i];
-        const nextSlot = availableSlots[i + 1];
-        
-        const currentHour = parseInt(currentSlot.split(':')[0]);
-        const nextHour = parseInt(nextSlot.split(':')[0]);
-        
-        if (nextHour - currentHour === 1 && !bookedSlots[nextSlot]) {
-          availableHours++;
-        } else {
-          break;
+      // Vérifier si c'est le dernier créneau de la journée
+      const isLastSlot = slotIndex === availableSlots.length - 1;
+      
+      if (isLastSlot) {
+        // Si c'est le dernier créneau, on ne peut réserver que pour 1h
+        availableHours = 1;
+      } else {
+        // Sinon, on compte les créneaux consécutifs disponibles
+        for (let i = slotIndex; i < availableSlots.length - 1; i++) {
+          const currentSlot = availableSlots[i];
+          const nextSlot = availableSlots[i + 1];
+          
+          const currentHour = parseInt(currentSlot.split(':')[0]);
+          const nextHour = parseInt(nextSlot.split(':')[0]);
+          
+          if (nextHour - currentHour === 1 && !bookedSlots[nextSlot]) {
+            availableHours++;
+          } else {
+            break;
+          }
         }
       }
       
+      console.log('Available hours for slot', timeSlot, ':', availableHours);
       onAvailabilityChange(selectedDate, availableHours);
     }
   };

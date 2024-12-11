@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Calendar } from "@/components/ui/calendar";
 import { UseFormReturn } from "react-hook-form";
-import { format, startOfDay, isEqual } from "date-fns";
+import { format, startOfDay, isEqual, isBefore } from "date-fns";
 import { fr } from "date-fns/locale";
 import { TimeSlots } from "./date-time/TimeSlots";
 import { useBookingDates } from "./date-time/useBookingDates";
@@ -75,7 +75,9 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
         let currentDate = startOfDay(new Date(today));
         
         while (currentDate <= endDate) {
+          // Vérifier si la date est dans le passé
           if (
+            isBefore(currentDate, today) || 
             currentDate < minDate || 
             currentDate > maxDate ||
             isDayExcluded(currentDate)
@@ -112,6 +114,11 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
                 if (date) {
                   console.log('Date selected:', date);
                   const normalizedDate = startOfDay(date);
+                  // Vérifier si la date est dans le passé
+                  if (isBefore(normalizedDate, startOfDay(new Date()))) {
+                    console.log('Date is in the past, not allowing selection');
+                    return;
+                  }
                   field.onChange(normalizedDate);
                   setSelectedDate(normalizedDate);
                   await updateAvailableSlots(normalizedDate);

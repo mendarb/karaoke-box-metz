@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { AuthModal } from "@/components/auth/AuthModal";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
 import { useToast } from "@/components/ui/use-toast";
@@ -9,56 +8,41 @@ import { Link } from "react-router-dom";
 export const Navbar = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
+  const fetchUser = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    setUser(session?.user || null);
+  };
+
   useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        setUser(session?.user ?? null);
-      } catch (error) {
-        console.error("Session check error:", error);
-        setUser(null);
-      }
-    };
-
-    checkSession();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
+    fetchUser();
   }, []);
 
   const handleSignOut = async () => {
     try {
-      setIsLoading(true);
       const { error } = await supabase.auth.signOut();
-      
       if (error) {
         if (error.message.includes("session_not_found")) {
           setUser(null);
           setShowAuthModal(true);
         } else {
-          throw error;
+          toast({
+            title: "Erreur",
+            description: "Une erreur est survenue lors de la déconnexion.",
+            variant: "destructive",
+          });
         }
-      } else {
-        setUser(null);
-        setShowAuthModal(true);
       }
     } catch (error: any) {
       console.error("Sign out error:", error);
       setUser(null);
       setShowAuthModal(true);
       toast({
-        title: "Note",
-        description: "Vous avez été déconnecté",
-        variant: "default",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la déconnexion.",
+        variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -67,13 +51,13 @@ export const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <Link to="/" className="text-xl font-bold text-violet-600">
+            <Link to="/" className="text-xl font-bold text-violet-600 hover:text-violet-700">
               Karaoké Box
             </Link>
           </div>
           <div className="flex items-center space-x-4">
             {user && (
-              <Link to="/bookings">
+              <Link to="/my-bookings" className="text-gray-600 hover:text-violet-600">
                 <Button variant="ghost">
                   Mes réservations
                 </Button>
@@ -83,13 +67,15 @@ export const Navbar = () => {
               <Button
                 variant="outline"
                 onClick={handleSignOut}
-                disabled={isLoading}
+                className="border-violet-200 hover:bg-violet-50"
               >
-                {isLoading ? "Déconnexion..." : "Se déconnecter"}
+                Se déconnecter
               </Button>
             ) : (
               <Button
+                variant="outline"
                 onClick={() => setShowAuthModal(true)}
+                className="border-violet-200 hover:bg-violet-50"
               >
                 Se connecter
               </Button>
@@ -97,10 +83,6 @@ export const Navbar = () => {
           </div>
         </div>
       </div>
-      <AuthModal 
-        isOpen={showAuthModal} 
-        onClose={() => setShowAuthModal(false)} 
-      />
     </nav>
   );
 };

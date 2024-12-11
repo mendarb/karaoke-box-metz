@@ -22,6 +22,7 @@ import { BookingActions } from "./BookingActions";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Booking } from "@/hooks/useBookings";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface BookingsTableProps {
   data: Booking[];
@@ -37,6 +38,7 @@ export const BookingsTable = ({
   isLoading = false 
 }: BookingsTableProps) => {
   const [sorting, setSorting] = useState<SortingState>([]);
+  const isMobile = useIsMobile();
 
   const columns: ColumnDef<Booking>[] = [
     {
@@ -108,7 +110,7 @@ export const BookingsTable = ({
             size="sm"
             onClick={() => onViewDetails(row.original)}
           >
-            Détails
+            {isMobile ? "Voir" : "Détails"}
           </Button>
           <BookingActions
             bookingId={row.original.id}
@@ -119,9 +121,14 @@ export const BookingsTable = ({
     },
   ];
 
+  // Si on est sur mobile, on réduit les colonnes affichées
+  const mobileColumns = columns.filter(col => 
+    ["date", "user_name", "status", "actions"].includes(col.accessorKey as string || col.id || "")
+  );
+
   const table = useReactTable({
     data: data || [],
-    columns,
+    columns: isMobile ? mobileColumns : columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     onSortingChange: setSorting,
@@ -142,47 +149,52 @@ export const BookingsTable = ({
 
   return (
     <div className="rounded-md border bg-white">
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <TableHead key={header.id}>
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                </TableHead>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && "selected"}
-                className="hover:bg-muted/50 transition-colors"
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
+      <div className="w-full overflow-x-auto">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
                 ))}
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
-                Aucune réservation
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                  className="hover:bg-muted/50 transition-colors"
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell 
+                  colSpan={isMobile ? mobileColumns.length : columns.length} 
+                  className="h-24 text-center"
+                >
+                  Aucune réservation
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 };

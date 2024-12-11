@@ -11,11 +11,16 @@ import { useBookingMutations } from "@/hooks/useBookingMutations";
 import { useUserState } from "@/hooks/useUserState";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { AdminLoadingState } from "./AdminLoadingState";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Menu } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export const AdminDashboard = () => {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const { updateBookingStatus } = useBookingMutations();
   const { isAdmin, user } = useUserState();
+  const isMobile = useIsMobile();
   
   useAdminCheck();
 
@@ -65,6 +70,52 @@ export const AdminDashboard = () => {
     return <AdminLoadingState />;
   }
 
+  const renderContent = () => (
+    <div className="p-4 md:p-6">
+      <h1 className="text-2xl font-bold mb-6">Tableau de bord administrateur</h1>
+      <div className="mb-8">
+        <DashboardStats bookings={bookings} />
+      </div>
+      <div className="bg-white rounded-lg shadow-lg p-2 md:p-6 overflow-x-auto">
+        <BookingsTable
+          data={bookings}
+          onStatusChange={updateBookingStatus}
+          onViewDetails={setSelectedBooking}
+          isLoading={isLoading}
+        />
+      </div>
+    </div>
+  );
+
+  if (isMobile) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="flex items-center border-b p-4">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="icon">
+                <Menu className="h-4 w-4" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="p-0">
+              <DashboardSidebar />
+            </SheetContent>
+          </Sheet>
+        </div>
+
+        {renderContent()}
+
+        {selectedBooking && (
+          <BookingDetailsDialog
+            isOpen={!!selectedBooking}
+            onClose={() => setSelectedBooking(null)}
+            booking={selectedBooking}
+          />
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <ResizablePanelGroup direction="horizontal">
@@ -73,20 +124,7 @@ export const AdminDashboard = () => {
         </ResizablePanel>
         <ResizableHandle />
         <ResizablePanel defaultSize={80}>
-          <div className="p-6">
-            <h1 className="text-2xl font-bold mb-6">Tableau de bord administrateur</h1>
-            <div className="mb-8">
-              <DashboardStats bookings={bookings} />
-            </div>
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <BookingsTable
-                data={bookings}
-                onStatusChange={updateBookingStatus}
-                onViewDetails={setSelectedBooking}
-                isLoading={isLoading}
-              />
-            </div>
-          </div>
+          {renderContent()}
         </ResizablePanel>
       </ResizablePanelGroup>
 

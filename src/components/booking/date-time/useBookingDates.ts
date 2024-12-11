@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { addDays, startOfDay, endOfDay, parse, addHours } from "date-fns";
+import { addDays, startOfDay, endOfDay, parse, addHours, isBefore } from "date-fns";
 
 export const useBookingDates = () => {
   const { data: settings } = useQuery({
@@ -65,13 +65,15 @@ export const useBookingDates = () => {
     refetchInterval: 5000
   });
 
+  // On s'assure que la date minimale est toujours aujourd'hui ou plus tard
+  const today = startOfDay(new Date());
   const minDate = settings?.isTestMode 
-    ? startOfDay(new Date()) 
-    : startOfDay(addDays(new Date(), settings?.bookingWindow?.startDays || 0));
+    ? today
+    : startOfDay(addDays(today, settings?.bookingWindow?.startDays || 0));
     
   const maxDate = settings?.isTestMode
-    ? endOfDay(addDays(new Date(), 365))
-    : endOfDay(addDays(new Date(), settings?.bookingWindow?.endDays || 30));
+    ? endOfDay(addDays(today, 365))
+    : endOfDay(addDays(today, settings?.bookingWindow?.endDays || 30));
 
   console.log('Date range:', { minDate, maxDate, isTestMode: settings?.isTestMode });
 
@@ -80,6 +82,13 @@ export const useBookingDates = () => {
     if (settings?.isTestMode) return false;
     
     const dateToCheck = startOfDay(date);
+
+    // Vérifier si la date est dans le passé
+    if (isBefore(dateToCheck, today)) {
+      console.log('Date is in the past:', dateToCheck);
+      return true;
+    }
+    
     const isExcluded = settings.excludedDays.some(excludedTimestamp => {
       const excludedDate = startOfDay(new Date(excludedTimestamp));
       return dateToCheck.getTime() === excludedDate.getTime();

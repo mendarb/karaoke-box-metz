@@ -15,11 +15,14 @@ export const useUserState = () => {
 
     const initializeAuth = async () => {
       try {
+        // Get initial session state
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
           console.error("Session error:", sessionError);
-          await handleInvalidSession();
+          if (mounted) {
+            resetState();
+          }
           return;
         }
 
@@ -30,54 +33,14 @@ export const useUserState = () => {
           return;
         }
 
-        // Validate the session by attempting to get the user
-        const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser();
-        
-        if (userError) {
-          console.error("User fetch error:", userError);
-          if (userError.message.includes('session_not_found') || userError.status === 403) {
-            await handleInvalidSession();
-            return;
-          }
-        }
-
-        if (mounted && currentUser) {
-          console.log("Valid session found for user:", currentUser.email);
-          updateUserState(currentUser);
+        if (mounted) {
+          updateUserState(session.user);
         }
       } catch (error) {
         console.error("Auth initialization error:", error);
         if (mounted) {
           resetState();
-          toast({
-            title: "Erreur d'authentification",
-            description: "Une erreur est survenue lors de l'initialisation",
-            variant: "destructive",
-          });
         }
-      } finally {
-        if (mounted) {
-          setIsLoading(false);
-          setSessionChecked(true);
-        }
-      }
-    };
-
-    const handleInvalidSession = async () => {
-      console.log("Handling invalid session");
-      try {
-        await supabase.auth.signOut();
-      } catch (error) {
-        console.error("Error during sign out:", error);
-      }
-      
-      if (mounted) {
-        resetState();
-        toast({
-          title: "Session expirée",
-          description: "Votre session a expiré. Veuillez vous reconnecter.",
-          variant: "destructive",
-        });
       }
     };
 
@@ -95,8 +58,10 @@ export const useUserState = () => {
       setIsLoading(false);
     };
 
+    // Initialize auth state
     initializeAuth();
 
+    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log("Auth state changed:", event, session?.user?.email);

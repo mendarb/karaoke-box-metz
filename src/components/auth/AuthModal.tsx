@@ -25,16 +25,21 @@ export function AuthModal({
   const [isLogin, setIsLogin] = useState(true)
   const { toast } = useToast()
 
+  const cleanupSession = async () => {
+    try {
+      await supabase.auth.signOut();
+      localStorage.clear(); // Clear all local storage to ensure no stale auth data
+    } catch (error) {
+      console.error("Cleanup error:", error);
+    }
+  };
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
 
     try {
-      // Ensure clean state before authentication
-      await supabase.auth.signOut();
-      
-      // Clear any existing session data
-      localStorage.removeItem('supabase.auth.token');
+      await cleanupSession();
       
       if (isLogin) {
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -86,7 +91,7 @@ export function AuthModal({
         })
         onClose()
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Auth error:", error)
       toast({
         title: "Erreur",

@@ -36,11 +36,16 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
       if (isLastSlot) {
         // Si c'est le dernier créneau, on ne peut réserver que pour 1h
         availableHours = 1;
+        console.log('Dernier créneau sélectionné, limitation à 1h');
       } else {
         // Sinon, on compte les créneaux consécutifs disponibles
-        for (let i = slotIndex; i < availableSlots.length - 1; i++) {
-          const currentSlot = availableSlots[i];
-          const nextSlot = availableSlots[i + 1];
+        // en commençant par 1 pour le créneau actuel
+        availableHours = 1;
+        
+        // On vérifie les créneaux suivants
+        for (let i = slotIndex + 1; i < availableSlots.length && availableHours < 4; i++) {
+          const currentSlot = availableSlots[i - 1];
+          const nextSlot = availableSlots[i];
           
           const currentHour = parseInt(currentSlot.split(':')[0]);
           const nextHour = parseInt(nextSlot.split(':')[0]);

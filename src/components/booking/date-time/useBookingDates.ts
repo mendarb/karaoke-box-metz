@@ -65,7 +65,6 @@ export const useBookingDates = () => {
     refetchInterval: 5000
   });
 
-  // On s'assure que la date minimale est toujours aujourd'hui ou plus tard
   const today = startOfDay(new Date());
   const minDate = settings?.isTestMode 
     ? today
@@ -75,15 +74,12 @@ export const useBookingDates = () => {
     ? endOfDay(addDays(today, 365))
     : endOfDay(addDays(today, settings?.bookingWindow?.endDays || 30));
 
-  console.log('Date range:', { minDate, maxDate, isTestMode: settings?.isTestMode });
-
   const isDayExcluded = (date: Date) => {
     if (!settings?.excludedDays) return false;
     if (settings?.isTestMode) return false;
     
     const dateToCheck = startOfDay(date);
 
-    // Vérifier si la date est dans le passé
     if (isBefore(dateToCheck, today)) {
       console.log('Date is in the past:', dateToCheck);
       return true;
@@ -94,55 +90,53 @@ export const useBookingDates = () => {
       return dateToCheck.getTime() === excludedDate.getTime();
     });
 
-    console.log('Checking if date is excluded:', {
-      date: dateToCheck,
-      isExcluded,
-      excludedDays: settings.excludedDays
-    });
-
     return isExcluded;
   };
 
   const getAvailableHoursForSlot = async (date: Date, timeSlot: string) => {
-    const slotTime = parse(timeSlot, "HH:mm", date);
-    const maxPossibleHours = 4; // Maximum booking duration
-    
-    // Check existing bookings
+    const daySettings = settings?.openingHours?.[date.getDay().toString()];
+    if (!daySettings?.slots) return 0;
+
+    const slotIndex = daySettings.slots.indexOf(timeSlot);
+    if (slotIndex === -1) return 0;
+
+    // Si c'est le dernier créneau, on ne permet qu'une heure
+    if (slotIndex === daySettings.slots.length - 1) {
+      console.log('Last slot of the day, limiting to 1 hour');
+      return 1;
+    }
+
+    // Pour les autres créneaux, on calcule combien d'heures sont disponibles
+    // en fonction de la position du créneau
+    const remainingSlots = daySettings.slots.length - slotIndex - 1;
+    const maxPossibleHours = Math.min(4, remainingSlots + 1);
+
+    // Vérifier les réservations existantes
     const { data: bookings } = await supabase
       .from('bookings')
       .select('*')
       .eq('date', date.toISOString().split('T')[0])
       .neq('status', 'cancelled');
 
-    if (!bookings) return 0;
+    if (!bookings) return maxPossibleHours;
 
-    // Convert slot time to minutes for easier comparison
-    const slotMinutes = slotTime.getHours() * 60 + slotTime.getMinutes();
+    const currentSlotTime = parseInt(timeSlot.split(':')[0]);
     
-    // Find the next booking after this slot
-    const nextBooking = bookings
-      .filter(booking => {
-        const bookingMinutes = parseInt(booking.time_slot.split(':')[0]) * 60 + 
-                             parseInt(booking.time_slot.split(':')[1]);
-        return bookingMinutes > slotMinutes;
-      })
-      .sort((a, b) => {
-        const aMinutes = parseInt(a.time_slot.split(':')[0]) * 60 + parseInt(a.time_slot.split(':')[1]);
-        const bMinutes = parseInt(b.time_slot.split(':')[0]) * 60 + parseInt(b.time_slot.split(':')[1]);
-        return aMinutes - bMinutes;
-      })[0];
+    // Trouver la première réservation qui bloque
+    const blockingBooking = bookings.find(booking => {
+      const bookingTime = parseInt(booking.time_slot.split(':')[0]);
+      return bookingTime > currentSlotTime && bookingTime < currentSlotTime + maxPossibleHours;
+    });
 
-    if (!nextBooking) {
-      // No next booking, check until midnight
-      const minutesUntilMidnight = 24 * 60 - slotMinutes;
-      return Math.min(maxPossibleHours, Math.floor(minutesUntilMidnight / 60));
+    if (blockingBooking) {
+      const bookingTime = parseInt(blockingBooking.time_slot.split(':')[0]);
+      const availableHours = bookingTime - currentSlotTime;
+      console.log(`Blocking booking found at ${bookingTime}h, limiting to ${availableHours} hours`);
+      return availableHours;
     }
 
-    // Calculate available hours until next booking
-    const nextBookingMinutes = parseInt(nextBooking.time_slot.split(':')[0]) * 60 + 
-                              parseInt(nextBooking.time_slot.split(':')[1]);
-    const availableMinutes = nextBookingMinutes - slotMinutes;
-    return Math.min(maxPossibleHours, Math.floor(availableMinutes / 60));
+    console.log(`No blocking bookings found, ${maxPossibleHours} hours available`);
+    return maxPossibleHours;
   };
 
   const getAvailableSlots = async (date: Date) => {
@@ -190,5 +184,6 @@ export const useBookingDates = () => {
     maxDate,
     isDayExcluded,
     getAvailableSlots,
+    getAvailableHoursForSlot
   };
 };

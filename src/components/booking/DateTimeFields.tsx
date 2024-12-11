@@ -14,7 +14,7 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [bookedSlots, setBookedSlots] = useState<{ [key: string]: number }>({});
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
-  const { minDate, maxDate, isDayExcluded, getAvailableSlots } = useBookingDates();
+  const { minDate, maxDate, isDayExcluded, getAvailableSlots, getAvailableHoursForSlot } = useBookingDates();
   const { disabledDates } = useDisabledDates({ minDate, maxDate, isDayExcluded });
 
   const handleDateSelect = async (date: Date) => {
@@ -24,40 +24,15 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
     console.log('Available slots updated:', slots);
   };
 
-  const handleTimeSlotChange = () => {
+  const handleTimeSlotChange = async () => {
     const timeSlot = form.watch("timeSlot");
-    if (!selectedDate || !timeSlot || availableSlots.length === 0) return;
-
-    const slotIndex = availableSlots.indexOf(timeSlot);
-    if (slotIndex === -1) return;
-
-    // Vérifier si c'est le dernier créneau disponible de la journée
-    const isLastSlot = slotIndex === availableSlots.length - 1;
-    
-    if (isLastSlot) {
-      console.log('Dernier créneau sélectionné (21h), limitation à 1h');
-      onAvailabilityChange(selectedDate, 1);
+    if (!selectedDate || !timeSlot || availableSlots.length === 0) {
+      onAvailabilityChange(selectedDate, 0);
       return;
     }
 
-    // Pour les autres créneaux, calculer les heures disponibles
-    const currentHour = parseInt(timeSlot.split(':')[0]);
-    let availableHours = 1;
-
-    // Vérifier les créneaux suivants
-    for (let i = slotIndex + 1; i < availableSlots.length && availableHours < 4; i++) {
-      const nextSlot = availableSlots[i];
-      const nextHour = parseInt(nextSlot.split(':')[0]);
-
-      // Vérifier si le créneau suivant est consécutif
-      if (nextHour === currentHour + availableHours) {
-        availableHours++;
-      } else {
-        break;
-      }
-    }
-
-    console.log(`Heures disponibles pour ${timeSlot}:`, availableHours);
+    const availableHours = await getAvailableHoursForSlot(selectedDate, timeSlot);
+    console.log(`Available hours for ${timeSlot}:`, availableHours);
     onAvailabilityChange(selectedDate, availableHours);
   };
 

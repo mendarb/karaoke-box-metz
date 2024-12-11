@@ -15,10 +15,49 @@ export const useUserState = () => {
 
     const initializeAuth = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        // Récupérer la session actuelle
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        if (error) {
-          console.error("Session error:", error);
+        if (sessionError) {
+          console.error("Session error:", sessionError);
+          if (mounted) {
+            setUser(null);
+            setIsAdmin(false);
+            setIsLoading(false);
+            setSessionChecked(true);
+          }
+          return;
+        }
+
+        // Si pas de session valide, réinitialiser l'état
+        if (!session) {
+          if (mounted) {
+            setUser(null);
+            setIsAdmin(false);
+            setIsLoading(false);
+            setSessionChecked(true);
+          }
+          return;
+        }
+
+        // Vérifier si la session est toujours valide
+        const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser();
+        
+        if (userError) {
+          console.error("User fetch error:", userError);
+          // Si l'erreur indique une session invalide, déconnecter l'utilisateur
+          if (userError.message.includes('session_not_found') || userError.status === 403) {
+            await supabase.auth.signOut();
+            if (mounted) {
+              setUser(null);
+              setIsAdmin(false);
+              toast({
+                title: "Session expirée",
+                description: "Votre session a expiré. Veuillez vous reconnecter.",
+                variant: "destructive",
+              });
+            }
+          }
           if (mounted) {
             setIsLoading(false);
             setSessionChecked(true);
@@ -26,29 +65,26 @@ export const useUserState = () => {
           return;
         }
 
-        if (mounted) {
-          if (session?.user) {
-            console.log("Session found for user:", session.user.email);
-            setUser(session.user);
-            setIsAdmin(session.user.email === "mendar.bouchali@gmail.com");
-          } else {
-            console.log("No session found");
-            setUser(null);
-            setIsAdmin(false);
-          }
-          setIsLoading(false);
-          setSessionChecked(true);
+        if (mounted && currentUser) {
+          console.log("Session found for user:", currentUser.email);
+          setUser(currentUser);
+          setIsAdmin(currentUser.email === "mendar.bouchali@gmail.com");
         }
       } catch (error) {
         console.error("Auth initialization error:", error);
         if (mounted) {
-          setIsLoading(false);
-          setSessionChecked(true);
+          setUser(null);
+          setIsAdmin(false);
           toast({
             title: "Erreur d'authentification",
             description: "Une erreur est survenue lors de l'initialisation",
             variant: "destructive",
           });
+        }
+      } finally {
+        if (mounted) {
+          setIsLoading(false);
+          setSessionChecked(true);
         }
       }
     };

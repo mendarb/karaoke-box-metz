@@ -30,6 +30,9 @@ export function AuthModal({
     setIsLoading(true)
 
     try {
+      // Déconnexion préalable pour éviter les conflits de session
+      await supabase.auth.signOut();
+
       if (isLogin) {
         const { data, error } = await supabase.auth.signInWithPassword({
           email,

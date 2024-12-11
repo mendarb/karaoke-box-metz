@@ -15,60 +15,20 @@ export const useUserState = () => {
 
     const initializeAuth = async () => {
       try {
-        // Récupérer la session actuelle
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        const { data: { session } } = await supabase.auth.getSession();
         
-        if (sessionError) {
-          console.error("Session error:", sessionError);
-          if (mounted) {
-            setUser(null);
-            setIsAdmin(false);
-            setIsLoading(false);
-            setSessionChecked(true);
-          }
-          return;
-        }
-
-        // Si pas de session valide, réinitialiser l'état
         if (!session) {
           if (mounted) {
             setUser(null);
             setIsAdmin(false);
-            setIsLoading(false);
             setSessionChecked(true);
           }
           return;
         }
 
-        // Vérifier si la session est toujours valide
-        const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser();
-        
-        if (userError) {
-          console.error("User fetch error:", userError);
-          // Si l'erreur indique une session invalide, déconnecter l'utilisateur
-          if (userError.message.includes('session_not_found') || userError.status === 403) {
-            await supabase.auth.signOut();
-            if (mounted) {
-              setUser(null);
-              setIsAdmin(false);
-              toast({
-                title: "Session expirée",
-                description: "Votre session a expiré. Veuillez vous reconnecter.",
-                variant: "destructive",
-              });
-            }
-          }
-          if (mounted) {
-            setIsLoading(false);
-            setSessionChecked(true);
-          }
-          return;
-        }
-
-        if (mounted && currentUser) {
-          console.log("Session found for user:", currentUser.email);
-          setUser(currentUser);
-          setIsAdmin(currentUser.email === "mendar.bouchali@gmail.com");
+        if (mounted) {
+          setUser(session.user);
+          setIsAdmin(session.user.email === "mendar.bouchali@gmail.com");
         }
       } catch (error) {
         console.error("Auth initialization error:", error);
@@ -94,13 +54,14 @@ export const useUserState = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log("Auth state changed:", event, session?.user?.email);
+        
         if (mounted) {
-          if (session?.user) {
-            setUser(session.user);
-            setIsAdmin(session.user.email === "mendar.bouchali@gmail.com");
-          } else {
+          if (event === 'SIGNED_OUT' || !session) {
             setUser(null);
             setIsAdmin(false);
+          } else if (session?.user) {
+            setUser(session.user);
+            setIsAdmin(session.user.email === "mendar.bouchali@gmail.com");
           }
           setIsLoading(false);
           setSessionChecked(true);

@@ -5,14 +5,34 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
 
 export const NotificationSettings = () => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [smsNotifications, setSmsNotifications] = useState(false);
-  const { toast } = useToast();
 
-  const handleSave = async () => {
-    try {
+  const { data: settings } = useQuery({
+    queryKey: ['notification-settings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('settings')
+        .select('*')
+        .eq('key', 'notification_settings')
+        .single();
+
+      if (error) {
+        return { emailNotifications: true, smsNotifications: false };
+      }
+
+      return data?.value;
+    },
+  });
+
+  const mutation = useMutation({
+    mutationFn: async () => {
       const { error } = await supabase
         .from('settings')
         .upsert({
@@ -24,20 +44,23 @@ export const NotificationSettings = () => {
         });
 
       if (error) throw error;
-
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notification-settings'] });
       toast({
         title: "Succès",
         description: "Les paramètres ont été sauvegardés",
       });
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error('Error saving settings:', error);
       toast({
         title: "Erreur",
         description: "Impossible de sauvegarder les paramètres",
         variant: "destructive",
       });
-    }
-  };
+    },
+  });
 
   return (
     <SettingsCard
@@ -63,8 +86,19 @@ export const NotificationSettings = () => {
           />
         </div>
 
-        <Button onClick={handleSave} className="w-full">
-          Sauvegarder
+        <Button 
+          onClick={() => mutation.mutate()} 
+          className="w-full"
+          disabled={mutation.isPending}
+        >
+          {mutation.isPending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Sauvegarde en cours...
+            </>
+          ) : (
+            "Sauvegarder"
+          )}
         </Button>
       </div>
     </SettingsCard>

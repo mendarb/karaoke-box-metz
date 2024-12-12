@@ -59,14 +59,11 @@ export const BookingSettingsForm = () => {
         const { data, error } = await supabase
           .from('booking_settings')
           .select('*')
+          .eq('key', 'booking_settings')
           .single();
 
         if (error) {
           console.error('Error fetching settings:', error);
-          return defaultSettings;
-        }
-
-        if (!data) {
           // Si aucun paramètre n'existe, créer les paramètres par défaut
           const { error: insertError } = await supabase
             .from('booking_settings')
@@ -74,48 +71,51 @@ export const BookingSettingsForm = () => {
 
           if (insertError) {
             console.error('Error creating default settings:', insertError);
+            throw insertError;
           }
           return defaultSettings;
         }
 
-        return data.value as BookingSettings;
+        console.log("Loaded settings:", data?.value);
+        return data?.value as BookingSettings || defaultSettings;
       } catch (err) {
         console.error('Query error:', err);
         return defaultSettings;
       }
     },
-    refetchOnWindowFocus: true,
   });
 
   const mutation = useMutation({
     mutationFn: async (data: BookingSettings) => {
-      try {
-        const { error } = await supabase
-          .from('booking_settings')
-          .upsert({ 
-            key: 'booking_settings',
-            value: data 
-          });
-
-        if (error) throw error;
-
-        toast({
-          title: "Paramètres mis à jour",
-          description: "Les paramètres ont été sauvegardés avec succès.",
+      const { error } = await supabase
+        .from('booking_settings')
+        .upsert({ 
+          key: 'booking_settings',
+          value: data 
         });
-      } catch (error) {
-        console.error('Erreur lors de la mise à jour des paramètres:', error);
-        toast({
-          title: "Erreur",
-          description: "Une erreur est survenue lors de la sauvegarde des paramètres.",
-          variant: "destructive",
-        });
+
+      if (error) {
+        console.error('Error saving settings:', error);
         throw error;
       }
+
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['booking-settings'] });
-    }
+      toast({
+        title: "Paramètres mis à jour",
+        description: "Les paramètres ont été sauvegardés avec succès.",
+      });
+    },
+    onError: (error) => {
+      console.error('Error saving settings:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la sauvegarde des paramètres.",
+        variant: "destructive",
+      });
+    },
   });
 
   const onSubmit = (data: BookingSettings) => {

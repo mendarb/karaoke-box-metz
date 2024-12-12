@@ -4,6 +4,7 @@ import {
   useReactTable,
   getSortedRowModel,
   SortingState,
+  ColumnDef,
 } from "@tanstack/react-table";
 import { Booking } from "@/hooks/useBookings";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -29,10 +30,15 @@ export const BookingsTable = ({
   const columns = createBookingColumns(isMobile, onViewDetails, onStatusChange);
 
   // Si on est sur mobile, on réduit les colonnes affichées
-  const mobileColumns = columns.filter(col => {
-    const identifier = typeof col.id === 'string' ? col.id : 
-                      typeof col.accessorKey === 'string' ? col.accessorKey : 
-                      undefined;
+  const mobileColumns = columns.filter((col: ColumnDef<Booking>) => {
+    let identifier: string | undefined;
+    
+    if ('id' in col && typeof col.id === 'string') {
+      identifier = col.id;
+    } else if ('accessorKey' in col && typeof col.accessorKey === 'string') {
+      identifier = col.accessorKey;
+    }
+    
     return ["date", "user_name", "status", "actions"].includes(identifier || "");
   });
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   getCoreRowModel,
   useReactTable,
@@ -27,7 +27,6 @@ export const BookingsTable = ({
   const [sorting, setSorting] = useState<SortingState>([]);
   const isMobile = useIsMobile();
 
-  // Removed onStatusChange from createBookingColumns call since it's now handled by BookingActions directly
   const columns = createBookingColumns(isMobile, onViewDetails);
 
   const finalColumns = isMobile 

@@ -43,6 +43,7 @@ export const useBookingMutations = () => {
       }
     },
     onSuccess: () => {
+      // Invalider toutes les requêtes liées aux réservations
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
       notifySuccess();
     },

@@ -13,20 +13,27 @@ export const useBookingMutations = () => {
     mutationFn: async ({ bookingId, newStatus }: { bookingId: string; newStatus: string }): Promise<void> => {
       console.log('Début de la mutation pour la réservation:', bookingId);
       
-      const { data: updatedBooking, error: updateError } = await supabase
+      // D'abord faire la mise à jour
+      const { error: updateError } = await supabase
         .from('bookings')
         .update({ status: newStatus })
-        .eq('id', bookingId)
-        .select('*')
-        .single();
+        .eq('id', bookingId);
 
       if (updateError) {
         console.error('Erreur lors de la mise à jour:', updateError);
         throw updateError;
       }
 
-      if (!updatedBooking) {
-        throw new Error('Réservation non trouvée');
+      // Ensuite récupérer la réservation mise à jour
+      const { data: updatedBooking, error: fetchError } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('id', bookingId)
+        .single();
+
+      if (fetchError || !updatedBooking) {
+        console.error('Erreur lors de la récupération:', fetchError);
+        throw fetchError || new Error('Réservation non trouvée');
       }
 
       try {

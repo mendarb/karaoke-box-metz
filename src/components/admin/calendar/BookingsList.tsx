@@ -32,42 +32,47 @@ export const BookingsList = ({
         {bookings.length === 0 ? (
           <p className="text-muted-foreground">Aucune réservation pour cette date</p>
         ) : (
-          bookings.map((booking) => (
-            <div
-              key={booking.id}
-              className="flex flex-col space-y-3 p-4 rounded-lg border hover:bg-accent/50 transition-colors"
-            >
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="font-medium">{booking.user_name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {booking.time_slot}h - {parseInt(booking.time_slot) + parseInt(booking.duration)}h
-                  </p>
+          bookings.map((booking) => {
+            const startHour = parseInt(booking.time_slot);
+            const endHour = startHour + parseInt(booking.duration);
+            
+            return (
+              <div
+                key={booking.id}
+                className="flex flex-col space-y-3 p-4 rounded-lg border hover:bg-accent/50 transition-colors"
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="font-medium">{booking.user_name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {`${booking.time_slot}:00 - ${endHour}:00`}
+                    </p>
+                  </div>
+                  <BookingStatusBadge status={booking.status as BookingStatus} />
                 </div>
-                <BookingStatusBadge status={booking.status as BookingStatus} />
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <Badge variant="outline">{booking.group_size} pers.</Badge>
-                <Badge variant="outline">{booking.duration}h</Badge>
-                <Badge variant="outline">{booking.price}€</Badge>
-              </div>
+                
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline">{booking.group_size} pers.</Badge>
+                  <Badge variant="outline">{booking.duration}h</Badge>
+                  <Badge variant="outline">{booking.price}€</Badge>
+                </div>
 
-              <div className="flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onViewDetails(booking)}
-                >
-                  Détails
-                </Button>
-                <BookingActions 
-                  bookingId={booking.id}
-                  currentStatus={booking.status as BookingStatus}
-                />
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onViewDetails(booking)}
+                  >
+                    Détails
+                  </Button>
+                  <BookingActions 
+                    bookingId={booking.id}
+                    currentStatus={booking.status as BookingStatus}
+                  />
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>

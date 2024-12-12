@@ -54,7 +54,9 @@ export const createBookingColumns = (
     cell: ({ row }) => {
       const timeSlot = row.getValue("time_slot") as string;
       const duration = row.original.duration;
-      return `${timeSlot}h - ${parseInt(timeSlot) + parseInt(duration)}h`;
+      const startHour = parseInt(timeSlot);
+      const endHour = startHour + parseInt(duration);
+      return `${timeSlot}:00 - ${endHour}:00`;
     },
   },
   {

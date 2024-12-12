@@ -72,7 +72,10 @@ export const useBookingActions = () => {
         })
         .eq('id', bookingId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Delete error:', error);
+        throw error;
+      }
 
       await queryClient.invalidateQueries({ queryKey: ['bookings'] });
       

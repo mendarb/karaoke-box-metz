@@ -11,14 +11,7 @@ interface PriceCalculatorProps {
 
 export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: PriceCalculatorProps) => {
   const [price, setPrice] = useState(0);
-  const [discount, setDiscount] = useState(0);
-  const [discountPercentage, setDiscountPercentage] = useState(0);
-  const [priceDetails, setPriceDetails] = useState({
-    baseHourRate: 0,
-    basePersonRate: 0,
-    pricePerHour: 0,
-    pricePerPerson: 0
-  });
+  const [pricePerPersonPerHour, setPricePerPersonPerHour] = useState(0);
   const isMobile = useIsMobile();
 
   const { data: settings } = useQuery({
@@ -71,14 +64,8 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
 
     console.log('Base rates:', { baseHourRate, basePersonRate });
 
-    if (isNaN(baseHourRate) || isNaN(basePersonRate)) {
-      console.error('Invalid base rates:', { baseHourRate, basePersonRate });
-      return;
-    }
-
-    const pricePerPerson = size * basePersonRate;
-    const basePrice = baseHourRate + pricePerPerson;
-    const totalWithoutDiscount = basePrice * hours;
+    const pricePerPerson = basePersonRate;
+    const basePrice = baseHourRate + (pricePerPerson * size);
     let finalPrice = basePrice;
 
     if (hours > 1) {
@@ -87,27 +74,16 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
       finalPrice += discountedHourPrice * additionalHours;
     }
 
-    const totalDiscount = totalWithoutDiscount - finalPrice;
-    const calculatedDiscountPercentage = hours > 1 ? 10 : 0;
-
-    setPriceDetails({
-      baseHourRate,
-      basePersonRate,
-      pricePerHour: baseHourRate,
-      pricePerPerson: basePersonRate * size
-    });
+    const pricePerPersonHour = Math.round((basePrice / size) * 100) / 100;
 
     console.log('Price calculation:', {
       basePrice,
-      totalWithoutDiscount,
       finalPrice,
-      totalDiscount,
-      discountPercentage: calculatedDiscountPercentage
+      pricePerPersonHour
     });
 
     setPrice(finalPrice);
-    setDiscount(totalDiscount);
-    setDiscountPercentage(calculatedDiscountPercentage);
+    setPricePerPersonPerHour(pricePerPersonHour);
 
     if (onPriceCalculated) {
       onPriceCalculated(finalPrice);
@@ -125,32 +101,13 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
 
   return (
     <div className={`${isMobile ? 'mt-3 p-4' : 'mt-4 p-6'} bg-gradient-to-br from-violet-50/50 to-violet-100/50 backdrop-blur-sm rounded-2xl border border-violet-100/50 shadow-lg animate-fadeIn`}>
-      <div className="text-sm text-gray-600 space-y-1 mb-3">
-        <p className="text-lg font-semibold text-violet-900">Tarifs de base :</p>
-        <p>Prix par heure : {formatPrice(priceDetails.baseHourRate)}/h</p>
-        <p>Prix par personne : {formatPrice(priceDetails.basePersonRate)}/pers.</p>
-      </div>
-
-      <div className="text-sm text-gray-600 space-y-1 mb-3">
-        <p className="text-lg font-semibold text-violet-900">Pour votre groupe :</p>
-        <p>Supplément groupe : {formatPrice(priceDetails.pricePerPerson)}</p>
-        <p className="text-xs text-gray-500">({formatPrice(priceDetails.basePersonRate)} × {groupSize} pers.)</p>
-      </div>
+      <p className="text-xl sm:text-2xl font-bold text-violet-900">
+        {formatPrice(pricePerPersonPerHour)}/pers/h
+      </p>
       
-      <div className="pt-3 border-t border-violet-100">
-        <p className="text-xl sm:text-2xl font-bold text-violet-900">
-          Total : {formatPrice(price)}
-        </p>
-
-        {discount > 0 && (
-          <p className="text-sm text-green-600 font-medium flex items-center gap-2 mt-2">
-            Économie : {formatPrice(discount)}
-            <span className="bg-green-100/80 backdrop-blur-sm text-green-700 px-2 py-1 rounded-full text-xs font-semibold">
-              -{discountPercentage}%
-            </span>
-          </p>
-        )}
-      </div>
+      <p className="text-sm text-gray-600 mt-2">
+        Total : {formatPrice(price)}
+      </p>
     </div>
   );
 };

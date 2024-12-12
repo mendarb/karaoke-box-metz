@@ -11,40 +11,36 @@ export const useBookingActions = () => {
 
   const updateBookingStatus = async (bookingId: string, status: BookingStatus) => {
     setIsLoading(true);
+    console.log('Starting status update:', { bookingId, status });
+
     try {
-      console.log('Updating booking status:', { bookingId, status });
-      
-      // First check if the booking exists
-      const { data: existingBooking, error: checkError } = await supabase
-        .from('bookings')
-        .select()
-        .eq('id', bookingId)
-        .maybeSingle();
-
-      if (checkError) {
-        console.error('Error checking booking:', checkError);
-        throw checkError;
+      // Vérification explicite du type de statut
+      if (!['pending', 'confirmed', 'cancelled'].includes(status)) {
+        throw new Error(`Invalid status: ${status}`);
       }
 
-      if (!existingBooking) {
-        throw new Error('Booking not found');
-      }
-
-      // If booking exists, update its status
+      // Mise à jour directe avec le nouveau statut
       const { data, error } = await supabase
         .from('bookings')
-        .update({ status })
+        .update({ 
+          status: status,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', bookingId)
-        .select();
+        .select('*');
 
       if (error) {
-        console.error('Error updating booking:', error);
+        console.error('Supabase error:', error);
         throw error;
       }
 
-      console.log('Booking updated successfully:', data);
+      if (!data || data.length === 0) {
+        throw new Error('No booking found or update failed');
+      }
 
-      // Invalider le cache pour forcer le rechargement des données
+      console.log('Update successful:', data[0]);
+
+      // Force le rechargement des données
       await queryClient.invalidateQueries({ queryKey: ['bookings'] });
       
       toast({
@@ -54,14 +50,14 @@ export const useBookingActions = () => {
 
       return data[0];
     } catch (error: any) {
-      console.error('Erreur mise à jour réservation:', error);
+      console.error('Update failed:', error);
+      
       toast({
         title: "Erreur",
-        description: error.message === 'Booking not found' 
-          ? "Réservation introuvable" 
-          : "Impossible de mettre à jour le statut",
+        description: error.message || "Impossible de mettre à jour le statut",
         variant: "destructive",
       });
+      
       throw error;
     } finally {
       setIsLoading(false);

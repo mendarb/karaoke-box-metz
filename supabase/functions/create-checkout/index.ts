@@ -26,7 +26,15 @@ serve(async (req) => {
       isTestMode 
     } = await req.json()
 
-    console.log('Creating checkout with mode:', isTestMode ? 'test' : 'live');
+    console.log('Creating checkout with mode:', isTestMode ? 'test' : 'live', {
+      price,
+      groupSize,
+      duration,
+      date,
+      timeSlot,
+      userEmail,
+      isTestMode
+    });
 
     // Use test key if in test mode
     const stripeSecretKey = isTestMode 
@@ -66,17 +74,18 @@ serve(async (req) => {
         timeSlot,
         duration,
         groupSize,
-        message,
+        message: message || '',
         userName,
         userPhone,
-        isTestMode: isTestMode ? 'true' : 'false'
+        isTestMode: String(isTestMode)  // Assurons-nous que c'est une chaîne
       },
     })
 
     console.log('Checkout session created:', {
       sessionId: session.id,
       mode: isTestMode ? 'test' : 'live',
-      email: userEmail
+      email: userEmail,
+      metadata: session.metadata
     });
 
     return new Response(

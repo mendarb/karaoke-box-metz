@@ -43,8 +43,10 @@ serve(async (req) => {
         throw new Error('No metadata found in session');
       }
 
+      console.log('Creating booking with metadata:', metadata);
+
       // Créer la réservation une fois le paiement confirmé
-      const { error: bookingError } = await supabase
+      const { data: booking, error: bookingError } = await supabase
         .from('bookings')
         .insert([{
           user_id: metadata.userId,
@@ -60,14 +62,16 @@ serve(async (req) => {
           user_phone: metadata.userPhone,
           payment_status: 'paid',
           is_test_booking: metadata.isTestMode === 'true'
-        }]);
+        }])
+        .select()
+        .single();
 
       if (bookingError) {
         console.error('Error creating booking:', bookingError);
         throw bookingError;
       }
 
-      console.log('Booking created successfully after payment');
+      console.log('Booking created successfully:', booking);
     }
 
     return new Response(JSON.stringify({ received: true }), { status: 200 });

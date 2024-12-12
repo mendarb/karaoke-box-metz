@@ -40,13 +40,11 @@ export const useBookingMutations = () => {
     },
     onSuccess: (updatedBooking) => {
       // Mettre à jour le cache immédiatement
-      queryClient.setQueriesData(['bookings'], (oldData: any) => {
-        if (Array.isArray(oldData)) {
-          return oldData.map(booking => 
-            booking.id === updatedBooking.id ? updatedBooking : booking
-          );
-        }
-        return oldData;
+      queryClient.setQueryData(['bookings'], (oldData: Booking[] | undefined) => {
+        if (!oldData) return [updatedBooking];
+        return oldData.map(booking => 
+          booking.id === updatedBooking.id ? updatedBooking : booking
+        );
       });
       
       // Forcer un re-fetch complet

@@ -66,12 +66,12 @@ export const useBookingActions = () => {
     console.log('Starting deletion:', { bookingId });
     
     try {
+      // First, mark the booking as deleted
       const { error } = await supabase
         .from('bookings')
         .update({ 
           deleted_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          status: 'cancelled' as BookingStatus
+          updated_at: new Date().toISOString()
         })
         .eq('id', bookingId);
 

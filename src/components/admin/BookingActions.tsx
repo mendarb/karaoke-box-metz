@@ -36,29 +36,25 @@ export const BookingActions = ({
     }
   };
 
-  const handleCloseDeleteDialog = () => {
-    if (!isLoading) {
-      setShowDeleteDialog(false);
-    }
-  };
-
   return (
     <>
       <BookingActionsMenu
         isOpen={isOpen}
         isLoading={isLoading}
         currentStatus={currentStatus}
-        onOpenChange={(open) => !isLoading && setIsOpen(open)}
+        onOpenChange={setIsOpen}
         onStatusChange={handleStatusChange}
         onDelete={() => setShowDeleteDialog(true)}
       />
 
-      <DeleteBookingDialog
-        isOpen={showDeleteDialog}
-        isLoading={isLoading}
-        onClose={handleCloseDeleteDialog}
-        onConfirm={handleDelete}
-      />
+      {showDeleteDialog && (
+        <DeleteBookingDialog
+          isOpen={showDeleteDialog}
+          isLoading={isLoading}
+          onClose={() => setShowDeleteDialog(false)}
+          onConfirm={handleDelete}
+        />
+      )}
     </>
   );
 };

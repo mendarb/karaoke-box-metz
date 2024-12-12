@@ -23,14 +23,7 @@ export const DeleteBookingDialog = ({
   onConfirm,
 }: DeleteBookingDialogProps) => {
   return (
-    <AlertDialog 
-      open={isOpen} 
-      onOpenChange={(open) => {
-        if (!open) {
-          onClose();
-        }
-      }}
-    >
+    <AlertDialog open={isOpen}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
@@ -41,20 +34,12 @@ export const DeleteBookingDialog = ({
         <AlertDialogFooter>
           <AlertDialogCancel 
             disabled={isLoading}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onClose();
-            }}
+            onClick={onClose}
           >
             Annuler
           </AlertDialogCancel>
           <AlertDialogAction 
-            onClick={async (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              await onConfirm();
-            }}
+            onClick={onConfirm}
             className="bg-red-600 hover:bg-red-700"
             disabled={isLoading}
           >

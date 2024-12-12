@@ -9,7 +9,7 @@ import { BookingActions } from "../BookingActions";
 interface BookingsListProps {
   bookings: Booking[];
   onViewDetails: (booking: Booking) => void;
-  onStatusChange: (bookingId: string, newStatus: string) => Promise<Booking>;
+  onStatusChange: (bookingId: string, newStatus: string) => Promise<void>;
   selectedDate?: Date;
 }
 

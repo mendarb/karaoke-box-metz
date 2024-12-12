@@ -6,12 +6,14 @@ import { Calendar } from "@/pages/Calendar";
 import { Settings } from "@/pages/Settings";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { AccountPage } from "@/components/account/AccountPage";
+import { ResetPassword } from "@/components/auth/ResetPassword";
 
 export const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<Index />} />
       <Route path="/success" element={<Success />} />
+      <Route path="/account/reset-password" element={<ResetPassword />} />
       <Route
         path="/my-bookings"
         element={

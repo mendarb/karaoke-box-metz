@@ -10,14 +10,12 @@ interface BookingsListProps {
   bookings: Booking[];
   onViewDetails: (booking: Booking) => void;
   selectedDate?: Date;
-  onStatusChange: (bookingId: string, newStatus: string) => Promise<void>;
 }
 
 export const BookingsList = ({ 
   bookings, 
   onViewDetails,
-  selectedDate,
-  onStatusChange 
+  selectedDate
 }: BookingsListProps) => {
   return (
     <div className="bg-card rounded-lg shadow-lg p-6">

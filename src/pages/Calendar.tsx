@@ -1,10 +1,6 @@
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
-import { Calendar as CalendarIcon } from "lucide-react";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { useState } from "react";
-import { format } from "date-fns";
 import { BookingDetailsDialog } from "@/components/admin/BookingDetailsDialog";
 import { Booking } from "@/hooks/useBookings";
 import { useToast } from "@/components/ui/use-toast";
@@ -17,38 +13,42 @@ export const Calendar = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const { toast } = useToast();
-  const { updateBookingStatus } = useBookingActions();
 
   const { data: bookings = [], isLoading } = useQuery({
     queryKey: ['bookings'],
     queryFn: async () => {
-      const { data: session } = await supabase.auth.getSession();
-      
-      if (!session.session) {
-        toast({
-          title: "Session expirée",
-          description: "Veuillez vous reconnecter",
-          variant: "destructive",
-        });
+      try {
+        const { data: session } = await supabase.auth.getSession();
+        
+        if (!session.session) {
+          toast({
+            title: "Session expirée",
+            description: "Veuillez vous reconnecter",
+            variant: "destructive",
+          });
+          return [];
+        }
+
+        const { data, error } = await supabase
+          .from('bookings')
+          .select('*')
+          .order('time_slot', { ascending: true });
+
+        if (error) {
+          console.error('Error fetching bookings:', error);
+          toast({
+            title: "Erreur",
+            description: "Impossible de charger les réservations",
+            variant: "destructive",
+          });
+          return [];
+        }
+
+        return data || [];
+      } catch (error) {
+        console.error('Error in query:', error);
         return [];
       }
-
-      const { data, error } = await supabase
-        .from('bookings')
-        .select('*')
-        .order('time_slot', { ascending: true });
-
-      if (error) {
-        console.error('Error fetching bookings:', error);
-        toast({
-          title: "Erreur",
-          description: "Impossible de charger les réservations",
-          variant: "destructive",
-        });
-        return [];
-      }
-
-      return data || [];
     },
     refetchOnWindowFocus: true,
     refetchOnMount: true,

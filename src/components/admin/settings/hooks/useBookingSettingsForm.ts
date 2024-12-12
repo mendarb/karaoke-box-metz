@@ -16,7 +16,7 @@ export const useBookingSettingsForm = () => {
         console.log('Fetching booking settings...');
         const { data: existingSettings, error: fetchError } = await supabase
           .from('booking_settings')
-          .select('value')
+          .select('*')
           .eq('key', 'booking_settings')
           .maybeSingle();
 
@@ -33,7 +33,7 @@ export const useBookingSettingsForm = () => {
               key: 'booking_settings', 
               value: defaultSettings 
             }])
-            .select('value')
+            .select()
             .single();
 
           if (insertError) {
@@ -45,15 +45,15 @@ export const useBookingSettingsForm = () => {
           return newSettings.value as BookingSettings;
         }
 
-        console.log('Loaded settings:', existingSettings.value);
+        console.log('Loaded settings:', existingSettings);
         return existingSettings.value as BookingSettings;
       } catch (err) {
         console.error('Query error:', err);
         throw err;
       }
     },
-    retry: 2,
-    staleTime: 30000,
+    retry: 1,
+    staleTime: 0, // Désactive le cache pour toujours récupérer les dernières valeurs
   });
 
   const mutation = useMutation({
@@ -74,9 +74,10 @@ export const useBookingSettingsForm = () => {
       }
 
       console.log('Settings saved successfully');
+      return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['booking-settings'] });
+    onSuccess: (data) => {
+      queryClient.setQueryData(['booking-settings'], data);
       toast({
         title: "Paramètres mis à jour",
         description: "Les paramètres ont été sauvegardés avec succès.",

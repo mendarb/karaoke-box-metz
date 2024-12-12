@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { TimeSlots } from "./date-time/TimeSlots";
 import { useBookingDates } from "./date-time/useBookingDates";
@@ -17,27 +17,34 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
   const { minDate, maxDate, isDayExcluded, getAvailableSlots, getAvailableHoursForSlot } = useBookingDates();
   const { disabledDates } = useDisabledDates({ minDate, maxDate, isDayExcluded });
 
+  // Gérer le changement de date
   const handleDateSelect = async (date: Date) => {
     setSelectedDate(date);
+    // Réinitialiser le créneau horaire sélectionné
+    form.setValue("timeSlot", "");
     const slots = await getAvailableSlots(date);
     setAvailableSlots(slots);
     console.log('Available slots updated:', slots);
+    // Réinitialiser les heures disponibles
+    onAvailabilityChange(date, 0);
   };
 
-  const handleTimeSlotChange = async () => {
-    const timeSlot = form.watch("timeSlot");
-    if (!selectedDate || !timeSlot || availableSlots.length === 0) {
-      onAvailabilityChange(selectedDate, 0);
-      return;
-    }
+  // Gérer le changement de créneau horaire
+  useEffect(() => {
+    const updateAvailableHours = async () => {
+      const timeSlot = form.watch("timeSlot");
+      if (!selectedDate || !timeSlot || availableSlots.length === 0) {
+        onAvailabilityChange(selectedDate, 0);
+        return;
+      }
 
-    const availableHours = await getAvailableHoursForSlot(selectedDate, timeSlot);
-    console.log(`Available hours for ${timeSlot}:`, availableHours);
-    onAvailabilityChange(selectedDate, availableHours);
-  };
+      const availableHours = await getAvailableHoursForSlot(selectedDate, timeSlot);
+      console.log(`Available hours for ${timeSlot}:`, availableHours);
+      onAvailabilityChange(selectedDate, availableHours);
+    };
 
-  // Surveiller les changements de créneau horaire
-  form.watch("timeSlot", handleTimeSlotChange);
+    updateAvailableHours();
+  }, [form.watch("timeSlot"), selectedDate, availableSlots, getAvailableHoursForSlot, onAvailabilityChange]);
 
   return (
     <div className="space-y-6">

@@ -20,7 +20,7 @@ export const getStatusColumn = (): ColumnDef<Booking> => ({
     <BookingStatusBadge 
       status={row.getValue("status")} 
       paymentStatus={row.original.payment_status}
-      isTestBooking={row.original.isTestBooking}
+      isTestBooking={row.original.is_test_booking}
     />
   ),
 });

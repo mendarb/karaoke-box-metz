@@ -64,10 +64,9 @@ export const BookingSettingsForm = () => {
 
         if (fetchError) {
           console.error('Error fetching settings:', fetchError);
-          throw fetchError;
+          return defaultSettings;
         }
 
-        // If no settings exist, create default settings
         if (!existingSettings) {
           console.log('No settings found, creating defaults...');
           const { error: insertError } = await supabase
@@ -79,7 +78,7 @@ export const BookingSettingsForm = () => {
 
           if (insertError) {
             console.error('Error creating default settings:', insertError);
-            throw insertError;
+            return defaultSettings;
           }
 
           return defaultSettings;
@@ -89,27 +88,38 @@ export const BookingSettingsForm = () => {
         return existingSettings.value as BookingSettings;
       } catch (err) {
         console.error('Query error:', err);
-        throw err;
+        return defaultSettings;
       }
     },
     retry: 1,
+    staleTime: 30000, // Consider data fresh for 30 seconds
   });
 
   const mutation = useMutation({
     mutationFn: async (data: BookingSettings) => {
-      const { error } = await supabase
+      const { data: existingSettings } = await supabase
         .from('booking_settings')
-        .upsert({ 
-          key: 'booking_settings',
-          value: data 
-        });
+        .select('id')
+        .eq('key', 'booking_settings')
+        .maybeSingle();
 
-      if (error) {
-        console.error('Error saving settings:', error);
-        throw error;
+      if (existingSettings) {
+        const { error } = await supabase
+          .from('booking_settings')
+          .update({ value: data })
+          .eq('key', 'booking_settings');
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('booking_settings')
+          .insert([{ 
+            key: 'booking_settings',
+            value: data 
+          }]);
+
+        if (error) throw error;
       }
-
-      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['booking-settings'] });

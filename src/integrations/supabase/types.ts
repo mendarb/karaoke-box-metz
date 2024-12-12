@@ -43,7 +43,7 @@ export type Database = {
           message: string | null
           payment_status: string
           price: number
-          status: string
+          status: Database["public"]["Enums"]["booking_status"]
           time_slot: string
           updated_at: string | null
           user_email: string
@@ -60,7 +60,7 @@ export type Database = {
           message?: string | null
           payment_status?: string
           price: number
-          status?: string
+          status?: Database["public"]["Enums"]["booking_status"]
           time_slot: string
           updated_at?: string | null
           user_email: string
@@ -77,7 +77,7 @@ export type Database = {
           message?: string | null
           payment_status?: string
           price?: number
-          status?: string
+          status?: Database["public"]["Enums"]["booking_status"]
           time_slot?: string
           updated_at?: string | null
           user_email?: string
@@ -119,7 +119,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      booking_status: "pending" | "confirmed" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never

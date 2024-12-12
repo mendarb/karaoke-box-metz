@@ -2,13 +2,14 @@ import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/ui/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { BookingStatus } from "@/integrations/supabase/types/booking";
 
 export const useBookingActions = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const updateBookingStatus = async (bookingId: string, status: string) => {
+  const updateBookingStatus = async (bookingId: string, status: BookingStatus) => {
     setIsLoading(true);
     try {
       const { error } = await supabase

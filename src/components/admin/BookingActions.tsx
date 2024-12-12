@@ -8,17 +8,18 @@ import {
 import { MoreHorizontal, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useBookingActions } from "@/hooks/useBookingActions";
+import { BookingStatus } from "@/integrations/supabase/types/booking";
 
 interface BookingActionsProps {
   bookingId: string;
-  currentStatus: string;
+  currentStatus: BookingStatus;
 }
 
 export const BookingActions = ({ bookingId, currentStatus }: BookingActionsProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const { updateBookingStatus, isLoading } = useBookingActions();
 
-  const handleStatusChange = async (newStatus: string) => {
+  const handleStatusChange = async (newStatus: BookingStatus) => {
     await updateBookingStatus(bookingId, newStatus);
     setIsOpen(false);
   };

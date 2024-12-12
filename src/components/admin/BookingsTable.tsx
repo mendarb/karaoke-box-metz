@@ -27,7 +27,8 @@ export const BookingsTable = ({
   const [sorting, setSorting] = useState<SortingState>([]);
   const isMobile = useIsMobile();
 
-  const columns = createBookingColumns(isMobile, onViewDetails, onStatusChange);
+  // Removed onStatusChange from createBookingColumns call since it's now handled by BookingActions directly
+  const columns = createBookingColumns(isMobile, onViewDetails);
 
   const finalColumns = isMobile 
     ? columns.filter((col: ColumnDef<Booking>) => {

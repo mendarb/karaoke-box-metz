@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { BookingStatusBadge } from "../BookingStatusBadge";
 import { BookingActions } from "../BookingActions";
+import { BookingStatus } from "@/integrations/supabase/types/booking";
 
 export const createBookingColumns = (
   isMobile: boolean,
@@ -69,7 +70,7 @@ export const createBookingColumns = (
   {
     accessorKey: "status",
     header: "Statut",
-    cell: ({ row }) => <BookingStatusBadge status={row.getValue("status")} />,
+    cell: ({ row }) => <BookingStatusBadge status={row.getValue("status") as BookingStatus} />,
   },
   {
     id: "actions",
@@ -84,7 +85,7 @@ export const createBookingColumns = (
         </Button>
         <BookingActions 
           bookingId={row.original.id} 
-          currentStatus={row.original.status}
+          currentStatus={row.original.status as BookingStatus}
         />
       </div>
     ),

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BookingStatusBadge } from "../BookingStatusBadge";
 import { BookingActions } from "../BookingActions";
+import { BookingStatus } from "@/integrations/supabase/types/booking";
 
 interface BookingsListProps {
   bookings: Booking[];
@@ -43,7 +44,7 @@ export const BookingsList = ({
                     {booking.time_slot}h - {parseInt(booking.time_slot) + parseInt(booking.duration)}h
                   </p>
                 </div>
-                <BookingStatusBadge status={booking.status} />
+                <BookingStatusBadge status={booking.status as BookingStatus} />
               </div>
               
               <div className="flex items-center gap-2">
@@ -62,7 +63,7 @@ export const BookingsList = ({
                 </Button>
                 <BookingActions 
                   bookingId={booking.id}
-                  currentStatus={booking.status}
+                  currentStatus={booking.status as BookingStatus}
                 />
               </div>
             </div>

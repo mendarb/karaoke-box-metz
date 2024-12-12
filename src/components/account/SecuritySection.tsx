@@ -2,9 +2,14 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export const SecuritySection = () => {
   const { toast } = useToast();
+  const [newEmail, setNewEmail] = useState("");
+  const [showEmailInput, setShowEmailInput] = useState(false);
 
   const handleResetPassword = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -29,20 +34,18 @@ export const SecuritySection = () => {
     });
   };
 
-  const handleUpdateEmail = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user?.email) return;
+  const handleUpdateEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newEmail) return;
 
-    const { error } = await supabase.auth.updateUser({
-      email: user.email,
-    }, {
-      emailRedirectTo: `${window.location.origin}/account/security`,
+    const { error } = await supabase.auth.updateUser({ 
+      email: newEmail 
     });
 
     if (error) {
       toast({
         title: "Erreur",
-        description: "Impossible d'envoyer le lien de modification",
+        description: "Impossible de modifier l'email",
         variant: "destructive",
       });
       return;
@@ -50,8 +53,11 @@ export const SecuritySection = () => {
 
     toast({
       title: "Email envoyé",
-      description: "Vérifiez votre boîte mail pour modifier votre email",
+      description: "Vérifiez votre boîte mail pour confirmer le changement d'email",
     });
+    
+    setShowEmailInput(false);
+    setNewEmail("");
   };
 
   return (
@@ -71,12 +77,43 @@ export const SecuritySection = () => {
 
         <div>
           <h3 className="text-sm font-medium mb-2">Modifier votre email</h3>
-          <Button 
-            variant="outline" 
-            onClick={handleUpdateEmail}
-          >
-            Recevoir un lien de modification
-          </Button>
+          {showEmailInput ? (
+            <form onSubmit={handleUpdateEmail} className="space-y-4">
+              <div>
+                <Label htmlFor="new-email">Nouvel email</Label>
+                <Input
+                  id="new-email"
+                  type="email"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  placeholder="nouveau@email.com"
+                  required
+                />
+              </div>
+              <div className="flex space-x-2">
+                <Button type="submit">
+                  Confirmer
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  onClick={() => {
+                    setShowEmailInput(false);
+                    setNewEmail("");
+                  }}
+                >
+                  Annuler
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <Button 
+              variant="outline" 
+              onClick={() => setShowEmailInput(true)}
+            >
+              Changer d'email
+            </Button>
+          )}
         </div>
       </div>
     </Card>

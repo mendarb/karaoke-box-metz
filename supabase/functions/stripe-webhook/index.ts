@@ -58,7 +58,8 @@ serve(async (req) => {
           user_email: session.customer_email,
           user_name: metadata.userName,
           user_phone: metadata.userPhone,
-          payment_status: 'paid'
+          payment_status: 'paid',
+          isTestBooking: metadata.isTestMode === 'true'
         }]);
 
       if (bookingError) {

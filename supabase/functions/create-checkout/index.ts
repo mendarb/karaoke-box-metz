@@ -49,7 +49,7 @@ serve(async (req) => {
           price_data: {
             currency: 'eur',
             product_data: {
-              name: `Réservation - ${date} ${timeSlot}`,
+              name: `${isTestMode ? '[TEST] ' : ''}Réservation - ${date} ${timeSlot}`,
               description: `${groupSize} personnes - ${duration}h`,
             },
             unit_amount: price * 100,

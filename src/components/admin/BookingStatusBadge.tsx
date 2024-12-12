@@ -1,17 +1,52 @@
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
-type StatusConfig = {
-  label: string;
-  className: string;
-};
+interface BookingStatusBadgeProps {
+  status: string;
+  paymentStatus?: string;
+  isTestBooking?: boolean;
+  className?: string;
+}
 
-const statusConfig: Record<string, StatusConfig> = {
-  pending: { label: "En attente", className: "bg-yellow-500" },
-  confirmed: { label: "Confirmé", className: "bg-green-500" },
-  cancelled: { label: "Annulé", className: "bg-red-500" },
-};
+export const BookingStatusBadge = ({ 
+  status, 
+  paymentStatus, 
+  isTestBooking,
+  className 
+}: BookingStatusBadgeProps) => {
+  let variant: "default" | "secondary" | "destructive" | "outline" = "default";
+  let label = status;
 
-export const BookingStatusBadge = ({ status }: { status: string }) => {
-  const config = statusConfig[status] || statusConfig.pending;
-  return <Badge className={config.className}>{config.label}</Badge>;
+  switch (status) {
+    case 'confirmed':
+      variant = "default";
+      label = "Confirmée";
+      break;
+    case 'cancelled':
+      variant = "destructive";
+      label = "Annulée";
+      break;
+    case 'pending':
+      variant = paymentStatus === 'paid' ? "default" : "secondary";
+      label = "En attente";
+      break;
+    default:
+      variant = "outline";
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <Badge 
+        variant={variant}
+        className={cn("capitalize", className)}
+      >
+        {label}
+      </Badge>
+      {isTestBooking && (
+        <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+          Test
+        </Badge>
+      )}
+    </div>
+  );
 };

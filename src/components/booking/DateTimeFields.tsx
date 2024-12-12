@@ -53,6 +53,8 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
         disabledDates={disabledDates}
         onDateSelect={handleDateSelect}
         selectedDate={selectedDate}
+        minDate={minDate}
+        maxDate={maxDate}
       />
 
       {selectedDate && (

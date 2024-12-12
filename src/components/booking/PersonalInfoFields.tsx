@@ -19,22 +19,27 @@ interface PersonalInfoFieldsProps {
 export const PersonalInfoFields = ({ form }: PersonalInfoFieldsProps) => {
   useEffect(() => {
     const loadUserData = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        form.setValue('email', user.email || '');
-        
-        const { data: lastBooking } = await supabase
-          .from('bookings')
-          .select('user_name, user_phone')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          form.setValue('email', user.email || '');
+          
+          const { data: lastBooking, error } = await supabase
+            .from('bookings')
+            .select('user_name, user_phone')
+            .eq('user_id', user.id)
+            .is('deleted_at', null)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
 
-        if (lastBooking) {
-          form.setValue('fullName', lastBooking.user_name);
-          form.setValue('phone', lastBooking.user_phone);
+          if (!error && lastBooking) {
+            form.setValue('fullName', lastBooking.user_name);
+            form.setValue('phone', lastBooking.user_phone);
+          }
         }
+      } catch (error) {
+        console.error('Error loading user data:', error);
       }
     };
 

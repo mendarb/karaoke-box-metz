@@ -7,9 +7,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Loader2 } from "lucide-react";
+import { Loader2, Mail } from "lucide-react";
 
 interface ProfileFormData {
   fullName: string;
@@ -52,9 +53,14 @@ export const ProfileForm = ({ initialData, onSubmit, isLoading }: ProfileFormPro
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input {...field} disabled />
+                <div className="relative">
+                  <Input {...field} disabled className="pr-10 bg-gray-50" />
+                  <Mail className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
+                </div>
               </FormControl>
-              <FormMessage />
+              <FormDescription className="text-sm text-muted-foreground">
+                Pour modifier votre email, utilisez l'onglet "Sécurité"
+              </FormDescription>
             </FormItem>
           )}
         />
@@ -66,7 +72,7 @@ export const ProfileForm = ({ initialData, onSubmit, isLoading }: ProfileFormPro
             <FormItem>
               <FormLabel>Téléphone</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input {...field} type="tel" />
               </FormControl>
               <FormMessage />
             </FormItem>

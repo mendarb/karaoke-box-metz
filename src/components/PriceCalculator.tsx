@@ -13,6 +13,12 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
   const [price, setPrice] = useState(0);
   const [discount, setDiscount] = useState(0);
   const [discountPercentage, setDiscountPercentage] = useState(0);
+  const [priceDetails, setPriceDetails] = useState({
+    baseHourRate: 0,
+    basePersonRate: 0,
+    pricePerHour: 0,
+    pricePerPerson: 0
+  });
   const isMobile = useIsMobile();
 
   const { data: settings } = useQuery({
@@ -29,7 +35,6 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
         throw error;
       }
 
-      // Default values if no settings are found
       const defaultSettings = { perHour: 30, perPerson: 5 };
       
       if (!data?.value) {
@@ -56,14 +61,13 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
       return;
     }
 
-    // Ensure settings.perHour and settings.perPerson are numbers
     const baseHourRate = typeof settings.perHour === 'string' 
       ? parseFloat(settings.perHour) 
-      : settings.perHour || 30; // Fallback to default if undefined
+      : settings.perHour || 30;
       
     const basePersonRate = typeof settings.perPerson === 'string' 
       ? parseFloat(settings.perPerson) 
-      : settings.perPerson || 5; // Fallback to default if undefined
+      : settings.perPerson || 5;
 
     console.log('Base rates:', { baseHourRate, basePersonRate });
 
@@ -72,7 +76,8 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
       return;
     }
 
-    const basePrice = baseHourRate + (size * basePersonRate);
+    const pricePerPerson = size * basePersonRate;
+    const basePrice = baseHourRate + pricePerPerson;
     const totalWithoutDiscount = basePrice * hours;
     let finalPrice = basePrice;
 
@@ -84,6 +89,13 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
 
     const totalDiscount = totalWithoutDiscount - finalPrice;
     const calculatedDiscountPercentage = hours > 1 ? 10 : 0;
+
+    setPriceDetails({
+      baseHourRate,
+      basePersonRate,
+      pricePerHour: baseHourRate,
+      pricePerPerson: basePersonRate * size
+    });
 
     console.log('Price calculation:', {
       basePrice,
@@ -116,8 +128,15 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
       <p className="text-xl sm:text-2xl font-bold text-violet-900 mb-2">
         Prix total : {formatPrice(price)}
       </p>
+      
+      <div className="text-sm text-gray-600 space-y-1 mb-2">
+        <p>Base horaire : {formatPrice(priceDetails.pricePerHour)}/h</p>
+        <p>Supplément groupe : {formatPrice(priceDetails.pricePerPerson)}</p>
+        <p className="text-xs text-gray-500">({formatPrice(priceDetails.basePersonRate)} × {groupSize} pers.)</p>
+      </div>
+
       {discount > 0 && (
-        <p className="text-sm text-green-600 font-medium mb-2 flex items-center gap-2">
+        <p className="text-sm text-green-600 font-medium flex items-center gap-2">
           Économie : {formatPrice(discount)}
           <span className="bg-green-100/80 backdrop-blur-sm text-green-700 px-2 py-1 rounded-full text-xs font-semibold">
             -{discountPercentage}%

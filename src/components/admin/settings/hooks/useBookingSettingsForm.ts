@@ -18,7 +18,7 @@ export const useBookingSettingsForm = () => {
           .from('booking_settings')
           .select('value')
           .eq('key', 'booking_settings')
-          .maybeSingle();
+          .single();
 
         if (fetchError) {
           console.error('Error fetching settings:', fetchError);
@@ -41,6 +41,7 @@ export const useBookingSettingsForm = () => {
             throw insertError;
           }
 
+          console.log('Default settings created:', newSettings);
           return newSettings.value as BookingSettings;
         }
 
@@ -48,7 +49,7 @@ export const useBookingSettingsForm = () => {
         return existingSettings.value as BookingSettings;
       } catch (err) {
         console.error('Query error:', err);
-        return defaultSettings;
+        throw err;
       }
     },
     retry: 2,

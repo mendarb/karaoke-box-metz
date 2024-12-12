@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -56,6 +56,7 @@ export const BookingSettingsForm = () => {
     queryKey: ['booking-settings'],
     queryFn: async () => {
       try {
+        console.log('Fetching booking settings...');
         const { data: existingSettings, error: fetchError } = await supabase
           .from('booking_settings')
           .select('*')
@@ -95,8 +96,16 @@ export const BookingSettingsForm = () => {
     staleTime: 30000, // Consider data fresh for 30 seconds
   });
 
+  useEffect(() => {
+    if (settings) {
+      console.log('Setting form values:', settings);
+      form.reset(settings);
+    }
+  }, [settings, form]);
+
   const mutation = useMutation({
     mutationFn: async (data: BookingSettings) => {
+      console.log('Saving settings:', data);
       const { data: existingSettings } = await supabase
         .from('booking_settings')
         .select('id')

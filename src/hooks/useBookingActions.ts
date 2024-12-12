@@ -63,12 +63,15 @@ export const useBookingActions = () => {
 
   const deleteBooking = async (bookingId: string) => {
     setIsLoading(true);
+    console.log('Starting deletion:', { bookingId });
+    
     try {
       const { error } = await supabase
         .from('bookings')
         .update({ 
           deleted_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
+          status: 'cancelled' as BookingStatus
         })
         .eq('id', bookingId);
 
@@ -77,6 +80,7 @@ export const useBookingActions = () => {
         throw error;
       }
 
+      console.log('Deletion successful');
       await queryClient.invalidateQueries({ queryKey: ['bookings'] });
       
       toast({

@@ -23,6 +23,9 @@ export const BookingDetails = ({
   userEmail,
   userPhone,
 }: BookingDetailsProps) => {
+  const startHour = timeSlot;
+  const endHour = parseInt(timeSlot) + parseInt(duration);
+
   return (
     <>
       <div className="space-y-1">
@@ -32,7 +35,7 @@ export const BookingDetails = ({
         </div>
         <div className="flex items-center text-sm text-gray-500">
           <Clock className="mr-2 h-4 w-4" />
-          {timeSlot}h - {parseInt(timeSlot) + parseInt(duration)}h
+          {startHour}:00 - {endHour}:00
         </div>
       </div>
       <div className="space-y-1">
@@ -52,7 +55,7 @@ export const BookingDetails = ({
       </div>
       <div className="flex items-center">
         <Euro className="mr-1 h-4 w-4" />
-        {price}
+        {price}€
       </div>
     </>
   );

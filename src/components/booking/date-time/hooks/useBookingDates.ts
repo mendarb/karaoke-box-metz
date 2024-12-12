@@ -7,6 +7,13 @@ export const useBookingDates = () => {
   const { getAvailableSlots, getAvailableHoursForSlot } = useTimeSlots();
   const { minDate, maxDate } = getDateBoundaries(settings);
 
+  console.log('useBookingDates settings:', {
+    settings,
+    minDate,
+    maxDate,
+    isTestMode: settings?.isTestMode
+  });
+
   const isDayExcluded = (date: Date) => {
     return isDateExcluded(date, settings, minDate, maxDate);
   };

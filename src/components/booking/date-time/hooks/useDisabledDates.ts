@@ -16,17 +16,16 @@ export const useDisabledDates = ({ minDate, maxDate, isDayExcluded }: UseDisable
       setIsLoadingDates(true);
       try {
         const today = startOfDay(new Date());
-        const endDate = startOfDay(addMonths(today, 12)); // Extended range for test mode
+        const endDate = maxDate;
         
         const disabledDates: Date[] = [];
-        let currentDate = startOfDay(new Date(today));
+        let currentDate = startOfDay(today);
         
         while (currentDate <= endDate) {
-          // Always check against minDate regardless of test mode
           if (isDayExcluded(currentDate)) {
             disabledDates.push(new Date(currentDate));
           }
-          currentDate.setDate(currentDate.getDate() + 1);
+          currentDate = addDays(currentDate, 1);
         }
         
         setDisabledDates(disabledDates);
@@ -41,4 +40,11 @@ export const useDisabledDates = ({ minDate, maxDate, isDayExcluded }: UseDisable
   }, [minDate, maxDate, isDayExcluded]);
 
   return { disabledDates, isLoadingDates };
+};
+
+// Helper function
+const addDays = (date: Date, days: number): Date => {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
 };

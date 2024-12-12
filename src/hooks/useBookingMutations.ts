@@ -10,7 +10,7 @@ export const useBookingMutations = () => {
   const { notifySuccess, notifyError } = useBookingNotifications();
 
   const mutation = useMutation({
-    mutationFn: async ({ bookingId, newStatus }: { bookingId: string; newStatus: string }): Promise<void> => {
+    mutationFn: async ({ bookingId, newStatus }: { bookingId: string; newStatus: string }): Promise<Booking> => {
       console.log('Début de la mutation pour la réservation:', bookingId);
       
       // D'abord faire la mise à jour
@@ -44,6 +44,9 @@ export const useBookingMutations = () => {
         // On continue même si l'email échoue
       }
 
+      return updatedBooking;
+    },
+    onSuccess: (updatedBooking) => {
       // Mettre à jour le cache immédiatement
       queryClient.setQueryData(['bookings'], (oldData: Booking[] | undefined) => {
         if (!oldData) return [updatedBooking];
@@ -51,9 +54,8 @@ export const useBookingMutations = () => {
           booking.id === updatedBooking.id ? updatedBooking : booking
         );
       });
-    },
-    onSuccess: () => {
-      // Invalider les requêtes pour forcer un re-fetch
+      
+      // Invalider la requête pour forcer un re-fetch
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
       notifySuccess();
     },

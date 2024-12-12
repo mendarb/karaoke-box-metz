@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useBookingEmail } from "./useBookingEmail";
 import { useBookingNotifications } from "./useBookingNotifications";
+import { Booking } from "./useBookings";
 
 export const useBookingMutations = () => {
   const queryClient = useQueryClient();
@@ -12,26 +13,20 @@ export const useBookingMutations = () => {
     mutationFn: async ({ bookingId, newStatus }: { bookingId: string; newStatus: string }): Promise<void> => {
       console.log('Début de la mutation pour la réservation:', bookingId);
       
-      const { error: updateError } = await supabase
+      const { data: updatedBooking, error: updateError } = await supabase
         .from('bookings')
         .update({ status: newStatus })
-        .eq('id', bookingId);
+        .eq('id', bookingId)
+        .select('*')
+        .single();
 
       if (updateError) {
         console.error('Erreur lors de la mise à jour:', updateError);
         throw updateError;
       }
 
-      // Récupérer la réservation mise à jour pour l'email
-      const { data: updatedBooking, error: fetchError } = await supabase
-        .from('bookings')
-        .select('*')
-        .eq('id', bookingId)
-        .single();
-
-      if (fetchError || !updatedBooking) {
-        console.error('Erreur lors de la récupération:', fetchError);
-        throw fetchError || new Error('Réservation non trouvée');
+      if (!updatedBooking) {
+        throw new Error('Réservation non trouvée');
       }
 
       try {
@@ -41,9 +36,17 @@ export const useBookingMutations = () => {
         console.error('Erreur envoi email:', emailError);
         // On continue même si l'email échoue
       }
+
+      // Mettre à jour le cache immédiatement
+      queryClient.setQueryData(['bookings'], (oldData: Booking[] | undefined) => {
+        if (!oldData) return [updatedBooking];
+        return oldData.map(booking => 
+          booking.id === updatedBooking.id ? updatedBooking : booking
+        );
+      });
     },
     onSuccess: () => {
-      // Invalider toutes les requêtes liées aux réservations
+      // Invalider les requêtes pour forcer un re-fetch
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
       notifySuccess();
     },

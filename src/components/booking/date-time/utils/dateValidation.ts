@@ -4,9 +4,8 @@ import type { BookingSettings } from "@/components/admin/settings/types/bookingS
 export const getDateBoundaries = (settings: BookingSettings | undefined) => {
   const today = startOfDay(new Date());
   
-  const minDate = settings?.isTestMode 
-    ? today
-    : addDays(today, settings?.bookingWindow?.startDays || 1);
+  // Always respect the minimum days setting, even in test mode
+  const minDate = addDays(today, settings?.bookingWindow?.startDays || 1);
     
   const maxDate = settings?.isTestMode
     ? addDays(today, 365)

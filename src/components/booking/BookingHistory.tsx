@@ -18,6 +18,7 @@ export const BookingHistory = () => {
         .from('bookings')
         .select('*')
         .eq('user_id', session.user.id)
+        .is('deleted_at', null) // Exclude deleted bookings
         .order('date', { ascending: false });
 
       if (error) throw error;

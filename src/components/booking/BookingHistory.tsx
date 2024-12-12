@@ -18,7 +18,7 @@ export const BookingHistory = () => {
         .from('bookings')
         .select('*')
         .eq('user_id', session.user.id)
-        .is('deleted_at', null) // Exclude deleted bookings
+        .is('deleted_at', null)
         .order('date', { ascending: false });
 
       if (error) throw error;
@@ -42,61 +42,67 @@ export const BookingHistory = () => {
     );
   }
 
-  const downloadInvoice = async (booking: any) => {
-    // TODO: Implement invoice download
-    console.log('Téléchargement de la facture pour la réservation:', booking.id);
-  };
-
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-bold mb-4">Mes réservations</h2>
       <div className="grid gap-4">
-        {bookings.map((booking) => (
-          <Card key={booking.id} className="p-6">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h3 className="text-lg font-semibold">
-                  {format(new Date(booking.date), 'EEEE d MMMM yyyy', { locale: fr })}
-                </h3>
-                <p className="text-gray-600">
-                  {booking.time_slot}h - {parseInt(booking.time_slot) + parseInt(booking.duration)}h
-                </p>
+        {bookings.map((booking) => {
+          const startHour = parseInt(booking.time_slot);
+          const endHour = startHour + parseInt(booking.duration);
+          
+          return (
+            <Card key={booking.id} className="p-6">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold">
+                    {format(new Date(booking.date), 'EEEE d MMMM yyyy', { locale: fr })}
+                  </h3>
+                  <p className="text-gray-600">
+                    {`${booking.time_slot}:00 - ${endHour}:00`}
+                  </p>
+                </div>
+                <BookingStatusBadge 
+                  status={booking.status} 
+                  paymentStatus={booking.payment_status}
+                  isTestBooking={booking.is_test_booking}
+                />
               </div>
-              <BookingStatusBadge status={booking.status} />
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <p className="text-sm text-gray-600">Personnes</p>
-                <p className="font-medium">{booking.group_size}</p>
+              
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <p className="text-sm text-gray-600">Personnes</p>
+                  <p className="font-medium">{booking.group_size}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Durée</p>
+                  <p className="font-medium">{booking.duration}h</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Prix</p>
+                  <p className="font-medium">{booking.price}€</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Paiement</p>
+                  <p className="font-medium">
+                    {booking.payment_status === 'paid' ? 'Payé' : 'En attente'}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-gray-600">Durée</p>
-                <p className="font-medium">{booking.duration}h</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Prix</p>
-                <p className="font-medium">{booking.price}€</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Paiement</p>
-                <p className="font-medium">
-                  {booking.payment_status === 'paid' ? 'Payé' : 'En attente'}
-                </p>
-              </div>
-            </div>
 
-            {booking.payment_status === 'paid' && (
-              <Button
-                variant="outline"
-                onClick={() => downloadInvoice(booking)}
-                className="w-full"
-              >
-                Télécharger la facture
-              </Button>
-            )}
-          </Card>
-        ))}
+              {booking.payment_status === 'paid' && (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    console.log('Téléchargement de la facture pour la réservation:', booking.id);
+                  }}
+                >
+                  Télécharger la facture
+                </Button>
+              )}
+            </Card>
+          );
+        })}
       </div>
     </div>
   );

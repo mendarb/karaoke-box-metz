@@ -16,7 +16,7 @@ export interface Booking {
   user_phone: string;
   payment_status: string;
   created_at: string;
-  isTestBooking?: boolean;
+  is_test_booking: boolean;
 }
 
 export const useBookings = () => {

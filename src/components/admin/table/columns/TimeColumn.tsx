@@ -12,7 +12,7 @@ export const getTimeColumn = (): ColumnDef<Booking> => ({
       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       className="hover:bg-transparent"
     >
-      Heure
+      Horaire
       <ArrowUpDown className="ml-2 h-4 w-4" />
     </Button>
   ),

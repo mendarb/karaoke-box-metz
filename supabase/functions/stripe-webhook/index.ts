@@ -2,15 +2,10 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from 'https://esm.sh/stripe@14.21.0';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
-const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
-  apiVersion: '2023-10-16',
-  httpClient: Stripe.createFetchHttpClient(),
-});
-
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-
-const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
 
 serve(async (req) => {
   try {
@@ -27,6 +22,25 @@ serve(async (req) => {
       console.error('Webhook secret not configured');
       return new Response(JSON.stringify({ error: 'Webhook secret not configured' }), { status: 500 });
     }
+
+    // Utiliser la bonne clé Stripe en fonction du mode
+    const isTestMode = JSON.parse(body).data.object?.metadata?.isTestMode === 'true';
+    const stripeSecretKey = isTestMode 
+      ? Deno.env.get('STRIPE_TEST_SECRET_KEY')
+      : Deno.env.get('STRIPE_SECRET_KEY');
+
+    if (!stripeSecretKey) {
+      console.error(isTestMode ? 'Test mode API key not configured' : 'Live mode API key not configured');
+      return new Response(
+        JSON.stringify({ error: 'Stripe API key not configured' }), 
+        { status: 500 }
+      );
+    }
+
+    const stripe = new Stripe(stripeSecretKey, {
+      apiVersion: '2023-10-16',
+      httpClient: Stripe.createFetchHttpClient(),
+    });
 
     let event;
     try {
@@ -48,6 +62,10 @@ serve(async (req) => {
       }
 
       console.log('Creating booking with metadata:', metadata);
+
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+      const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
       const { data: booking, error: bookingError } = await supabase
         .from('bookings')
@@ -77,12 +95,18 @@ serve(async (req) => {
       console.log('Booking created successfully:', booking);
     }
 
-    return new Response(JSON.stringify({ received: true }), { status: 200 });
+    return new Response(JSON.stringify({ received: true }), { 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200 
+    });
   } catch (error) {
     console.error('Error processing webhook:', error);
     return new Response(
       JSON.stringify({ error: error.message }), 
-      { status: 500 }
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500 
+      }
     );
   }
 });

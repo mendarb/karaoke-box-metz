@@ -26,7 +26,7 @@ serve(async (req) => {
       isTestMode 
     } = await req.json()
 
-    console.log('Creating checkout with mode:', isTestMode ? 'test' : 'live', {
+    console.log('Creating checkout session with params:', {
       price,
       groupSize,
       duration,
@@ -36,7 +36,7 @@ serve(async (req) => {
       isTestMode
     });
 
-    // Use test key if in test mode
+    // Utiliser la clé appropriée en fonction du mode
     const stripeSecretKey = isTestMode 
       ? Deno.env.get('STRIPE_TEST_SECRET_KEY')
       : Deno.env.get('STRIPE_SECRET_KEY');
@@ -77,7 +77,7 @@ serve(async (req) => {
         message: message || '',
         userName,
         userPhone,
-        isTestMode: String(isTestMode)  // Assurons-nous que c'est une chaîne
+        isTestMode: String(isTestMode)
       },
     })
 

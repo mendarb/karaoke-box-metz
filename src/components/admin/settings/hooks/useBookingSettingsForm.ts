@@ -18,7 +18,7 @@ export const useBookingSettingsForm = () => {
           .from('booking_settings')
           .select('value')
           .eq('key', 'booking_settings')
-          .single();
+          .maybeSingle();
 
         if (fetchError) {
           console.error('Error fetching settings:', fetchError);

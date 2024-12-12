@@ -36,34 +36,37 @@ export const useCalculatePrice = ({
 
     console.log('Base rates:', { baseHourRate, basePersonRate });
 
-    // Calcul du prix de base pour une heure
-    const baseHourlyPrice = baseHourRate + (basePersonRate * size);
-    console.log('Base hourly price:', baseHourlyPrice);
+    // Calcul du prix de base par personne et par heure
+    const pricePerPersonHour = baseHourRate / size + basePersonRate;
+    const baseHourlyPrice = pricePerPersonHour * size;
 
-    let finalPrice = baseHourlyPrice; // Prix pour la première heure (sans réduction)
+    console.log('Base price calculation:', { pricePerPersonHour, baseHourlyPrice });
+
+    let finalPrice = baseHourlyPrice; // Prix pour la première heure (plein tarif)
 
     // Application de la réduction de 10% sur les heures supplémentaires
     if (hours > 1) {
       const additionalHours = hours - 1;
-      const discountedPrice = baseHourlyPrice * 0.9; // 10% de réduction
-      const additionalHoursPrice = discountedPrice * additionalHours;
+      const discountedHourlyPrice = baseHourlyPrice * 0.9; // 10% de réduction
+      const additionalHoursPrice = discountedHourlyPrice * additionalHours;
       finalPrice += additionalHoursPrice;
 
-      console.log('Price calculation details:', {
-        baseHourlyPrice,
+      console.log('Additional hours calculation:', {
         additionalHours,
-        discountedPrice,
+        discountedHourlyPrice,
         additionalHoursPrice,
         finalPrice
       });
     }
 
-    const pricePerPersonHour = Math.round((baseHourlyPrice / size) * 100) / 100;
+    // Arrondir le prix final à 2 décimales
+    finalPrice = Math.round(finalPrice * 100) / 100;
 
-    console.log('Final price calculation:', {
-      baseHourlyPrice,
+    console.log('Final calculation:', {
+      pricePerPersonHour,
       finalPrice,
-      pricePerPersonHour
+      hours,
+      size
     });
 
     setPrice(finalPrice);

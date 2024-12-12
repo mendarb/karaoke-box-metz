@@ -104,29 +104,28 @@ export const useBookingDates = () => {
       return maxPossibleHours;
     }
 
-    console.log('Existing bookings for date:', { date, bookings });
-
     if (!bookings || bookings.length === 0) {
       console.log('No existing bookings, returning max hours:', maxPossibleHours);
       return maxPossibleHours;
     }
 
-    const currentSlotTime = parseInt(timeSlot.split(':')[0]);
+    const slotTime = parseInt(timeSlot.split(':')[0]);
     
     // Trouver la première réservation qui bloque
-    const blockingBooking = bookings.find(booking => {
-      const bookingTime = parseInt(booking.time_slot.split(':')[0]);
-      return bookingTime > currentSlotTime && bookingTime < currentSlotTime + maxPossibleHours;
+    let availableHours = maxPossibleHours;
+
+    bookings.forEach(booking => {
+      const bookingStartTime = parseInt(booking.time_slot.split(':')[0]);
+      const bookingDuration = parseInt(booking.duration);
+      
+      if (bookingStartTime > slotTime) {
+        const hoursUntilBooking = bookingStartTime - slotTime;
+        availableHours = Math.min(availableHours, hoursUntilBooking);
+      }
     });
 
-    if (blockingBooking) {
-      const bookingTime = parseInt(blockingBooking.time_slot.split(':')[0]);
-      const availableHours = bookingTime - currentSlotTime;
-      console.log(`Blocking booking found at ${bookingTime}h, limiting to ${availableHours} hours`);
-      return availableHours;
-    }
-
-    return maxPossibleHours;
+    console.log(`Available hours for slot ${timeSlot}:`, availableHours);
+    return availableHours;
   };
 
   const getAvailableSlots = async (date: Date) => {
@@ -146,7 +145,7 @@ export const useBookingDates = () => {
     const slots = daySettings.slots || [];
     console.log('Potential slots for day:', slots);
 
-    // Vérifier les réservations existantes pour filtrer les créneaux déjà pris
+    // Vérifier les réservations existantes
     const { data: bookings, error } = await supabase
       .from('bookings')
       .select('*')
@@ -159,14 +158,13 @@ export const useBookingDates = () => {
       return slots;
     }
 
-    console.log('Existing bookings:', bookings);
-
     // Filtrer les créneaux déjà réservés
     const availableSlots = slots.filter(slot => {
+      const slotTime = parseInt(slot.split(':')[0]);
+      
       const isBooked = bookings?.some(booking => {
         const bookingStartTime = parseInt(booking.time_slot.split(':')[0]);
         const bookingDuration = parseInt(booking.duration);
-        const slotTime = parseInt(slot.split(':')[0]);
         
         // Vérifier si le créneau est dans la plage de la réservation
         return slotTime >= bookingStartTime && slotTime < (bookingStartTime + bookingDuration);

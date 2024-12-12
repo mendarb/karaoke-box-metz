@@ -32,6 +32,7 @@ export const useBookingSubmit = (
       setIsSubmitting(true);
       console.log('Starting submission with data:', { ...data, groupSize, duration, calculatedPrice });
 
+      // Vérifier la session
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) {
         toast({
@@ -42,13 +43,15 @@ export const useBookingSubmit = (
         return false;
       }
 
+      // Vérifier la disponibilité du créneau
       const isAvailable = await checkTimeSlotAvailability(data.date, data.timeSlot, duration);
       if (!isAvailable) {
         console.log('Time slot not available');
         return false;
       }
 
-      console.log('Creating checkout session...');
+      // Créer la session de paiement
+      console.log('Creating checkout session with test mode:', settings?.isTestMode);
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
         body: JSON.stringify({
           price: calculatedPrice,

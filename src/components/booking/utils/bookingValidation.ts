@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { toast } from "@/components/ui/use-toast";
+import { addDays, startOfDay } from "date-fns";
 
 export const checkTimeSlotAvailability = async (
   date: Date, 
@@ -35,6 +36,19 @@ export const checkTimeSlotAvailability = async (
   }
 
   const settings = settingsData.value;
+  const today = startOfDay(new Date());
+  const minDate = settings.isTestMode ? today : addDays(today, settings.bookingWindow?.startDays || 1);
+
+  // Vérifier le délai minimum de réservation
+  if (date < minDate) {
+    toast({
+      title: "Date non disponible",
+      description: `Les réservations doivent être faites au moins ${settings.bookingWindow?.startDays} jours à l'avance.`,
+      variant: "destructive",
+    });
+    return false;
+  }
+
   const dayOfWeek = date.getDay().toString();
   const daySettings = settings.openingHours?.[dayOfWeek];
 
@@ -58,6 +72,7 @@ export const checkTimeSlotAvailability = async (
     return false;
   }
 
+  // Vérifier les réservations existantes
   const { data: bookings, error } = await supabase
     .from('bookings')
     .select('*')
@@ -69,8 +84,6 @@ export const checkTimeSlotAvailability = async (
     console.error('Error checking availability:', error);
     return false;
   }
-
-  console.log('Found bookings:', bookings);
 
   const hasOverlap = bookings?.some(booking => {
     const existingStartTime = parseInt(booking.time_slot.split(':')[0]) * 60 + parseInt(booking.time_slot.split(':')[1] || '0');

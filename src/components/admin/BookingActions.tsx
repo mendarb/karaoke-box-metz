@@ -8,6 +8,7 @@ import {
 import { MoreHorizontal, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/components/ui/use-toast";
 
 interface BookingActionsProps {
   bookingId: string;
@@ -18,16 +19,22 @@ export const BookingActions = ({ bookingId, onStatusChange }: BookingActionsProp
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const handleStatusChange = async (status: string) => {
     setIsLoading(true);
     try {
       await onStatusChange(bookingId, status);
       setIsOpen(false);
-      // Force un re-fetch immédiat après la mise à jour
+      // Force un re-fetch après la mise à jour
       await queryClient.invalidateQueries({ queryKey: ['bookings'] });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur action:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour le statut de la réservation",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }

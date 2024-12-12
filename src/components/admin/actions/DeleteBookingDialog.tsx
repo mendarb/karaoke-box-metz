@@ -23,7 +23,7 @@ export const DeleteBookingDialog = ({
   onConfirm,
 }: DeleteBookingDialogProps) => {
   return (
-    <AlertDialog open={isOpen}>
+    <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>

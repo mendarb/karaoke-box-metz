@@ -30,7 +30,6 @@ export const BookingActions = ({
     try {
       await deleteBooking(bookingId);
       setShowDeleteDialog(false);
-      setIsOpen(false);
     } catch (error) {
       console.error('Error deleting booking:', error);
     }

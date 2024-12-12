@@ -7,6 +7,7 @@ import { Settings } from "@/pages/Settings";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { AccountPage } from "@/components/account/AccountPage";
 import { ResetPassword } from "@/components/auth/ResetPassword";
+import { AdminDashboard } from "@/components/admin/AdminDashboard";
 
 export const AppRoutes = () => {
   return (
@@ -34,7 +35,7 @@ export const AppRoutes = () => {
         path="/admin"
         element={
           <ProtectedRoute adminOnly>
-            <Calendar />
+            <AdminDashboard />
           </ProtectedRoute>
         }
       />

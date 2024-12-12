@@ -20,10 +20,9 @@ export const BookingActions = ({
   const handleStatusChange = async (newStatus: BookingStatus) => {
     try {
       await updateBookingStatus(bookingId, newStatus);
+      setIsOpen(false);
     } catch (error) {
       console.error('Error in handleStatusChange:', error);
-    } finally {
-      setIsOpen(false);
     }
   };
 
@@ -51,10 +50,7 @@ export const BookingActions = ({
       <DeleteBookingDialog
         isOpen={showDeleteDialog}
         isLoading={isLoading}
-        onClose={() => {
-          setShowDeleteDialog(false);
-          setIsOpen(false);
-        }}
+        onClose={() => setShowDeleteDialog(false)}
         onConfirm={handleDelete}
       />
     </>

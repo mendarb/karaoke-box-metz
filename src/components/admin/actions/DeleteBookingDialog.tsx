@@ -13,7 +13,7 @@ interface DeleteBookingDialogProps {
   isOpen: boolean;
   isLoading: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: () => Promise<void>;
 }
 
 export const DeleteBookingDialog = ({
@@ -23,15 +23,14 @@ export const DeleteBookingDialog = ({
   onConfirm,
 }: DeleteBookingDialogProps) => {
   return (
-    <AlertDialog 
-      open={isOpen} 
-      onOpenChange={(open) => {
-        if (!isLoading && !open) {
+    <AlertDialog open={isOpen}>
+      <AlertDialogContent onPointerDownOutside={(e) => {
+        // Empêcher la propagation pour éviter le pointer-events: none
+        e.preventDefault();
+        if (!isLoading) {
           onClose();
         }
-      }}
-    >
-      <AlertDialogContent>
+      }}>
         <AlertDialogHeader>
           <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
           <AlertDialogDescription>
@@ -39,9 +38,20 @@ export const DeleteBookingDialog = ({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading}>Annuler</AlertDialogCancel>
+          <AlertDialogCancel 
+            disabled={isLoading}
+            onClick={(e) => {
+              e.preventDefault();
+              onClose();
+            }}
+          >
+            Annuler
+          </AlertDialogCancel>
           <AlertDialogAction 
-            onClick={onConfirm}
+            onClick={async (e) => {
+              e.preventDefault();
+              await onConfirm();
+            }}
             className="bg-red-600 hover:bg-red-700"
             disabled={isLoading}
           >

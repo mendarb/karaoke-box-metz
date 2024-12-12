@@ -9,33 +9,52 @@ export const EmailSection = () => {
   const { toast } = useToast();
   const [newEmail, setNewEmail] = useState("");
   const [showEmailInput, setShowEmailInput] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleUpdateEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newEmail) return;
 
-    const { error } = await supabase.auth.updateUser({ 
-      email: newEmail 
-    }, {
-      emailRedirectTo: `${window.location.origin}/account/security`
-    });
+    setIsLoading(true);
+    console.log("Début de la mise à jour de l'email vers:", newEmail);
 
-    if (error) {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      console.log("Utilisateur actuel:", user);
+
+      if (!user) {
+        throw new Error("Utilisateur non connecté");
+      }
+
+      const { data, error } = await supabase.auth.updateUser({ 
+        email: newEmail 
+      }, {
+        emailRedirectTo: `${window.location.origin}/account/security`
+      });
+
+      console.log("Réponse de updateUser:", { data, error });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Email envoyé",
+        description: "Vérifiez votre boîte mail pour confirmer le changement d'email",
+      });
+      
+      setShowEmailInput(false);
+      setNewEmail("");
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour de l'email:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de modifier l'email",
+        description: error instanceof Error ? error.message : "Impossible de modifier l'email",
         variant: "destructive",
       });
-      return;
+    } finally {
+      setIsLoading(false);
     }
-
-    toast({
-      title: "Email envoyé",
-      description: "Vérifiez votre boîte mail pour confirmer le changement d'email",
-    });
-    
-    setShowEmailInput(false);
-    setNewEmail("");
   };
 
   return (
@@ -52,11 +71,12 @@ export const EmailSection = () => {
               onChange={(e) => setNewEmail(e.target.value)}
               placeholder="nouveau@email.com"
               required
+              disabled={isLoading}
             />
           </div>
           <div className="flex space-x-2">
-            <Button type="submit">
-              Confirmer
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Envoi en cours..." : "Confirmer"}
             </Button>
             <Button 
               type="button" 
@@ -65,6 +85,7 @@ export const EmailSection = () => {
                 setShowEmailInput(false);
                 setNewEmail("");
               }}
+              disabled={isLoading}
             >
               Annuler
             </Button>

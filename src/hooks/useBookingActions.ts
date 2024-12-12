@@ -9,19 +9,20 @@ export const useBookingActions = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const updateBookingStatus = async (bookingId: string, status: BookingStatus) => {
+  const updateBookingStatus = async (bookingId: string, newStatus: BookingStatus) => {
     setIsLoading(true);
-    console.log('Starting status update:', { bookingId, status });
+    console.log('Starting status update:', { bookingId, newStatus });
 
     try {
       const { data, error } = await supabase
         .from('bookings')
         .update({ 
-          status: status,
+          status: newStatus,
           updated_at: new Date().toISOString()
         })
         .eq('id', bookingId)
-        .select('*')
+        .is('deleted_at', null)
+        .select()
         .single();
 
       if (error) {
@@ -61,7 +62,8 @@ export const useBookingActions = () => {
         .update({ 
           deleted_at: new Date().toISOString()
         })
-        .eq('id', bookingId);
+        .eq('id', bookingId)
+        .is('deleted_at', null);
 
       if (error) {
         console.error('Delete error:', error);
@@ -69,8 +71,6 @@ export const useBookingActions = () => {
       }
 
       console.log('Deletion successful');
-      
-      // Invalidate and refetch to update the UI
       await queryClient.invalidateQueries({ queryKey: ['bookings'] });
       
       toast({

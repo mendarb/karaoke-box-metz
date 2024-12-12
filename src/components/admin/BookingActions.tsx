@@ -33,28 +33,33 @@ export const BookingActions = ({ bookingId, currentStatus }: BookingActionsProps
   const handleStatusChange = async (newStatus: BookingStatus) => {
     try {
       await updateBookingStatus(bookingId, newStatus);
-      setIsOpen(false);
     } catch (error) {
       console.error('Error in handleStatusChange:', error);
+    } finally {
+      setIsOpen(false);
     }
   };
 
   const handleDelete = async () => {
     try {
       await deleteBooking(bookingId);
-      setShowDeleteDialog(false);
-      setIsOpen(false);
     } catch (error) {
       console.error('Error deleting booking:', error);
-      // Make sure to close dialogs even if there's an error
+    } finally {
       setShowDeleteDialog(false);
       setIsOpen(false);
     }
   };
 
+  const handleOpenChange = (open: boolean) => {
+    if (!isLoading) {
+      setIsOpen(open);
+    }
+  };
+
   return (
     <>
-      <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+      <DropdownMenu open={isOpen} onOpenChange={handleOpenChange}>
         <DropdownMenuTrigger asChild>
           <Button 
             variant="ghost" 
@@ -101,8 +106,10 @@ export const BookingActions = ({ bookingId, currentStatus }: BookingActionsProps
       <AlertDialog 
         open={showDeleteDialog} 
         onOpenChange={(open) => {
-          setShowDeleteDialog(open);
-          if (!open) setIsOpen(false);
+          if (!isLoading) {
+            setShowDeleteDialog(open);
+            if (!open) setIsOpen(false);
+          }
         }}
       >
         <AlertDialogContent>
@@ -117,8 +124,9 @@ export const BookingActions = ({ bookingId, currentStatus }: BookingActionsProps
             <AlertDialogAction 
               onClick={handleDelete}
               className="bg-red-600 hover:bg-red-700"
+              disabled={isLoading}
             >
-              Supprimer
+              {isLoading ? "Suppression..." : "Supprimer"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

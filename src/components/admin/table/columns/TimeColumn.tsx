@@ -12,13 +12,9 @@ export const getTimeColumn = (): ColumnDef<Booking> => ({
       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       className="hover:bg-transparent"
     >
-      Horaire
+      Heure
       <ArrowUpDown className="ml-2 h-4 w-4" />
     </Button>
   ),
-  cell: ({ row }) => {
-    const timeSlot = row.getValue("time_slot") as string;
-    const duration = row.original.duration;
-    return formatTimeSlot(timeSlot, duration);
-  },
+  cell: ({ row }) => formatTimeSlot(row.getValue("time_slot")),
 });

@@ -1,31 +1,20 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { DateColumn } from "./columns/DateColumn";
-import { TimeColumn } from "./columns/TimeColumn";
-import { GroupColumn } from "./columns/GroupColumn";
-import { PriceColumn } from "./columns/PriceColumn";
-import { StatusColumn } from "./columns/StatusColumn";
-import { ActionsColumn } from "./columns/ActionsColumn";
+import { getDateColumn } from "./columns/DateColumn";
+import { getTimeColumn } from "./columns/TimeColumn";
+import { getGroupColumn } from "./columns/GroupColumn";
+import { getPriceColumn } from "./columns/PriceColumn";
+import { getStatusColumn } from "./columns/StatusColumn";
+import { getActionsColumn } from "./columns/ActionsColumn";
+import { Booking } from "@/hooks/useBookings";
 
-export type Booking = {
-  id: string;
-  date: string;
-  time_slot: string;
-  duration: string;
-  group_size: string;
-  price: number;
-  status: string;
-  payment_status: string;
-  user_email: string;
-  user_name: string;
-  user_phone: string;
-  isTestBooking?: boolean;
-};
-
-export const columns: ColumnDef<Booking>[] = [
-  DateColumn,
-  TimeColumn,
-  GroupColumn,
-  PriceColumn,
-  StatusColumn,
-  ActionsColumn,
+export const createBookingColumns = (
+  isMobile: boolean,
+  onViewDetails: (booking: Booking) => void
+): ColumnDef<Booking>[] => [
+  getDateColumn(),
+  getTimeColumn(),
+  getGroupColumn(),
+  getPriceColumn(),
+  getStatusColumn(),
+  getActionsColumn(isMobile, onViewDetails),
 ];

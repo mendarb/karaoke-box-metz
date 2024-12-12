@@ -1,6 +1,5 @@
-import { useState } from "react";
-import { supabase } from "@/lib/supabase";
-import { useToast } from "@/components/ui/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import { fetchBookings } from "@/services/bookingService";
 
 export interface Booking {
   id: string;
@@ -20,32 +19,8 @@ export interface Booking {
 }
 
 export const useBookings = () => {
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-
-  const fetchBookings = async () => {
-    try {
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from('bookings')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setBookings(data || []);
-    } catch (error: any) {
-      console.error('Error fetching bookings:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les réservations",
-        variant: "destructive",
-      });
-      setBookings([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return { bookings, isLoading, fetchBookings };
+  return useQuery({
+    queryKey: ['bookings'],
+    queryFn: fetchBookings,
+  });
 };

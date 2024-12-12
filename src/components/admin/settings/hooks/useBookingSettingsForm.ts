@@ -1,8 +1,8 @@
 import { useForm } from "react-hook-form";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/ui/use-toast";
-import { BookingSettings, defaultSettings } from "../types/bookingSettings";
+import { BookingSettings } from "./bookingSettingsTypes";
+import { fetchBookingSettings, saveBookingSettings } from "./bookingSettingsDb";
 
 export const useBookingSettingsForm = () => {
   const { toast } = useToast();
@@ -11,73 +11,13 @@ export const useBookingSettingsForm = () => {
 
   const { data: settings, isLoading: isLoadingSettings } = useQuery({
     queryKey: ['booking-settings'],
-    queryFn: async () => {
-      try {
-        console.log('Fetching booking settings...');
-        const { data: existingSettings, error: fetchError } = await supabase
-          .from('booking_settings')
-          .select('*')
-          .eq('key', 'booking_settings')
-          .maybeSingle();
-
-        if (fetchError) {
-          console.error('Error fetching settings:', fetchError);
-          throw fetchError;
-        }
-
-        if (!existingSettings) {
-          console.log('No settings found, creating defaults...');
-          const { data: newSettings, error: insertError } = await supabase
-            .from('booking_settings')
-            .insert([{ 
-              key: 'booking_settings', 
-              value: defaultSettings 
-            }])
-            .select()
-            .single();
-
-          if (insertError) {
-            console.error('Error creating default settings:', insertError);
-            throw insertError;
-          }
-
-          console.log('Default settings created:', newSettings);
-          form.reset(newSettings.value);
-          return newSettings.value as BookingSettings;
-        }
-
-        console.log('Loaded settings:', existingSettings);
-        form.reset(existingSettings.value);
-        return existingSettings.value as BookingSettings;
-      } catch (err) {
-        console.error('Query error:', err);
-        throw err;
-      }
-    },
+    queryFn: fetchBookingSettings,
     retry: 1,
     staleTime: 0,
   });
 
   const mutation = useMutation({
-    mutationFn: async (data: BookingSettings) => {
-      console.log('Starting settings save:', data);
-      const { error: upsertError } = await supabase
-        .from('booking_settings')
-        .upsert({ 
-          key: 'booking_settings',
-          value: data 
-        }, {
-          onConflict: 'key'
-        });
-
-      if (upsertError) {
-        console.error('Error saving settings:', upsertError);
-        throw upsertError;
-      }
-
-      console.log('Settings saved successfully');
-      return data;
-    },
+    mutationFn: saveBookingSettings,
     onSuccess: (data) => {
       queryClient.setQueryData(['booking-settings'], data);
       form.reset(data);

@@ -26,12 +26,15 @@ export const checkTimeSlotAvailability = async (
     .from('bookings')
     .select('*')
     .eq('date', date.toISOString().split('T')[0])
-    .neq('status', 'cancelled');
+    .neq('status', 'cancelled')
+    .is('deleted_at', null);
 
   if (error) {
     console.error('Error checking availability:', error);
     return false;
   }
+
+  console.log('Found bookings:', bookings);
 
   const hasOverlap = bookings?.some(booking => {
     const existingStartTime = parseInt(booking.time_slot.split(':')[0]) * 60 + parseInt(booking.time_slot.split(':')[1] || '0');

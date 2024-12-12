@@ -2,6 +2,7 @@ import { UseFormReturn } from "react-hook-form";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
 import { checkTimeSlotAvailability } from "../utils/bookingValidation";
+import { useQuery } from "@tanstack/react-query";
 
 export const useBookingSubmit = (
   form: UseFormReturn<any>,
@@ -11,6 +12,20 @@ export const useBookingSubmit = (
   setIsSubmitting: (value: boolean) => void
 ) => {
   const { toast } = useToast();
+
+  const { data: settings } = useQuery({
+    queryKey: ['booking-settings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('booking_settings')
+        .select('*')
+        .eq('key', 'booking_settings')
+        .single();
+
+      if (error) throw error;
+      return data?.value;
+    }
+  });
 
   const handleSubmit = async (data: any) => {
     try {
@@ -30,11 +45,6 @@ export const useBookingSubmit = (
       const isAvailable = await checkTimeSlotAvailability(data.date, data.timeSlot, duration);
       if (!isAvailable) {
         console.log('Time slot not available');
-        toast({
-          title: "Erreur",
-          description: "Ce créneau n'est plus disponible.",
-          variant: "destructive",
-        });
         return false;
       }
 
@@ -50,8 +60,11 @@ export const useBookingSubmit = (
           userEmail: data.email,
           userName: data.fullName,
           userPhone: data.phone,
+          isTestMode: settings?.isTestMode || false
         })
       });
+
+      console.log('Checkout response:', { checkoutData, checkoutError });
 
       if (checkoutError) throw checkoutError;
       if (!checkoutData?.url) throw new Error("URL de paiement non reçue");

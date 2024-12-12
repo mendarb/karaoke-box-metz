@@ -6,16 +6,20 @@ export const useBookingDates = () => {
   const { data: settings } = useQuery({
     queryKey: ['booking-settings'],
     queryFn: async () => {
+      console.log('Fetching booking settings...');
       const { data, error } = await supabase
         .from('booking_settings')
-        .select('*');
+        .select('*')
+        .eq('key', 'booking_settings')
+        .single();
 
       if (error) {
         console.error('Error fetching settings:', error);
         throw error;
       }
 
-      const formattedSettings = {
+      console.log('Fetched settings:', data?.value);
+      return data?.value || {
         bookingWindow: { startDays: 0, endDays: 30 },
         openingHours: {
           0: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
@@ -29,25 +33,6 @@ export const useBookingDates = () => {
         excludedDays: [],
         isTestMode: false
       };
-
-      data?.forEach(setting => {
-        switch (setting.key) {
-          case 'booking_window':
-            if (setting.value) formattedSettings.bookingWindow = setting.value;
-            break;
-          case 'opening_hours':
-            if (setting.value) formattedSettings.openingHours = setting.value;
-            break;
-          case 'excluded_days':
-            if (setting.value) formattedSettings.excludedDays = setting.value;
-            break;
-          case 'is_test_mode':
-            formattedSettings.isTestMode = setting.value === true;
-            break;
-        }
-      });
-
-      return formattedSettings;
     },
   });
 
@@ -94,7 +79,8 @@ export const useBookingDates = () => {
       .from('bookings')
       .select('*')
       .eq('date', date.toISOString().split('T')[0])
-      .neq('status', 'cancelled');
+      .neq('status', 'cancelled')
+      .is('deleted_at', null);
 
     if (!bookings) return maxPossibleHours;
 
@@ -117,14 +103,21 @@ export const useBookingDates = () => {
   };
 
   const getAvailableSlots = async (date: Date) => {
-    if (!settings?.openingHours) return [];
+    if (!settings?.openingHours) {
+      console.log('No opening hours settings found');
+      return [];
+    }
 
     const dayOfWeek = date.getDay().toString();
     const daySettings = settings.openingHours[dayOfWeek];
 
-    if (!settings.isTestMode && !daySettings?.isOpen) return [];
+    if (!settings.isTestMode && !daySettings?.isOpen) {
+      console.log('Day is closed or no settings found for this day');
+      return [];
+    }
 
     const slots = daySettings?.slots || [];
+    console.log('Available slots before filtering:', slots);
     
     // Filter slots that have at least 1 hour available
     const availableSlots = await Promise.all(
@@ -134,9 +127,12 @@ export const useBookingDates = () => {
       })
     );
 
-    return availableSlots
+    const filteredSlots = availableSlots
       .filter(({ availableHours }) => availableHours >= 1)
       .map(({ slot }) => slot);
+
+    console.log('Filtered available slots:', filteredSlots);
+    return filteredSlots;
   };
 
   return {

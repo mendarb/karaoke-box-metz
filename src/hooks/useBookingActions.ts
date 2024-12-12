@@ -14,12 +14,28 @@ export const useBookingActions = () => {
     try {
       console.log('Updating booking status:', { bookingId, status });
       
+      // First check if the booking exists
+      const { data: existingBooking, error: checkError } = await supabase
+        .from('bookings')
+        .select()
+        .eq('id', bookingId)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error('Error checking booking:', checkError);
+        throw checkError;
+      }
+
+      if (!existingBooking) {
+        throw new Error('Booking not found');
+      }
+
+      // If booking exists, update its status
       const { data, error } = await supabase
         .from('bookings')
         .update({ status })
         .eq('id', bookingId)
-        .select()
-        .single();
+        .select();
 
       if (error) {
         console.error('Error updating booking:', error);
@@ -36,12 +52,14 @@ export const useBookingActions = () => {
         description: "Le statut de la réservation a été mis à jour",
       });
 
-      return data;
+      return data[0];
     } catch (error: any) {
       console.error('Erreur mise à jour réservation:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de mettre à jour le statut",
+        description: error.message === 'Booking not found' 
+          ? "Réservation introuvable" 
+          : "Impossible de mettre à jour le statut",
         variant: "destructive",
       });
       throw error;

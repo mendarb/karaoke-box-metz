@@ -30,7 +30,7 @@ export const AdminDashboard = () => {
         const { data, error: fetchError } = await supabase
           .from('bookings')
           .select('*')
-          .is('deleted_at', null)
+          .is('deleted_at', null)  // S'assurer que deleted_at est null
           .order('created_at', { ascending: false });
 
         if (fetchError) {

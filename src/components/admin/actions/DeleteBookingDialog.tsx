@@ -22,6 +22,11 @@ export const DeleteBookingDialog = ({
   onClose,
   onConfirm,
 }: DeleteBookingDialogProps) => {
+  const handleConfirm = async () => {
+    await onConfirm();
+    onClose();
+  };
+
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent>
@@ -34,12 +39,11 @@ export const DeleteBookingDialog = ({
         <AlertDialogFooter>
           <AlertDialogCancel 
             disabled={isLoading}
-            onClick={onClose}
           >
             Annuler
           </AlertDialogCancel>
           <AlertDialogAction 
-            onClick={onConfirm}
+            onClick={handleConfirm}
             className="bg-red-600 hover:bg-red-700"
             disabled={isLoading}
           >

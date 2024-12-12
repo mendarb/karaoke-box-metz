@@ -29,7 +29,6 @@ export const BookingActions = ({
   const handleDelete = async () => {
     try {
       await deleteBooking(bookingId);
-      setShowDeleteDialog(false);
     } catch (error) {
       console.error('Error deleting booking:', error);
     }
@@ -46,14 +45,12 @@ export const BookingActions = ({
         onDelete={() => setShowDeleteDialog(true)}
       />
 
-      {showDeleteDialog && (
-        <DeleteBookingDialog
-          isOpen={showDeleteDialog}
-          isLoading={isLoading}
-          onClose={() => setShowDeleteDialog(false)}
-          onConfirm={handleDelete}
-        />
-      )}
+      <DeleteBookingDialog
+        isOpen={showDeleteDialog}
+        isLoading={isLoading}
+        onClose={() => setShowDeleteDialog(false)}
+        onConfirm={handleDelete}
+      />
     </>
   );
 };

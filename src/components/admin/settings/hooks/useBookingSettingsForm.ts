@@ -16,30 +16,32 @@ export const useBookingSettingsForm = () => {
         console.log('Fetching booking settings...');
         const { data: existingSettings, error: fetchError } = await supabase
           .from('booking_settings')
-          .select('*')
+          .select('value')
           .eq('key', 'booking_settings')
           .maybeSingle();
 
         if (fetchError) {
           console.error('Error fetching settings:', fetchError);
-          return defaultSettings;
+          throw fetchError;
         }
 
         if (!existingSettings) {
           console.log('No settings found, creating defaults...');
-          const { error: insertError } = await supabase
+          const { data: newSettings, error: insertError } = await supabase
             .from('booking_settings')
             .insert([{ 
               key: 'booking_settings', 
               value: defaultSettings 
-            }]);
+            }])
+            .select('value')
+            .single();
 
           if (insertError) {
             console.error('Error creating default settings:', insertError);
-            return defaultSettings;
+            throw insertError;
           }
 
-          return defaultSettings;
+          return newSettings.value as BookingSettings;
         }
 
         console.log('Loaded settings:', existingSettings.value);
@@ -56,42 +58,20 @@ export const useBookingSettingsForm = () => {
   const mutation = useMutation({
     mutationFn: async (data: BookingSettings) => {
       console.log('Starting settings save:', data);
-      const { data: existingSettings, error: checkError } = await supabase
+      const { error: upsertError } = await supabase
         .from('booking_settings')
-        .select('id')
-        .eq('key', 'booking_settings')
-        .maybeSingle();
+        .upsert({ 
+          key: 'booking_settings',
+          value: data 
+        }, {
+          onConflict: 'key'
+        });
 
-      if (checkError) {
-        console.error('Error checking existing settings:', checkError);
-        throw checkError;
+      if (upsertError) {
+        console.error('Error saving settings:', upsertError);
+        throw upsertError;
       }
 
-      if (existingSettings) {
-        console.log('Updating existing settings...');
-        const { error } = await supabase
-          .from('booking_settings')
-          .update({ value: data })
-          .eq('key', 'booking_settings');
-
-        if (error) {
-          console.error('Error updating settings:', error);
-          throw error;
-        }
-      } else {
-        console.log('Creating new settings...');
-        const { error } = await supabase
-          .from('booking_settings')
-          .insert([{ 
-            key: 'booking_settings',
-            value: data 
-          }]);
-
-        if (error) {
-          console.error('Error creating settings:', error);
-          throw error;
-        }
-      }
       console.log('Settings saved successfully');
     },
     onSuccess: () => {

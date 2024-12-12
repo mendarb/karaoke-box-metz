@@ -10,14 +10,14 @@ import { Booking } from "@/hooks/useBookings";
 import { useToast } from "@/components/ui/use-toast";
 import { DashboardSidebar } from "@/components/admin/DashboardSidebar";
 import { BookingsList } from "@/components/admin/calendar/BookingsList";
-import { useBookingMutations } from "@/hooks/useBookingMutations";
+import { useBookingActions } from "@/hooks/useBookingActions";
 import { fr } from "date-fns/locale";
 
 export const Calendar = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const { toast } = useToast();
-  const { updateStatus } = useBookingMutations();
+  const { updateBookingStatus } = useBookingActions();
 
   const { data: bookings = [], isLoading } = useQuery({
     queryKey: ['bookings'],
@@ -117,7 +117,6 @@ export const Calendar = () => {
               <BookingsList
                 bookings={bookingsForSelectedDate}
                 onViewDetails={setSelectedBooking}
-                onStatusChange={updateStatus}
                 selectedDate={selectedDate}
               />
             </div>

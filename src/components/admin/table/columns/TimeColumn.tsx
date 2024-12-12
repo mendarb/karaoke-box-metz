@@ -16,5 +16,5 @@ export const getTimeColumn = (): ColumnDef<Booking> => ({
       <ArrowUpDown className="ml-2 h-4 w-4" />
     </Button>
   ),
-  cell: ({ row }) => formatTimeSlot(row.getValue("time_slot")),
+  cell: ({ row }) => formatTimeSlot(row.getValue("time_slot"), row.original.duration),
 });

@@ -40,6 +40,8 @@ export const SecuritySection = () => {
 
     const { error } = await supabase.auth.updateUser({ 
       email: newEmail 
+    }, {
+      emailRedirectTo: `${window.location.origin}/account/security`
     });
 
     if (error) {

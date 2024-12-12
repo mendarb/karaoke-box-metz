@@ -18,7 +18,7 @@ export const useBookingDates = () => {
         throw error;
       }
 
-      console.log('Loaded settings:', data);
+      console.log('Loaded settings:', data?.value);
       return data?.value;
     },
   });
@@ -34,7 +34,13 @@ export const useBookingDates = () => {
     ? addDays(today, 365)
     : addDays(today, settings?.bookingWindow?.endDays || 30);
 
-  console.log('Date boundaries:', { minDate, maxDate, isTestMode: settings?.isTestMode });
+  console.log('Date boundaries:', { 
+    minDate, 
+    maxDate, 
+    isTestMode: settings?.isTestMode,
+    startDays: settings?.bookingWindow?.startDays,
+    endDays: settings?.bookingWindow?.endDays
+  });
 
   const isDayExcluded = (date: Date) => {
     if (!settings) return true;
@@ -43,7 +49,13 @@ export const useBookingDates = () => {
     
     // Vérifier si la date est dans la plage autorisée
     if (isBefore(dateToCheck, minDate) || isAfter(dateToCheck, maxDate)) {
-      console.log('Date outside booking window:', dateToCheck);
+      console.log('Date outside booking window:', {
+        date: dateToCheck,
+        minDate,
+        maxDate,
+        beforeMin: isBefore(dateToCheck, minDate),
+        afterMax: isAfter(dateToCheck, maxDate)
+      });
       return true;
     }
 
@@ -82,38 +94,43 @@ export const useBookingDates = () => {
     const slots = daySettings.slots || [];
     console.log('Potential slots for day:', slots);
 
-    // Vérifier les réservations existantes
-    const { data: bookings, error } = await supabase
-      .from('bookings')
-      .select('*')
-      .eq('date', date.toISOString().split('T')[0])
-      .neq('status', 'cancelled')
-      .is('deleted_at', null); // Ajout du filtre pour exclure les réservations supprimées
+    try {
+      // Vérifier les réservations existantes avec authentification
+      const { data: bookings, error } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('date', date.toISOString().split('T')[0])
+        .neq('status', 'cancelled')
+        .is('deleted_at', null);
 
-    if (error) {
-      console.error('Error checking bookings:', error);
-      return slots;
-    }
-
-    // Filtrer les créneaux déjà réservés
-    const availableSlots = slots.filter(slot => {
-      const slotTime = parseInt(slot.split(':')[0]);
-      
-      const isBooked = bookings?.some(booking => {
-        const bookingStartTime = parseInt(booking.time_slot.split(':')[0]);
-        const bookingDuration = parseInt(booking.duration);
-        
-        return slotTime >= bookingStartTime && slotTime < (bookingStartTime + bookingDuration);
-      });
-      
-      if (isBooked) {
-        console.log('Slot is booked:', slot);
+      if (error) {
+        console.error('Error checking bookings:', error);
+        throw error;
       }
-      return !isBooked;
-    });
 
-    console.log('Available slots after filtering:', availableSlots);
-    return availableSlots;
+      // Filtrer les créneaux déjà réservés
+      const availableSlots = slots.filter(slot => {
+        const slotTime = parseInt(slot.split(':')[0]);
+        
+        const isBooked = bookings?.some(booking => {
+          const bookingStartTime = parseInt(booking.time_slot.split(':')[0]);
+          const bookingDuration = parseInt(booking.duration);
+          
+          return slotTime >= bookingStartTime && slotTime < (bookingStartTime + bookingDuration);
+        });
+        
+        if (isBooked) {
+          console.log('Slot is booked:', slot);
+        }
+        return !isBooked;
+      });
+
+      console.log('Available slots after filtering:', availableSlots);
+      return availableSlots;
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+      return slots; // En cas d'erreur, retourner tous les créneaux
+    }
   };
 
   const getAvailableHoursForSlot = async (date: Date, timeSlot: string) => {
@@ -142,41 +159,46 @@ export const useBookingDates = () => {
     const remainingSlots = slots.length - slotIndex - 1;
     const maxPossibleHours = Math.min(4, remainingSlots + 1);
 
-    // Vérifier les réservations existantes
-    const { data: bookings, error } = await supabase
-      .from('bookings')
-      .select('*')
-      .eq('date', date.toISOString().split('T')[0])
-      .neq('status', 'cancelled')
-      .is('deleted_at', null); // Ajout du filtre pour exclure les réservations supprimées
+    try {
+      // Vérifier les réservations existantes
+      const { data: bookings, error } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('date', date.toISOString().split('T')[0])
+        .neq('status', 'cancelled')
+        .is('deleted_at', null);
 
-    if (error) {
-      console.error('Error checking bookings:', error);
-      return maxPossibleHours;
-    }
-
-    if (!bookings || bookings.length === 0) {
-      console.log('No existing bookings, returning max hours:', maxPossibleHours);
-      return maxPossibleHours;
-    }
-
-    const slotTime = parseInt(timeSlot.split(':')[0]);
-    
-    // Trouver la première réservation qui bloque
-    let availableHours = maxPossibleHours;
-
-    bookings.forEach(booking => {
-      const bookingStartTime = parseInt(booking.time_slot.split(':')[0]);
-      const bookingDuration = parseInt(booking.duration);
-      
-      if (bookingStartTime > slotTime) {
-        const hoursUntilBooking = bookingStartTime - slotTime;
-        availableHours = Math.min(availableHours, hoursUntilBooking);
+      if (error) {
+        console.error('Error checking bookings:', error);
+        throw error;
       }
-    });
 
-    console.log(`Available hours for slot ${timeSlot}:`, availableHours);
-    return availableHours;
+      if (!bookings || bookings.length === 0) {
+        console.log('No existing bookings, returning max hours:', maxPossibleHours);
+        return maxPossibleHours;
+      }
+
+      const slotTime = parseInt(timeSlot.split(':')[0]);
+      
+      // Trouver la première réservation qui bloque
+      let availableHours = maxPossibleHours;
+
+      bookings.forEach(booking => {
+        const bookingStartTime = parseInt(booking.time_slot.split(':')[0]);
+        const bookingDuration = parseInt(booking.duration);
+        
+        if (bookingStartTime > slotTime) {
+          const hoursUntilBooking = bookingStartTime - slotTime;
+          availableHours = Math.min(availableHours, hoursUntilBooking);
+        }
+      });
+
+      console.log(`Available hours for slot ${timeSlot}:`, availableHours);
+      return availableHours;
+    } catch (error) {
+      console.error('Error calculating available hours:', error);
+      return maxPossibleHours; // En cas d'erreur, retourner le maximum possible
+    }
   };
 
   return {

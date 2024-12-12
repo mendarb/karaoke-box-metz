@@ -56,33 +56,43 @@ export const BookingSettingsForm = () => {
     queryKey: ['booking-settings'],
     queryFn: async () => {
       try {
-        const { data, error } = await supabase
+        const { data: existingSettings, error: fetchError } = await supabase
           .from('booking_settings')
           .select('*')
           .eq('key', 'booking_settings')
-          .single();
+          .maybeSingle();
 
-        if (error) {
-          console.error('Error fetching settings:', error);
-          // Si aucun paramètre n'existe, créer les paramètres par défaut
+        if (fetchError) {
+          console.error('Error fetching settings:', fetchError);
+          throw fetchError;
+        }
+
+        // If no settings exist, create default settings
+        if (!existingSettings) {
+          console.log('No settings found, creating defaults...');
           const { error: insertError } = await supabase
             .from('booking_settings')
-            .insert([{ key: 'booking_settings', value: defaultSettings }]);
+            .insert([{ 
+              key: 'booking_settings', 
+              value: defaultSettings 
+            }]);
 
           if (insertError) {
             console.error('Error creating default settings:', insertError);
             throw insertError;
           }
+
           return defaultSettings;
         }
 
-        console.log("Loaded settings:", data?.value);
-        return data?.value as BookingSettings || defaultSettings;
+        console.log('Loaded settings:', existingSettings.value);
+        return existingSettings.value as BookingSettings;
       } catch (err) {
         console.error('Query error:', err);
-        return defaultSettings;
+        throw err;
       }
     },
+    retry: 1,
   });
 
   const mutation = useMutation({
@@ -119,6 +129,7 @@ export const BookingSettingsForm = () => {
   });
 
   const onSubmit = (data: BookingSettings) => {
+    console.log('Submitting settings:', data);
     mutation.mutate(data);
   };
 

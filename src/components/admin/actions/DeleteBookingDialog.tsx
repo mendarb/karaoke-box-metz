@@ -27,11 +27,9 @@ export const DeleteBookingDialog = ({
     onClose();
   };
 
-  if (!isOpen) return null;
-
   return (
-    <AlertDialog open={true} onOpenChange={() => onClose()}>
-      <AlertDialogContent>
+    <AlertDialog open={isOpen} onOpenChange={onClose}>
+      <AlertDialogContent className="sm:max-w-[425px]">
         <AlertDialogHeader>
           <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
           <AlertDialogDescription>

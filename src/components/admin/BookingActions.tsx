@@ -20,8 +20,13 @@ export const BookingActions = ({ bookingId, currentStatus }: BookingActionsProps
   const { updateBookingStatus, isLoading } = useBookingActions();
 
   const handleStatusChange = async (newStatus: BookingStatus) => {
-    await updateBookingStatus(bookingId, newStatus);
-    setIsOpen(false);
+    try {
+      console.log('Changing status:', { bookingId, from: currentStatus, to: newStatus });
+      await updateBookingStatus(bookingId, newStatus);
+      setIsOpen(false);
+    } catch (error) {
+      console.error('Error in handleStatusChange:', error);
+    }
   };
 
   return (

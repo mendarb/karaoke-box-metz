@@ -12,26 +12,39 @@ export const useBookingActions = () => {
   const updateBookingStatus = async (bookingId: string, status: BookingStatus) => {
     setIsLoading(true);
     try {
-      const { error } = await supabase
+      console.log('Updating booking status:', { bookingId, status });
+      
+      const { data, error } = await supabase
         .from('bookings')
         .update({ status })
-        .eq('id', bookingId);
+        .eq('id', bookingId)
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating booking:', error);
+        throw error;
+      }
 
+      console.log('Booking updated successfully:', data);
+
+      // Invalider le cache pour forcer le rechargement des données
       await queryClient.invalidateQueries({ queryKey: ['bookings'] });
       
       toast({
         title: "Succès",
         description: "Le statut de la réservation a été mis à jour",
       });
-    } catch (error) {
+
+      return data;
+    } catch (error: any) {
       console.error('Erreur mise à jour réservation:', error);
       toast({
         title: "Erreur",
         description: "Impossible de mettre à jour le statut",
         variant: "destructive",
       });
+      throw error;
     } finally {
       setIsLoading(false);
     }

@@ -30,7 +30,9 @@ export const BookingsTable = ({
 
   // Si on est sur mobile, on réduit les colonnes affichées
   const mobileColumns = columns.filter(col => {
-    const identifier = col.accessorKey?.toString() || col.id;
+    const identifier = typeof col.id === 'string' ? col.id : 
+                      typeof col.accessorKey === 'string' ? col.accessorKey : 
+                      undefined;
     return ["date", "user_name", "status", "actions"].includes(identifier || "");
   });
 

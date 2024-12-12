@@ -30,17 +30,10 @@ export const BookingActions = ({
   const handleDelete = async () => {
     try {
       await deleteBooking(bookingId);
-    } catch (error) {
-      console.error('Error deleting booking:', error);
-    } finally {
       setShowDeleteDialog(false);
       setIsOpen(false);
-    }
-  };
-
-  const handleOpenChange = (open: boolean) => {
-    if (!isLoading) {
-      setIsOpen(open);
+    } catch (error) {
+      console.error('Error deleting booking:', error);
     }
   };
 
@@ -50,7 +43,7 @@ export const BookingActions = ({
         isOpen={isOpen}
         isLoading={isLoading}
         currentStatus={currentStatus}
-        onOpenChange={handleOpenChange}
+        onOpenChange={(open) => !isLoading && setIsOpen(open)}
         onStatusChange={handleStatusChange}
         onDelete={() => setShowDeleteDialog(true)}
       />

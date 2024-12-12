@@ -9,6 +9,7 @@ import { GroupSizeAndDurationFields } from "./booking/GroupSizeAndDurationFields
 import { AdditionalFields } from "./booking/AdditionalFields";
 import { BookingSteps, type BookingStep } from "./BookingSteps";
 import { supabase } from "@/lib/supabase";
+import { useQuery } from "@tanstack/react-query";
 
 export const BookingForm = () => {
   const { toast } = useToast();
@@ -20,6 +21,21 @@ export const BookingForm = () => {
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [availableHours, setAvailableHours] = useState(4);
   const form = useForm();
+
+  // Fetch booking settings to check test mode
+  const { data: settings } = useQuery({
+    queryKey: ['booking-settings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('booking_settings')
+        .select('*')
+        .eq('key', 'booking_settings')
+        .single();
+
+      if (error) throw error;
+      return data?.value;
+    },
+  });
 
   const steps: BookingStep[] = [
     {
@@ -63,63 +79,6 @@ export const BookingForm = () => {
     console.log('Available hours updated:', hours);
   };
 
-  const checkTimeSlotAvailability = async (date: Date, timeSlot: string, duration: string) => {
-    console.log('Checking availability for:', { date, timeSlot, duration });
-    
-    const requestedStartTime = parseInt(timeSlot.split(':')[0]) * 60 + parseInt(timeSlot.split(':')[1] || '0');
-    const requestedDuration = parseInt(duration) * 60;
-    const requestedEndTime = requestedStartTime + requestedDuration;
-
-    // Vérifier si le créneau demandé ne dépasse pas minuit
-    if (requestedEndTime > 24 * 60) {
-      toast({
-        title: "Créneau non disponible",
-        description: "Le créneau demandé dépasse minuit. Veuillez choisir un horaire plus tôt.",
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    const { data: bookings, error } = await supabase
-      .from('bookings')
-      .select('*')
-      .eq('date', date.toISOString().split('T')[0])
-      .neq('status', 'cancelled');
-
-    if (error) {
-      console.error('Error checking availability:', error);
-      return false;
-    }
-
-    const hasOverlap = bookings?.some(booking => {
-      const existingStartTime = parseInt(booking.time_slot.split(':')[0]) * 60 + parseInt(booking.time_slot.split(':')[1] || '0');
-      const existingDuration = parseInt(booking.duration) * 60;
-      const existingEndTime = existingStartTime + existingDuration;
-
-      const overlap = (
-        (requestedStartTime >= existingStartTime && requestedStartTime < existingEndTime) ||
-        (requestedEndTime > existingStartTime && requestedEndTime <= existingEndTime) ||
-        (requestedStartTime <= existingStartTime && requestedEndTime >= existingEndTime)
-      );
-
-      if (overlap) {
-        console.log('Found overlap with booking:', booking);
-      }
-      return overlap;
-    });
-
-    if (hasOverlap) {
-      toast({
-        title: "Créneau non disponible",
-        description: "Ce créneau chevauche une réservation existante. Veuillez choisir un autre horaire.",
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    return true;
-  };
-
   const onSubmit = async (data: any) => {
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
@@ -128,7 +87,13 @@ export const BookingForm = () => {
 
     try {
       setIsSubmitting(true);
-      console.log('Starting submission with data:', { ...data, groupSize, duration, calculatedPrice });
+      console.log('Starting submission with data:', { 
+        ...data, 
+        groupSize, 
+        duration, 
+        calculatedPrice,
+        isTestMode: settings?.isTestMode 
+      });
 
       // Vérifier si l'utilisateur est déjà connecté
       const { data: { session } } = await supabase.auth.getSession();
@@ -187,12 +152,6 @@ export const BookingForm = () => {
         return;
       }
 
-      const isAvailable = await checkTimeSlotAvailability(data.date, data.timeSlot, duration);
-      if (!isAvailable) {
-        console.log('Time slot not available');
-        return;
-      }
-
       console.log('Creating checkout session...');
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
         body: JSON.stringify({
@@ -205,6 +164,7 @@ export const BookingForm = () => {
           userEmail: data.email,
           userName: data.fullName,
           userPhone: data.phone,
+          isTestMode: settings?.isTestMode || false
         })
       });
 

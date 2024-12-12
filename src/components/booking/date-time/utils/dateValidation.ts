@@ -4,19 +4,20 @@ import type { BookingSettings } from "@/components/admin/settings/types/bookingS
 export const getDateBoundaries = (settings: BookingSettings | undefined) => {
   const today = startOfDay(new Date());
   
-  // Always respect the minimum days setting, even in test mode
-  const minDate = addDays(today, settings?.bookingWindow?.startDays || 1);
+  // Always apply the minimum days setting, even in test mode
+  const minDays = settings?.bookingWindow?.startDays || 1;
+  const minDate = addDays(today, minDays);
     
-  const maxDate = settings?.isTestMode
-    ? addDays(today, 365)
-    : addDays(today, settings?.bookingWindow?.endDays || 30);
+  const maxDays = settings?.isTestMode ? 365 : (settings?.bookingWindow?.endDays || 30);
+  const maxDate = addDays(today, maxDays);
 
   console.log('Date boundaries:', { 
     minDate, 
     maxDate, 
     isTestMode: settings?.isTestMode,
-    startDays: settings?.bookingWindow?.startDays,
-    endDays: settings?.bookingWindow?.endDays
+    startDays: minDays,
+    endDays: maxDays,
+    today
   });
 
   return { minDate, maxDate };
@@ -32,19 +33,27 @@ export const isDateExcluded = (
   
   const dateToCheck = startOfDay(date);
   
-  // Vérifier si la date est dans la plage autorisée
-  if (isBefore(dateToCheck, minDate) || isAfter(dateToCheck, maxDate)) {
-    console.log('Date outside booking window:', {
+  // Always check minimum date boundary, even in test mode
+  if (isBefore(dateToCheck, minDate)) {
+    console.log('Date before minimum allowed:', {
       date: dateToCheck,
       minDate,
-      maxDate,
-      beforeMin: isBefore(dateToCheck, minDate),
-      afterMax: isAfter(dateToCheck, maxDate)
+      startDays: settings.bookingWindow?.startDays
     });
     return true;
   }
 
-  // Vérifier si le jour est ouvert
+  // Check maximum date boundary
+  if (isAfter(dateToCheck, maxDate)) {
+    console.log('Date after maximum allowed:', {
+      date: dateToCheck,
+      maxDate,
+      endDays: settings.bookingWindow?.endDays
+    });
+    return true;
+  }
+
+  // Check if the day is open
   const dayOfWeek = dateToCheck.getDay().toString();
   const daySettings = settings.openingHours?.[dayOfWeek];
   
@@ -53,7 +62,7 @@ export const isDateExcluded = (
     return true;
   }
 
-  // Vérifier si la date est exclue
+  // Check if the date is excluded
   if (settings.excludedDays?.includes(dateToCheck.getTime())) {
     console.log('Date is excluded:', dateToCheck);
     return true;

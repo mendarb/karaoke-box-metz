@@ -26,10 +26,16 @@ serve(async (req) => {
       isTestMode 
     } = await req.json()
 
+    console.log('Creating checkout with mode:', isTestMode ? 'test' : 'live');
+
     // Use test key if in test mode
     const stripeSecretKey = isTestMode 
       ? Deno.env.get('STRIPE_TEST_SECRET_KEY')
-      : Deno.env.get('STRIPE_SECRET_KEY')
+      : Deno.env.get('STRIPE_SECRET_KEY');
+
+    if (!stripeSecretKey) {
+      throw new Error(isTestMode ? 'Test mode API key not configured' : 'Live mode API key not configured');
+    }
 
     const stripe = new Stripe(stripeSecretKey, {
       apiVersion: '2023-10-16',
@@ -67,6 +73,12 @@ serve(async (req) => {
       },
     })
 
+    console.log('Checkout session created:', {
+      sessionId: session.id,
+      mode: isTestMode ? 'test' : 'live',
+      email: userEmail
+    });
+
     return new Response(
       JSON.stringify({ url: session.url }),
       {
@@ -75,6 +87,7 @@ serve(async (req) => {
       },
     )
   } catch (error) {
+    console.error("Checkout error:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
       {

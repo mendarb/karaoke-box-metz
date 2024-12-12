@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface BookingActionsProps {
   bookingId: string;
@@ -16,12 +17,15 @@ interface BookingActionsProps {
 export const BookingActions = ({ bookingId, onStatusChange }: BookingActionsProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   const handleStatusChange = async (status: string) => {
     setIsLoading(true);
     try {
       await onStatusChange(bookingId, status);
       setIsOpen(false);
+      // Force un re-fetch immédiat après la mise à jour
+      await queryClient.invalidateQueries({ queryKey: ['bookings'] });
     } catch (error) {
       console.error('Erreur action:', error);
     } finally {

@@ -37,6 +37,7 @@ export type Database = {
         Row: {
           created_at: string
           date: string
+          deleted_at: string | null
           duration: string
           group_size: string
           id: string
@@ -54,6 +55,7 @@ export type Database = {
         Insert: {
           created_at?: string
           date: string
+          deleted_at?: string | null
           duration: string
           group_size: string
           id?: string
@@ -71,6 +73,7 @@ export type Database = {
         Update: {
           created_at?: string
           date?: string
+          deleted_at?: string | null
           duration?: string
           group_size?: string
           id?: string
@@ -119,7 +122,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      booking_status: "pending" | "confirmed" | "cancelled"
+      booking_status: "pending" | "confirmed" | "cancelled" | "archived"
     }
     CompositeTypes: {
       [_ in never]: never

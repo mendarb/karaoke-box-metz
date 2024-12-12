@@ -14,12 +14,10 @@ export const useBookingActions = () => {
     console.log('Starting status update:', { bookingId, status });
 
     try {
-      // Vérification explicite du type de statut
-      if (!['pending', 'confirmed', 'cancelled'].includes(status)) {
+      if (!['pending', 'confirmed', 'cancelled', 'archived'].includes(status)) {
         throw new Error(`Invalid status: ${status}`);
       }
 
-      // Mise à jour directe avec le nouveau statut
       const { data, error } = await supabase
         .from('bookings')
         .update({ 
@@ -40,7 +38,6 @@ export const useBookingActions = () => {
 
       console.log('Update successful:', data[0]);
 
-      // Force le rechargement des données
       await queryClient.invalidateQueries({ queryKey: ['bookings'] });
       
       toast({
@@ -64,8 +61,43 @@ export const useBookingActions = () => {
     }
   };
 
+  const deleteBooking = async (bookingId: string) => {
+    setIsLoading(true);
+    try {
+      const { error } = await supabase
+        .from('bookings')
+        .update({ 
+          deleted_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', bookingId);
+
+      if (error) throw error;
+
+      await queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      
+      toast({
+        title: "Succès",
+        description: "La réservation a été supprimée",
+      });
+    } catch (error: any) {
+      console.error('Delete failed:', error);
+      
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer la réservation",
+        variant: "destructive",
+      });
+      
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return {
     updateBookingStatus,
+    deleteBooking,
     isLoading
   };
 };

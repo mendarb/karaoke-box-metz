@@ -24,7 +24,9 @@ export const BookingsTable = ({
   onViewDetails,
   isLoading = false 
 }: BookingsTableProps) => {
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: 'date', desc: false }
+  ]);
   const isMobile = useIsMobile();
 
   const columns = createBookingColumns(isMobile, onViewDetails);

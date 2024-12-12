@@ -36,19 +36,31 @@ export const useCalculatePrice = ({
 
     console.log('Base rates:', { baseHourRate, basePersonRate });
 
+    // Prix pour la première heure (sans réduction)
     const pricePerPerson = basePersonRate;
     const basePrice = baseHourRate + (pricePerPerson * size);
+    
     let finalPrice = basePrice;
 
+    // Application de la réduction de 10% uniquement sur les heures supplémentaires
     if (hours > 1) {
       const additionalHours = hours - 1;
-      const discountedHourPrice = basePrice * 0.9;
-      finalPrice += discountedHourPrice * additionalHours;
+      const additionalHourPrice = basePrice;
+      const discountedAdditionalHoursPrice = additionalHourPrice * 0.9 * additionalHours;
+      finalPrice += discountedAdditionalHoursPrice;
+
+      console.log('Price calculation details:', {
+        basePrice,
+        additionalHours,
+        additionalHourPrice,
+        discountedAdditionalHoursPrice,
+        finalPrice
+      });
     }
 
     const pricePerPersonHour = Math.round((basePrice / size) * 100) / 100;
 
-    console.log('Price calculation:', {
+    console.log('Final price calculation:', {
       basePrice,
       finalPrice,
       pricePerPersonHour

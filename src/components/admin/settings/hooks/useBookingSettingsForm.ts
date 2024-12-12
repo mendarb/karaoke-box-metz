@@ -14,10 +14,12 @@ export const useBookingSettingsForm = () => {
     queryFn: fetchBookingSettings,
     retry: 1,
     staleTime: 0,
-    onSuccess: (data) => {
-      console.log('Settings loaded, resetting form:', data);
-      form.reset(data);
-    },
+    meta: {
+      onSuccess: (data: BookingSettings) => {
+        console.log('Settings loaded, resetting form:', data);
+        form.reset(data);
+      }
+    }
   });
 
   const mutation = useMutation({

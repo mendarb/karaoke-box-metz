@@ -23,14 +23,15 @@ export const DeleteBookingDialog = ({
   onConfirm,
 }: DeleteBookingDialogProps) => {
   return (
-    <AlertDialog open={isOpen}>
-      <AlertDialogContent onPointerDownOutside={(e) => {
-        // Empêcher la propagation pour éviter le pointer-events: none
-        e.preventDefault();
-        if (!isLoading) {
+    <AlertDialog 
+      open={isOpen} 
+      onOpenChange={(open) => {
+        if (!isLoading && !open) {
           onClose();
         }
-      }}>
+      }}
+    >
+      <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
           <AlertDialogDescription>

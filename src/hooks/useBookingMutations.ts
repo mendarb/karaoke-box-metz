@@ -28,8 +28,8 @@ export const useBookingMutations = () => {
           updated_at: new Date().toISOString()
         })
         .eq('id', bookingId)
-        .select('*')
-        .limit(1)
+        .select()
+        .order('created_at', { ascending: false })
         .single();
 
       if (error) {

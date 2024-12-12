@@ -28,7 +28,7 @@ export const useBookingDates = () => {
   // Calcul des dates min et max en fonction des paramètres
   const minDate = settings?.isTestMode 
     ? today
-    : addDays(today, settings?.bookingWindow?.startDays || 0);
+    : addDays(today, settings?.bookingWindow?.startDays || 1);
     
   const maxDate = settings?.isTestMode
     ? addDays(today, 365)
@@ -163,7 +163,15 @@ export const useBookingDates = () => {
 
     // Filtrer les créneaux déjà réservés
     const availableSlots = slots.filter(slot => {
-      const isBooked = bookings?.some(booking => booking.time_slot === slot);
+      const isBooked = bookings?.some(booking => {
+        const bookingStartTime = parseInt(booking.time_slot.split(':')[0]);
+        const bookingDuration = parseInt(booking.duration);
+        const slotTime = parseInt(slot.split(':')[0]);
+        
+        // Vérifier si le créneau est dans la plage de la réservation
+        return slotTime >= bookingStartTime && slotTime < (bookingStartTime + bookingDuration);
+      });
+      
       if (isBooked) {
         console.log('Slot is booked:', slot);
       }

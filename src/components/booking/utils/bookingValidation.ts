@@ -22,6 +22,42 @@ export const checkTimeSlotAvailability = async (
     return false;
   }
 
+  // Vérifier les paramètres de réservation
+  const { data: settingsData, error: settingsError } = await supabase
+    .from('booking_settings')
+    .select('*')
+    .eq('key', 'booking_settings')
+    .single();
+
+  if (settingsError) {
+    console.error('Error fetching settings:', settingsError);
+    return false;
+  }
+
+  const settings = settingsData.value;
+  const dayOfWeek = date.getDay().toString();
+  const daySettings = settings.openingHours?.[dayOfWeek];
+
+  // Vérifier si le jour est ouvert
+  if (!daySettings?.isOpen) {
+    toast({
+      title: "Jour non disponible",
+      description: "Ce jour n'est pas ouvert aux réservations.",
+      variant: "destructive",
+    });
+    return false;
+  }
+
+  // Vérifier si le créneau est dans les horaires d'ouverture
+  if (!daySettings.slots.includes(timeSlot)) {
+    toast({
+      title: "Créneau non disponible",
+      description: "Ce créneau n'est pas disponible à la réservation.",
+      variant: "destructive",
+    });
+    return false;
+  }
+
   const { data: bookings, error } = await supabase
     .from('bookings')
     .select('*')

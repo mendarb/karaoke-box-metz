@@ -3,6 +3,8 @@ import { BookingSettings, defaultSettings } from "./bookingSettingsTypes";
 
 export const fetchBookingSettings = async (): Promise<BookingSettings> => {
   console.log('Fetching booking settings...');
+  
+  // Vérifier si les paramètres existent déjà
   const { data: existingSettings, error: fetchError } = await supabase
     .from('booking_settings')
     .select('*')
@@ -14,6 +16,7 @@ export const fetchBookingSettings = async (): Promise<BookingSettings> => {
     throw fetchError;
   }
 
+  // Si aucun paramètre n'existe, créer les paramètres par défaut
   if (!existingSettings) {
     console.log('No settings found, creating defaults...');
     const { data: newSettings, error: insertError } = await supabase

@@ -11,7 +11,7 @@ export const SecuritySection = () => {
     if (!user?.email) return;
 
     const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-      redirectTo: `${window.location.origin}/account?tab=security`,
+      redirectTo: `${window.location.origin}/account/security`,
     });
 
     if (error) {
@@ -33,8 +33,10 @@ export const SecuritySection = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user?.email) return;
 
-    const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-      redirectTo: `${window.location.origin}/account?tab=security`,
+    const { error } = await supabase.auth.updateUser({
+      email: user.email,
+    }, {
+      emailRedirectTo: `${window.location.origin}/account/security`,
     });
 
     if (error) {

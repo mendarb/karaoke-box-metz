@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { addDays, startOfDay, endOfDay, parse, addHours, isBefore } from "date-fns";
+import { addDays, startOfDay, endOfDay, isBefore, isAfter } from "date-fns";
 
 export const useBookingDates = () => {
   const { data: settings } = useQuery({
@@ -19,50 +19,67 @@ export const useBookingDates = () => {
       }
 
       console.log('Fetched settings:', data?.value);
-      return data?.value || {
-        bookingWindow: { startDays: 0, endDays: 30 },
-        openingHours: {
-          0: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
-          1: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
-          2: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
-          3: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
-          4: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
-          5: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
-          6: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
-        },
-        excludedDays: [],
-        isTestMode: false
-      };
+      return data?.value;
     },
   });
 
   const today = startOfDay(new Date());
+  
+  // Calcul des dates min et max en fonction des paramètres
   const minDate = settings?.isTestMode 
     ? today
-    : startOfDay(addDays(today, settings?.bookingWindow?.startDays || 0));
+    : addDays(today, settings?.bookingWindow?.startDays || 0);
     
   const maxDate = settings?.isTestMode
-    ? endOfDay(addDays(today, 365))
-    : endOfDay(addDays(today, settings?.bookingWindow?.endDays || 30));
+    ? addDays(today, 365)
+    : addDays(today, settings?.bookingWindow?.endDays || 30);
+
+  console.log('Date boundaries:', { minDate, maxDate, isTestMode: settings?.isTestMode });
 
   const isDayExcluded = (date: Date) => {
-    if (!settings?.excludedDays) return false;
-    if (settings?.isTestMode) return false;
+    if (!settings) return true;
     
     const dateToCheck = startOfDay(date);
-    return isBefore(dateToCheck, today) || settings.excludedDays.some(excludedTimestamp => {
-      const excludedDate = startOfDay(new Date(excludedTimestamp));
-      return dateToCheck.getTime() === excludedDate.getTime();
-    });
+    
+    // Vérifier si la date est dans la plage autorisée
+    if (isBefore(dateToCheck, minDate) || isAfter(dateToCheck, maxDate)) {
+      console.log('Date outside booking window:', dateToCheck);
+      return true;
+    }
+
+    // Vérifier si le jour est ouvert
+    const dayOfWeek = dateToCheck.getDay().toString();
+    const daySettings = settings.openingHours?.[dayOfWeek];
+    
+    if (!daySettings?.isOpen) {
+      console.log('Day is closed:', { date: dateToCheck, dayOfWeek });
+      return true;
+    }
+
+    // Vérifier si la date est exclue
+    if (settings.excludedDays?.includes(dateToCheck.getTime())) {
+      console.log('Date is excluded:', dateToCheck);
+      return true;
+    }
+
+    return false;
   };
 
   const getAvailableHoursForSlot = async (date: Date, timeSlot: string) => {
-    const daySettings = settings?.openingHours?.[date.getDay().toString()];
-    if (!daySettings?.slots) return 0;
+    if (!settings) return 0;
+
+    const daySettings = settings.openingHours?.[date.getDay().toString()];
+    if (!daySettings?.isOpen || !daySettings.slots) {
+      console.log('Day is closed or no slots available');
+      return 0;
+    }
 
     const slots = daySettings.slots;
     const slotIndex = slots.indexOf(timeSlot);
-    if (slotIndex === -1) return 0;
+    if (slotIndex === -1) {
+      console.log('Invalid time slot:', timeSlot);
+      return 0;
+    }
 
     // Si c'est le dernier créneau, on ne permet qu'une heure
     if (slotIndex === slots.length - 1) {
@@ -70,19 +87,29 @@ export const useBookingDates = () => {
       return 1;
     }
 
-    // Pour les autres créneaux, calculer les heures disponibles en fonction de la position
+    // Pour les autres créneaux, calculer les heures disponibles
     const remainingSlots = slots.length - slotIndex - 1;
     const maxPossibleHours = Math.min(4, remainingSlots + 1);
 
     // Vérifier les réservations existantes
-    const { data: bookings } = await supabase
+    const { data: bookings, error } = await supabase
       .from('bookings')
       .select('*')
       .eq('date', date.toISOString().split('T')[0])
       .neq('status', 'cancelled')
       .is('deleted_at', null);
 
-    if (!bookings) return maxPossibleHours;
+    if (error) {
+      console.error('Error checking bookings:', error);
+      return maxPossibleHours;
+    }
+
+    console.log('Existing bookings for date:', { date, bookings });
+
+    if (!bookings || bookings.length === 0) {
+      console.log('No existing bookings, returning max hours:', maxPossibleHours);
+      return maxPossibleHours;
+    }
 
     const currentSlotTime = parseInt(timeSlot.split(':')[0]);
     
@@ -111,28 +138,40 @@ export const useBookingDates = () => {
     const dayOfWeek = date.getDay().toString();
     const daySettings = settings.openingHours[dayOfWeek];
 
-    if (!settings.isTestMode && !daySettings?.isOpen) {
-      console.log('Day is closed or no settings found for this day');
+    if (!daySettings?.isOpen) {
+      console.log('Day is closed:', { date, dayOfWeek });
       return [];
     }
 
-    const slots = daySettings?.slots || [];
-    console.log('Available slots before filtering:', slots);
-    
-    // Filter slots that have at least 1 hour available
-    const availableSlots = await Promise.all(
-      slots.map(async (slot) => {
-        const availableHours = await getAvailableHoursForSlot(date, slot);
-        return { slot, availableHours };
-      })
-    );
+    const slots = daySettings.slots || [];
+    console.log('Potential slots for day:', slots);
 
-    const filteredSlots = availableSlots
-      .filter(({ availableHours }) => availableHours >= 1)
-      .map(({ slot }) => slot);
+    // Vérifier les réservations existantes pour filtrer les créneaux déjà pris
+    const { data: bookings, error } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('date', date.toISOString().split('T')[0])
+      .neq('status', 'cancelled')
+      .is('deleted_at', null);
 
-    console.log('Filtered available slots:', filteredSlots);
-    return filteredSlots;
+    if (error) {
+      console.error('Error checking bookings:', error);
+      return slots;
+    }
+
+    console.log('Existing bookings:', bookings);
+
+    // Filtrer les créneaux déjà réservés
+    const availableSlots = slots.filter(slot => {
+      const isBooked = bookings?.some(booking => booking.time_slot === slot);
+      if (isBooked) {
+        console.log('Slot is booked:', slot);
+      }
+      return !isBooked;
+    });
+
+    console.log('Available slots after filtering:', availableSlots);
+    return availableSlots;
   };
 
   return {

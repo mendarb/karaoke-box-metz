@@ -36,6 +36,12 @@ export const BookingActions = ({
     }
   };
 
+  const handleCloseDeleteDialog = () => {
+    if (!isLoading) {
+      setShowDeleteDialog(false);
+    }
+  };
+
   return (
     <>
       <BookingActionsMenu
@@ -50,7 +56,7 @@ export const BookingActions = ({
       <DeleteBookingDialog
         isOpen={showDeleteDialog}
         isLoading={isLoading}
-        onClose={() => setShowDeleteDialog(false)}
+        onClose={handleCloseDeleteDialog}
         onConfirm={handleDelete}
       />
     </>

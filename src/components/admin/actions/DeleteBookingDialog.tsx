@@ -26,7 +26,7 @@ export const DeleteBookingDialog = ({
     <AlertDialog 
       open={isOpen} 
       onOpenChange={(open) => {
-        if (!isLoading && !open) {
+        if (!open) {
           onClose();
         }
       }}
@@ -43,6 +43,7 @@ export const DeleteBookingDialog = ({
             disabled={isLoading}
             onClick={(e) => {
               e.preventDefault();
+              e.stopPropagation();
               onClose();
             }}
           >
@@ -51,6 +52,7 @@ export const DeleteBookingDialog = ({
           <AlertDialogAction 
             onClick={async (e) => {
               e.preventDefault();
+              e.stopPropagation();
               await onConfirm();
             }}
             className="bg-red-600 hover:bg-red-700"

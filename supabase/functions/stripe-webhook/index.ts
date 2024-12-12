@@ -23,8 +23,12 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Webhook secret not configured' }), { status: 500 });
     }
 
+    // Vérifier si c'est un paiement test
+    const eventData = JSON.parse(body);
+    const isTestMode = eventData.data.object?.metadata?.isTestMode === 'true';
+    console.log('Processing webhook in mode:', isTestMode ? 'TEST' : 'LIVE');
+
     // Utiliser la bonne clé Stripe en fonction du mode
-    const isTestMode = JSON.parse(body).data.object?.metadata?.isTestMode === 'true';
     const stripeSecretKey = isTestMode 
       ? Deno.env.get('STRIPE_TEST_SECRET_KEY')
       : Deno.env.get('STRIPE_SECRET_KEY');
@@ -67,23 +71,27 @@ serve(async (req) => {
       const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
       const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
+      const bookingData = {
+        user_id: metadata.userId,
+        date: metadata.date,
+        time_slot: metadata.timeSlot,
+        duration: metadata.duration,
+        group_size: metadata.groupSize,
+        status: 'confirmed',
+        price: session.amount_total ? session.amount_total / 100 : 0,
+        message: metadata.message || null,
+        user_email: session.customer_email,
+        user_name: metadata.userName,
+        user_phone: metadata.userPhone,
+        payment_status: 'paid',
+        is_test_booking: metadata.isTestMode === 'true'
+      };
+
+      console.log('Inserting booking data:', bookingData);
+
       const { data: booking, error: bookingError } = await supabase
         .from('bookings')
-        .insert([{
-          user_id: metadata.userId,
-          date: metadata.date,
-          time_slot: metadata.timeSlot,
-          duration: metadata.duration,
-          group_size: metadata.groupSize,
-          status: 'confirmed',
-          price: session.amount_total ? session.amount_total / 100 : 0,
-          message: metadata.message || null,
-          user_email: session.customer_email,
-          user_name: metadata.userName,
-          user_phone: metadata.userPhone,
-          payment_status: 'paid',
-          is_test_booking: metadata.isTestMode === 'true'
-        }])
+        .insert([bookingData])
         .select()
         .single();
 

@@ -42,6 +42,7 @@ serve(async (req) => {
       : Deno.env.get('STRIPE_SECRET_KEY');
 
     if (!stripeSecretKey) {
+      console.error('Missing Stripe secret key for mode:', isTestMode ? 'test' : 'live');
       throw new Error(isTestMode ? 'Test mode API key not configured' : 'Live mode API key not configured');
     }
 
@@ -49,6 +50,8 @@ serve(async (req) => {
       apiVersion: '2023-10-16',
       httpClient: Stripe.createFetchHttpClient(),
     })
+
+    console.log('Creating Stripe session in', isTestMode ? 'TEST' : 'LIVE', 'mode');
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],

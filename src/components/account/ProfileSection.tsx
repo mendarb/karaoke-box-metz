@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
@@ -67,7 +67,7 @@ export const ProfileSection = () => {
   };
 
   // Charger les données du profil depuis la dernière réservation
-  useState(() => {
+  useEffect(() => {
     const loadProfileData = async () => {
       if (!user) return;
 

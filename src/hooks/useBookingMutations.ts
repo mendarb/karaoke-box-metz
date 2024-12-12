@@ -22,6 +22,10 @@ export const useBookingMutations = () => {
         throw error;
       }
 
+      if (!data) {
+        throw new Error('Booking not found');
+      }
+
       return data;
     },
     onSuccess: () => {

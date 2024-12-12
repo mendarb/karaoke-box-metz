@@ -18,9 +18,9 @@ export const BookingActions = ({ bookingId, currentStatus }: BookingActionsProps
   const [isOpen, setIsOpen] = useState(false);
   const { updateStatus, isLoading } = useBookingMutations();
 
-  const handleStatusChange = async (status: string) => {
+  const handleStatusChange = async (newStatus: string) => {
     try {
-      await updateStatus(bookingId, status);
+      await updateStatus(bookingId, newStatus);
       setIsOpen(false);
     } catch (error) {
       console.error('Action error:', error);

@@ -1,0 +1,35 @@
+import { useIsMobile } from "@/hooks/use-mobile";
+
+interface PriceDisplayProps {
+  price: number;
+  pricePerPersonPerHour: number;
+}
+
+export const PriceDisplay = ({ price, pricePerPersonPerHour }: PriceDisplayProps) => {
+  const isMobile = useIsMobile();
+
+  const formatPrice = (value: number) => {
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value);
+  };
+
+  return (
+    <div className={`${isMobile ? 'mt-3 p-4' : 'mt-4 p-6'} bg-gradient-to-br from-violet-50/50 to-violet-100/50 backdrop-blur-sm rounded-2xl border border-violet-100/50 shadow-lg animate-fadeIn`}>
+      <div className="flex flex-col items-center text-center">
+        <p className="text-2xl sm:text-3xl font-bold text-violet-900 mb-1">
+          {formatPrice(pricePerPersonPerHour)}
+        </p>
+        <p className="text-sm text-violet-700 font-medium">
+          par personne et par heure
+        </p>
+        <p className="text-sm text-gray-600 mt-3 font-medium">
+          Total : {formatPrice(price)}
+        </p>
+      </div>
+    </div>
+  );
+};

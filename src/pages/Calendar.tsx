@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { BookingDetailsDialog } from "@/components/admin/BookingDetailsDialog";
 import { Booking } from "@/hooks/useBookings";
 import { useToast } from "@/components/ui/use-toast";
 import { DashboardSidebar } from "@/components/admin/DashboardSidebar";
 import { BookingsList } from "@/components/admin/calendar/BookingsList";
-import { useBookingActions } from "@/hooks/useBookingActions";
-import { fr } from "date-fns/locale";
 
 export const Calendar = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());

@@ -1,9 +1,5 @@
-export const formatTimeSlot = (timeSlot: string, duration?: string) => {
-  if (!timeSlot) return '';
-  
-  const [startTime] = timeSlot.split('-');
-  if (duration) {
-    return `${startTime} (${duration})`;
-  }
-  return startTime;
+export const formatTimeSlot = (timeSlot: string, duration?: string): string => {
+  const startHour = parseInt(timeSlot.split(':')[0]);
+  const endHour = duration ? startHour + parseInt(duration) : startHour + 1;
+  return `${startHour}:00 - ${endHour}:00`;
 };

@@ -7,6 +7,7 @@ import {
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Calendar, Clock, Users, Euro, Mail, Phone, MessageSquare } from "lucide-react";
+import { BookingStatusBadge } from "./BookingStatusBadge";
 
 interface BookingDetailsDialogProps {
   isOpen: boolean;
@@ -22,6 +23,8 @@ interface BookingDetailsDialogProps {
     user_phone: string;
     message: string | null;
     status: string;
+    payment_status: string;
+    isTestBooking?: boolean;
   };
 }
 
@@ -30,7 +33,14 @@ export const BookingDetailsDialog = ({ isOpen, onClose, booking }: BookingDetail
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Détails de la réservation</DialogTitle>
+          <DialogTitle className="flex items-center justify-between">
+            <span>Détails de la réservation</span>
+            <BookingStatusBadge 
+              status={booking.status}
+              paymentStatus={booking.payment_status}
+              isTestBooking={booking.isTestBooking}
+            />
+          </DialogTitle>
         </DialogHeader>
         <div className="space-y-6">
           <div className="space-y-2">

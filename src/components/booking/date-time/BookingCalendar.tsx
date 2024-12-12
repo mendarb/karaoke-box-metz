@@ -1,7 +1,7 @@
 import { Calendar } from "@/components/ui/calendar";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
-import { startOfDay, isEqual, isBefore, format } from "date-fns";
+import { startOfDay, format } from "date-fns";
 import { fr } from "date-fns/locale";
 
 interface BookingCalendarProps {
@@ -9,13 +9,17 @@ interface BookingCalendarProps {
   disabledDates: Date[];
   onDateSelect: (date: Date) => void;
   selectedDate?: Date;
+  minDate: Date;
+  maxDate: Date;
 }
 
 export const BookingCalendar = ({ 
   form, 
   disabledDates, 
   onDateSelect,
-  selectedDate 
+  selectedDate,
+  minDate,
+  maxDate
 }: BookingCalendarProps) => {
   return (
     <FormField
@@ -30,32 +34,18 @@ export const BookingCalendar = ({
             selected={field.value}
             onSelect={async (date) => {
               if (!date) return;
-              
               const normalizedDate = startOfDay(date);
-              const today = startOfDay(new Date());
-              
-              // Double vérification pour les dates passées
-              if (isBefore(normalizedDate, today)) {
-                console.log('Date is in the past, not allowing selection');
-                return;
-              }
-              
               field.onChange(normalizedDate);
               onDateSelect(normalizedDate);
             }}
             disabled={(date) => {
               const normalizedDate = startOfDay(date);
-              const today = startOfDay(new Date());
-              
-              // Vérification explicite pour les dates passées
-              if (isBefore(normalizedDate, today)) {
-                return true;
-              }
-              
               return disabledDates.some(disabledDate => 
-                isEqual(startOfDay(disabledDate), normalizedDate)
+                startOfDay(disabledDate).getTime() === normalizedDate.getTime()
               );
             }}
+            fromDate={minDate}
+            toDate={maxDate}
             initialFocus
             locale={fr}
           />

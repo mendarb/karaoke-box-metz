@@ -4,10 +4,11 @@ import type { BookingSettings } from "@/components/admin/settings/types/bookingS
 export const getDateBoundaries = (settings: BookingSettings | undefined) => {
   const today = startOfDay(new Date());
   
-  // Always apply the minimum days setting, even in test mode
+  // Always apply the minimum days setting, regardless of test mode
   const minDays = settings?.bookingWindow?.startDays || 1;
   const minDate = addDays(today, minDays);
     
+  // Max days can be extended in test mode
   const maxDays = settings?.isTestMode ? 365 : (settings?.bookingWindow?.endDays || 30);
   const maxDate = addDays(today, maxDays);
 
@@ -33,7 +34,7 @@ export const isDateExcluded = (
   
   const dateToCheck = startOfDay(date);
   
-  // Always check minimum date boundary, even in test mode
+  // Always enforce minimum date boundary
   if (isBefore(dateToCheck, minDate)) {
     console.log('Date before minimum allowed:', {
       date: dateToCheck,
@@ -43,7 +44,6 @@ export const isDateExcluded = (
     return true;
   }
 
-  // Check maximum date boundary
   if (isAfter(dateToCheck, maxDate)) {
     console.log('Date after maximum allowed:', {
       date: dateToCheck,
@@ -53,7 +53,6 @@ export const isDateExcluded = (
     return true;
   }
 
-  // Check if the day is open
   const dayOfWeek = dateToCheck.getDay().toString();
   const daySettings = settings.openingHours?.[dayOfWeek];
   
@@ -62,7 +61,6 @@ export const isDateExcluded = (
     return true;
   }
 
-  // Check if the date is excluded
   if (settings.excludedDays?.includes(dateToCheck.getTime())) {
     console.log('Date is excluded:', dateToCheck);
     return true;

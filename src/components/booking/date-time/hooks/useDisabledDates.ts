@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { startOfDay, isBefore, addMonths } from "date-fns";
+import { startOfDay, addMonths } from "date-fns";
 
 interface UseDisabledDatesProps {
   minDate: Date;
@@ -16,18 +16,14 @@ export const useDisabledDates = ({ minDate, maxDate, isDayExcluded }: UseDisable
       setIsLoadingDates(true);
       try {
         const today = startOfDay(new Date());
-        const endDate = startOfDay(addMonths(today, 2));
+        const endDate = startOfDay(addMonths(today, 12)); // Extended range for test mode
         
         const disabledDates: Date[] = [];
         let currentDate = startOfDay(new Date(today));
         
         while (currentDate <= endDate) {
-          if (
-            isBefore(currentDate, today) || 
-            currentDate < minDate || 
-            currentDate > maxDate ||
-            isDayExcluded(currentDate)
-          ) {
+          // Always check against minDate regardless of test mode
+          if (isDayExcluded(currentDate)) {
             disabledDates.push(new Date(currentDate));
           }
           currentDate.setDate(currentDate.getDate() + 1);

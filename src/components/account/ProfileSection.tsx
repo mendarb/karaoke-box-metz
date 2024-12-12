@@ -1,6 +1,4 @@
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -8,19 +6,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
 import { useUserState } from "@/hooks/useUserState";
-import { Loader2 } from "lucide-react";
+import { ProfileForm } from "./ProfileForm";
 
 interface ProfileFormData {
   fullName: string;
@@ -32,7 +21,11 @@ export const ProfileSection = () => {
   const { user } = useUserState();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const form = useForm<ProfileFormData>();
+  const [initialData, setInitialData] = useState<ProfileFormData>({
+    fullName: "",
+    email: user?.email || "",
+    phone: "",
+  });
 
   const onSubmit = async (data: ProfileFormData) => {
     if (!user) return;
@@ -66,7 +59,6 @@ export const ProfileSection = () => {
     }
   };
 
-  // Charger les données du profil depuis la dernière réservation
   useEffect(() => {
     const loadProfileData = async () => {
       if (!user) return;
@@ -80,16 +72,16 @@ export const ProfileSection = () => {
         .single();
 
       if (lastBooking) {
-        form.setValue('fullName', lastBooking.user_name);
-        form.setValue('phone', lastBooking.user_phone);
-      }
-      if (user.email) {
-        form.setValue('email', user.email);
+        setInitialData({
+          fullName: lastBooking.user_name,
+          email: user.email || "",
+          phone: lastBooking.user_phone,
+        });
       }
     };
 
     loadProfileData();
-  }, [user, form]);
+  }, [user]);
 
   return (
     <Card>
@@ -100,62 +92,11 @@ export const ProfileSection = () => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="fullName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nom complet</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input {...field} disabled />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Téléphone</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Mise à jour...
-                </>
-              ) : (
-                "Mettre à jour"
-              )}
-            </Button>
-          </form>
-        </Form>
+        <ProfileForm
+          initialData={initialData}
+          onSubmit={onSubmit}
+          isLoading={isLoading}
+        />
       </CardContent>
     </Card>
   );

@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-import { Index } from "@/pages/Index";
+import Index from "@/pages/Index";
 import { MyBookings } from "@/pages/MyBookings";
 import { Success } from "@/pages/Success";
 import { Calendar } from "@/pages/Calendar";

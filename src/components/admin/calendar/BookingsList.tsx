@@ -15,7 +15,7 @@ interface BookingsListProps {
 
 export const BookingsList = ({ 
   bookings, 
-  onViewDetails, 
+  onViewDetails,
   onStatusChange,
   selectedDate 
 }: BookingsListProps) => {
@@ -62,10 +62,7 @@ export const BookingsList = ({
                 >
                   Détails
                 </Button>
-                <BookingActions
-                  bookingId={booking.id}
-                  onStatusChange={onStatusChange}
-                />
+                <BookingActions bookingId={booking.id} />
               </div>
             </div>
           ))

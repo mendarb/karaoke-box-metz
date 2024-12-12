@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 
 export const AdminDashboard = () => {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const { updateBookingStatus } = useBookingMutations();
+  const { updateStatus } = useBookingMutations();
   const { isAdmin, user } = useUserState();
   const isMobile = useIsMobile();
   
@@ -79,7 +79,7 @@ export const AdminDashboard = () => {
       <div className="bg-white rounded-lg shadow-lg p-2 md:p-6 overflow-x-auto">
         <BookingsTable
           data={bookings}
-          onStatusChange={updateBookingStatus}
+          onStatusChange={updateStatus}
           onViewDetails={setSelectedBooking}
           isLoading={isLoading}
         />

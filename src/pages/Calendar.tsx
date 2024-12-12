@@ -17,7 +17,7 @@ export const Calendar = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const { toast } = useToast();
-  const { updateBookingStatus } = useBookingMutations();
+  const { updateStatus } = useBookingMutations();
 
   const { data: bookings = [], isLoading } = useQuery({
     queryKey: ['bookings'],
@@ -117,7 +117,7 @@ export const Calendar = () => {
               <BookingsList
                 bookings={bookingsForSelectedDate}
                 onViewDetails={setSelectedBooking}
-                onStatusChange={updateBookingStatus}
+                onStatusChange={updateStatus}
                 selectedDate={selectedDate}
               />
             </div>

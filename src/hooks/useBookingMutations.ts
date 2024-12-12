@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateBookingStatus } from "@/services/bookingService";
+import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/ui/use-toast";
-import { Booking } from "./useBookings";
 
 export const useBookingMutations = () => {
   const queryClient = useQueryClient();
@@ -9,9 +8,21 @@ export const useBookingMutations = () => {
 
   const mutation = useMutation({
     mutationFn: async ({ bookingId, newStatus }: { bookingId: string; newStatus: string }) => {
-      return await updateBookingStatus(bookingId, newStatus);
+      const { data, error } = await supabase
+        .from('bookings')
+        .update({ status: newStatus })
+        .eq('id', bookingId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Erreur mise à jour:', error);
+        throw error;
+      }
+
+      return data;
     },
-    onSuccess: (updatedBooking) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
       toast({
         title: "Succès",

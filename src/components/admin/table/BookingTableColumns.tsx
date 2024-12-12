@@ -10,7 +10,6 @@ import { BookingActions } from "../BookingActions";
 export const createBookingColumns = (
   isMobile: boolean,
   onViewDetails: (booking: Booking) => void,
-  onStatusChange: (bookingId: string, newStatus: string) => Promise<void>
 ): ColumnDef<Booking>[] => [
   {
     accessorKey: "date",
@@ -83,10 +82,7 @@ export const createBookingColumns = (
         >
           {isMobile ? "Voir" : "Détails"}
         </Button>
-        <BookingActions
-          bookingId={row.original.id}
-          onStatusChange={onStatusChange}
-        />
+        <BookingActions bookingId={row.original.id} />
       </div>
     ),
   },

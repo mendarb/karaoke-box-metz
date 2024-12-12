@@ -1,54 +1,43 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useBookingEmail } from "./useBookingEmail";
 import { useBookingNotifications } from "./useBookingNotifications";
 import { Booking } from "./useBookings";
 
 export const useBookingMutations = () => {
-  const queryClient = useQueryClient();
   const { sendEmail } = useBookingEmail();
   const { notifySuccess, notifyError } = useBookingNotifications();
 
   const mutation = useMutation({
     mutationFn: async ({ bookingId, newStatus }: { bookingId: string; newStatus: string }): Promise<Booking> => {
-      console.log('Début de la mutation pour la réservation:', bookingId);
+      console.log('Début de la mise à jour pour la réservation:', bookingId);
       
-      const { data: updatedBooking, error: updateError } = await supabase
+      const { data, error } = await supabase
         .from('bookings')
         .update({ status: newStatus })
         .eq('id', bookingId)
         .select()
         .single();
 
-      if (updateError) {
-        console.error('Erreur lors de la mise à jour:', updateError);
-        throw updateError;
+      if (error) {
+        console.error('Erreur lors de la mise à jour:', error);
+        throw error;
       }
 
-      if (!updatedBooking) {
+      if (!data) {
         throw new Error('Réservation non trouvée');
       }
 
       try {
-        await sendEmail(updatedBooking);
+        await sendEmail(data);
         console.log('Email envoyé avec succès');
       } catch (emailError) {
         console.error('Erreur envoi email:', emailError);
       }
 
-      return updatedBooking;
+      return data;
     },
-    onSuccess: (updatedBooking) => {
-      // Mettre à jour le cache immédiatement
-      queryClient.setQueryData(['bookings'], (oldData: Booking[] | undefined) => {
-        if (!oldData) return [updatedBooking];
-        return oldData.map(booking => 
-          booking.id === updatedBooking.id ? updatedBooking : booking
-        );
-      });
-      
-      // Forcer un re-fetch complet
-      queryClient.invalidateQueries({ queryKey: ['bookings'] });
+    onSuccess: () => {
       notifySuccess();
     },
     onError: (error: Error) => {

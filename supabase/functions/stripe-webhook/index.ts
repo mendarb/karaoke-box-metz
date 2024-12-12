@@ -4,6 +4,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
   apiVersion: '2023-10-16',
+  httpClient: Stripe.createFetchHttpClient(),
 });
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -15,21 +16,23 @@ serve(async (req) => {
   try {
     const signature = req.headers.get('stripe-signature');
     if (!signature) {
-      throw new Error('No Stripe signature found');
+      console.error('No Stripe signature found');
+      return new Response(JSON.stringify({ error: 'No signature' }), { status: 400 });
     }
 
     const body = await req.text();
     const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
     
+    if (!webhookSecret) {
+      console.error('Webhook secret not configured');
+      return new Response(JSON.stringify({ error: 'Webhook secret not configured' }), { status: 500 });
+    }
+
     let event;
     try {
-      event = stripe.webhooks.constructEvent(
-        body,
-        signature,
-        webhookSecret!
-      );
+      event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
     } catch (err) {
-      console.error(`Webhook signature verification failed: ${err.message}`);
+      console.error(`Webhook signature verification failed:`, err);
       return new Response(JSON.stringify({ error: err.message }), { status: 400 });
     }
 
@@ -40,12 +43,12 @@ serve(async (req) => {
       const metadata = session.metadata;
       
       if (!metadata) {
-        throw new Error('No metadata found in session');
+        console.error('No metadata found in session');
+        return new Response(JSON.stringify({ error: 'No metadata found' }), { status: 400 });
       }
 
       console.log('Creating booking with metadata:', metadata);
 
-      // Créer la réservation une fois le paiement confirmé
       const { data: booking, error: bookingError } = await supabase
         .from('bookings')
         .insert([{
@@ -68,7 +71,7 @@ serve(async (req) => {
 
       if (bookingError) {
         console.error('Error creating booking:', bookingError);
-        throw bookingError;
+        return new Response(JSON.stringify({ error: bookingError.message }), { status: 500 });
       }
 
       console.log('Booking created successfully:', booking);

@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { Booking } from "./useBookings";
 import { useBookingEmail } from "./useBookingEmail";
 import { useBookingNotifications } from "./useBookingNotifications";
 
@@ -11,7 +10,7 @@ export const useBookingMutations = () => {
 
   const mutation = useMutation({
     mutationFn: async ({ bookingId, newStatus }: { bookingId: string; newStatus: string }): Promise<void> => {
-      console.log('Mise à jour de la réservation:', bookingId, 'vers', newStatus);
+      console.log('Début de la mutation pour la réservation:', bookingId);
       
       const { error: updateError } = await supabase
         .from('bookings')
@@ -19,11 +18,11 @@ export const useBookingMutations = () => {
         .eq('id', bookingId);
 
       if (updateError) {
-        console.error('Erreur mise à jour:', updateError);
+        console.error('Erreur lors de la mise à jour:', updateError);
         throw updateError;
       }
 
-      // Récupérer la réservation mise à jour
+      // Récupérer la réservation mise à jour pour l'email
       const { data: updatedBooking, error: fetchError } = await supabase
         .from('bookings')
         .select('*')
@@ -31,7 +30,7 @@ export const useBookingMutations = () => {
         .single();
 
       if (fetchError || !updatedBooking) {
-        console.error('Erreur récupération:', fetchError);
+        console.error('Erreur lors de la récupération:', fetchError);
         throw fetchError || new Error('Réservation non trouvée');
       }
 
@@ -53,8 +52,13 @@ export const useBookingMutations = () => {
     }
   });
 
-  const updateBookingStatus = async (bookingId: string, newStatus: string) => {
-    return mutation.mutateAsync({ bookingId, newStatus });
+  const updateBookingStatus = async (bookingId: string, newStatus: string): Promise<void> => {
+    try {
+      await mutation.mutateAsync({ bookingId, newStatus });
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour du statut:', error);
+      throw error;
+    }
   };
 
   return { updateBookingStatus };

@@ -13,7 +13,7 @@ import { BookingTableContent } from "./table/BookingTableContent";
 
 interface BookingsTableProps {
   data: Booking[];
-  onStatusChange: (bookingId: string, newStatus: string) => Promise<Booking>;
+  onStatusChange: (bookingId: string, newStatus: string) => Promise<void>;
   onViewDetails: (booking: Booking) => void;
   isLoading?: boolean;
 }
@@ -29,20 +29,19 @@ export const BookingsTable = ({
 
   const columns = createBookingColumns(isMobile, onViewDetails, onStatusChange);
 
-  // Si on est sur mobile, on réduit les colonnes affichées
-  const mobileColumns = columns.filter((col: ColumnDef<Booking>) => {
-    let identifier: string | undefined;
-    
-    if ('id' in col && typeof col.id === 'string') {
-      identifier = col.id;
-    } else if ('accessorKey' in col && typeof col.accessorKey === 'string') {
-      identifier = col.accessorKey;
-    }
-    
-    return ["date", "user_name", "status", "actions"].includes(identifier || "");
-  });
-
-  const finalColumns = isMobile ? mobileColumns : columns;
+  const finalColumns = isMobile 
+    ? columns.filter((col: ColumnDef<Booking>) => {
+        let identifier: string | undefined;
+        
+        if ('id' in col && typeof col.id === 'string') {
+          identifier = col.id;
+        } else if ('accessorKey' in col && typeof col.accessorKey === 'string') {
+          identifier = col.accessorKey;
+        }
+        
+        return ["date", "user_name", "status", "actions"].includes(identifier || "");
+      })
+    : columns;
 
   const table = useReactTable({
     data: data || [],

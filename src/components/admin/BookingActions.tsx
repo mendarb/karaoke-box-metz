@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { useBookingMutations } from "@/hooks/useBookingMutations";
+import { useBookingActions } from "@/hooks/useBookingActions";
 
 interface BookingActionsProps {
   bookingId: string;
@@ -16,15 +16,11 @@ interface BookingActionsProps {
 
 export const BookingActions = ({ bookingId, currentStatus }: BookingActionsProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const { updateStatus, isLoading } = useBookingMutations();
+  const { updateBookingStatus, isLoading } = useBookingActions();
 
   const handleStatusChange = async (newStatus: string) => {
-    try {
-      await updateStatus(bookingId, newStatus);
-      setIsOpen(false);
-    } catch (error) {
-      console.error('Action error:', error);
-    }
+    await updateBookingStatus(bookingId, newStatus);
+    setIsOpen(false);
   };
 
   return (

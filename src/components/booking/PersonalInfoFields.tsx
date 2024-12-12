@@ -4,11 +4,13 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
 import { useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { Mail } from "lucide-react";
 
 interface PersonalInfoFieldsProps {
   form: UseFormReturn<any>;
@@ -19,10 +21,8 @@ export const PersonalInfoFields = ({ form }: PersonalInfoFieldsProps) => {
     const loadUserData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        // Pre-fill email from auth
         form.setValue('email', user.email || '');
         
-        // Get additional user data from the most recent booking
         const { data: lastBooking } = await supabase
           .from('bookings')
           .select('user_name, user_phone')
@@ -72,8 +72,23 @@ export const PersonalInfoFields = ({ form }: PersonalInfoFieldsProps) => {
           <FormItem>
             <FormLabel>Adresse e-mail *</FormLabel>
             <FormControl>
-              <Input type="email" placeholder="Entrez votre adresse e-mail" {...field} required />
+              <div className="relative">
+                <Input 
+                  type="email" 
+                  placeholder="Entrez votre adresse e-mail" 
+                  {...field} 
+                  required 
+                  disabled={!!field.value}
+                  className="pr-10 bg-gray-50"
+                />
+                <Mail className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
+              </div>
             </FormControl>
+            {field.value && (
+              <FormDescription className="text-sm text-muted-foreground">
+                Pour modifier votre email, utilisez la page "Mon compte"
+              </FormDescription>
+            )}
             <FormMessage />
           </FormItem>
         )}

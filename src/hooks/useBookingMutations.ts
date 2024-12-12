@@ -5,11 +5,11 @@ export const useBookingMutations = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async ({ bookingId, newStatus }: { bookingId: string; newStatus: string }) => {
+    mutationFn: async (variables: { bookingId: string; newStatus: string }) => {
       const { data, error } = await supabase
         .from('bookings')
-        .update({ status: newStatus })
-        .eq('id', bookingId)
+        .update({ status: variables.newStatus })
+        .eq('id', variables.bookingId)
         .select()
         .single();
 

@@ -42,10 +42,12 @@ export const useBookingSettingsForm = () => {
           }
 
           console.log('Default settings created:', newSettings);
+          form.reset(newSettings.value);
           return newSettings.value as BookingSettings;
         }
 
         console.log('Loaded settings:', existingSettings);
+        form.reset(existingSettings.value);
         return existingSettings.value as BookingSettings;
       } catch (err) {
         console.error('Query error:', err);
@@ -53,7 +55,7 @@ export const useBookingSettingsForm = () => {
       }
     },
     retry: 1,
-    staleTime: 0, // Désactive le cache pour toujours récupérer les dernières valeurs
+    staleTime: 0,
   });
 
   const mutation = useMutation({
@@ -78,6 +80,7 @@ export const useBookingSettingsForm = () => {
     },
     onSuccess: (data) => {
       queryClient.setQueryData(['booking-settings'], data);
+      form.reset(data);
       toast({
         title: "Paramètres mis à jour",
         description: "Les paramètres ont été sauvegardés avec succès.",

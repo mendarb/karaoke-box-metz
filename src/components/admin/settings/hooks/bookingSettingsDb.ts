@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabase";
 import { BookingSettings, defaultSettings } from "./bookingSettingsTypes";
 
 export const fetchBookingSettings = async (): Promise<BookingSettings> => {
+  console.log('Fetching booking settings...');
   const { data: existingSettings, error: fetchError } = await supabase
     .from('booking_settings')
     .select('*')

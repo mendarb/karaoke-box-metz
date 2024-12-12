@@ -10,41 +10,38 @@ export const useBookingMutations = () => {
   const { notifySuccess, notifyError } = useBookingNotifications();
 
   const mutation = useMutation({
-    mutationFn: async ({ bookingId, newStatus }: { bookingId: string; newStatus: string }): Promise<Booking> => {
-      console.log('Début de la mutation pour la réservation:', bookingId);
+    mutationFn: async ({ bookingId, newStatus }: { bookingId: string; newStatus: string }): Promise<void> => {
+      console.log('Mise à jour de la réservation:', bookingId, 'vers', newStatus);
       
-      // Vérification de la session
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        throw new Error('Session expirée');
-      }
-
-      // Mise à jour simple et directe
-      const { data, error } = await supabase
+      const { error: updateError } = await supabase
         .from('bookings')
         .update({ status: newStatus })
+        .eq('id', bookingId);
+
+      if (updateError) {
+        console.error('Erreur mise à jour:', updateError);
+        throw updateError;
+      }
+
+      // Récupérer la réservation mise à jour
+      const { data: updatedBooking, error: fetchError } = await supabase
+        .from('bookings')
+        .select('*')
         .eq('id', bookingId)
-        .select()
         .single();
 
-      if (error) {
-        console.error('Erreur lors de la mise à jour:', error);
-        throw error;
+      if (fetchError || !updatedBooking) {
+        console.error('Erreur récupération:', fetchError);
+        throw fetchError || new Error('Réservation non trouvée');
       }
 
-      if (!data) {
-        throw new Error('Réservation non trouvée');
-      }
-
-      // Envoi de l'email de confirmation
       try {
-        await sendEmail(data);
+        await sendEmail(updatedBooking);
+        console.log('Email envoyé avec succès');
       } catch (emailError) {
-        console.error('Erreur lors de l\'envoi de l\'email:', emailError);
+        console.error('Erreur envoi email:', emailError);
         // On continue même si l'email échoue
       }
-
-      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
@@ -56,7 +53,7 @@ export const useBookingMutations = () => {
     }
   });
 
-  const updateBookingStatus = async (bookingId: string, newStatus: string): Promise<Booking> => {
+  const updateBookingStatus = async (bookingId: string, newStatus: string) => {
     return mutation.mutateAsync({ bookingId, newStatus });
   };
 

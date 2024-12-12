@@ -7,11 +7,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { Booking } from "@/hooks/useBookings";
 
 interface BookingActionsProps {
   bookingId: string;
-  onStatusChange: (bookingId: string, newStatus: string) => Promise<Booking>;
+  onStatusChange: (bookingId: string, newStatus: string) => Promise<void>;
 }
 
 export const BookingActions = ({ bookingId, onStatusChange }: BookingActionsProps) => {
@@ -24,7 +23,7 @@ export const BookingActions = ({ bookingId, onStatusChange }: BookingActionsProp
       await onStatusChange(bookingId, status);
       setIsOpen(false);
     } catch (error) {
-      console.error('Erreur lors de la mise à jour du statut:', error);
+      console.error('Erreur action:', error);
     } finally {
       setIsLoading(false);
     }

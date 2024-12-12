@@ -5,7 +5,6 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
@@ -18,12 +17,10 @@ interface PricingSettingsProps {
 }
 
 export const PricingSettings = ({ form, defaultValue }: PricingSettingsProps) => {
-  console.log('PricingSettings default values:', defaultValue);
-
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-medium">Tarification</h3>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="space-y-4">
         <FormField
           control={form.control}
           name="basePrice.perHour"
@@ -47,7 +44,6 @@ export const PricingSettings = ({ form, defaultValue }: PricingSettingsProps) =>
               <FormDescription>
                 Tarif horaire de base
               </FormDescription>
-              <FormMessage />
             </FormItem>
           )}
         />
@@ -75,7 +71,6 @@ export const PricingSettings = ({ form, defaultValue }: PricingSettingsProps) =>
               <FormDescription>
                 Supplément par personne
               </FormDescription>
-              <FormMessage />
             </FormItem>
           )}
         />

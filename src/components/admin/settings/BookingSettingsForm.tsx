@@ -1,16 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Form } from "@/components/ui/form";
 import { useToast } from "@/components/ui/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
@@ -19,6 +10,7 @@ import { OpeningHoursSettings } from "./settings/OpeningHoursSettings";
 import { BookingWindowSettings } from "./settings/BookingWindowSettings";
 import { ExcludedDaysSettings } from "./settings/ExcludedDaysSettings";
 import { PricingSettings } from "./settings/PricingSettings";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface BookingSettings {
   isTestMode: boolean;
@@ -39,98 +31,86 @@ interface BookingSettings {
   };
 }
 
+const defaultSettings: BookingSettings = {
+  isTestMode: false,
+  bookingWindow: { startDays: 1, endDays: 30 },
+  openingHours: {
+    1: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
+    2: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
+    3: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
+    4: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
+    5: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
+    6: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
+    0: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
+  },
+  excludedDays: [],
+  basePrice: { perHour: 30, perPerson: 5 },
+};
+
 export const BookingSettingsForm = () => {
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();
   const form = useForm<BookingSettings>();
 
   const { data: settings, isLoading: isLoadingSettings } = useQuery({
     queryKey: ['booking-settings'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('booking_settings')
-        .select('*');
+      try {
+        const { data, error } = await supabase
+          .from('booking_settings')
+          .select('*')
+          .single();
 
-      if (error) throw error;
-
-      const formattedSettings: BookingSettings = {
-        isTestMode: false,
-        bookingWindow: { startDays: 1, endDays: 30 },
-        openingHours: {
-          1: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
-          2: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
-          3: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
-          4: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
-          5: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
-          6: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
-          0: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
-        },
-        excludedDays: [],
-        basePrice: { perHour: 30, perPerson: 5 },
-      };
-
-      data?.forEach(setting => {
-        switch (setting.key) {
-          case 'booking_window':
-            formattedSettings.bookingWindow = setting.value;
-            break;
-          case 'opening_hours':
-            formattedSettings.openingHours = setting.value;
-            break;
-          case 'excluded_days':
-            formattedSettings.excludedDays = setting.value;
-            break;
-          case 'base_price':
-            formattedSettings.basePrice = setting.value;
-            break;
-          case 'is_test_mode':
-            formattedSettings.isTestMode = setting.value;
-            break;
+        if (error) {
+          console.error('Error fetching settings:', error);
+          return defaultSettings;
         }
-      });
 
-      console.log("Loaded settings:", formattedSettings);
-      return formattedSettings;
+        if (!data) {
+          // Si aucun paramètre n'existe, créer les paramètres par défaut
+          const { error: insertError } = await supabase
+            .from('booking_settings')
+            .insert([{ key: 'booking_settings', value: defaultSettings }]);
+
+          if (insertError) {
+            console.error('Error creating default settings:', insertError);
+          }
+          return defaultSettings;
+        }
+
+        return data.value as BookingSettings;
+      } catch (err) {
+        console.error('Query error:', err);
+        return defaultSettings;
+      }
     },
     refetchOnWindowFocus: true,
   });
 
   const mutation = useMutation({
     mutationFn: async (data: BookingSettings) => {
-      setIsLoading(true);
       try {
-        console.log("Saving settings:", data);
-        const updates = [
-          { key: 'booking_window', value: data.bookingWindow },
-          { key: 'opening_hours', value: data.openingHours },
-          { key: 'excluded_days', value: data.excludedDays },
-          { key: 'base_price', value: data.basePrice },
-          { key: 'is_test_mode', value: data.isTestMode }
-        ];
+        const { error } = await supabase
+          .from('booking_settings')
+          .upsert({ 
+            key: 'booking_settings',
+            value: data 
+          });
 
-        for (const update of updates) {
-          const { error } = await supabase
-            .from('booking_settings')
-            .update({ value: update.value })
-            .eq('key', update.key);
-
-          if (error) throw error;
-        }
+        if (error) throw error;
 
         toast({
           title: "Paramètres mis à jour",
-          description: "Les paramètres de réservation ont été mis à jour avec succès.",
+          description: "Les paramètres ont été sauvegardés avec succès.",
         });
       } catch (error) {
         console.error('Erreur lors de la mise à jour des paramètres:', error);
         toast({
           title: "Erreur",
-          description: "Une erreur est survenue lors de la mise à jour des paramètres.",
+          description: "Une erreur est survenue lors de la sauvegarde des paramètres.",
           variant: "destructive",
         });
-      } finally {
-        setIsLoading(false);
+        throw error;
       }
     },
     onSuccess: () => {
@@ -139,7 +119,6 @@ export const BookingSettingsForm = () => {
   });
 
   const onSubmit = (data: BookingSettings) => {
-    console.log("Form submission data:", data);
     mutation.mutate(data);
   };
 
@@ -154,23 +133,44 @@ export const BookingSettingsForm = () => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <BookingWindowSettings form={form} defaultValue={settings?.bookingWindow} />
-        <OpeningHoursSettings form={form} defaultValue={settings?.openingHours} />
-        <ExcludedDaysSettings form={form} defaultValue={settings?.excludedDays} />
-        <PricingSettings form={form} defaultValue={settings?.basePrice} />
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardContent className="pt-6">
+              <PricingSettings form={form} defaultValue={settings?.basePrice} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <BookingWindowSettings form={form} defaultValue={settings?.bookingWindow} />
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card>
+          <CardContent className="pt-6">
+            <OpeningHoursSettings form={form} defaultValue={settings?.openingHours} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <ExcludedDaysSettings form={form} defaultValue={settings?.excludedDays} />
+          </CardContent>
+        </Card>
 
         <Button
           type="submit"
           className="w-full"
-          disabled={isLoading}
+          disabled={mutation.isPending}
         >
-          {isLoading ? (
+          {mutation.isPending ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Mise à jour...
+              Sauvegarde en cours...
             </>
           ) : (
-            "Enregistrer les modifications"
+            "Sauvegarder les modifications"
           )}
         </Button>
       </form>

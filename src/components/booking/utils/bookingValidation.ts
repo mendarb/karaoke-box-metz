@@ -78,7 +78,7 @@ export const checkTimeSlotAvailability = async (
     .select('*')
     .eq('date', date.toISOString().split('T')[0])
     .neq('status', 'cancelled')
-    .is('deleted_at', null);
+    .is('deleted_at', null); // Ajout du filtre pour exclure les réservations supprimées
 
   if (error) {
     console.error('Error checking availability:', error);

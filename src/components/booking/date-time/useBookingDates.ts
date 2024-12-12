@@ -18,7 +18,7 @@ export const useBookingDates = () => {
         throw error;
       }
 
-      console.log('Fetched settings:', data?.value);
+      console.log('Loaded settings:', data);
       return data?.value;
     },
   });
@@ -65,10 +65,61 @@ export const useBookingDates = () => {
     return false;
   };
 
-  const getAvailableHoursForSlot = async (date: Date, timeSlot: string) => {
-    if (!settings) return 0;
+  const getAvailableSlots = async (date: Date) => {
+    if (!settings?.openingHours) {
+      console.log('No opening hours settings found');
+      return [];
+    }
 
-    const daySettings = settings.openingHours?.[date.getDay().toString()];
+    const dayOfWeek = date.getDay().toString();
+    const daySettings = settings.openingHours[dayOfWeek];
+
+    if (!daySettings?.isOpen) {
+      console.log('Day is closed:', { date, dayOfWeek });
+      return [];
+    }
+
+    const slots = daySettings.slots || [];
+    console.log('Potential slots for day:', slots);
+
+    // Vérifier les réservations existantes
+    const { data: bookings, error } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('date', date.toISOString().split('T')[0])
+      .neq('status', 'cancelled')
+      .is('deleted_at', null); // Ajout du filtre pour exclure les réservations supprimées
+
+    if (error) {
+      console.error('Error checking bookings:', error);
+      return slots;
+    }
+
+    // Filtrer les créneaux déjà réservés
+    const availableSlots = slots.filter(slot => {
+      const slotTime = parseInt(slot.split(':')[0]);
+      
+      const isBooked = bookings?.some(booking => {
+        const bookingStartTime = parseInt(booking.time_slot.split(':')[0]);
+        const bookingDuration = parseInt(booking.duration);
+        
+        return slotTime >= bookingStartTime && slotTime < (bookingStartTime + bookingDuration);
+      });
+      
+      if (isBooked) {
+        console.log('Slot is booked:', slot);
+      }
+      return !isBooked;
+    });
+
+    console.log('Available slots after filtering:', availableSlots);
+    return availableSlots;
+  };
+
+  const getAvailableHoursForSlot = async (date: Date, timeSlot: string) => {
+    if (!settings?.openingHours) return 0;
+
+    const daySettings = settings.openingHours[date.getDay().toString()];
     if (!daySettings?.isOpen || !daySettings.slots) {
       console.log('Day is closed or no slots available');
       return 0;
@@ -97,7 +148,7 @@ export const useBookingDates = () => {
       .select('*')
       .eq('date', date.toISOString().split('T')[0])
       .neq('status', 'cancelled')
-      .is('deleted_at', null);
+      .is('deleted_at', null); // Ajout du filtre pour exclure les réservations supprimées
 
     if (error) {
       console.error('Error checking bookings:', error);
@@ -126,58 +177,6 @@ export const useBookingDates = () => {
 
     console.log(`Available hours for slot ${timeSlot}:`, availableHours);
     return availableHours;
-  };
-
-  const getAvailableSlots = async (date: Date) => {
-    if (!settings?.openingHours) {
-      console.log('No opening hours settings found');
-      return [];
-    }
-
-    const dayOfWeek = date.getDay().toString();
-    const daySettings = settings.openingHours[dayOfWeek];
-
-    if (!daySettings?.isOpen) {
-      console.log('Day is closed:', { date, dayOfWeek });
-      return [];
-    }
-
-    const slots = daySettings.slots || [];
-    console.log('Potential slots for day:', slots);
-
-    // Vérifier les réservations existantes
-    const { data: bookings, error } = await supabase
-      .from('bookings')
-      .select('*')
-      .eq('date', date.toISOString().split('T')[0])
-      .neq('status', 'cancelled')
-      .is('deleted_at', null);
-
-    if (error) {
-      console.error('Error checking bookings:', error);
-      return slots;
-    }
-
-    // Filtrer les créneaux déjà réservés
-    const availableSlots = slots.filter(slot => {
-      const slotTime = parseInt(slot.split(':')[0]);
-      
-      const isBooked = bookings?.some(booking => {
-        const bookingStartTime = parseInt(booking.time_slot.split(':')[0]);
-        const bookingDuration = parseInt(booking.duration);
-        
-        // Vérifier si le créneau est dans la plage de la réservation
-        return slotTime >= bookingStartTime && slotTime < (bookingStartTime + bookingDuration);
-      });
-      
-      if (isBooked) {
-        console.log('Slot is booked:', slot);
-      }
-      return !isBooked;
-    });
-
-    console.log('Available slots after filtering:', availableSlots);
-    return availableSlots;
   };
 
   return {

@@ -5,6 +5,50 @@ import { useBookingEmail } from "./useBookingEmail";
 import { useBookingCache } from "./useBookingCache";
 import { useBookingNotifications } from "./useBookingNotifications";
 
+// Fonction utilitaire pour vérifier l'existence d'une réservation
+const getBooking = async (bookingId: string): Promise<Booking> => {
+  const { data, error } = await supabase
+    .from('bookings')
+    .select()
+    .eq('id', bookingId)
+    .single();
+
+  if (error) {
+    console.error('Erreur lors de la vérification de la réservation:', error);
+    throw new Error(`Réservation introuvable: ${error.message}`);
+  }
+
+  if (!data) {
+    throw new Error('Réservation introuvable');
+  }
+
+  return data;
+};
+
+// Fonction utilitaire pour mettre à jour une réservation
+const updateBooking = async (bookingId: string, newStatus: string): Promise<Booking> => {
+  const { data, error } = await supabase
+    .from('bookings')
+    .update({
+      status: newStatus,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', bookingId)
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    console.error('Erreur lors de la mise à jour:', error);
+    throw error;
+  }
+
+  if (!data) {
+    throw new Error('La mise à jour a échoué - aucune donnée retournée');
+  }
+
+  return data;
+};
+
 export const useBookingMutations = () => {
   const queryClient = useQueryClient();
   const { sendEmail } = useBookingEmail();
@@ -14,55 +58,28 @@ export const useBookingMutations = () => {
     mutationFn: async ({ bookingId, newStatus }: { bookingId: string; newStatus: string }): Promise<Booking> => {
       console.log('Début de la mutation pour la réservation:', bookingId);
       
+      // Vérifier la session
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         console.error('Pas de session trouvée');
         throw new Error('Session expirée');
       }
 
-      // Vérification de l'existence de la réservation
-      const { data: existingBooking, error: fetchError } = await supabase
-        .from('bookings')
-        .select()
-        .eq('id', bookingId)
-        .single();
-
-      if (fetchError || !existingBooking) {
-        console.error('Erreur lors de la vérification de la réservation:', fetchError);
-        throw new Error('Réservation introuvable');
-      }
-
+      // Vérifier l'existence de la réservation
+      const existingBooking = await getBooking(bookingId);
       console.log('Réservation trouvée:', existingBooking);
 
-      // Mise à jour de la réservation
-      const { data: updatedBooking, error: updateError } = await supabase
-        .from('bookings')
-        .update({
-          status: newStatus,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', bookingId)
-        .select()
-        .maybeSingle();
-
-      if (updateError) {
-        console.error('Erreur lors de la mise à jour:', updateError);
-        throw updateError;
-      }
-
-      if (!updatedBooking) {
-        console.error('Mise à jour échouée - pas de données retournées');
-        throw new Error('La mise à jour a échoué');
-      }
-
+      // Mettre à jour la réservation
+      const updatedBooking = await updateBooking(bookingId, newStatus);
       console.log('Mise à jour réussie:', updatedBooking);
 
-      // Envoi de l'email après la mise à jour réussie
+      // Envoyer l'email après la mise à jour réussie
       try {
         await sendEmail(updatedBooking);
         console.log('Email envoyé avec succès');
       } catch (emailError) {
         console.error('Erreur lors de l\'envoi de l\'email:', emailError);
+        // On ne throw pas l'erreur ici car la mise à jour a réussi
       }
 
       return updatedBooking;

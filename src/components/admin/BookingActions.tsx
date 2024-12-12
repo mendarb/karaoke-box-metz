@@ -32,7 +32,6 @@ export const BookingActions = ({ bookingId, currentStatus }: BookingActionsProps
 
   const handleStatusChange = async (newStatus: BookingStatus) => {
     try {
-      console.log('Changing status:', { bookingId, from: currentStatus, to: newStatus });
       await updateBookingStatus(bookingId, newStatus);
       setIsOpen(false);
     } catch (error) {
@@ -47,6 +46,9 @@ export const BookingActions = ({ bookingId, currentStatus }: BookingActionsProps
       setIsOpen(false);
     } catch (error) {
       console.error('Error deleting booking:', error);
+      // Make sure to close dialogs even if there's an error
+      setShowDeleteDialog(false);
+      setIsOpen(false);
     }
   };
 
@@ -96,7 +98,13 @@ export const BookingActions = ({ bookingId, currentStatus }: BookingActionsProps
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      <AlertDialog 
+        open={showDeleteDialog} 
+        onOpenChange={(open) => {
+          setShowDeleteDialog(open);
+          if (!open) setIsOpen(false);
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>

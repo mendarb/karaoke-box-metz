@@ -14,10 +14,6 @@ export const useBookingActions = () => {
     console.log('Starting status update:', { bookingId, status });
 
     try {
-      if (!['pending', 'confirmed', 'cancelled', 'archived'].includes(status)) {
-        throw new Error(`Invalid status: ${status}`);
-      }
-
       const { data, error } = await supabase
         .from('bookings')
         .update({ 
@@ -25,19 +21,15 @@ export const useBookingActions = () => {
           updated_at: new Date().toISOString()
         })
         .eq('id', bookingId)
-        .select('*');
+        .select('*')
+        .single();
 
       if (error) {
         console.error('Supabase error:', error);
         throw error;
       }
 
-      if (!data || data.length === 0) {
-        throw new Error('No booking found or update failed');
-      }
-
-      console.log('Update successful:', data[0]);
-
+      console.log('Update successful:', data);
       await queryClient.invalidateQueries({ queryKey: ['bookings'] });
       
       toast({
@@ -45,16 +37,14 @@ export const useBookingActions = () => {
         description: "Le statut de la réservation a été mis à jour",
       });
 
-      return data[0];
+      return data;
     } catch (error: any) {
       console.error('Update failed:', error);
-      
       toast({
         title: "Erreur",
         description: error.message || "Impossible de mettre à jour le statut",
         variant: "destructive",
       });
-      
       throw error;
     } finally {
       setIsLoading(false);
@@ -69,7 +59,7 @@ export const useBookingActions = () => {
       const { error } = await supabase
         .from('bookings')
         .update({ 
-          deleted_at: new Date().toISOString(),
+          deleted_at: new Date().toISOString()
         })
         .eq('id', bookingId);
 
@@ -79,6 +69,8 @@ export const useBookingActions = () => {
       }
 
       console.log('Deletion successful');
+      
+      // Invalidate and refetch to update the UI
       await queryClient.invalidateQueries({ queryKey: ['bookings'] });
       
       toast({
@@ -87,13 +79,11 @@ export const useBookingActions = () => {
       });
     } catch (error: any) {
       console.error('Delete failed:', error);
-      
       toast({
         title: "Erreur",
         description: "Impossible de supprimer la réservation",
         variant: "destructive",
       });
-      
       throw error;
     } finally {
       setIsLoading(false);

@@ -57,24 +57,22 @@ export const useBookingActions = () => {
     console.log('Starting deletion:', { bookingId });
     
     try {
-      // First, check if the booking exists and isn't already deleted
+      // Vérifier si la réservation existe
       const { data: existingBooking, error: checkError } = await supabase
         .from('bookings')
         .select('*')
         .eq('id', bookingId)
-        .is('deleted_at', null)
         .single();
 
       if (checkError) {
-        throw new Error('Réservation introuvable ou déjà supprimée');
+        throw new Error('Réservation introuvable');
       }
 
-      // Proceed with deletion
+      // Procéder à la suppression
       const { error: deleteError } = await supabase
         .from('bookings')
         .update({ deleted_at: new Date().toISOString() })
-        .eq('id', bookingId)
-        .is('deleted_at', null);
+        .eq('id', bookingId);
 
       if (deleteError) {
         console.error('Delete error:', deleteError);

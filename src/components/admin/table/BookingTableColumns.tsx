@@ -82,7 +82,10 @@ export const createBookingColumns = (
         >
           {isMobile ? "Voir" : "Détails"}
         </Button>
-        <BookingActions bookingId={row.original.id} />
+        <BookingActions 
+          bookingId={row.original.id} 
+          currentStatus={row.original.status}
+        />
       </div>
     ),
   },

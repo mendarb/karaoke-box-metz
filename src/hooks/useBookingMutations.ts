@@ -1,23 +1,43 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { useToast } from "@/components/ui/use-toast";
 
 export const useBookingMutations = () => {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const mutation = useMutation({
-    mutationFn: async (variables: { bookingId: string; newStatus: string }) => {
+    mutationFn: async ({ bookingId, newStatus }: { bookingId: string; newStatus: string }) => {
+      console.log('Updating booking status:', { bookingId, newStatus });
+      
       const { data, error } = await supabase
         .from('bookings')
-        .update({ status: variables.newStatus })
-        .eq('id', variables.bookingId)
+        .update({ status: newStatus })
+        .eq('id', bookingId)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating booking:', error);
+        throw error;
+      }
+
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      toast({
+        title: "Succès",
+        description: "Le statut de la réservation a été mis à jour.",
+      });
+    },
+    onError: (error) => {
+      console.error('Mutation error:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la mise à jour du statut.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -25,5 +45,8 @@ export const useBookingMutations = () => {
     return mutation.mutateAsync({ bookingId, newStatus });
   };
 
-  return { updateStatus, isLoading: mutation.isPending };
+  return {
+    updateStatus,
+    isLoading: mutation.isPending
+  };
 };

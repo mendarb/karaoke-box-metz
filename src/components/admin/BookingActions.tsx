@@ -8,32 +8,22 @@ import {
 import { MoreHorizontal, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useBookingMutations } from "@/hooks/useBookingMutations";
-import { useToast } from "@/components/ui/use-toast";
 
 interface BookingActionsProps {
   bookingId: string;
+  currentStatus: string;
 }
 
-export const BookingActions = ({ bookingId }: BookingActionsProps) => {
+export const BookingActions = ({ bookingId, currentStatus }: BookingActionsProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const { updateStatus, isLoading } = useBookingMutations();
-  const { toast } = useToast();
 
   const handleStatusChange = async (status: string) => {
     try {
       await updateStatus(bookingId, status);
       setIsOpen(false);
-      toast({
-        title: "Statut mis à jour",
-        description: "Le statut de la réservation a été mis à jour avec succès.",
-      });
     } catch (error) {
-      console.error('Erreur action:', error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la mise à jour du statut.",
-        variant: "destructive",
-      });
+      console.error('Action error:', error);
     }
   };
 
@@ -54,20 +44,24 @@ export const BookingActions = ({ bookingId }: BookingActionsProps) => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[160px]">
-        <DropdownMenuItem 
-          onClick={() => handleStatusChange('confirmed')}
-          className="cursor-pointer"
-          disabled={isLoading}
-        >
-          Confirmer
-        </DropdownMenuItem>
-        <DropdownMenuItem 
-          onClick={() => handleStatusChange('cancelled')}
-          className="cursor-pointer text-red-600 focus:text-red-600"
-          disabled={isLoading}
-        >
-          Annuler
-        </DropdownMenuItem>
+        {currentStatus !== 'confirmed' && (
+          <DropdownMenuItem 
+            onClick={() => handleStatusChange('confirmed')}
+            className="cursor-pointer"
+            disabled={isLoading}
+          >
+            Confirmer
+          </DropdownMenuItem>
+        )}
+        {currentStatus !== 'cancelled' && (
+          <DropdownMenuItem 
+            onClick={() => handleStatusChange('cancelled')}
+            className="cursor-pointer text-red-600 focus:text-red-600"
+            disabled={isLoading}
+          >
+            Annuler
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

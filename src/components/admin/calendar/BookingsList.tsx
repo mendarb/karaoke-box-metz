@@ -9,14 +9,12 @@ import { BookingActions } from "../BookingActions";
 interface BookingsListProps {
   bookings: Booking[];
   onViewDetails: (booking: Booking) => void;
-  onStatusChange: (bookingId: string, newStatus: string) => Promise<void>;
   selectedDate?: Date;
 }
 
 export const BookingsList = ({ 
   bookings, 
   onViewDetails,
-  onStatusChange,
   selectedDate 
 }: BookingsListProps) => {
   return (
@@ -62,7 +60,10 @@ export const BookingsList = ({
                 >
                   Détails
                 </Button>
-                <BookingActions bookingId={booking.id} />
+                <BookingActions 
+                  bookingId={booking.id}
+                  currentStatus={booking.status}
+                />
               </div>
             </div>
           ))

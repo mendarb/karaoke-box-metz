@@ -122,9 +122,10 @@ export const BookingsTable = ({
   ];
 
   // Si on est sur mobile, on réduit les colonnes affichées
-  const mobileColumns = columns.filter(col => 
-    ["date", "user_name", "status", "actions"].includes(col.id || (col.accessorKey as string) || "")
-  );
+  const mobileColumns = columns.filter(col => {
+    const identifier = col.id || (col.accessorKey as string);
+    return ["date", "user_name", "status", "actions"].includes(identifier || "");
+  });
 
   const table = useReactTable({
     data: data || [],

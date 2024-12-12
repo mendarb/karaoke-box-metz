@@ -3,29 +3,18 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/lib/supabase";
-import { useToast } from "@/components/ui/use-toast";
 import { User } from "lucide-react";
 
-export const UserNav = () => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
+interface UserNavProps {
+  onSignOut: () => Promise<void>;
+}
 
-  const handleSignOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la déconnexion",
-        variant: "destructive",
-      });
-      return;
-    }
-    navigate('/');
-  };
+export const UserNav = ({ onSignOut }: UserNavProps) => {
+  const navigate = useNavigate();
 
   return (
     <DropdownMenu>
@@ -35,10 +24,14 @@ export const UserNav = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
-        <DropdownMenuItem onClick={() => navigate('/bookings')}>
+        <DropdownMenuItem onClick={() => navigate('/account')}>
+          Mon compte
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate('/my-bookings')}>
           Mes réservations
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleSignOut}>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={onSignOut} className="text-red-600">
           Déconnexion
         </DropdownMenuItem>
       </DropdownMenuContent>

@@ -2,7 +2,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Booking } from "./useBookings";
 import { useBookingEmail } from "./useBookingEmail";
-import { useBookingCache } from "./useBookingCache";
 import { useBookingNotifications } from "./useBookingNotifications";
 
 export const useBookingMutations = () => {
@@ -12,24 +11,20 @@ export const useBookingMutations = () => {
 
   const mutation = useMutation({
     mutationFn: async ({ bookingId, newStatus }: { bookingId: string; newStatus: string }): Promise<Booking> => {
-      console.log('Tentative de mise à jour du statut:', { bookingId, newStatus });
+      console.log('Début de la mutation pour la réservation:', bookingId);
       
-      // Vérifier la session
+      // Vérification de la session
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         throw new Error('Session expirée');
       }
 
-      // Mise à jour directe
+      // Mise à jour simple et directe
       const { data, error } = await supabase
         .from('bookings')
-        .update({ 
-          status: newStatus,
-          updated_at: new Date().toISOString()
-        })
+        .update({ status: newStatus })
         .eq('id', bookingId)
         .select()
-        .order('created_at', { ascending: false })
         .single();
 
       if (error) {
@@ -38,15 +33,15 @@ export const useBookingMutations = () => {
       }
 
       if (!data) {
-        throw new Error('Aucune réservation mise à jour');
+        throw new Error('Réservation non trouvée');
       }
 
-      // Envoi de l'email
+      // Envoi de l'email de confirmation
       try {
         await sendEmail(data);
-        console.log('Email envoyé avec succès');
       } catch (emailError) {
         console.error('Erreur lors de l\'envoi de l\'email:', emailError);
+        // On continue même si l'email échoue
       }
 
       return data;

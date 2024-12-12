@@ -101,13 +101,17 @@ export const PriceCalculator = ({ groupSize, duration, onPriceCalculated }: Pric
 
   return (
     <div className={`${isMobile ? 'mt-3 p-4' : 'mt-4 p-6'} bg-gradient-to-br from-violet-50/50 to-violet-100/50 backdrop-blur-sm rounded-2xl border border-violet-100/50 shadow-lg animate-fadeIn`}>
-      <p className="text-xl sm:text-2xl font-bold text-violet-900">
-        {formatPrice(pricePerPersonPerHour)}/pers/h
-      </p>
-      
-      <p className="text-sm text-gray-600 mt-2">
-        Total : {formatPrice(price)}
-      </p>
+      <div className="flex flex-col items-center text-center">
+        <p className="text-2xl sm:text-3xl font-bold text-violet-900 mb-1">
+          {formatPrice(pricePerPersonPerHour)}
+        </p>
+        <p className="text-sm text-violet-700 font-medium">
+          par personne et par heure
+        </p>
+        <p className="text-sm text-gray-600 mt-3 font-medium">
+          Total : {formatPrice(price)}
+        </p>
+      </div>
     </div>
   );
 };

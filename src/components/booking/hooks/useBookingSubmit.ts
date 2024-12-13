@@ -96,6 +96,26 @@ export const useBookingSubmit = (
         return;
       }
 
+      // Stocker les données de réservation et la session dans le localStorage
+      const bookingData = {
+        email: data.email,
+        fullName: data.fullName,
+        phone: data.phone,
+        date: data.date,
+        timeSlot: data.timeSlot,
+        duration,
+        groupSize,
+        price: calculatedPrice,
+        message: data.message,
+        isTestMode: settings?.isTestMode || false,
+        userId: currentSession.user.id
+      };
+
+      localStorage.setItem('currentBookingSession', JSON.stringify({
+        session: currentSession,
+        bookingData
+      }));
+
       console.log('Creating checkout session...');
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
         body: JSON.stringify({
@@ -108,7 +128,8 @@ export const useBookingSubmit = (
           userEmail: data.email,
           userName: data.fullName,
           userPhone: data.phone,
-          isTestMode: settings?.isTestMode || false
+          isTestMode: settings?.isTestMode || false,
+          userId: currentSession.user.id
         })
       });
 

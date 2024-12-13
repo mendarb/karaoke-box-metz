@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { CheckCircle2 } from "lucide-react";
-import { useBookingSession } from "@/hooks/useBookingSession";
 import { useToast } from "@/components/ui/use-toast";
 
 export const Success = () => {
@@ -10,15 +9,11 @@ export const Success = () => {
   const navigate = useNavigate();
   const [bookingDetails, setBookingDetails] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const { isLoading: isRestoringSession } = useBookingSession();
   const { toast } = useToast();
 
   useEffect(() => {
     const fetchBookingDetails = async () => {
       try {
-        // Attendre que la session soit restaurée
-        if (isRestoringSession) return;
-
         const sessionId = searchParams.get('session_id');
         if (!sessionId) {
           navigate('/');
@@ -34,24 +29,32 @@ export const Success = () => {
 
         const { session, bookingData } = JSON.parse(storedSession);
 
-        // Vérifier la session
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-        if (!currentSession) {
-          console.error('No current session found');
-          toast({
-            title: "Erreur de session",
-            description: "Votre session a expiré. Veuillez vous reconnecter.",
-            variant: "destructive",
+        // Restaurer la session utilisateur
+        if (session?.access_token) {
+          const { error: sessionError } = await supabase.auth.setSession({
+            access_token: session.access_token,
+            refresh_token: session.refresh_token,
           });
-          navigate('/');
-          return;
+
+          if (sessionError) {
+            console.error('Error restoring session:', sessionError);
+            toast({
+              title: "Erreur de session",
+              description: "Impossible de restaurer votre session.",
+              variant: "destructive",
+            });
+            return;
+          }
         }
+
+        // Attendre un peu pour laisser le temps au webhook de traiter la réservation
+        await new Promise(resolve => setTimeout(resolve, 2000));
 
         // Récupérer la dernière réservation
         const { data: bookings, error } = await supabase
           .from('bookings')
           .select('*')
-          .eq('user_id', currentSession.user.id)
+          .eq('user_id', bookingData.userId)
           .order('created_at', { ascending: false })
           .limit(1)
           .single();
@@ -83,15 +86,13 @@ export const Success = () => {
         });
       } finally {
         setLoading(false);
-        // Nettoyer les données de session stockées
-        localStorage.removeItem('currentBookingSession');
       }
     };
 
     fetchBookingDetails();
-  }, [navigate, searchParams, isRestoringSession, toast]);
+  }, [navigate, searchParams, toast]);
 
-  if (loading || isRestoringSession) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>

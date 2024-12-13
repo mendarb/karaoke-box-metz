@@ -16,6 +16,7 @@ export const Success = () => {
       try {
         const sessionId = searchParams.get('session_id');
         if (!sessionId) {
+          console.error('No session ID found in URL');
           navigate('/');
           return;
         }
@@ -23,11 +24,12 @@ export const Success = () => {
         // Récupérer les données de réservation stockées
         const storedSession = localStorage.getItem('currentBookingSession');
         if (!storedSession) {
-          console.error('No booking session found');
+          console.error('No booking session found in localStorage');
           return;
         }
 
         const { session, bookingData } = JSON.parse(storedSession);
+        console.log('Retrieved stored session:', { session, bookingData });
 
         // Restaurer la session utilisateur
         if (session?.access_token) {
@@ -40,14 +42,15 @@ export const Success = () => {
             console.error('Error restoring session:', sessionError);
             toast({
               title: "Erreur de session",
-              description: "Impossible de restaurer votre session.",
+              description: "Impossible de restaurer votre session. Veuillez vous reconnecter.",
               variant: "destructive",
             });
+            navigate('/');
             return;
           }
         }
 
-        // Attendre un peu pour laisser le temps au webhook de traiter la réservation
+        // Attendre que le webhook traite la réservation
         await new Promise(resolve => setTimeout(resolve, 3000));
 
         // Récupérer la dernière réservation
@@ -63,6 +66,7 @@ export const Success = () => {
           console.error('Error fetching booking:', error);
           // Si pas de réservation trouvée, utiliser les données stockées
           if (error.code === 'PGRST116') {
+            console.log('Using stored booking data as fallback');
             setBookingDetails({
               date: bookingData.date,
               time_slot: bookingData.timeSlot,
@@ -75,6 +79,7 @@ export const Success = () => {
             throw error;
           }
         } else {
+          console.log('Booking found:', bookings);
           setBookingDetails(bookings);
         }
       } catch (error) {

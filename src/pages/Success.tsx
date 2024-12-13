@@ -25,6 +25,12 @@ export const Success = () => {
         const storedSession = localStorage.getItem('currentBookingSession');
         if (!storedSession) {
           console.error('No booking session found in localStorage');
+          toast({
+            title: "Erreur",
+            description: "Session de réservation non trouvée",
+            variant: "destructive",
+          });
+          navigate('/');
           return;
         }
 

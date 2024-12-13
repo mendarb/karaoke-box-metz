@@ -124,6 +124,11 @@ serve(async (req) => {
       } catch (emailError) {
         console.error('Error invoking send-booking-email function:', emailError);
       }
+
+      return new Response(JSON.stringify({ received: true, booking }), { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 
+      });
     }
 
     return new Response(JSON.stringify({ received: true }), { 

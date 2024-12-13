@@ -152,6 +152,23 @@ export const BookingForm = () => {
         return;
       }
 
+      // Stocker la session en cours avant de créer la session de paiement
+      localStorage.setItem('currentBookingSession', JSON.stringify({
+        session: currentSession,
+        bookingData: {
+          email: data.email,
+          fullName: data.fullName,
+          phone: data.phone,
+          date: data.date,
+          timeSlot: data.timeSlot,
+          duration,
+          groupSize,
+          price: calculatedPrice,
+          message: data.message,
+          isTestMode: settings?.isTestMode || false
+        }
+      }));
+
       // Créer la session de paiement
       console.log('Creating checkout session...');
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
@@ -166,7 +183,7 @@ export const BookingForm = () => {
           userName: data.fullName,
           userPhone: data.phone,
           isTestMode: settings?.isTestMode || false,
-          userId: currentSession.user.id // Ajout de l'ID utilisateur
+          userId: currentSession.user.id
         })
       });
 
@@ -174,9 +191,6 @@ export const BookingForm = () => {
 
       if (checkoutError) throw checkoutError;
       if (!checkoutData?.url) throw new Error("URL de paiement non reçue");
-
-      // Stocker la session en cours
-      localStorage.setItem('currentSession', JSON.stringify(currentSession));
 
       window.location.href = checkoutData.url;
       

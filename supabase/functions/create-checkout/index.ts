@@ -23,7 +23,8 @@ serve(async (req) => {
       userEmail, 
       userName, 
       userPhone,
-      isTestMode 
+      isTestMode,
+      userId
     } = await req.json()
 
     console.log('Creating checkout session with params:', {
@@ -33,7 +34,8 @@ serve(async (req) => {
       date,
       timeSlot,
       userEmail,
-      isTestMode
+      isTestMode,
+      userId
     });
 
     // Utiliser la clé appropriée en fonction du mode
@@ -80,7 +82,8 @@ serve(async (req) => {
         message: message || '',
         userName,
         userPhone,
-        isTestMode: String(isTestMode)
+        isTestMode: String(isTestMode),
+        userId
       },
     })
 

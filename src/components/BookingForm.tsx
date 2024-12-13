@@ -30,7 +30,7 @@ export const BookingForm = () => {
         .from('booking_settings')
         .select('*')
         .eq('key', 'booking_settings')
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data?.value;
@@ -152,6 +152,7 @@ export const BookingForm = () => {
         return;
       }
 
+      // Créer la session de paiement
       console.log('Creating checkout session...');
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
         body: JSON.stringify({
@@ -164,7 +165,8 @@ export const BookingForm = () => {
           userEmail: data.email,
           userName: data.fullName,
           userPhone: data.phone,
-          isTestMode: settings?.isTestMode || false
+          isTestMode: settings?.isTestMode || false,
+          userId: currentSession.user.id // Ajout de l'ID utilisateur
         })
       });
 
@@ -172,6 +174,9 @@ export const BookingForm = () => {
 
       if (checkoutError) throw checkoutError;
       if (!checkoutData?.url) throw new Error("URL de paiement non reçue");
+
+      // Stocker la session en cours
+      localStorage.setItem('currentSession', JSON.stringify(currentSession));
 
       window.location.href = checkoutData.url;
       

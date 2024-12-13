@@ -2,50 +2,96 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { CheckCircle2 } from "lucide-react";
+import { useBookingSession } from "@/hooks/useBookingSession";
+import { useToast } from "@/components/ui/use-toast";
 
 export const Success = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [bookingDetails, setBookingDetails] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const { isLoading: isRestoringSession } = useBookingSession();
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchBookingDetails = async () => {
       try {
+        // Attendre que la session soit restaurée
+        if (isRestoringSession) return;
+
         const sessionId = searchParams.get('session_id');
         if (!sessionId) {
           navigate('/');
           return;
         }
 
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
+        // Récupérer les données de réservation stockées
+        const storedSession = localStorage.getItem('currentBookingSession');
+        if (!storedSession) {
+          console.error('No booking session found');
+          return;
+        }
+
+        const { session, bookingData } = JSON.parse(storedSession);
+
+        // Vérifier la session
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        if (!currentSession) {
+          console.error('No current session found');
+          toast({
+            title: "Erreur de session",
+            description: "Votre session a expiré. Veuillez vous reconnecter.",
+            variant: "destructive",
+          });
           navigate('/');
           return;
         }
 
+        // Récupérer la dernière réservation
         const { data: bookings, error } = await supabase
           .from('bookings')
           .select('*')
-          .eq('user_id', session.user.id)
+          .eq('user_id', currentSession.user.id)
           .order('created_at', { ascending: false })
           .limit(1)
           .single();
 
-        if (error) throw error;
-        
-        setBookingDetails(bookings);
+        if (error) {
+          console.error('Error fetching booking:', error);
+          // Si pas de réservation trouvée, utiliser les données stockées
+          if (error.code === 'PGRST116') {
+            setBookingDetails({
+              date: bookingData.date,
+              time_slot: bookingData.timeSlot,
+              duration: bookingData.duration,
+              group_size: bookingData.groupSize,
+              price: bookingData.price,
+              is_test_booking: bookingData.isTestMode,
+            });
+          } else {
+            throw error;
+          }
+        } else {
+          setBookingDetails(bookings);
+        }
       } catch (error) {
         console.error('Error fetching booking details:', error);
+        toast({
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la récupération des détails de votre réservation.",
+          variant: "destructive",
+        });
       } finally {
         setLoading(false);
+        // Nettoyer les données de session stockées
+        localStorage.removeItem('currentBookingSession');
       }
     };
 
     fetchBookingDetails();
-  }, [navigate, searchParams]);
+  }, [navigate, searchParams, isRestoringSession, toast]);
 
-  if (loading) {
+  if (loading || isRestoringSession) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
@@ -76,6 +122,7 @@ export const Success = () => {
           <div className="text-center mb-8">
             <CheckCircle2 className="mx-auto h-12 w-12 text-green-500 mb-4" />
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              {bookingDetails.is_test_booking ? '[TEST] ' : ''}
               Réservation confirmée !
             </h1>
             <p className="text-gray-600">
@@ -119,6 +166,15 @@ export const Success = () => {
                     {bookingDetails.price}€
                   </dd>
                 </div>
+                {bookingDetails.is_test_booking && (
+                  <div className="col-span-2">
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                      <p className="text-sm text-yellow-800">
+                        Ceci est une réservation de test. Aucun paiement n'a été effectué.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </dl>
             </div>
           </div>

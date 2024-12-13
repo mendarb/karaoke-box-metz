@@ -48,7 +48,7 @@ export const Success = () => {
         }
 
         // Attendre un peu pour laisser le temps au webhook de traiter la réservation
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise(resolve => setTimeout(resolve, 3000));
 
         // Récupérer la dernière réservation
         const { data: bookings, error } = await supabase

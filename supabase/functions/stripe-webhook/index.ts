@@ -27,6 +27,7 @@ serve(async (req) => {
     const eventData = JSON.parse(body);
     const isTestMode = eventData.data.object?.metadata?.isTestMode === 'true';
     console.log('Processing webhook in mode:', isTestMode ? 'TEST' : 'LIVE');
+    console.log('Event data:', JSON.stringify(eventData, null, 2));
 
     // Utiliser la bonne clé Stripe en fonction du mode
     const stripeSecretKey = isTestMode 
@@ -60,6 +61,15 @@ serve(async (req) => {
       const session = event.data.object;
       const metadata = session.metadata;
       
+      console.log('Checkout session completed:', {
+        sessionId: session.id,
+        metadata,
+        customer: session.customer,
+        customerEmail: session.customer_email,
+        paymentStatus: session.payment_status,
+        mode: isTestMode ? 'test' : 'live'
+      });
+
       if (!metadata) {
         console.error('No metadata found in session');
         return new Response(JSON.stringify({ error: 'No metadata found' }), { status: 400 });
@@ -83,8 +93,8 @@ serve(async (req) => {
         user_email: session.customer_email,
         user_name: metadata.userName,
         user_phone: metadata.userPhone,
-        payment_status: 'paid',
-        is_test_booking: metadata.isTestMode === 'true'
+        payment_status: session.payment_status,
+        is_test_booking: isTestMode
       };
 
       console.log('Inserting booking data:', bookingData);
@@ -101,6 +111,19 @@ serve(async (req) => {
       }
 
       console.log('Booking created successfully:', booking);
+
+      // Envoyer l'email de confirmation
+      try {
+        const { error: emailError } = await supabase.functions.invoke('send-booking-email', {
+          body: { booking }
+        });
+
+        if (emailError) {
+          console.error('Error sending confirmation email:', emailError);
+        }
+      } catch (emailError) {
+        console.error('Error invoking send-booking-email function:', emailError);
+      }
     }
 
     return new Response(JSON.stringify({ received: true }), { 

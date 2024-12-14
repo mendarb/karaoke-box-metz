@@ -12,6 +12,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 interface AdditionalFieldsProps {
   form: UseFormReturn<any>;
@@ -31,6 +32,7 @@ export const AdditionalFields = ({
   const [showPassword, setShowPassword] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [promoCode, setPromoCode] = useState("");
+  const [isPromoValid, setIsPromoValid] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -81,7 +83,25 @@ export const AdditionalFields = ({
   const handlePromoCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const code = e.target.value;
     setPromoCode(code);
+    setIsPromoValid(false);
     form.setValue('promoCode', code);
+  };
+
+  const validatePromoCode = () => {
+    if (promoCode === 'TEST2024') {
+      setIsPromoValid(true);
+      toast({
+        title: "Code promo valide !",
+        description: "Le code TEST2024 a été appliqué avec succès.",
+      });
+    } else {
+      setIsPromoValid(false);
+      toast({
+        title: "Code promo invalide",
+        description: "Ce code promo n'est pas valide.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -91,7 +111,10 @@ export const AdditionalFields = ({
         <div className="text-sm text-violet-700">
           <p>Nombre de personnes : {groupSize}</p>
           <p>Durée : {duration} heure{parseInt(duration) > 1 ? 's' : ''}</p>
-          <p className="font-semibold">Prix total : {calculatedPrice}€</p>
+          <p className="font-semibold">Prix total : {isPromoValid ? '0' : calculatedPrice}€</p>
+          {isPromoValid && (
+            <p className="text-green-600 font-medium">Code promo TEST2024 appliqué</p>
+          )}
         </div>
       </div>
 
@@ -113,17 +136,29 @@ export const AdditionalFields = ({
         )}
       />
 
-      <FormItem>
-        <FormLabel>Code promo (optionnel)</FormLabel>
-        <FormControl>
-          <Input
-            type="text"
-            value={promoCode}
-            onChange={handlePromoCodeChange}
-            placeholder="Entrez votre code promo"
-          />
-        </FormControl>
-      </FormItem>
+      <div className="space-y-2">
+        <FormItem>
+          <FormLabel>Code promo (optionnel)</FormLabel>
+          <div className="flex gap-2">
+            <FormControl>
+              <Input
+                type="text"
+                value={promoCode}
+                onChange={handlePromoCodeChange}
+                placeholder="Entrez votre code promo"
+              />
+            </FormControl>
+            <Button 
+              type="button" 
+              variant="outline"
+              onClick={validatePromoCode}
+              className="shrink-0"
+            >
+              Valider
+            </Button>
+          </div>
+        </FormItem>
+      </div>
 
       {!isAuthenticated && (
         <div className="space-y-4">

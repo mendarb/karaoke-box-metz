@@ -15,6 +15,7 @@ serve(async (req) => {
   try {
     const { 
       price, 
+      finalPrice,
       groupSize, 
       duration, 
       date, 
@@ -29,7 +30,8 @@ serve(async (req) => {
     } = await req.json()
 
     console.log('Creating checkout session with params:', {
-      price,
+      originalPrice: price,
+      finalPrice: finalPrice || price,
       groupSize,
       duration,
       date,
@@ -66,7 +68,7 @@ serve(async (req) => {
               name: `${isTestMode ? '[TEST] ' : ''}Réservation - ${date} ${timeSlot}`,
               description: `${groupSize} personnes - ${duration}h`,
             },
-            unit_amount: price * 100, // Convert to cents
+            unit_amount: (finalPrice || price) * 100, // Utiliser le prix final s'il existe
           },
           quantity: 1,
         },
@@ -85,7 +87,9 @@ serve(async (req) => {
         userPhone,
         isTestMode: String(isTestMode),
         userId,
-        promoCodeId
+        promoCodeId,
+        originalPrice: String(price),
+        finalPrice: String(finalPrice || price)
       },
     })
 

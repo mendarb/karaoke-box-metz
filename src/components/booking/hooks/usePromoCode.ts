@@ -11,6 +11,7 @@ export const usePromoCode = (
 
   useEffect(() => {
     if (!isPromoValid || !promoData) {
+      console.log('Resetting price to original:', calculatedPrice);
       setFinalPrice(calculatedPrice);
       form.setValue('finalPrice', calculatedPrice);
       return;
@@ -40,11 +41,14 @@ export const usePromoCode = (
       originalPrice: calculatedPrice,
       promoType: promoCode.type,
       promoValue: promoCode.value,
-      newPrice
+      newPrice,
+      promoCode
     });
     
     const roundedPrice = Math.round(newPrice * 100) / 100;
     setFinalPrice(roundedPrice);
+    
+    // Important: Mettre à jour le prix final dans le formulaire
     form.setValue('finalPrice', roundedPrice);
   };
 
@@ -58,6 +62,10 @@ export const usePromoCode = (
       form.setValue('finalPrice', calculatedPrice);
       form.setValue('promoCode', '');
       form.setValue('promoCodeId', null);
+    } else {
+      form.setValue('promoCode', promoCode.code);
+      form.setValue('promoCodeId', promoCode.id);
+      calculateFinalPrice(promoCode);
     }
   };
 

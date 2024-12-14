@@ -15,13 +15,15 @@ export const BookingSummary = ({
   promoCode,
   finalPrice
 }: BookingSummaryProps) => {
+  const showDiscount = isPromoValid && finalPrice !== undefined && finalPrice !== calculatedPrice;
+  
   return (
     <div className="bg-violet-50 p-4 rounded-lg space-y-2">
       <h3 className="font-semibold text-violet-900">Récapitulatif de votre réservation</h3>
       <div className="text-sm text-violet-700">
         <p>Nombre de personnes : {groupSize}</p>
         <p>Durée : {duration} heure{parseInt(duration) > 1 ? 's' : ''}</p>
-        {isPromoValid && finalPrice !== undefined && finalPrice !== calculatedPrice ? (
+        {showDiscount ? (
           <>
             <p className="line-through text-gray-500">Prix initial : {calculatedPrice}€</p>
             <p className="font-semibold text-green-600">Prix final : {finalPrice}€</p>

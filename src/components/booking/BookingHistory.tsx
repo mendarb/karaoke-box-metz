@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { BookingStatusBadge } from "../admin/BookingStatusBadge";
 import { Loader2 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 export const BookingHistory = () => {
+  const { toast } = useToast();
   const { data: bookings, isLoading } = useQuery({
     queryKey: ['user-bookings'],
     queryFn: async () => {
@@ -26,11 +28,31 @@ export const BookingHistory = () => {
         throw error;
       }
 
-      console.log('Fetched user bookings:', data);
       return data;
     },
-    refetchInterval: 5000, // Rafraîchir toutes les 5 secondes
+    refetchInterval: 5000,
   });
+
+  const handleDownloadInvoice = async (bookingId: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('get-invoice', {
+        body: { bookingId }
+      });
+
+      if (error) throw error;
+      if (!data.url) throw new Error('URL de facture non disponible');
+
+      // Ouvrir l'URL de la facture dans un nouvel onglet
+      window.open(data.url, '_blank');
+    } catch (error) {
+      console.error('Error downloading invoice:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de récupérer la facture. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -107,9 +129,7 @@ export const BookingHistory = () => {
                 <Button
                   variant="outline"
                   className="w-full"
-                  onClick={() => {
-                    console.log('Téléchargement de la facture pour la réservation:', booking.id);
-                  }}
+                  onClick={() => handleDownloadInvoice(booking.id)}
                 >
                   Télécharger la facture
                 </Button>

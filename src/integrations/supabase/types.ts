@@ -93,6 +93,54 @@ export type Database = {
         }
         Relationships: []
       }
+      promo_codes: {
+        Row: {
+          code: string
+          created_at: string
+          current_uses: number | null
+          deleted_at: string | null
+          description: string | null
+          end_date: string | null
+          id: string
+          is_active: boolean | null
+          max_uses: number | null
+          start_date: string | null
+          type: Database["public"]["Enums"]["promo_code_type"]
+          updated_at: string
+          value: number | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          current_uses?: number | null
+          deleted_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          start_date?: string | null
+          type: Database["public"]["Enums"]["promo_code_type"]
+          updated_at?: string
+          value?: number | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          current_uses?: number | null
+          deleted_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          start_date?: string | null
+          type?: Database["public"]["Enums"]["promo_code_type"]
+          updated_at?: string
+          value?: number | null
+        }
+        Relationships: []
+      }
       settings: {
         Row: {
           created_at: string
@@ -126,6 +174,7 @@ export type Database = {
     }
     Enums: {
       booking_status: "pending" | "confirmed" | "cancelled" | "archived"
+      promo_code_type: "percentage" | "fixed_amount" | "free"
     }
     CompositeTypes: {
       [_ in never]: never

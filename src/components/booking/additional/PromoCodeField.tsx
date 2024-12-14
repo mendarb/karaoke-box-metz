@@ -103,8 +103,11 @@ export const PromoCodeField = ({ onPromoValidated, form }: PromoCodeFieldProps) 
         title: "Code promo valide !",
         description: `Le code ${promoCode} a été appliqué avec succès.`,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error validating promo code:', error);
+      onPromoValidated(false);
+      form.setValue('promoCode', '');
+      form.setValue('promoCodeId', null);
       toast({
         title: "Erreur",
         description: "Une erreur est survenue lors de la validation du code promo.",

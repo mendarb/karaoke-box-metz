@@ -1,5 +1,3 @@
-import { cn } from "@/lib/utils";
-
 interface BookingSummaryProps {
   groupSize: string;
   duration: string;
@@ -23,10 +21,7 @@ export const BookingSummary = ({
       <div className="text-sm text-violet-700">
         <p>Nombre de personnes : {groupSize}</p>
         <p>Durée : {duration} heure{parseInt(duration) > 1 ? 's' : ''}</p>
-        <p className={cn(
-          "font-semibold",
-          isPromoValid && "line-through text-gray-500"
-        )}>
+        <p className={isPromoValid ? "line-through text-gray-500" : "font-semibold"}>
           Prix total : {calculatedPrice}€
         </p>
         {isPromoValid && promoCode && (

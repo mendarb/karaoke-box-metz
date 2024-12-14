@@ -39,22 +39,41 @@ export const AdditionalFields = ({
     checkSession();
   }, []);
 
+  // Mettre à jour le prix final quand le prix calculé change
+  useEffect(() => {
+    if (!isPromoValid) {
+      setFinalPrice(calculatedPrice);
+    } else {
+      calculateFinalPrice(promoData);
+    }
+  }, [calculatedPrice]);
+
+  const calculateFinalPrice = (promoCode: any) => {
+    if (!promoCode) {
+      setFinalPrice(calculatedPrice);
+      return;
+    }
+
+    let newPrice = calculatedPrice;
+    
+    if (promoCode.type === 'percentage' && promoCode.value) {
+      newPrice = calculatedPrice * (1 - promoCode.value / 100);
+    } else if (promoCode.type === 'fixed_amount' && promoCode.value) {
+      newPrice = Math.max(0, calculatedPrice - promoCode.value);
+    } else if (promoCode.type === 'free') {
+      newPrice = 0;
+    }
+    
+    setFinalPrice(Math.round(newPrice * 100) / 100);
+  };
+
   const handlePromoValidated = (isValid: boolean, promoCode?: any) => {
+    console.log('Promo validation result:', { isValid, promoCode });
     setIsPromoValid(isValid);
     setPromoData(promoCode);
     
     if (isValid && promoCode) {
-      let newPrice = calculatedPrice;
-      
-      if (promoCode.type === 'percentage' && promoCode.value) {
-        newPrice = calculatedPrice * (1 - promoCode.value / 100);
-      } else if (promoCode.type === 'fixed_amount' && promoCode.value) {
-        newPrice = Math.max(0, calculatedPrice - promoCode.value);
-      } else if (promoCode.type === 'free') {
-        newPrice = 0;
-      }
-      
-      setFinalPrice(newPrice);
+      calculateFinalPrice(promoCode);
     } else {
       setFinalPrice(calculatedPrice);
     }

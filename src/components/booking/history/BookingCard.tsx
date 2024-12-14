@@ -37,7 +37,7 @@ export const BookingCard = ({ booking }: BookingCardProps) => {
       if (!data?.url) throw new Error('URL de facture non disponible');
 
       // Ouvrir l'URL de la facture dans un nouvel onglet
-      window.open(data.url, '_blank');
+      window.open(data.url, '_blank', 'noopener,noreferrer');
     } catch (error: any) {
       console.error('Error downloading invoice:', error);
       toast({

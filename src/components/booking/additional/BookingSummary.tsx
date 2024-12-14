@@ -5,13 +5,17 @@ interface BookingSummaryProps {
   duration: string;
   calculatedPrice: number;
   isPromoValid: boolean;
+  promoCode?: string;
+  finalPrice?: number;
 }
 
 export const BookingSummary = ({
   groupSize,
   duration,
   calculatedPrice,
-  isPromoValid
+  isPromoValid,
+  promoCode,
+  finalPrice
 }: BookingSummaryProps) => {
   return (
     <div className="bg-violet-50 p-4 rounded-lg space-y-2">
@@ -25,10 +29,10 @@ export const BookingSummary = ({
         )}>
           Prix total : {calculatedPrice}€
         </p>
-        {isPromoValid && (
+        {isPromoValid && promoCode && (
           <>
-            <p className="font-semibold text-green-600">Prix final : 0€</p>
-            <p className="text-green-600 font-medium">Code promo TEST2024 appliqué</p>
+            <p className="font-semibold text-green-600">Prix final : {finalPrice}€</p>
+            <p className="text-green-600 font-medium">Code promo {promoCode} appliqué</p>
           </>
         )}
       </div>

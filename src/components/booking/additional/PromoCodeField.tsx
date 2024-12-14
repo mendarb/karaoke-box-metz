@@ -16,10 +16,13 @@ export const PromoCodeField = ({ onPromoValidated, form }: PromoCodeFieldProps) 
   const { toast } = useToast();
 
   const handlePromoCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const code = e.target.value;
+    const code = e.target.value.toUpperCase();
     setPromoCode(code);
-    onPromoValidated(false);
-    form.setValue('promoCode', code);
+    if (!code) {
+      onPromoValidated(false);
+      form.setValue('promoCode', '');
+      form.setValue('promoCodeId', null);
+    }
   };
 
   const validatePromoCode = async () => {
@@ -34,6 +37,7 @@ export const PromoCodeField = ({ onPromoValidated, form }: PromoCodeFieldProps) 
 
     setIsValidating(true);
     try {
+      console.log('Validating promo code:', promoCode);
       const { data, error } = await supabase
         .from('promo_codes')
         .select('*')
@@ -42,10 +46,14 @@ export const PromoCodeField = ({ onPromoValidated, form }: PromoCodeFieldProps) 
         .is('deleted_at', null)
         .maybeSingle();
 
+      console.log('Promo code validation result:', { data, error });
+
       if (error) throw error;
 
       if (!data) {
         onPromoValidated(false);
+        form.setValue('promoCode', '');
+        form.setValue('promoCodeId', null);
         toast({
           title: "Code promo invalide",
           description: "Ce code promo n'existe pas ou n'est plus valide.",
@@ -87,7 +95,9 @@ export const PromoCodeField = ({ onPromoValidated, form }: PromoCodeFieldProps) 
         return;
       }
 
+      console.log('Promo code is valid:', data);
       onPromoValidated(true, data);
+      form.setValue('promoCode', data.code);
       form.setValue('promoCodeId', data.id);
       toast({
         title: "Code promo valide !",

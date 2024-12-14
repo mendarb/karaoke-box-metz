@@ -17,7 +17,10 @@ export const BookingCard = ({ booking }: BookingCardProps) => {
 
   const handleDownloadInvoice = async () => {
     try {
+      console.log('Downloading invoice for booking:', booking);
+      
       if (!booking.payment_intent_id) {
+        console.error('No payment_intent_id available');
         throw new Error('Identifiant de paiement non disponible');
       }
 
@@ -28,11 +31,14 @@ export const BookingCard = ({ booking }: BookingCardProps) => {
         }
       });
 
-      if (error) throw error;
-      if (!data.url) throw new Error('URL de facture non disponible');
+      console.log('Invoice response:', { data, error });
 
+      if (error) throw error;
+      if (!data?.url) throw new Error('URL de facture non disponible');
+
+      // Ouvrir l'URL de la facture dans un nouvel onglet
       window.open(data.url, '_blank');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error downloading invoice:', error);
       toast({
         title: "Erreur",

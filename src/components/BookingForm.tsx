@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Form } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { PersonalInfoFields } from "./booking/PersonalInfoFields";
 import { DateTimeFields } from "./booking/DateTimeFields";
 import { GroupSizeAndDurationFields } from "./booking/GroupSizeAndDurationFields";
 import { AdditionalFields } from "./booking/AdditionalFields";
 import { BookingSteps, type BookingStep } from "./BookingSteps";
-import { supabase } from "@/lib/supabase";
+import { useBookingSubmit } from "./booking/hooks/useBookingSubmit";
+import { BookingFormActions } from "./booking/BookingFormActions";
 import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
 
 export const BookingForm = () => {
   const { toast } = useToast();
@@ -79,137 +80,27 @@ export const BookingForm = () => {
     console.log('Available hours updated:', hours);
   };
 
+  const { handleSubmit } = useBookingSubmit(
+    form,
+    groupSize,
+    duration,
+    calculatedPrice,
+    setIsSubmitting
+  );
+
+  const handlePrevious = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
   const onSubmit = async (data: any) => {
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
       return;
     }
 
-    try {
-      setIsSubmitting(true);
-      console.log('Starting submission with data:', { 
-        ...data, 
-        groupSize, 
-        duration, 
-        calculatedPrice,
-        isTestMode: settings?.isTestMode 
-      });
-
-      // Vérifier si l'utilisateur est déjà connecté
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      // Si l'utilisateur n'est pas connecté et souhaite créer un compte
-      if (!session?.access_token && data.createAccount && data.password) {
-        console.log('Creating new account for:', data.email);
-        
-        const { error: signUpError } = await supabase.auth.signUp({
-          email: data.email,
-          password: data.password,
-          options: {
-            data: {
-              full_name: data.fullName,
-              phone: data.phone
-            },
-          },
-        });
-
-        if (signUpError) {
-          console.error('Sign up error:', signUpError);
-          toast({
-            title: "Erreur lors de la création du compte",
-            description: signUpError.message,
-            variant: "destructive",
-          });
-          return;
-        }
-
-        // Attendre que la session soit créée
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email: data.email,
-          password: data.password,
-        });
-
-        if (signInError) {
-          console.error('Sign in error:', signInError);
-          toast({
-            title: "Erreur lors de la connexion",
-            description: signInError.message,
-            variant: "destructive",
-          });
-          return;
-        }
-      }
-
-      // Vérifier à nouveau la session
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      if (!currentSession?.access_token) {
-        console.error('No session found after account creation/login');
-        toast({
-          title: "Erreur",
-          description: "Vous devez être connecté pour effectuer une réservation.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Stocker la session en cours avant de créer la session de paiement
-      localStorage.setItem('currentBookingSession', JSON.stringify({
-        session: currentSession,
-        bookingData: {
-          email: data.email,
-          fullName: data.fullName,
-          phone: data.phone,
-          date: data.date,
-          timeSlot: data.timeSlot,
-          duration,
-          groupSize,
-          price: calculatedPrice,
-          message: data.message,
-          isTestMode: settings?.isTestMode || false
-        }
-      }));
-
-      // Créer la session de paiement
-      console.log('Creating checkout session...');
-      const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
-        body: JSON.stringify({
-          price: calculatedPrice,
-          groupSize,
-          duration,
-          date: data.date,
-          timeSlot: data.timeSlot,
-          message: data.message,
-          userEmail: data.email,
-          userName: data.fullName,
-          userPhone: data.phone,
-          isTestMode: settings?.isTestMode || false,
-          userId: currentSession.user.id
-        })
-      });
-
-      console.log('Checkout response:', { checkoutData, checkoutError });
-
-      if (checkoutError) throw checkoutError;
-      if (!checkoutData?.url) throw new Error("URL de paiement non reçue");
-
-      window.location.href = checkoutData.url;
-      
-    } catch (error: any) {
-      console.error("Submission error:", error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la réservation. Veuillez réessayer.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
+    await handleSubmit(data);
   };
 
   const renderStepContent = () => {
@@ -254,25 +145,11 @@ export const BookingForm = () => {
           {renderStepContent()}
         </div>
 
-        <div className="flex justify-between space-x-4 pb-20 sm:pb-0">
-          {currentStep > 1 && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handlePrevious}
-              className="w-full"
-            >
-              Précédent
-            </Button>
-          )}
-          <Button
-            type="submit"
-            className="w-full bg-violet-600 hover:bg-violet-700"
-            disabled={isSubmitting}
-          >
-            {currentStep === 4 ? (isSubmitting ? "Traitement..." : "Procéder au paiement") : "Suivant"}
-          </Button>
-        </div>
+        <BookingFormActions
+          currentStep={currentStep}
+          isSubmitting={isSubmitting}
+          onPrevious={handlePrevious}
+        />
       </form>
     </Form>
   );

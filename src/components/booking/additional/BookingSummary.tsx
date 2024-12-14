@@ -21,14 +21,14 @@ export const BookingSummary = ({
       <div className="text-sm text-violet-700">
         <p>Nombre de personnes : {groupSize}</p>
         <p>Durée : {duration} heure{parseInt(duration) > 1 ? 's' : ''}</p>
-        <p className={isPromoValid && finalPrice !== undefined ? "line-through text-gray-500" : "font-semibold"}>
-          Prix total : {calculatedPrice}€
-        </p>
-        {isPromoValid && promoCode && finalPrice !== undefined && (
+        {isPromoValid && finalPrice !== undefined && finalPrice !== calculatedPrice ? (
           <>
+            <p className="line-through text-gray-500">Prix initial : {calculatedPrice}€</p>
             <p className="font-semibold text-green-600">Prix final : {finalPrice}€</p>
             <p className="text-green-600 font-medium">Code promo {promoCode} appliqué</p>
           </>
+        ) : (
+          <p className="font-semibold">Prix total : {calculatedPrice}€</p>
         )}
       </div>
     </div>

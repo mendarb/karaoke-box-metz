@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { UseFormReturn } from "react-hook-form";
-import { useToast } from "@/components/ui/use-toast";
 
 export const usePromoCode = (
   calculatedPrice: number,
@@ -9,15 +8,15 @@ export const usePromoCode = (
   const [isPromoValid, setIsPromoValid] = useState(false);
   const [promoData, setPromoData] = useState<any>(null);
   const [finalPrice, setFinalPrice] = useState(calculatedPrice);
-  const { toast } = useToast();
 
   useEffect(() => {
     if (!isPromoValid || !promoData) {
       setFinalPrice(calculatedPrice);
       form.setValue('finalPrice', calculatedPrice);
-    } else {
-      calculateFinalPrice(promoData);
+      return;
     }
+
+    calculateFinalPrice(promoData);
   }, [calculatedPrice, isPromoValid, promoData, form]);
 
   const calculateFinalPrice = (promoCode: any) => {
@@ -36,6 +35,13 @@ export const usePromoCode = (
     } else if (promoCode.type === 'free') {
       newPrice = 0;
     }
+    
+    console.log('Calculating final price:', {
+      originalPrice: calculatedPrice,
+      promoType: promoCode.type,
+      promoValue: promoCode.value,
+      newPrice
+    });
     
     const roundedPrice = Math.round(newPrice * 100) / 100;
     setFinalPrice(roundedPrice);

@@ -151,12 +151,15 @@ serve(async (req) => {
         console.log('✅ Booking created successfully:', booking);
 
         try {
+          console.log('📧 Attempting to send confirmation email...');
           const { error: emailError } = await supabase.functions.invoke('send-booking-email', {
             body: { booking }
           });
 
           if (emailError) {
             console.error('❌ Error sending confirmation email:', emailError);
+          } else {
+            console.log('✅ Confirmation email sent successfully');
           }
         } catch (emailError) {
           console.error('❌ Error invoking send-booking-email function:', emailError);

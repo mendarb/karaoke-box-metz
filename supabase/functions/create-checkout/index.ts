@@ -106,6 +106,64 @@ serve(async (req) => {
       finalPrice
     });
 
+    // Créer la réservation immédiatement si le code promo est appliqué
+    if (promoCode === 'TEST2024') {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+      const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+      if (!supabaseUrl || !supabaseServiceRoleKey) {
+        throw new Error('Missing Supabase credentials');
+      }
+
+      const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+      const bookingData = {
+        user_id: userId,
+        date,
+        time_slot: timeSlot,
+        duration,
+        group_size: groupSize,
+        status: 'confirmed',
+        price: finalPrice,
+        message: message || null,
+        user_email: userEmail,
+        user_name: userName,
+        user_phone: userPhone,
+        payment_status: 'paid',
+        is_test_booking: isTestMode
+      };
+
+      console.log('Creating booking with promo code:', bookingData);
+
+      const { data: booking, error: bookingError } = await supabase
+        .from('bookings')
+        .insert([bookingData])
+        .select()
+        .single();
+
+      if (bookingError) {
+        console.error('Error creating booking:', bookingError);
+        throw bookingError;
+      }
+
+      console.log('Booking created successfully:', booking);
+
+      // Envoyer l'email de confirmation
+      try {
+        const { error: emailError } = await supabase.functions.invoke('send-booking-email', {
+          body: { booking }
+        });
+
+        if (emailError) {
+          console.error('Error sending confirmation email:', emailError);
+        } else {
+          console.log('Confirmation email sent successfully');
+        }
+      } catch (emailError) {
+        console.error('Error invoking send-booking-email function:', emailError);
+      }
+    }
+
     return new Response(
       JSON.stringify({ url: session.url }),
       {

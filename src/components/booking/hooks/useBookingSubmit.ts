@@ -113,7 +113,8 @@ export const useBookingSubmit = (
         price: calculatedPrice,
         message: data.message,
         isTestMode: settings?.isTestMode || false,
-        userId: currentSession.user.id
+        userId: currentSession.user.id,
+        promoCode: data.promoCode
       };
 
       console.log('Storing booking data in localStorage:', bookingData);
@@ -135,7 +136,8 @@ export const useBookingSubmit = (
           userName: data.fullName,
           userPhone: data.phone,
           isTestMode: settings?.isTestMode || false,
-          userId: currentSession.user.id
+          userId: currentSession.user.id,
+          promoCode: data.promoCode
         })
       });
 

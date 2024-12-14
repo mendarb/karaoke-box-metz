@@ -56,15 +56,14 @@ serve(async (req) => {
 
     console.log('Creating Stripe session in', isTestMode ? 'TEST' : 'LIVE', 'mode');
 
+    // Apply promo code if valid
     let finalPrice = price;
-    let appliedPromoCode = null;
-
-    // Vérifier le code promo
     if (promoCode === 'TEST2024') {
-      console.log('Valid promo code applied, setting price to 0');
+      console.log('Valid promo code TEST2024 applied, setting price to 0');
       finalPrice = 0;
-      appliedPromoCode = promoCode;
     }
+
+    console.log('Final price after promo code check:', finalPrice);
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -74,9 +73,9 @@ serve(async (req) => {
             currency: 'eur',
             product_data: {
               name: `${isTestMode ? '[TEST] ' : ''}Réservation - ${date} ${timeSlot}`,
-              description: `${groupSize} personnes - ${duration}h`,
+              description: `${groupSize} personnes - ${duration}h${promoCode === 'TEST2024' ? ' (Code promo TEST2024 appliqué)' : ''}`,
             },
-            unit_amount: finalPrice * 100,
+            unit_amount: finalPrice * 100, // Convert to cents
           },
           quantity: 1,
         },
@@ -95,7 +94,7 @@ serve(async (req) => {
         userPhone,
         isTestMode: String(isTestMode),
         userId,
-        promoCode: appliedPromoCode
+        promoCode: promoCode === 'TEST2024' ? promoCode : undefined
       },
     })
 

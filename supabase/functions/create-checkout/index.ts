@@ -24,7 +24,8 @@ serve(async (req) => {
       userName, 
       userPhone,
       isTestMode,
-      userId
+      userId,
+      promoCode
     } = await req.json()
 
     console.log('Creating checkout session with params:', {
@@ -35,7 +36,8 @@ serve(async (req) => {
       timeSlot,
       userEmail,
       isTestMode,
-      userId
+      userId,
+      promoCode
     });
 
     // Utiliser la clé appropriée en fonction du mode
@@ -55,6 +57,16 @@ serve(async (req) => {
 
     console.log('Creating Stripe session in', isTestMode ? 'TEST' : 'LIVE', 'mode');
 
+    let finalPrice = price;
+    let appliedPromoCode = null;
+
+    // Vérifier le code promo si fourni
+    if (promoCode === 'TEST2024') {
+      console.log('Valid promo code applied, setting price to 0');
+      finalPrice = 0;
+      appliedPromoCode = promoCode;
+    }
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -65,7 +77,7 @@ serve(async (req) => {
               name: `${isTestMode ? '[TEST] ' : ''}Réservation - ${date} ${timeSlot}`,
               description: `${groupSize} personnes - ${duration}h`,
             },
-            unit_amount: price * 100,
+            unit_amount: finalPrice * 100,
           },
           quantity: 1,
         },
@@ -83,7 +95,8 @@ serve(async (req) => {
         userName,
         userPhone,
         isTestMode: String(isTestMode),
-        userId
+        userId,
+        promoCode: appliedPromoCode
       },
     })
 
@@ -91,7 +104,8 @@ serve(async (req) => {
       sessionId: session.id,
       mode: isTestMode ? 'test' : 'live',
       email: userEmail,
-      metadata: session.metadata
+      metadata: session.metadata,
+      finalPrice
     });
 
     return new Response(

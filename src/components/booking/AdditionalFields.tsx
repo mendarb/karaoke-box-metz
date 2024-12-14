@@ -30,6 +30,7 @@ export const AdditionalFields = ({
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [promoCode, setPromoCode] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -77,6 +78,12 @@ export const AdditionalFields = ({
     }
   };
 
+  const handlePromoCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const code = e.target.value;
+    setPromoCode(code);
+    form.setValue('promoCode', code);
+  };
+
   return (
     <div className="space-y-6 animate-fadeIn">
       <div className="bg-violet-50 p-4 rounded-lg space-y-2">
@@ -105,6 +112,18 @@ export const AdditionalFields = ({
           </FormItem>
         )}
       />
+
+      <FormItem>
+        <FormLabel>Code promo (optionnel)</FormLabel>
+        <FormControl>
+          <Input
+            type="text"
+            value={promoCode}
+            onChange={handlePromoCodeChange}
+            placeholder="Entrez votre code promo"
+          />
+        </FormControl>
+      </FormItem>
 
       {!isAuthenticated && (
         <div className="space-y-4">

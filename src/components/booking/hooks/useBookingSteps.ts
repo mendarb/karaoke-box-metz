@@ -1,7 +1,7 @@
-import { BookingStep } from "@/components/BookingSteps";
+import { BookingStep } from "../../BookingSteps";
 
-export const useBookingSteps = (currentStep: number) => {
-  const steps: BookingStep[] = [
+export const useBookingSteps = (currentStep: number): BookingStep[] => {
+  return [
     {
       id: 1,
       name: "Informations personnelles",
@@ -31,6 +31,4 @@ export const useBookingSteps = (currentStep: number) => {
       current: currentStep === 4,
     },
   ];
-
-  return steps;
 };

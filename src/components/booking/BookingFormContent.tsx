@@ -14,6 +14,7 @@ interface BookingFormContentProps {
   onDurationChange: (duration: string) => void;
   onPriceCalculated: (price: number) => void;
   onAvailabilityChange: (date: Date | undefined, hours: number) => void;
+  availableHours: number;
 }
 
 export const BookingFormContent = ({
@@ -26,6 +27,7 @@ export const BookingFormContent = ({
   onDurationChange,
   onPriceCalculated,
   onAvailabilityChange,
+  availableHours,
 }: BookingFormContentProps) => {
   switch (currentStep) {
     case 1:
@@ -42,7 +44,7 @@ export const BookingFormContent = ({
           onGroupSizeChange={onGroupSizeChange}
           onDurationChange={onDurationChange}
           onPriceCalculated={onPriceCalculated}
-          availableHours={4}
+          availableHours={availableHours}
         />
       );
     case 4:

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/lib/supabase";
 
 export const useBookingForm = () => {
   const { toast } = useToast();

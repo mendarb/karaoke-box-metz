@@ -23,7 +23,7 @@ export const createCheckoutSession = async (
     customer_email: data.userEmail,
     metadata: createMetadata(data),
     payment_method_types: ['card'],
-    locale: 'fr', // Forcer l'interface en français
+    locale: 'fr',
   };
 
   // Si le prix est 0 (réservation gratuite)

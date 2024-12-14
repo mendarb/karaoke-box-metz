@@ -38,7 +38,7 @@ export const createLineItem = (data: CheckoutData) => {
       currency: 'eur',
       product_data: {
         name: `${data.isTestMode ? '[TEST] ' : ''}Karaoké BOX - MB EI`,
-        description: `${description} - ${formattedDate} ${data.timeSlot}`,
+        description: `${description} - ${formattedDate} ${data.timeSlot}h`,
         images: ['https://raw.githubusercontent.com/lovable-karaoke/assets/main/logo.png'],
       },
       unit_amount: Math.round(amount * 100), // Stripe attend le montant en centimes

@@ -1,81 +1,79 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import Stripe from 'https://esm.sh/stripe@12.0.0?target=deno'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import Stripe from "https://esm.sh/stripe@14.21.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+};
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    const { bookingId, paymentIntentId } = await req.json()
-    console.log('Getting invoice for booking:', bookingId, 'with payment intent:', paymentIntentId)
+    const { bookingId, paymentIntentId } = await req.json();
+    console.log('Getting invoice for booking:', { bookingId, paymentIntentId });
 
-    // Initialiser Stripe avec la clé secrète appropriée
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
-
-    // Récupérer les détails de la réservation
-    const { data: booking, error: bookingError } = await supabase
-      .from('bookings')
-      .select('*')
-      .eq('id', bookingId)
-      .single()
-
-    if (bookingError || !booking) {
-      console.error('Error fetching booking:', bookingError)
-      throw new Error('Booking not found')
+    if (!paymentIntentId) {
+      throw new Error('Payment intent ID is required');
     }
 
-    const stripeSecretKey = booking.is_test_booking 
-      ? Deno.env.get('STRIPE_TEST_SECRET_KEY')
-      : Deno.env.get('STRIPE_SECRET_KEY')
-
-    if (!stripeSecretKey) {
-      throw new Error('Stripe secret key not configured')
-    }
-
-    const stripe = new Stripe(stripeSecretKey, {
+    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
       apiVersion: '2023-10-16',
       httpClient: Stripe.createFetchHttpClient(),
-    })
+    });
 
-    // Récupérer la facture à partir du payment_intent_id
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
+    // Récupérer le payment intent
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    console.log('Payment intent retrieved:', paymentIntent.id);
+
     if (!paymentIntent.invoice) {
-      throw new Error('No invoice associated with this payment')
+      // Créer une facture si elle n'existe pas
+      console.log('Creating invoice for payment intent:', paymentIntent.id);
+      const invoice = await stripe.invoices.create({
+        payment_intent: paymentIntent.id,
+        customer: paymentIntent.customer as string,
+        auto_advance: true,
+      });
+
+      // Finaliser la facture
+      await stripe.invoices.finalizeInvoice(invoice.id);
+      console.log('Invoice finalized:', invoice.id);
+
+      // Récupérer l'URL de la facture
+      const invoiceData = await stripe.invoices.retrieve(invoice.id);
+      console.log('Invoice URL:', invoiceData.invoice_pdf);
+
+      return new Response(
+        JSON.stringify({ url: invoiceData.invoice_pdf }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200 
+        }
+      );
     }
 
-    // Récupérer la facture
-    const invoice = await stripe.invoices.retrieve(paymentIntent.invoice as string)
-    
-    if (!invoice.hosted_invoice_url) {
-      throw new Error('No invoice URL available')
-    }
+    // Si la facture existe déjà, la récupérer
+    const invoice = await stripe.invoices.retrieve(paymentIntent.invoice as string);
+    console.log('Existing invoice retrieved:', invoice.id);
 
-    console.log('Invoice URL retrieved successfully')
     return new Response(
-      JSON.stringify({ url: invoice.hosted_invoice_url }),
-      {
+      JSON.stringify({ url: invoice.invoice_pdf }),
+      { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
+        status: 200 
       }
-    )
+    );
+
   } catch (error) {
-    console.error('Error retrieving invoice:', error)
+    console.error('Error getting invoice:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
-      {
+      { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
+        status: 400 
       }
-    )
+    );
   }
-})
+});

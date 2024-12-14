@@ -39,7 +39,7 @@ export const createLineItem = (data: CheckoutData) => {
       product_data: {
         name: `${data.isTestMode ? '[TEST] ' : ''}Karaoké BOX - MB EI`,
         description: `${description} - ${formattedDate} ${data.timeSlot}`,
-        images: ['https://lxkaosgjtqonrnlivzev.supabase.co/storage/v1/object/public/assets/logo.png?t=${Date.now()}'],
+        images: ['https://raw.githubusercontent.com/lovable-karaoke/assets/main/logo.png'],
       },
       unit_amount: Math.round(amount * 100), // Stripe attend le montant en centimes
     },

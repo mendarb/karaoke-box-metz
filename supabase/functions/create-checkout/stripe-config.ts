@@ -20,6 +20,11 @@ export const createLineItem = (data: CheckoutData) => {
   const amount = data.finalPrice || data.price;
   console.log('Creating line item with amount:', amount);
   
+  // Si le montant est 0 (code promo gratuit), on ne crée pas de line item
+  if (amount === 0) {
+    return null;
+  }
+  
   const description = `${data.groupSize} personnes - ${data.duration}h`;
   const formattedDate = new Date(data.date).toLocaleDateString('fr-FR', {
     weekday: 'long',
@@ -27,13 +32,13 @@ export const createLineItem = (data: CheckoutData) => {
     month: 'long',
     day: 'numeric'
   });
-  
+
   return {
     price_data: {
       currency: 'eur',
       product_data: {
-        name: `${data.isTestMode ? '[TEST] ' : ''}Réservation - ${formattedDate} ${data.timeSlot}`,
-        description: description,
+        name: `${data.isTestMode ? '[TEST] ' : ''}Karaoké BOX - MB EI`,
+        description: `${description} - ${formattedDate} ${data.timeSlot}`,
         images: ['https://lxkaosgjtqonrnlivzev.supabase.co/storage/v1/object/public/assets/logo.png'],
       },
       unit_amount: Math.round(amount * 100), // Stripe attend le montant en centimes

@@ -21,7 +21,7 @@ export const useBookingSubmit = (
         .from('booking_settings')
         .select('*')
         .eq('key', 'booking_settings')
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data?.value;
@@ -93,6 +93,11 @@ export const useBookingSubmit = (
       const isAvailable = await checkTimeSlotAvailability(data.date, data.timeSlot, duration);
       if (!isAvailable) {
         console.log('Time slot not available');
+        toast({
+          title: "Créneau non disponible",
+          description: "Ce créneau n'est plus disponible. Veuillez en choisir un autre.",
+          variant: "destructive",
+        });
         return;
       }
 
@@ -111,6 +116,7 @@ export const useBookingSubmit = (
         userId: currentSession.user.id
       };
 
+      console.log('Storing booking data in localStorage:', bookingData);
       localStorage.setItem('currentBookingSession', JSON.stringify({
         session: currentSession,
         bookingData

@@ -11,7 +11,6 @@ serve(async (req) => {
   try {
     console.log('🔵 Webhook received - Starting process');
     
-    // Handle CORS preflight requests
     if (req.method === 'OPTIONS') {
       return new Response(null, { headers: corsHeaders });
     }
@@ -38,13 +37,11 @@ serve(async (req) => {
       });
     }
 
-    // Vérifier si c'est un paiement test
     const eventData = JSON.parse(body);
     const isTestMode = eventData.data.object?.metadata?.isTestMode === 'true';
     console.log('🔍 Processing webhook in mode:', isTestMode ? 'TEST' : 'LIVE');
     console.log('📊 Event data:', JSON.stringify(eventData, null, 2));
 
-    // Utiliser la bonne clé Stripe en fonction du mode
     const stripeSecretKey = isTestMode 
       ? Deno.env.get('STRIPE_TEST_SECRET_KEY')
       : Deno.env.get('STRIPE_SECRET_KEY');

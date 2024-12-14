@@ -131,7 +131,9 @@ serve(async (req) => {
         user_name: metadata.userName,
         user_phone: metadata.userPhone,
         payment_status: session.payment_status,
-        is_test_booking: isTestMode
+        is_test_booking: isTestMode,
+        payment_intent_id: session.payment_intent,
+        promo_code_id: metadata.promoCodeId || null
       };
 
       console.log('📝 Attempting to insert booking with data:', bookingData);
@@ -150,6 +152,7 @@ serve(async (req) => {
 
         console.log('✅ Booking created successfully:', booking);
 
+        // Envoyer l'email de confirmation seulement après la création réussie de la réservation
         try {
           console.log('📧 Attempting to send confirmation email...');
           const { error: emailError } = await supabase.functions.invoke('send-booking-email', {

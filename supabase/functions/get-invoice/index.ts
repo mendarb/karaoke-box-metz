@@ -13,8 +13,8 @@ serve(async (req) => {
   }
 
   try {
-    const { bookingId } = await req.json()
-    console.log('Getting invoice for booking:', bookingId)
+    const { bookingId, paymentIntentId } = await req.json()
+    console.log('Getting invoice for booking:', bookingId, 'with payment intent:', paymentIntentId)
 
     // Initialiser Stripe avec la clé secrète appropriée
     const supabase = createClient(
@@ -47,20 +47,14 @@ serve(async (req) => {
       httpClient: Stripe.createFetchHttpClient(),
     })
 
-    // Récupérer la session de paiement depuis les métadonnées de la réservation
-    const sessions = await stripe.checkout.sessions.list({
-      limit: 1,
-      payment_intent: booking.payment_intent_id,
-    })
-
-    if (!sessions.data.length) {
-      throw new Error('No payment session found')
+    // Récupérer la facture à partir du payment_intent_id
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
+    if (!paymentIntent.invoice) {
+      throw new Error('No invoice associated with this payment')
     }
 
-    const session = sessions.data[0]
-
     // Récupérer la facture
-    const invoice = await stripe.invoices.retrieve(session.invoice as string)
+    const invoice = await stripe.invoices.retrieve(paymentIntent.invoice as string)
     
     if (!invoice.hosted_invoice_url) {
       throw new Error('No invoice URL available')

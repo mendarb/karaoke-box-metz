@@ -43,8 +43,10 @@ export type Database = {
           id: string
           is_test_booking: boolean | null
           message: string | null
+          payment_intent_id: string | null
           payment_status: string
           price: number
+          promo_code_id: string | null
           status: Database["public"]["Enums"]["booking_status"]
           time_slot: string
           updated_at: string | null
@@ -62,8 +64,10 @@ export type Database = {
           id?: string
           is_test_booking?: boolean | null
           message?: string | null
+          payment_intent_id?: string | null
           payment_status?: string
           price: number
+          promo_code_id?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
           time_slot: string
           updated_at?: string | null
@@ -81,8 +85,10 @@ export type Database = {
           id?: string
           is_test_booking?: boolean | null
           message?: string | null
+          payment_intent_id?: string | null
           payment_status?: string
           price?: number
+          promo_code_id?: string | null
           status?: Database["public"]["Enums"]["booking_status"]
           time_slot?: string
           updated_at?: string | null
@@ -91,7 +97,15 @@ export type Database = {
           user_name?: string
           user_phone?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "bookings_promo_code_id_fkey"
+            columns: ["promo_code_id"]
+            isOneToOne: false
+            referencedRelation: "promo_codes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       promo_codes: {
         Row: {

@@ -25,7 +25,7 @@ serve(async (req) => {
       userPhone,
       isTestMode,
       userId,
-      promoCode
+      promoCodeId
     } = await req.json()
 
     console.log('Creating checkout session with params:', {
@@ -37,7 +37,7 @@ serve(async (req) => {
       userEmail,
       isTestMode,
       userId,
-      promoCode
+      promoCodeId
     });
 
     const stripeSecretKey = isTestMode 
@@ -56,15 +56,6 @@ serve(async (req) => {
 
     console.log('Creating Stripe session in', isTestMode ? 'TEST' : 'LIVE', 'mode');
 
-    // Apply promo code if valid
-    let finalPrice = price;
-    if (promoCode === 'TEST2024') {
-      console.log('Valid promo code TEST2024 applied, setting price to 0');
-      finalPrice = 0;
-    }
-
-    console.log('Final price after promo code check:', finalPrice);
-
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -73,9 +64,9 @@ serve(async (req) => {
             currency: 'eur',
             product_data: {
               name: `${isTestMode ? '[TEST] ' : ''}Réservation - ${date} ${timeSlot}`,
-              description: `${groupSize} personnes - ${duration}h${promoCode === 'TEST2024' ? ' (Code promo TEST2024 appliqué)' : ''}`,
+              description: `${groupSize} personnes - ${duration}h`,
             },
-            unit_amount: finalPrice * 100, // Convert to cents
+            unit_amount: price * 100, // Convert to cents
           },
           quantity: 1,
         },
@@ -94,7 +85,7 @@ serve(async (req) => {
         userPhone,
         isTestMode: String(isTestMode),
         userId,
-        promoCode: promoCode === 'TEST2024' ? promoCode : undefined
+        promoCodeId
       },
     })
 
@@ -102,67 +93,8 @@ serve(async (req) => {
       sessionId: session.id,
       mode: isTestMode ? 'test' : 'live',
       email: userEmail,
-      metadata: session.metadata,
-      finalPrice
+      metadata: session.metadata
     });
-
-    // Créer la réservation immédiatement si le code promo est appliqué
-    if (promoCode === 'TEST2024') {
-      const supabaseUrl = Deno.env.get('SUPABASE_URL');
-      const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-
-      if (!supabaseUrl || !supabaseServiceRoleKey) {
-        throw new Error('Missing Supabase credentials');
-      }
-
-      const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
-
-      const bookingData = {
-        user_id: userId,
-        date,
-        time_slot: timeSlot,
-        duration,
-        group_size: groupSize,
-        status: 'confirmed',
-        price: finalPrice,
-        message: message || null,
-        user_email: userEmail,
-        user_name: userName,
-        user_phone: userPhone,
-        payment_status: 'paid',
-        is_test_booking: isTestMode
-      };
-
-      console.log('Creating booking with promo code:', bookingData);
-
-      const { data: booking, error: bookingError } = await supabase
-        .from('bookings')
-        .insert([bookingData])
-        .select()
-        .single();
-
-      if (bookingError) {
-        console.error('Error creating booking:', bookingError);
-        throw bookingError;
-      }
-
-      console.log('Booking created successfully:', booking);
-
-      // Envoyer l'email de confirmation
-      try {
-        const { error: emailError } = await supabase.functions.invoke('send-booking-email', {
-          body: { booking }
-        });
-
-        if (emailError) {
-          console.error('Error sending confirmation email:', emailError);
-        } else {
-          console.log('Confirmation email sent successfully');
-        }
-      } catch (emailError) {
-        console.error('Error invoking send-booking-email function:', emailError);
-      }
-    }
 
     return new Response(
       JSON.stringify({ url: session.url }),

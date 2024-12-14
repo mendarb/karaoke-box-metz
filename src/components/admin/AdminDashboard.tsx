@@ -27,10 +27,11 @@ export const AdminDashboard = () => {
           return [];
         }
 
+        // Récupérer toutes les réservations non supprimées
         const { data, error: fetchError } = await supabase
           .from('bookings')
           .select('*')
-          .is('deleted_at', null)  // S'assurer que deleted_at est null
+          .is('deleted_at', null)
           .order('created_at', { ascending: false });
 
         if (fetchError) {
@@ -46,6 +47,7 @@ export const AdminDashboard = () => {
       }
     },
     enabled: !!user && isAdmin,
+    refetchInterval: 5000, // Rafraîchir toutes les 5 secondes
   });
 
   if (error) {

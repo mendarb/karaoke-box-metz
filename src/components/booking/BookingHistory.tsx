@@ -21,9 +21,15 @@ export const BookingHistory = () => {
         .is('deleted_at', null)
         .order('date', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching bookings:', error);
+        throw error;
+      }
+
+      console.log('Fetched user bookings:', data);
       return data;
     },
+    refetchInterval: 5000, // Rafraîchir toutes les 5 secondes
   });
 
   if (isLoading) {
@@ -88,6 +94,14 @@ export const BookingHistory = () => {
                   </p>
                 </div>
               </div>
+
+              {booking.is_test_booking && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-4">
+                  <p className="text-sm text-yellow-800">
+                    Ceci est une réservation de test. Aucun paiement n'a été effectué.
+                  </p>
+                </div>
+              )}
 
               {booking.payment_status === 'paid' && (
                 <Button

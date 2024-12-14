@@ -31,7 +31,13 @@ export const useBookingSubmit = (
   const handleSubmit = async (data: any) => {
     try {
       setIsSubmitting(true);
-      console.log('Starting submission with data:', { ...data, groupSize, duration, calculatedPrice });
+      console.log('Starting submission with data:', { 
+        ...data, 
+        groupSize, 
+        duration, 
+        calculatedPrice,
+        finalPrice: data.finalPrice 
+      });
 
       // Vérifier si l'utilisateur est déjà connecté
       const { data: { session } } = await supabase.auth.getSession();
@@ -111,10 +117,12 @@ export const useBookingSubmit = (
         duration,
         groupSize,
         price: calculatedPrice,
+        finalPrice: data.finalPrice,
         message: data.message,
         isTestMode: settings?.isTestMode || false,
         userId: currentSession.user.id,
-        promoCode: data.promoCode
+        promoCode: data.promoCode,
+        promoCodeId: data.promoCodeId
       };
 
       console.log('Storing booking data in localStorage:', bookingData);
@@ -125,20 +133,7 @@ export const useBookingSubmit = (
 
       console.log('Creating checkout session...');
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
-        body: JSON.stringify({
-          price: calculatedPrice,
-          groupSize,
-          duration,
-          date: data.date,
-          timeSlot: data.timeSlot,
-          message: data.message,
-          userEmail: data.email,
-          userName: data.fullName,
-          userPhone: data.phone,
-          isTestMode: settings?.isTestMode || false,
-          userId: currentSession.user.id,
-          promoCode: data.promoCode
-        })
+        body: JSON.stringify(bookingData)
       });
 
       console.log('Checkout response:', { checkoutData, checkoutError });

@@ -48,7 +48,7 @@ export const usePromoCode = (
     const roundedPrice = Math.round(newPrice * 100) / 100;
     setFinalPrice(roundedPrice);
     
-    // Important: Mettre à jour le prix final dans le formulaire
+    // Mise à jour du prix final dans le formulaire
     form.setValue('finalPrice', roundedPrice);
   };
 

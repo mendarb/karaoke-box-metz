@@ -24,6 +24,9 @@ export const createCheckoutSession = async (
     metadata: createMetadata(data),
     payment_method_types: ['card'],
     locale: 'fr',
+    invoice_creation: {
+      enabled: true,
+    },
   };
 
   // Si le prix est 0 (réservation gratuite)

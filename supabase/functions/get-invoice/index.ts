@@ -26,27 +26,19 @@ serve(async (req) => {
 
     // Récupérer le payment intent
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-    console.log('Payment intent retrieved:', paymentIntent.id);
+    console.log('Payment intent retrieved:', {
+      id: paymentIntent.id,
+      invoice: paymentIntent.invoice,
+      customer: paymentIntent.customer
+    });
 
-    if (!paymentIntent.invoice) {
-      // Créer une facture si elle n'existe pas
-      console.log('Creating invoice for payment intent:', paymentIntent.id);
-      const invoice = await stripe.invoices.create({
-        payment_intent: paymentIntent.id,
-        customer: paymentIntent.customer as string,
-        auto_advance: true,
-      });
-
-      // Finaliser la facture
-      await stripe.invoices.finalizeInvoice(invoice.id);
-      console.log('Invoice finalized:', invoice.id);
-
-      // Récupérer l'URL de la facture
-      const invoiceData = await stripe.invoices.retrieve(invoice.id);
-      console.log('Invoice URL:', invoiceData.invoice_pdf);
+    // Si une facture existe déjà, la récupérer
+    if (paymentIntent.invoice) {
+      const invoice = await stripe.invoices.retrieve(paymentIntent.invoice as string);
+      console.log('Existing invoice retrieved:', invoice.id);
 
       return new Response(
-        JSON.stringify({ url: invoiceData.invoice_pdf }),
+        JSON.stringify({ url: invoice.invoice_pdf }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 200 
@@ -54,12 +46,38 @@ serve(async (req) => {
       );
     }
 
-    // Si la facture existe déjà, la récupérer
-    const invoice = await stripe.invoices.retrieve(paymentIntent.invoice as string);
-    console.log('Existing invoice retrieved:', invoice.id);
+    // Si pas de facture, en créer une nouvelle
+    console.log('Creating new invoice for payment intent:', paymentIntent.id);
+    const invoice = await stripe.invoices.create({
+      customer: paymentIntent.customer as string,
+      auto_advance: true,
+      collection_method: 'charge_automatically',
+      metadata: paymentIntent.metadata,
+    });
+
+    // Ajouter le payment intent à la facture
+    await stripe.invoiceItems.create({
+      customer: paymentIntent.customer as string,
+      invoice: invoice.id,
+      amount: paymentIntent.amount,
+      currency: paymentIntent.currency,
+      description: `Réservation Karaoké BOX - ${paymentIntent.metadata?.date || 'N/A'}`,
+    });
+
+    // Finaliser et payer la facture
+    await stripe.invoices.finalizeInvoice(invoice.id);
+    await stripe.invoices.pay(invoice.id);
+
+    // Récupérer la facture mise à jour
+    const finalInvoice = await stripe.invoices.retrieve(invoice.id);
+    console.log('Invoice created and finalized:', {
+      id: finalInvoice.id,
+      status: finalInvoice.status,
+      pdfUrl: finalInvoice.invoice_pdf
+    });
 
     return new Response(
-      JSON.stringify({ url: invoice.invoice_pdf }),
+      JSON.stringify({ url: finalInvoice.invoice_pdf }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200 

@@ -2,6 +2,7 @@ import { DashboardSidebar } from "@/components/admin/DashboardSidebar";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { BookingSettings } from "@/components/admin/settings/BookingSettings";
 import { NotificationSettings } from "@/components/admin/settings/NotificationSettings";
+import { PromoCodesSettings } from "@/components/admin/settings/PromoCodesSettings";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -13,8 +14,9 @@ export const Settings = () => {
   const renderContent = () => (
     <div className="p-4 md:p-6">
       <h1 className="text-2xl font-bold mb-6">Paramètres</h1>
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6">
         <BookingSettings />
+        <PromoCodesSettings />
         <NotificationSettings />
       </div>
     </div>

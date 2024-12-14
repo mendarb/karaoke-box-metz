@@ -21,6 +21,7 @@ export const BookingForm = () => {
     handlePriceCalculated,
     handleAvailabilityChange,
     handlePrevious,
+    availableHours,
   } = useBookingForm();
 
   const steps = useBookingSteps(currentStep);
@@ -57,6 +58,7 @@ export const BookingForm = () => {
             onDurationChange={setDuration}
             onPriceCalculated={handlePriceCalculated}
             onAvailabilityChange={handleAvailabilityChange}
+            availableHours={availableHours}
           />
         </div>
 

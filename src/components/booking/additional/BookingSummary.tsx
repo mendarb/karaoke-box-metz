@@ -21,7 +21,7 @@ export const BookingSummary = ({
       <div className="text-sm text-violet-700">
         <p>Nombre de personnes : {groupSize}</p>
         <p>Durée : {duration} heure{parseInt(duration) > 1 ? 's' : ''}</p>
-        <p className={isPromoValid ? "line-through text-gray-500" : "font-semibold"}>
+        <p className={isPromoValid && finalPrice !== undefined ? "line-through text-gray-500" : "font-semibold"}>
           Prix total : {calculatedPrice}€
         </p>
         {isPromoValid && promoCode && finalPrice !== undefined && (

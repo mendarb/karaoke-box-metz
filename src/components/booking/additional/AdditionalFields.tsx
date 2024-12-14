@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { BookingSummary } from "./BookingSummary";
 import { PromoCodeField } from "./PromoCodeField";
 import { AccountCreation } from "./AccountCreation";
+import { usePromoCode } from "../hooks/usePromoCode";
 
 interface AdditionalFieldsProps {
   form: UseFormReturn<any>;
@@ -21,9 +22,7 @@ export const AdditionalFields = ({
   duration 
 }: AdditionalFieldsProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isPromoValid, setIsPromoValid] = useState(false);
-  const [promoData, setPromoData] = useState<any>(null);
-  const [finalPrice, setFinalPrice] = useState(calculatedPrice);
+  const { isPromoValid, promoData, finalPrice, handlePromoValidated } = usePromoCode(calculatedPrice, form);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -38,49 +37,6 @@ export const AdditionalFields = ({
 
     checkSession();
   }, []);
-
-  // Mettre à jour le prix final quand le prix calculé change
-  useEffect(() => {
-    if (!isPromoValid || !promoData) {
-      setFinalPrice(calculatedPrice);
-    } else {
-      calculateFinalPrice(promoData);
-    }
-  }, [calculatedPrice, isPromoValid, promoData]);
-
-  const calculateFinalPrice = (promoCode: any) => {
-    if (!promoCode) {
-      setFinalPrice(calculatedPrice);
-      return;
-    }
-
-    let newPrice = calculatedPrice;
-    
-    if (promoCode.type === 'percentage' && promoCode.value) {
-      newPrice = calculatedPrice * (1 - promoCode.value / 100);
-    } else if (promoCode.type === 'fixed_amount' && promoCode.value) {
-      newPrice = Math.max(0, calculatedPrice - promoCode.value);
-    } else if (promoCode.type === 'free') {
-      newPrice = 0;
-    }
-    
-    const roundedPrice = Math.round(newPrice * 100) / 100;
-    setFinalPrice(roundedPrice);
-    form.setValue('finalPrice', roundedPrice);
-  };
-
-  const handlePromoValidated = (isValid: boolean, promoCode?: any) => {
-    console.log('Promo validation result:', { isValid, promoCode });
-    setIsPromoValid(isValid);
-    setPromoData(promoCode);
-    
-    if (!isValid) {
-      setFinalPrice(calculatedPrice);
-      form.setValue('finalPrice', calculatedPrice);
-      form.setValue('promoCode', '');
-      form.setValue('promoCodeId', null);
-    }
-  };
 
   return (
     <div className="space-y-6 animate-fadeIn">

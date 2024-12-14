@@ -20,8 +20,6 @@ export const PromoCodeField = ({ onPromoValidated, form }: PromoCodeFieldProps) 
     setPromoCode(code);
     if (!code) {
       onPromoValidated(false);
-      form.setValue('promoCode', '');
-      form.setValue('promoCodeId', null);
     }
   };
 
@@ -52,8 +50,6 @@ export const PromoCodeField = ({ onPromoValidated, form }: PromoCodeFieldProps) 
 
       if (!data) {
         onPromoValidated(false);
-        form.setValue('promoCode', '');
-        form.setValue('promoCodeId', null);
         toast({
           title: "Code promo invalide",
           description: "Ce code promo n'existe pas ou n'est plus valide.",
@@ -106,8 +102,6 @@ export const PromoCodeField = ({ onPromoValidated, form }: PromoCodeFieldProps) 
     } catch (error: any) {
       console.error('Error validating promo code:', error);
       onPromoValidated(false);
-      form.setValue('promoCode', '');
-      form.setValue('promoCodeId', null);
       toast({
         title: "Erreur",
         description: "Une erreur est survenue lors de la validation du code promo.",

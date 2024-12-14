@@ -9,7 +9,7 @@ const corsHeaders = {
 
 serve(async (req) => {
   try {
-    console.log('Webhook received');
+    console.log('🔵 Webhook received - Starting process');
     
     // Handle CORS preflight requests
     if (req.method === 'OPTIONS') {
@@ -18,7 +18,7 @@ serve(async (req) => {
 
     const signature = req.headers.get('stripe-signature');
     if (!signature) {
-      console.error('No Stripe signature found');
+      console.error('❌ No Stripe signature found');
       return new Response(JSON.stringify({ error: 'No signature' }), { 
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -26,12 +26,12 @@ serve(async (req) => {
     }
 
     const body = await req.text();
-    console.log('Webhook body:', body);
+    console.log('📝 Raw webhook body:', body);
     
     const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
     
     if (!webhookSecret) {
-      console.error('Webhook secret not configured');
+      console.error('❌ Webhook secret not configured');
       return new Response(JSON.stringify({ error: 'Webhook secret not configured' }), { 
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -41,8 +41,8 @@ serve(async (req) => {
     // Vérifier si c'est un paiement test
     const eventData = JSON.parse(body);
     const isTestMode = eventData.data.object?.metadata?.isTestMode === 'true';
-    console.log('Processing webhook in mode:', isTestMode ? 'TEST' : 'LIVE');
-    console.log('Event data:', JSON.stringify(eventData, null, 2));
+    console.log('🔍 Processing webhook in mode:', isTestMode ? 'TEST' : 'LIVE');
+    console.log('📊 Event data:', JSON.stringify(eventData, null, 2));
 
     // Utiliser la bonne clé Stripe en fonction du mode
     const stripeSecretKey = isTestMode 
@@ -50,7 +50,7 @@ serve(async (req) => {
       : Deno.env.get('STRIPE_SECRET_KEY');
 
     if (!stripeSecretKey) {
-      console.error(isTestMode ? 'Test mode API key not configured' : 'Live mode API key not configured');
+      console.error('❌', isTestMode ? 'Test mode API key not configured' : 'Live mode API key not configured');
       return new Response(
         JSON.stringify({ error: 'Stripe API key not configured' }), 
         { 
@@ -68,9 +68,9 @@ serve(async (req) => {
     let event;
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
-      console.log('Event constructed successfully:', event.type);
+      console.log('✅ Event constructed successfully:', event.type);
     } catch (err) {
-      console.error(`Webhook signature verification failed:`, err);
+      console.error('❌ Webhook signature verification failed:', err);
       return new Response(
         JSON.stringify({ error: err.message }), 
         { 
@@ -84,7 +84,7 @@ serve(async (req) => {
       const session = event.data.object;
       const metadata = session.metadata;
       
-      console.log('Checkout session completed. Details:', {
+      console.log('💳 Checkout session completed. Details:', {
         sessionId: session.id,
         metadata,
         customer: session.customer,
@@ -94,7 +94,7 @@ serve(async (req) => {
       });
 
       if (!metadata) {
-        console.error('No metadata found in session');
+        console.error('❌ No metadata found in session');
         return new Response(
           JSON.stringify({ error: 'No metadata found' }), 
           { 
@@ -108,7 +108,7 @@ serve(async (req) => {
       const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
       if (!supabaseUrl || !supabaseServiceRoleKey) {
-        console.error('Missing Supabase credentials');
+        console.error('❌ Missing Supabase credentials');
         return new Response(
           JSON.stringify({ error: 'Server configuration error' }), 
           { 
@@ -118,7 +118,7 @@ serve(async (req) => {
         );
       }
 
-      console.log('Creating Supabase client with URL:', supabaseUrl);
+      console.log('🔗 Creating Supabase client with URL:', supabaseUrl);
       const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
       const bookingData = {
@@ -137,7 +137,7 @@ serve(async (req) => {
         is_test_booking: isTestMode
       };
 
-      console.log('Attempting to insert booking with data:', bookingData);
+      console.log('📝 Attempting to insert booking with data:', bookingData);
 
       try {
         const { data: booking, error: bookingError } = await supabase
@@ -147,11 +147,11 @@ serve(async (req) => {
           .single();
 
         if (bookingError) {
-          console.error('Error creating booking:', bookingError);
+          console.error('❌ Error creating booking:', bookingError);
           throw bookingError;
         }
 
-        console.log('Booking created successfully:', booking);
+        console.log('✅ Booking created successfully:', booking);
 
         // Envoyer l'email de confirmation
         try {
@@ -160,10 +160,10 @@ serve(async (req) => {
           });
 
           if (emailError) {
-            console.error('Error sending confirmation email:', emailError);
+            console.error('❌ Error sending confirmation email:', emailError);
           }
         } catch (emailError) {
-          console.error('Error invoking send-booking-email function:', emailError);
+          console.error('❌ Error invoking send-booking-email function:', emailError);
         }
 
         return new Response(
@@ -174,7 +174,7 @@ serve(async (req) => {
           }
         );
       } catch (error) {
-        console.error('Error in booking creation process:', error);
+        console.error('❌ Error in booking creation process:', error);
         throw error;
       }
     }
@@ -187,7 +187,7 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('Fatal error in webhook:', error);
+    console.error('❌ Fatal error in webhook:', error);
     return new Response(
       JSON.stringify({ error: error.message }), 
       { 

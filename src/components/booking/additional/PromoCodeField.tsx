@@ -96,9 +96,9 @@ export const PromoCodeField = ({ onPromoValidated, form }: PromoCodeFieldProps) 
       }
 
       console.log('Promo code is valid:', data);
-      onPromoValidated(true, data);
       form.setValue('promoCode', data.code);
       form.setValue('promoCodeId', data.id);
+      onPromoValidated(true, data);
       toast({
         title: "Code promo valide !",
         description: `Le code ${promoCode} a été appliqué avec succès.`,

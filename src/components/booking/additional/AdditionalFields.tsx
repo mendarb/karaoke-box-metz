@@ -41,12 +41,12 @@ export const AdditionalFields = ({
 
   // Mettre à jour le prix final quand le prix calculé change
   useEffect(() => {
-    if (!isPromoValid) {
+    if (!isPromoValid || !promoData) {
       setFinalPrice(calculatedPrice);
     } else {
       calculateFinalPrice(promoData);
     }
-  }, [calculatedPrice]);
+  }, [calculatedPrice, isPromoValid, promoData]);
 
   const calculateFinalPrice = (promoCode: any) => {
     if (!promoCode) {
@@ -64,7 +64,9 @@ export const AdditionalFields = ({
       newPrice = 0;
     }
     
-    setFinalPrice(Math.round(newPrice * 100) / 100);
+    const roundedPrice = Math.round(newPrice * 100) / 100;
+    setFinalPrice(roundedPrice);
+    form.setValue('finalPrice', roundedPrice);
   };
 
   const handlePromoValidated = (isValid: boolean, promoCode?: any) => {
@@ -72,10 +74,11 @@ export const AdditionalFields = ({
     setIsPromoValid(isValid);
     setPromoData(promoCode);
     
-    if (isValid && promoCode) {
-      calculateFinalPrice(promoCode);
-    } else {
+    if (!isValid) {
       setFinalPrice(calculatedPrice);
+      form.setValue('finalPrice', calculatedPrice);
+      form.setValue('promoCode', '');
+      form.setValue('promoCodeId', null);
     }
   };
 

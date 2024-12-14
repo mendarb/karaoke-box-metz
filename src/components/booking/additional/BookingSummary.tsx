@@ -24,7 +24,7 @@ export const BookingSummary = ({
         <p className={isPromoValid ? "line-through text-gray-500" : "font-semibold"}>
           Prix total : {calculatedPrice}€
         </p>
-        {isPromoValid && promoCode && (
+        {isPromoValid && promoCode && finalPrice !== undefined && (
           <>
             <p className="font-semibold text-green-600">Prix final : {finalPrice}€</p>
             <p className="text-green-600 font-medium">Code promo {promoCode} appliqué</p>

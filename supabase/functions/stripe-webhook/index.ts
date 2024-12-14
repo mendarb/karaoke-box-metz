@@ -9,10 +9,18 @@ const corsHeaders = {
 
 serve(async (req) => {
   try {
+    // Handle CORS preflight requests
+    if (req.method === 'OPTIONS') {
+      return new Response(null, { headers: corsHeaders });
+    }
+
     const signature = req.headers.get('stripe-signature');
     if (!signature) {
       console.error('No Stripe signature found');
-      return new Response(JSON.stringify({ error: 'No signature' }), { status: 400 });
+      return new Response(JSON.stringify({ error: 'No signature' }), { 
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
     const body = await req.text();
@@ -20,7 +28,10 @@ serve(async (req) => {
     
     if (!webhookSecret) {
       console.error('Webhook secret not configured');
-      return new Response(JSON.stringify({ error: 'Webhook secret not configured' }), { status: 500 });
+      return new Response(JSON.stringify({ error: 'Webhook secret not configured' }), { 
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
     // Vérifier si c'est un paiement test
@@ -38,7 +49,10 @@ serve(async (req) => {
       console.error(isTestMode ? 'Test mode API key not configured' : 'Live mode API key not configured');
       return new Response(
         JSON.stringify({ error: 'Stripe API key not configured' }), 
-        { status: 500 }
+        { 
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
       );
     }
 
@@ -52,7 +66,13 @@ serve(async (req) => {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
     } catch (err) {
       console.error(`Webhook signature verification failed:`, err);
-      return new Response(JSON.stringify({ error: err.message }), { status: 400 });
+      return new Response(
+        JSON.stringify({ error: err.message }), 
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     console.log('Processing webhook event:', event.type);
@@ -72,13 +92,31 @@ serve(async (req) => {
 
       if (!metadata) {
         console.error('No metadata found in session');
-        return new Response(JSON.stringify({ error: 'No metadata found' }), { status: 400 });
+        return new Response(
+          JSON.stringify({ error: 'No metadata found' }), 
+          { 
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
       }
 
       console.log('Creating booking with metadata:', metadata);
 
-      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-      const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+      const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+      if (!supabaseUrl || !supabaseServiceRoleKey) {
+        console.error('Missing Supabase credentials');
+        return new Response(
+          JSON.stringify({ error: 'Server configuration error' }), 
+          { 
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
+      }
+
       const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
       const bookingData = {
@@ -107,7 +145,13 @@ serve(async (req) => {
 
       if (bookingError) {
         console.error('Error creating booking:', bookingError);
-        return new Response(JSON.stringify({ error: bookingError.message }), { status: 500 });
+        return new Response(
+          JSON.stringify({ error: bookingError.message }), 
+          { 
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
       }
 
       console.log('Booking created successfully:', booking);
@@ -125,16 +169,22 @@ serve(async (req) => {
         console.error('Error invoking send-booking-email function:', emailError);
       }
 
-      return new Response(JSON.stringify({ received: true, booking }), { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      });
+      return new Response(
+        JSON.stringify({ received: true, booking }), 
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200 
+        }
+      );
     }
 
-    return new Response(JSON.stringify({ received: true }), { 
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200 
-    });
+    return new Response(
+      JSON.stringify({ received: true }), 
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 
+      }
+    );
   } catch (error) {
     console.error('Error processing webhook:', error);
     return new Response(

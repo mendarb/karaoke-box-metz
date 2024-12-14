@@ -12,6 +12,22 @@ import { BookingFormActions } from "./booking/BookingFormActions";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 
+const defaultSettings = {
+  isTestMode: false,
+  bookingWindow: { startDays: 1, endDays: 30 },
+  openingHours: {
+    1: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
+    2: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
+    3: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
+    4: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
+    5: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
+    6: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
+    0: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
+  },
+  excludedDays: [],
+  basePrice: { perHour: 30, perPerson: 5 },
+};
+
 export const BookingForm = () => {
   const { toast } = useToast();
   const [groupSize, setGroupSize] = useState("");
@@ -27,14 +43,43 @@ export const BookingForm = () => {
   const { data: settings } = useQuery({
     queryKey: ['booking-settings'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      console.log('Fetching booking settings...');
+      
+      // Vérifier si les paramètres existent déjà
+      const { data: existingSettings, error: fetchError } = await supabase
         .from('booking_settings')
         .select('*')
         .eq('key', 'booking_settings')
         .maybeSingle();
 
-      if (error) throw error;
-      return data?.value;
+      if (fetchError) {
+        console.error('Error fetching settings:', fetchError);
+        throw fetchError;
+      }
+
+      // Si aucun paramètre n'existe, créer les paramètres par défaut
+      if (!existingSettings) {
+        console.log('No settings found, creating defaults...');
+        const { data: newSettings, error: insertError } = await supabase
+          .from('booking_settings')
+          .insert([{ 
+            key: 'booking_settings', 
+            value: defaultSettings 
+          }])
+          .select()
+          .single();
+
+        if (insertError) {
+          console.error('Error creating default settings:', insertError);
+          throw insertError;
+        }
+
+        console.log('Default settings created:', newSettings);
+        return newSettings.value;
+      }
+
+      console.log('Loaded settings:', existingSettings);
+      return existingSettings.value;
     },
   });
 

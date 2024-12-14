@@ -40,7 +40,6 @@ serve(async (req) => {
       promoCode
     });
 
-    // Utiliser la clé appropriée en fonction du mode
     const stripeSecretKey = isTestMode 
       ? Deno.env.get('STRIPE_TEST_SECRET_KEY')
       : Deno.env.get('STRIPE_SECRET_KEY');
@@ -60,7 +59,7 @@ serve(async (req) => {
     let finalPrice = price;
     let appliedPromoCode = null;
 
-    // Vérifier le code promo si fourni
+    // Vérifier le code promo
     if (promoCode === 'TEST2024') {
       console.log('Valid promo code applied, setting price to 0');
       finalPrice = 0;

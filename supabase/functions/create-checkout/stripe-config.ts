@@ -20,14 +20,23 @@ export const createLineItem = (data: CheckoutData) => {
   const amount = data.finalPrice || data.price;
   console.log('Creating line item with amount:', amount);
   
+  const description = `${data.groupSize} personnes - ${data.duration}h`;
+  const formattedDate = new Date(data.date).toLocaleDateString('fr-FR', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  
   return {
     price_data: {
       currency: 'eur',
       product_data: {
-        name: `${data.isTestMode ? '[TEST] ' : ''}Réservation - ${data.date} ${data.timeSlot}`,
-        description: `${data.groupSize} personnes - ${data.duration}h`,
+        name: `${data.isTestMode ? '[TEST] ' : ''}Réservation - ${formattedDate} ${data.timeSlot}`,
+        description: description,
+        images: ['https://lxkaosgjtqonrnlivzev.supabase.co/storage/v1/object/public/assets/logo.png'],
       },
-      unit_amount: amount * 100,
+      unit_amount: Math.round(amount * 100), // Stripe attend le montant en centimes
     },
     quantity: 1,
   };

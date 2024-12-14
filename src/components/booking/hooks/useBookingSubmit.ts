@@ -125,7 +125,10 @@ export const useBookingSubmit = (
         isTestMode: settings?.isTestMode || false,
         userId: currentSession.user.id,
         promoCode: data.promoCode,
-        promoCodeId: data.promoCodeId
+        promoCodeId: data.promoCodeId,
+        userName: data.fullName,
+        userPhone: data.phone,
+        userEmail: data.email
       };
 
       console.log('Storing booking data in localStorage:', bookingData);

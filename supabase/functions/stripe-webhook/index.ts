@@ -9,6 +9,8 @@ const corsHeaders = {
 
 serve(async (req) => {
   try {
+    console.log('Webhook received');
+    
     // Handle CORS preflight requests
     if (req.method === 'OPTIONS') {
       return new Response(null, { headers: corsHeaders });
@@ -24,6 +26,8 @@ serve(async (req) => {
     }
 
     const body = await req.text();
+    console.log('Webhook body:', body);
+    
     const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
     
     if (!webhookSecret) {
@@ -64,6 +68,7 @@ serve(async (req) => {
     let event;
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+      console.log('Event constructed successfully:', event.type);
     } catch (err) {
       console.error(`Webhook signature verification failed:`, err);
       return new Response(
@@ -75,13 +80,11 @@ serve(async (req) => {
       );
     }
 
-    console.log('Processing webhook event:', event.type);
-
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
       const metadata = session.metadata;
       
-      console.log('Checkout session completed:', {
+      console.log('Checkout session completed. Details:', {
         sessionId: session.id,
         metadata,
         customer: session.customer,
@@ -101,8 +104,6 @@ serve(async (req) => {
         );
       }
 
-      console.log('Creating booking with metadata:', metadata);
-
       const supabaseUrl = Deno.env.get('SUPABASE_URL');
       const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
@@ -117,6 +118,7 @@ serve(async (req) => {
         );
       }
 
+      console.log('Creating Supabase client with URL:', supabaseUrl);
       const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
       const bookingData = {
@@ -135,47 +137,46 @@ serve(async (req) => {
         is_test_booking: isTestMode
       };
 
-      console.log('Inserting booking data:', bookingData);
+      console.log('Attempting to insert booking with data:', bookingData);
 
-      const { data: booking, error: bookingError } = await supabase
-        .from('bookings')
-        .insert([bookingData])
-        .select()
-        .single();
+      try {
+        const { data: booking, error: bookingError } = await supabase
+          .from('bookings')
+          .insert([bookingData])
+          .select()
+          .single();
 
-      if (bookingError) {
-        console.error('Error creating booking:', bookingError);
+        if (bookingError) {
+          console.error('Error creating booking:', bookingError);
+          throw bookingError;
+        }
+
+        console.log('Booking created successfully:', booking);
+
+        // Envoyer l'email de confirmation
+        try {
+          const { error: emailError } = await supabase.functions.invoke('send-booking-email', {
+            body: { booking }
+          });
+
+          if (emailError) {
+            console.error('Error sending confirmation email:', emailError);
+          }
+        } catch (emailError) {
+          console.error('Error invoking send-booking-email function:', emailError);
+        }
+
         return new Response(
-          JSON.stringify({ error: bookingError.message }), 
+          JSON.stringify({ received: true, booking }), 
           { 
-            status: 500,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200 
           }
         );
+      } catch (error) {
+        console.error('Error in booking creation process:', error);
+        throw error;
       }
-
-      console.log('Booking created successfully:', booking);
-
-      // Envoyer l'email de confirmation
-      try {
-        const { error: emailError } = await supabase.functions.invoke('send-booking-email', {
-          body: { booking }
-        });
-
-        if (emailError) {
-          console.error('Error sending confirmation email:', emailError);
-        }
-      } catch (emailError) {
-        console.error('Error invoking send-booking-email function:', emailError);
-      }
-
-      return new Response(
-        JSON.stringify({ received: true, booking }), 
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200 
-        }
-      );
     }
 
     return new Response(
@@ -186,7 +187,7 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('Error processing webhook:', error);
+    console.error('Fatal error in webhook:', error);
     return new Response(
       JSON.stringify({ error: error.message }), 
       { 

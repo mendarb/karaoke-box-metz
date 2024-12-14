@@ -13,7 +13,6 @@ export const useBookingSubmit = (
 ) => {
   const { toast } = useToast();
 
-  // Fetch booking settings to check test mode
   const { data: settings } = useQuery({
     queryKey: ['booking-settings'],
     queryFn: async () => {
@@ -31,12 +30,16 @@ export const useBookingSubmit = (
   const handleSubmit = async (data: any) => {
     try {
       setIsSubmitting(true);
+      const finalPrice = form.getValues('finalPrice') || calculatedPrice;
+      
       console.log('Starting submission with data:', { 
         ...data, 
         groupSize, 
         duration, 
         calculatedPrice,
-        finalPrice: data.finalPrice 
+        finalPrice,
+        promoCode: data.promoCode,
+        promoCodeId: data.promoCodeId
       });
 
       // Vérifier si l'utilisateur est déjà connecté
@@ -117,7 +120,7 @@ export const useBookingSubmit = (
         duration,
         groupSize,
         price: calculatedPrice,
-        finalPrice: data.finalPrice,
+        finalPrice: finalPrice,
         message: data.message,
         isTestMode: settings?.isTestMode || false,
         userId: currentSession.user.id,

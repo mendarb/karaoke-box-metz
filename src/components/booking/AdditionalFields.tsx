@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { BookingSummary } from "./additional/BookingSummary";
 import { PromoCodeField } from "./additional/PromoCodeField";
 import { AccountCreation } from "./additional/AccountCreation";
+import { usePromoCode } from "../hooks/usePromoCode";
 
 interface AdditionalFieldsProps {
   form: UseFormReturn<any>;
@@ -21,7 +22,7 @@ export const AdditionalFields = ({
   duration 
 }: AdditionalFieldsProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isPromoValid, setIsPromoValid] = useState(false);
+  const { isPromoValid, promoData, finalPrice, handlePromoValidated } = usePromoCode(calculatedPrice, form);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -44,6 +45,8 @@ export const AdditionalFields = ({
         duration={duration}
         calculatedPrice={calculatedPrice}
         isPromoValid={isPromoValid}
+        promoCode={promoData?.code}
+        finalPrice={finalPrice}
       />
 
       <FormField
@@ -65,7 +68,7 @@ export const AdditionalFields = ({
       />
 
       <PromoCodeField 
-        onPromoValidated={setIsPromoValid}
+        onPromoValidated={handlePromoValidated}
         form={form}
       />
 

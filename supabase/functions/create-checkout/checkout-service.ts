@@ -14,7 +14,6 @@ export const createCheckoutSession = async (
   });
 
   const finalPrice = data.finalPrice || data.price;
-  const lineItem = createLineItem(data);
 
   // Configuration de base de la session
   const sessionConfig: Stripe.Checkout.SessionCreateParams = {
@@ -30,15 +29,19 @@ export const createCheckoutSession = async (
   // Si le prix est 0 (réservation gratuite)
   if (finalPrice === 0) {
     console.log('Creating free booking session');
+    sessionConfig.submit_type = 'auto';
+    sessionConfig.payment_method_types = [];
     sessionConfig.payment_intent_data = {
       metadata: createMetadata(data)
     };
-    sessionConfig.submit_type = 'auto';
-    sessionConfig.payment_method_types = [];
-  } else if (lineItem) {
-    // Sinon, ajouter le line item pour le paiement
-    sessionConfig.line_items = [lineItem];
+  } else {
+    // Sinon, créer un line item pour le paiement
+    const lineItem = createLineItem(data);
+    if (lineItem) {
+      sessionConfig.line_items = [lineItem];
+    }
   }
 
+  console.log('Creating Stripe session with config:', sessionConfig);
   return await stripe.checkout.sessions.create(sessionConfig);
 };

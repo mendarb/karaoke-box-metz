@@ -10,10 +10,18 @@ export const handleCheckoutSession = async (
   console.log('💳 Processing checkout session:', {
     sessionId: session.id,
     metadata: session.metadata,
-    paymentStatus: session.payment_status
+    paymentStatus: session.payment_status,
+    amount: session.amount_total
   });
 
   try {
+    // Pour les réservations gratuites, on considère le paiement comme complété
+    const isFreeBooking = session.amount_total === 0;
+    if (!isFreeBooking && session.payment_status !== 'paid') {
+      console.log('⚠️ Skipping unpaid session');
+      return { received: true };
+    }
+
     const booking = await createBooking(session, supabase);
     console.log('✅ Booking created:', booking);
 

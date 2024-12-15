@@ -10,6 +10,8 @@ export const createBooking = async (
     throw new Error('No metadata found in session');
   }
 
+  console.log('📝 Creating booking with metadata:', metadata);
+
   const bookingData = {
     user_id: metadata.userId,
     date: metadata.date,
@@ -22,7 +24,7 @@ export const createBooking = async (
     user_email: session.customer_email,
     user_name: metadata.userName,
     user_phone: metadata.userPhone,
-    payment_status: session.payment_status,
+    payment_status: session.amount_total === 0 ? 'paid' : session.payment_status,
     is_test_booking: metadata.isTestMode === 'true',
     payment_intent_id: session.payment_intent,
     promo_code_id: metadata.promoCodeId || null

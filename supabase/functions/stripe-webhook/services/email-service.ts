@@ -16,6 +16,7 @@ export const sendConfirmationEmail = async (booking: any, supabase: ReturnType<t
     console.log('✅ Confirmation email sent successfully');
   } catch (error) {
     console.error('❌ Error in sendConfirmationEmail:', error);
-    throw error;
+    // On ne relance pas l'erreur pour ne pas bloquer le processus
+    // mais on la log pour le debugging
   }
 };

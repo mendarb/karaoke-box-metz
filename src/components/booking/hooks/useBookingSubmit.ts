@@ -20,6 +20,8 @@ export const useBookingSubmit = (
       console.log('Prix initial de la réservation:', {
         calculatedPrice,
         finalPrice,
+        promoCode: form.getValues('promoCode'),
+        promoCodeId: form.getValues('promoCodeId'),
         formValues: form.getValues()
       });
 

@@ -10,7 +10,8 @@ export const createCheckoutSession = async (
   console.log('Creating checkout session with data:', {
     originalPrice: data.price,
     finalPrice: data.finalPrice,
-    promoCode: data.promoCode
+    promoCode: data.promoCode,
+    promoCodeId: data.promoCodeId
   });
 
   const metadata = createMetadata(data);
@@ -43,7 +44,11 @@ export const createCheckoutSession = async (
     mode: sessionConfig.mode,
     finalPrice: data.finalPrice,
     isFreeBooking,
-    metadata: sessionConfig.metadata
+    metadata: sessionConfig.metadata,
+    promoDetails: {
+      code: data.promoCode,
+      id: data.promoCodeId
+    }
   });
 
   const session = await stripe.checkout.sessions.create(sessionConfig);

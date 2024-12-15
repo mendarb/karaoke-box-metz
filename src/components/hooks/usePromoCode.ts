@@ -22,6 +22,7 @@ export const usePromoCode = (
 
   const calculateFinalPrice = (promoCode: any) => {
     if (!promoCode) {
+      console.log('No promo code, using original price:', calculatedPrice);
       setFinalPrice(calculatedPrice);
       form.setValue('finalPrice', calculatedPrice);
       return;
@@ -66,11 +67,13 @@ export const usePromoCode = (
     setPromoData(promoCode);
     
     if (!isValid) {
+      console.log('Invalid promo code, resetting to original price:', calculatedPrice);
       setFinalPrice(calculatedPrice);
       form.setValue('finalPrice', calculatedPrice);
       form.setValue('promoCode', '');
       form.setValue('promoCodeId', null);
     } else {
+      console.log('Valid promo code, updating form values:', promoCode);
       form.setValue('promoCode', promoCode.code);
       form.setValue('promoCodeId', promoCode.id);
       calculateFinalPrice(promoCode);

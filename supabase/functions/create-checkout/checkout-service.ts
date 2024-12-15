@@ -9,12 +9,11 @@ export const createCheckoutSession = async (
 ): Promise<Stripe.Checkout.Session> => {
   console.log('Creating checkout session with data:', {
     originalPrice: data.price,
-    finalPrice: data.finalPrice || data.price,
+    finalPrice: data.finalPrice,
     promoCodeId: data.promoCodeId,
     promoCode: data.promoCode
   });
 
-  const finalPrice = data.finalPrice !== undefined ? data.finalPrice : data.price;
   const metadata = createMetadata(data);
 
   // Configuration de base de la session
@@ -32,11 +31,11 @@ export const createCheckoutSession = async (
     payment_intent_data: {
       metadata: metadata,
     },
-    allow_promotion_codes: false, // Désactiver les codes promo Stripe car nous gérons nos propres codes
+    allow_promotion_codes: false, // Désactiver les codes promo Stripe
   };
 
   // Si le prix est 0 (réservation gratuite)
-  if (finalPrice === 0) {
+  if (data.finalPrice === 0) {
     console.log('Creating free booking session');
     sessionConfig.submit_type = 'auto';
     sessionConfig.payment_method_types = [];

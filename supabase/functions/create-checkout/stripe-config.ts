@@ -17,11 +17,13 @@ export const getStripeInstance = (isTestMode: boolean): Stripe => {
 };
 
 export const createLineItem = (data: CheckoutData) => {
-  const amount = data.finalPrice !== undefined ? data.finalPrice : data.price;
-  console.log('Creating line item with amount:', amount);
+  console.log('Creating line item with prices:', {
+    originalPrice: data.price,
+    finalPrice: data.finalPrice
+  });
   
   // Si le montant est 0 (code promo gratuit), on ne crée pas de line item
-  if (amount === 0) {
+  if (data.finalPrice === 0) {
     return null;
   }
 
@@ -33,9 +35,8 @@ export const createLineItem = (data: CheckoutData) => {
     day: 'numeric'
   });
 
-  const originalPrice = data.price;
-  const hasDiscount = amount < originalPrice;
-  const discountText = hasDiscount ? ` (${Math.round((1 - amount/originalPrice) * 100)}% de réduction)` : '';
+  const discountPercentage = Math.round((1 - data.finalPrice/data.price) * 100);
+  const discountText = data.finalPrice < data.price ? ` (-${discountPercentage}%)` : '';
   
   return {
     price_data: {
@@ -45,7 +46,7 @@ export const createLineItem = (data: CheckoutData) => {
         description: `${description} - ${formattedDate} ${data.timeSlot}h${discountText}${data.promoCode ? ` (Code: ${data.promoCode})` : ''}`,
         images: ['https://raw.githubusercontent.com/lovable-karaoke/assets/main/logo.png'],
       },
-      unit_amount: Math.round(amount * 100), // Stripe attend le montant en centimes
+      unit_amount: Math.round(data.finalPrice * 100), // Stripe attend le montant en centimes
     },
     quantity: 1,
   };
@@ -64,7 +65,7 @@ export const createMetadata = (data: CheckoutData): Record<string, string> => {
     userId: data.userId,
     promoCodeId: data.promoCodeId || '',
     originalPrice: String(data.price),
-    finalPrice: String(data.finalPrice || data.price),
+    finalPrice: String(data.finalPrice),
     promoCode: data.promoCode || ''
   };
 };

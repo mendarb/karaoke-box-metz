@@ -1,6 +1,6 @@
 export interface CheckoutData {
   price: number;
-  finalPrice?: number;
+  finalPrice: number;
   groupSize: string;
   duration: string;
   date: string;

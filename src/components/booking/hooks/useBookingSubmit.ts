@@ -1,8 +1,6 @@
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
 import { UseFormReturn } from "react-hook-form";
-import { checkTimeSlotAvailability } from "../utils/bookingValidation";
-import { useQuery } from "@tanstack/react-query";
 
 export const useBookingSubmit = (
   form: UseFormReturn<any>,
@@ -13,33 +11,15 @@ export const useBookingSubmit = (
 ) => {
   const { toast } = useToast();
 
-  const { data: settings } = useQuery({
-    queryKey: ['booking-settings'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('booking_settings')
-        .select('*')
-        .eq('key', 'booking_settings')
-        .maybeSingle();
-
-      if (error) throw error;
-      return data?.value;
-    },
-  });
-
   const handleSubmit = async (data: any) => {
     try {
       setIsSubmitting(true);
-      const finalPrice = form.getValues('finalPrice') || calculatedPrice;
+      const finalPrice = form.getValues('finalPrice');
       
-      console.log('Starting submission with data:', { 
-        ...data, 
-        groupSize, 
-        duration, 
-        calculatedPrice,
-        finalPrice,
-        promoCode: data.promoCode,
-        promoCodeId: data.promoCodeId
+      console.log('Submitting booking with prices:', {
+        originalPrice: calculatedPrice,
+        finalPrice: finalPrice,
+        promoCode: data.promoCode
       });
 
       // Vérifier si l'utilisateur est déjà connecté
@@ -99,17 +79,6 @@ export const useBookingSubmit = (
         return;
       }
 
-      const isAvailable = await checkTimeSlotAvailability(data.date, data.timeSlot, duration);
-      if (!isAvailable) {
-        console.log('Time slot not available');
-        toast({
-          title: "Créneau non disponible",
-          description: "Ce créneau n'est plus disponible. Veuillez en choisir un autre.",
-          variant: "destructive",
-        });
-        return;
-      }
-
       // Stocker les données de réservation et la session dans le localStorage
       const bookingData = {
         email: data.email,
@@ -120,9 +89,9 @@ export const useBookingSubmit = (
         duration,
         groupSize,
         price: calculatedPrice,
-        finalPrice: finalPrice,
+        finalPrice: finalPrice || calculatedPrice,
         message: data.message,
-        isTestMode: settings?.isTestMode || false,
+        isTestMode: false,
         userId: currentSession.user.id,
         promoCode: data.promoCode,
         promoCodeId: data.promoCodeId,
@@ -131,13 +100,7 @@ export const useBookingSubmit = (
         userEmail: data.email
       };
 
-      console.log('Storing booking data in localStorage:', bookingData);
-      localStorage.setItem('currentBookingSession', JSON.stringify({
-        session: currentSession,
-        bookingData
-      }));
-
-      console.log('Creating checkout session...');
+      console.log('Creating checkout session with data:', bookingData);
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
         body: JSON.stringify(bookingData)
       });

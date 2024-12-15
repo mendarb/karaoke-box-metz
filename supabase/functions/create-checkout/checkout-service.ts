@@ -14,7 +14,7 @@ export const createCheckoutSession = async (
     promoCode: data.promoCode
   });
 
-  const finalPrice = data.finalPrice || data.price;
+  const finalPrice = data.finalPrice !== undefined ? data.finalPrice : data.price;
   const metadata = createMetadata(data);
 
   // Configuration de base de la session
@@ -32,6 +32,7 @@ export const createCheckoutSession = async (
     payment_intent_data: {
       metadata: metadata,
     },
+    allow_promotion_codes: false, // Désactiver les codes promo Stripe car nous gérons nos propres codes
   };
 
   // Si le prix est 0 (réservation gratuite)

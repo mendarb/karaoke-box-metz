@@ -7,56 +7,40 @@ export const createCheckoutSession = async (
   data: CheckoutData,
   origin: string
 ): Promise<Stripe.Checkout.Session> => {
-  console.log('Création de la session de paiement avec les données:', {
+  console.log('Creating checkout session with data:', {
     originalPrice: data.price,
     finalPrice: data.finalPrice,
-    promoCodeId: data.promoCodeId,
     promoCode: data.promoCode
   });
 
   const metadata = createMetadata(data);
   const isFreeBooking = data.finalPrice === 0;
 
-  console.log('Mode de la session:', isFreeBooking ? 'setup' : 'payment');
-
   const sessionConfig: Stripe.Checkout.SessionCreateParams = {
-    mode: isFreeBooking ? 'setup' : 'payment',
+    mode: 'payment',
     success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}`,
     customer_email: data.userEmail,
     metadata,
     locale: 'fr',
     allow_promotion_codes: false,
-  };
-
-  if (!isFreeBooking) {
-    console.log('Configuration de la session payante');
-    sessionConfig.payment_method_types = ['card'];
-    const lineItem = createLineItem(data);
-    if (lineItem) {
-      sessionConfig.line_items = [lineItem];
-    }
-  } else {
-    console.log('Configuration de la session gratuite');
-    sessionConfig.payment_method_types = ['card'];
-    sessionConfig.submit_type = 'auto';
-    sessionConfig.line_items = [{
+    payment_method_types: ['card'],
+    line_items: [{
       price_data: {
         currency: 'eur',
-        unit_amount: 0,
+        unit_amount: isFreeBooking ? 0 : Math.round(data.finalPrice * 100),
         product_data: {
           name: `${data.isTestMode ? '[TEST] ' : ''}Karaoké BOX - MB EI`,
-          description: `${data.groupSize} personnes - ${data.duration}h - Gratuit avec le code ${data.promoCode}`,
+          description: `${data.groupSize} personnes - ${data.duration}h${isFreeBooking ? ` - Gratuit avec le code ${data.promoCode}` : ''}`,
           images: ['https://raw.githubusercontent.com/lovable-karaoke/assets/main/logo.png'],
         },
       },
       quantity: 1,
-    }];
-  }
+    }],
+  };
 
-  console.log('Configuration finale de la session:', {
+  console.log('Final session config:', {
     mode: sessionConfig.mode,
-    lineItems: sessionConfig.line_items,
     finalPrice: data.finalPrice,
     isFreeBooking
   });

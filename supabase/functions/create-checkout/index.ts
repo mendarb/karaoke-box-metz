@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { getStripeInstance } from './stripe-config.ts';
 import { createCheckoutSession } from './checkout-service.ts';
 import { CheckoutData } from './types.ts';
+import { getStripeInstance } from './stripe-config.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -22,17 +22,7 @@ serve(async (req) => {
     });
 
     const stripe = getStripeInstance(data.isTestMode);
-    const session = await createCheckoutSession(
-      stripe,
-      data,
-      req.headers.get('origin') || ''
-    );
-
-    console.log('Checkout session created:', {
-      sessionId: session.id,
-      mode: session.mode,
-      finalPrice: data.finalPrice
-    });
+    const session = await createCheckoutSession(stripe, data, req.headers.get('origin') || '');
 
     return new Response(
       JSON.stringify({ url: session.url }),

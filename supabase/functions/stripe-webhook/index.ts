@@ -5,7 +5,7 @@ import { handleWebhook } from './webhook-handler.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, stripe-signature',
 };
 
 serve(async (req) => {
@@ -15,46 +15,44 @@ serve(async (req) => {
     }
 
     const signature = req.headers.get('stripe-signature');
-    if (!signature) {
-      console.error('❌ No Stripe signature found');
-      return new Response(
-        JSON.stringify({ error: 'No signature' }), 
-        { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
-    const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
-    if (!webhookSecret) {
-      console.error('❌ Webhook secret not configured');
-      return new Response(
-        JSON.stringify({ error: 'Webhook secret not configured' }), 
-        { 
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
     const body = await req.text();
     const eventData = JSON.parse(body);
+
+    // Gestion spéciale pour les réservations gratuites
+    if (signature === 'free-booking') {
+      console.log('Processing free booking webhook');
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+      const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+      if (!supabaseUrl || !supabaseServiceRoleKey) {
+        throw new Error('Missing Supabase credentials');
+      }
+
+      const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+      const result = await handleWebhook(eventData, null, supabase);
+
+      return new Response(
+        JSON.stringify(result),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200 
+        }
+      );
+    }
+
+    // Traitement normal pour les réservations payantes
+    const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
+    if (!webhookSecret) {
+      throw new Error('Webhook secret not configured');
+    }
+
     const isTestMode = eventData.data.object?.metadata?.isTestMode === 'true';
-    
     const stripeSecretKey = isTestMode 
       ? Deno.env.get('STRIPE_TEST_SECRET_KEY')
       : Deno.env.get('STRIPE_SECRET_KEY');
 
     if (!stripeSecretKey) {
-      console.error('❌', isTestMode ? 'Test mode API key not configured' : 'Live mode API key not configured');
-      return new Response(
-        JSON.stringify({ error: 'Stripe API key not configured' }), 
-        { 
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
+      throw new Error(isTestMode ? 'Test mode API key not configured' : 'Live mode API key not configured');
     }
 
     const stripe = new Stripe(stripeSecretKey, {
@@ -66,7 +64,7 @@ serve(async (req) => {
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
     } catch (err) {
-      console.error('❌ Webhook signature verification failed:', err);
+      console.error('Webhook signature verification failed:', err);
       return new Response(
         JSON.stringify({ error: err.message }), 
         { 
@@ -80,14 +78,7 @@ serve(async (req) => {
     const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!supabaseUrl || !supabaseServiceRoleKey) {
-      console.error('❌ Missing Supabase credentials');
-      return new Response(
-        JSON.stringify({ error: 'Server configuration error' }), 
-        { 
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
+      throw new Error('Missing Supabase credentials');
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
@@ -101,7 +92,7 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('❌ Fatal error in webhook:', error);
+    console.error('Fatal error in webhook:', error);
     return new Response(
       JSON.stringify({ error: error.message }), 
       { 

@@ -17,6 +17,14 @@ export const handleWebhook = async (
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
       
+      console.log('Session data:', {
+        id: session.id,
+        metadata: session.metadata,
+        paymentStatus: session.payment_status,
+        amountTotal: session.amount_total,
+        customerEmail: session.customer_email
+      });
+
       // Pour les réservations gratuites, on considère le paiement comme complété
       const isFreeBooking = session.amount_total === 0;
       if (!isFreeBooking && session.payment_status !== 'paid') {

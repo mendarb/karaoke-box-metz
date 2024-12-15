@@ -16,7 +16,7 @@ export const useBookingSubmit = (
       setIsSubmitting(true);
       
       // S'assurer que nous avons le bon prix final
-      const finalPrice = form.getValues('finalPrice');
+      const finalPrice = form.getValues('finalPrice') || calculatedPrice;
       console.log('Prix initial de la réservation:', {
         calculatedPrice,
         finalPrice,
@@ -25,6 +25,7 @@ export const useBookingSubmit = (
 
       // Vérifier si l'utilisateur est déjà connecté
       const { data: { session } } = await supabase.auth.getSession();
+      console.log('Session utilisateur:', session);
       
       // Si l'utilisateur n'est pas connecté et souhaite créer un compte
       if (!session?.access_token && data.createAccount && data.password) {
@@ -107,9 +108,17 @@ export const useBookingSubmit = (
         body: JSON.stringify(bookingData)
       });
 
-      if (checkoutError) throw checkoutError;
-      if (!checkoutData?.url) throw new Error("URL de paiement non reçue");
+      if (checkoutError) {
+        console.error('Checkout error:', checkoutError);
+        throw checkoutError;
+      }
+      
+      if (!checkoutData?.url) {
+        console.error('No checkout URL received');
+        throw new Error("URL de paiement non reçue");
+      }
 
+      console.log('Redirection vers:', checkoutData.url);
       window.location.href = checkoutData.url;
       
     } catch (error: any) {

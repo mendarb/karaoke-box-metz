@@ -43,5 +43,6 @@ export const createBooking = async (
     throw bookingError;
   }
 
+  console.log('✅ Booking created successfully:', booking);
   return booking;
 };

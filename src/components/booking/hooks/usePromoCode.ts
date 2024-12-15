@@ -22,6 +22,7 @@ export const usePromoCode = (
 
   const calculateFinalPrice = (promoCode: any) => {
     if (!promoCode) {
+      console.log('No promo code, using original price:', calculatedPrice);
       setFinalPrice(calculatedPrice);
       form.setValue('finalPrice', calculatedPrice);
       return;
@@ -29,26 +30,34 @@ export const usePromoCode = (
 
     let newPrice = calculatedPrice;
     
-    if (promoCode.type === 'percentage' && promoCode.value) {
+    console.log('Calculating price with promo code:', {
+      type: promoCode.type,
+      value: promoCode.value,
+      originalPrice: calculatedPrice
+    });
+
+    if (promoCode.type === 'free') {
+      console.log('Applying free promo code');
+      newPrice = 0;
+    } else if (promoCode.type === 'percentage' && promoCode.value) {
+      console.log('Applying percentage discount:', promoCode.value);
       newPrice = calculatedPrice * (1 - promoCode.value / 100);
     } else if (promoCode.type === 'fixed_amount' && promoCode.value) {
+      console.log('Applying fixed amount discount:', promoCode.value);
       newPrice = Math.max(0, calculatedPrice - promoCode.value);
-    } else if (promoCode.type === 'free') {
-      newPrice = 0;
     }
     
-    console.log('Calculating final price:', {
+    console.log('Final price calculation:', {
       originalPrice: calculatedPrice,
       promoType: promoCode.type,
       promoValue: promoCode.value,
-      newPrice,
-      promoCode
+      newPrice
     });
     
     const roundedPrice = Math.round(newPrice * 100) / 100;
-    setFinalPrice(roundedPrice);
+    console.log('Setting final price to:', roundedPrice);
     
-    // Mise à jour du prix final dans le formulaire
+    setFinalPrice(roundedPrice);
     form.setValue('finalPrice', roundedPrice);
   };
 
@@ -58,11 +67,13 @@ export const usePromoCode = (
     setPromoData(promoCode);
     
     if (!isValid) {
+      console.log('Invalid promo code, resetting to original price:', calculatedPrice);
       setFinalPrice(calculatedPrice);
       form.setValue('finalPrice', calculatedPrice);
       form.setValue('promoCode', '');
       form.setValue('promoCodeId', null);
     } else {
+      console.log('Valid promo code, updating form values:', promoCode);
       form.setValue('promoCode', promoCode.code);
       form.setValue('promoCodeId', promoCode.id);
       calculateFinalPrice(promoCode);

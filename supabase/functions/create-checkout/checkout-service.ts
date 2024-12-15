@@ -11,11 +11,19 @@ export const createCheckoutSession = async (
     originalPrice: data.price,
     finalPrice: data.finalPrice,
     promoCode: data.promoCode,
-    promoCodeId: data.promoCodeId
+    promoCodeId: data.promoCodeId,
+    metadata: createMetadata(data)
   });
 
   const metadata = createMetadata(data);
   const isFreeBooking = data.finalPrice === 0;
+
+  // Format price description based on promo code
+  let priceDescription = `${data.groupSize} personnes - ${data.duration}h`;
+  if (data.promoCode) {
+    const discount = ((data.price - data.finalPrice) / data.price * 100).toFixed(0);
+    priceDescription += ` (-${discount}% avec ${data.promoCode})`;
+  }
 
   const sessionConfig: Stripe.Checkout.SessionCreateParams = {
     mode: 'payment',
@@ -29,10 +37,10 @@ export const createCheckoutSession = async (
     line_items: [{
       price_data: {
         currency: 'eur',
-        unit_amount: Math.round(data.finalPrice * 100),
+        unit_amount: Math.round(data.finalPrice * 100), // Convert to cents
         product_data: {
           name: `${data.isTestMode ? '[TEST] ' : ''}Karaoké BOX - MB EI`,
-          description: `${data.groupSize} personnes - ${data.duration}h${isFreeBooking ? ` - Gratuit avec le code ${data.promoCode}` : ''}`,
+          description: priceDescription,
           images: ['https://raw.githubusercontent.com/lovable-karaoke/assets/main/logo.png'],
         },
       },
@@ -43,15 +51,19 @@ export const createCheckoutSession = async (
   console.log('Final session config:', {
     mode: sessionConfig.mode,
     finalPrice: data.finalPrice,
+    unitAmount: Math.round(data.finalPrice * 100),
     isFreeBooking,
     metadata: sessionConfig.metadata,
     promoDetails: {
       code: data.promoCode,
-      id: data.promoCodeId
+      id: data.promoCodeId,
+      originalPrice: data.price,
+      finalPrice: data.finalPrice
     }
   });
 
   const session = await stripe.checkout.sessions.create(sessionConfig);
+  console.log('Stripe session created:', session.id);
 
   if (isFreeBooking) {
     console.log('Free booking - simulating webhook');

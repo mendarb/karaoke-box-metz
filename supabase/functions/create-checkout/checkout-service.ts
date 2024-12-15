@@ -47,6 +47,11 @@ export const createCheckoutSession = async (
     }
   }
 
-  console.log('Creating Stripe session with config:', sessionConfig);
+  console.log('Creating Stripe session with config:', {
+    ...sessionConfig,
+    lineItems: sessionConfig.line_items,
+    finalPrice: data.finalPrice
+  });
+  
   return await stripe.checkout.sessions.create(sessionConfig);
 };

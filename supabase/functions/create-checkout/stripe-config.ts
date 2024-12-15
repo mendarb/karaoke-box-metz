@@ -60,6 +60,7 @@ export const createMetadata = (data: CheckoutData): Record<string, string> => {
     userId: data.userId,
     promoCodeId: data.promoCodeId || '',
     originalPrice: String(data.price),
-    finalPrice: String(data.finalPrice || data.price)
+    finalPrice: String(data.finalPrice || data.price),
+    promoCode: data.promoCode || ''
   };
 };

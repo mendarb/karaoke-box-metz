@@ -12,6 +12,7 @@ export interface CheckoutData {
   isTestMode: boolean;
   userId: string;
   promoCodeId?: string;
+  promoCode?: string;
 }
 
 export interface StripeMetadata {
@@ -25,6 +26,7 @@ export interface StripeMetadata {
   isTestMode: string;
   userId: string;
   promoCodeId?: string;
+  promoCode?: string;
   originalPrice: string;
   finalPrice: string;
 }

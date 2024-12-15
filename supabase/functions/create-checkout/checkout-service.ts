@@ -10,10 +10,12 @@ export const createCheckoutSession = async (
   console.log('Creating checkout session with data:', {
     originalPrice: data.price,
     finalPrice: data.finalPrice || data.price,
-    promoCodeId: data.promoCodeId
+    promoCodeId: data.promoCodeId,
+    promoCode: data.promoCode
   });
 
   const finalPrice = data.finalPrice || data.price;
+  const metadata = createMetadata(data);
 
   // Configuration de base de la session
   const sessionConfig: Stripe.Checkout.SessionCreateParams = {
@@ -21,11 +23,14 @@ export const createCheckoutSession = async (
     success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}`,
     customer_email: data.userEmail,
-    metadata: createMetadata(data),
+    metadata: metadata,
     payment_method_types: ['card'],
     locale: 'fr',
     invoice_creation: {
       enabled: true,
+    },
+    payment_intent_data: {
+      metadata: metadata,
     },
   };
 
@@ -34,9 +39,6 @@ export const createCheckoutSession = async (
     console.log('Creating free booking session');
     sessionConfig.submit_type = 'auto';
     sessionConfig.payment_method_types = [];
-    sessionConfig.payment_intent_data = {
-      metadata: createMetadata(data)
-    };
   } else {
     // Sinon, créer un line item pour le paiement
     const lineItem = createLineItem(data);

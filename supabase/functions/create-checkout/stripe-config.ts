@@ -39,7 +39,6 @@ export const createLineItem = (data: CheckoutData) => {
   const discountPercentage = Math.round((1 - data.finalPrice/data.price) * 100);
   const discountText = data.finalPrice < data.price ? ` (-${discountPercentage}%)` : '';
   
-  // Créer un produit unique pour cette réservation
   return {
     price_data: {
       currency: 'eur',

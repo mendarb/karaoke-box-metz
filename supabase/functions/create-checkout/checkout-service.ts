@@ -18,12 +18,11 @@ export const createCheckoutSession = async (
 
   // Configuration de base de la session
   const sessionConfig: Stripe.Checkout.SessionCreateParams = {
-    mode: 'payment',
+    mode: data.finalPrice === 0 ? 'setup' : 'payment',
     success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}`,
     customer_email: data.userEmail,
     metadata: metadata,
-    payment_method_types: ['card'],
     locale: 'fr',
     invoice_creation: {
       enabled: true,
@@ -38,9 +37,10 @@ export const createCheckoutSession = async (
   if (data.finalPrice === 0) {
     console.log('Creating free booking session');
     sessionConfig.submit_type = 'auto';
-    sessionConfig.payment_method_types = [];
   } else {
     // Sinon, créer un line item pour le paiement
+    console.log('Creating paid booking session');
+    sessionConfig.payment_method_types = ['card'];
     const lineItem = createLineItem(data);
     if (lineItem) {
       sessionConfig.line_items = [lineItem];
@@ -49,6 +49,7 @@ export const createCheckoutSession = async (
 
   console.log('Creating Stripe session with config:', {
     ...sessionConfig,
+    mode: sessionConfig.mode,
     lineItems: sessionConfig.line_items,
     finalPrice: data.finalPrice
   });

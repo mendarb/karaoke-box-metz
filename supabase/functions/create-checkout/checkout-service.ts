@@ -7,7 +7,7 @@ export const createCheckoutSession = async (
   data: CheckoutData,
   origin: string
 ): Promise<Stripe.Checkout.Session> => {
-  console.log('Creating checkout session with data:', {
+  console.log('Création de la session de paiement avec les données:', {
     originalPrice: data.price,
     finalPrice: data.finalPrice,
     promoCodeId: data.promoCodeId,
@@ -17,7 +17,7 @@ export const createCheckoutSession = async (
   const metadata = createMetadata(data);
   const isFreeBooking = data.finalPrice === 0;
 
-  console.log('Creating session config with mode:', isFreeBooking ? 'setup' : 'payment');
+  console.log('Mode de la session:', isFreeBooking ? 'setup' : 'payment');
 
   const sessionConfig: Stripe.Checkout.SessionCreateParams = {
     mode: isFreeBooking ? 'setup' : 'payment',
@@ -26,25 +26,25 @@ export const createCheckoutSession = async (
     customer_email: data.userEmail,
     metadata,
     locale: 'fr',
-    payment_intent_data: {
+    payment_intent_data: isFreeBooking ? undefined : {
       metadata,
     },
     allow_promotion_codes: false,
   };
 
-  if (isFreeBooking) {
-    console.log('Configuring free booking session');
-    sessionConfig.submit_type = 'auto';
-  } else {
-    console.log('Configuring paid booking session');
+  if (!isFreeBooking) {
+    console.log('Configuration de la session payante');
     sessionConfig.payment_method_types = ['card'];
     const lineItem = createLineItem(data);
     if (lineItem) {
       sessionConfig.line_items = [lineItem];
     }
+  } else {
+    console.log('Configuration de la session gratuite');
+    sessionConfig.submit_type = 'auto';
   }
 
-  console.log('Final session config:', {
+  console.log('Configuration finale de la session:', {
     mode: sessionConfig.mode,
     lineItems: sessionConfig.line_items,
     finalPrice: data.finalPrice,

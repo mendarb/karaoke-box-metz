@@ -14,12 +14,13 @@ export const useBookingSubmit = (
   const handleSubmit = async (data: any) => {
     try {
       setIsSubmitting(true);
-      const finalPrice = form.getValues('finalPrice');
       
-      console.log('Submitting booking with prices:', {
-        originalPrice: calculatedPrice,
-        finalPrice: finalPrice,
-        promoCode: data.promoCode
+      // S'assurer que nous avons le bon prix final
+      const finalPrice = form.getValues('finalPrice');
+      console.log('Prix initial de la réservation:', {
+        calculatedPrice,
+        finalPrice,
+        formValues: form.getValues()
       });
 
       // Vérifier si l'utilisateur est déjà connecté
@@ -79,7 +80,7 @@ export const useBookingSubmit = (
         return;
       }
 
-      // Stocker les données de réservation et la session dans le localStorage
+      // Préparer les données de réservation
       const bookingData = {
         email: data.email,
         fullName: data.fullName,
@@ -89,7 +90,7 @@ export const useBookingSubmit = (
         duration,
         groupSize,
         price: calculatedPrice,
-        finalPrice: finalPrice || calculatedPrice,
+        finalPrice: finalPrice !== undefined ? finalPrice : calculatedPrice,
         message: data.message,
         isTestMode: false,
         userId: currentSession.user.id,
@@ -100,12 +101,11 @@ export const useBookingSubmit = (
         userEmail: data.email
       };
 
-      console.log('Creating checkout session with data:', bookingData);
+      console.log('Création de la session de paiement avec les données:', bookingData);
+      
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
         body: JSON.stringify(bookingData)
       });
-
-      console.log('Checkout response:', { checkoutData, checkoutError });
 
       if (checkoutError) throw checkoutError;
       if (!checkoutData?.url) throw new Error("URL de paiement non reçue");

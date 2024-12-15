@@ -1,9 +1,23 @@
 import { Loader2 } from "lucide-react";
 import { BookingCard } from "./history/BookingCard";
 import { useBookingHistory } from "./history/useBookingHistory";
+import { useToast } from "@/components/ui/use-toast";
+import { useEffect } from "react";
 
 export const BookingHistory = () => {
-  const { data: bookings, isLoading } = useBookingHistory();
+  const { data: bookings, isLoading, error } = useBookingHistory();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (error) {
+      console.error('Error fetching bookings:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger vos réservations",
+        variant: "destructive",
+      });
+    }
+  }, [error, toast]);
 
   if (isLoading) {
     return (

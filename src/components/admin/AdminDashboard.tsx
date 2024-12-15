@@ -8,15 +8,17 @@ import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { AdminLoadingState } from "./AdminLoadingState";
 import { DashboardLayout } from "./dashboard/DashboardLayout";
 import { DashboardContent } from "./dashboard/DashboardContent";
+import { useToast } from "@/components/ui/use-toast";
 
 export const AdminDashboard = () => {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const { isAdmin, user } = useUserState();
+  const { toast } = useToast();
   
   useAdminCheck();
 
   const { data: bookings = [], isLoading, error } = useQuery({
-    queryKey: ['bookings'],
+    queryKey: ['admin-bookings'],
     queryFn: async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -51,6 +53,11 @@ export const AdminDashboard = () => {
   });
 
   if (error) {
+    toast({
+      title: "Erreur",
+      description: "Une erreur est survenue lors du chargement des réservations",
+      variant: "destructive",
+    });
     return (
       <div className="p-6">
         <h1>Erreur de chargement</h1>

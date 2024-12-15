@@ -26,9 +26,6 @@ export const createCheckoutSession = async (
     customer_email: data.userEmail,
     metadata,
     locale: 'fr',
-    payment_intent_data: isFreeBooking ? undefined : {
-      metadata,
-    },
     allow_promotion_codes: false,
   };
 
@@ -41,7 +38,20 @@ export const createCheckoutSession = async (
     }
   } else {
     console.log('Configuration de la session gratuite');
+    sessionConfig.payment_method_types = ['card'];
     sessionConfig.submit_type = 'auto';
+    sessionConfig.line_items = [{
+      price_data: {
+        currency: 'eur',
+        unit_amount: 0,
+        product_data: {
+          name: `${data.isTestMode ? '[TEST] ' : ''}Karaoké BOX - MB EI`,
+          description: `${data.groupSize} personnes - ${data.duration}h - Gratuit avec le code ${data.promoCode}`,
+          images: ['https://raw.githubusercontent.com/lovable-karaoke/assets/main/logo.png'],
+        },
+      },
+      quantity: 1,
+    }];
   }
 
   console.log('Configuration finale de la session:', {

@@ -17,14 +17,8 @@ export const getStripeInstance = (isTestMode: boolean): Stripe => {
 };
 
 export const createLineItem = (data: CheckoutData) => {
-  console.log('Creating line item with prices:', {
-    originalPrice: data.price,
-    finalPrice: data.finalPrice,
-    promoCode: data.promoCode
-  });
-  
-  // Si le montant est 0 (code promo gratuit), on ne crée pas de line item
   if (data.finalPrice === 0) {
+    console.log('Skipping line item creation for free booking');
     return null;
   }
 
@@ -39,10 +33,16 @@ export const createLineItem = (data: CheckoutData) => {
   const discountPercentage = Math.round((1 - data.finalPrice/data.price) * 100);
   const discountText = data.finalPrice < data.price ? ` (-${discountPercentage}%)` : '';
   
+  console.log('Creating line item:', {
+    finalPrice: data.finalPrice,
+    description,
+    discountText
+  });
+
   return {
     price_data: {
       currency: 'eur',
-      unit_amount: Math.round(data.finalPrice * 100), // Stripe attend le montant en centimes
+      unit_amount: Math.round(data.finalPrice * 100),
       product_data: {
         name: `${data.isTestMode ? '[TEST] ' : ''}Karaoké BOX - MB EI`,
         description: `${description} - ${formattedDate} ${data.timeSlot}h${discountText}${data.promoCode ? ` (Code: ${data.promoCode})` : ''}`,

@@ -15,31 +15,28 @@ export const createCheckoutSession = async (
   });
 
   const metadata = createMetadata(data);
+  const isFreeBooking = data.finalPrice === 0;
 
-  // Configuration de base de la session
+  console.log('Creating session config with mode:', isFreeBooking ? 'setup' : 'payment');
+
   const sessionConfig: Stripe.Checkout.SessionCreateParams = {
-    mode: data.finalPrice === 0 ? 'setup' : 'payment',
+    mode: isFreeBooking ? 'setup' : 'payment',
     success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}`,
     customer_email: data.userEmail,
-    metadata: metadata,
+    metadata,
     locale: 'fr',
-    invoice_creation: {
-      enabled: true,
-    },
     payment_intent_data: {
-      metadata: metadata,
+      metadata,
     },
-    allow_promotion_codes: false, // Désactiver les codes promo Stripe
+    allow_promotion_codes: false,
   };
 
-  // Si le prix est 0 (réservation gratuite)
-  if (data.finalPrice === 0) {
-    console.log('Creating free booking session');
+  if (isFreeBooking) {
+    console.log('Configuring free booking session');
     sessionConfig.submit_type = 'auto';
   } else {
-    // Sinon, créer un line item pour le paiement
-    console.log('Creating paid booking session');
+    console.log('Configuring paid booking session');
     sessionConfig.payment_method_types = ['card'];
     const lineItem = createLineItem(data);
     if (lineItem) {
@@ -47,12 +44,12 @@ export const createCheckoutSession = async (
     }
   }
 
-  console.log('Creating Stripe session with config:', {
-    ...sessionConfig,
+  console.log('Final session config:', {
     mode: sessionConfig.mode,
     lineItems: sessionConfig.line_items,
-    finalPrice: data.finalPrice
+    finalPrice: data.finalPrice,
+    isFreeBooking
   });
-  
+
   return await stripe.checkout.sessions.create(sessionConfig);
 };

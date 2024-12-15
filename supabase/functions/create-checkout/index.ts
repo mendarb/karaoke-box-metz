@@ -15,8 +15,13 @@ serve(async (req) => {
 
   try {
     const data: CheckoutData = await req.json();
+    console.log('Received checkout request:', {
+      price: data.price,
+      finalPrice: data.finalPrice,
+      promoCode: data.promoCode
+    });
+
     const stripe = getStripeInstance(data.isTestMode);
-    
     const session = await createCheckoutSession(
       stripe,
       data,
@@ -25,9 +30,8 @@ serve(async (req) => {
 
     console.log('Checkout session created:', {
       sessionId: session.id,
-      mode: data.isTestMode ? 'test' : 'live',
-      email: data.userEmail,
-      metadata: session.metadata
+      mode: session.mode,
+      finalPrice: data.finalPrice
     });
 
     return new Response(

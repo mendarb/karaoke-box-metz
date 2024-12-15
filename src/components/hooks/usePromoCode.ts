@@ -29,6 +29,7 @@ export const usePromoCode = (
     }
 
     let newPrice = calculatedPrice;
+    let discountAmount = 0;
     
     console.log('Calculating price with promo code:', {
       type: promoCode.type,
@@ -39,11 +40,14 @@ export const usePromoCode = (
     if (promoCode.type === 'free') {
       console.log('Applying free promo code');
       newPrice = 0;
+      discountAmount = 100;
     } else if (promoCode.type === 'percentage' && promoCode.value) {
       console.log('Applying percentage discount:', promoCode.value);
+      discountAmount = promoCode.value;
       newPrice = calculatedPrice * (1 - promoCode.value / 100);
     } else if (promoCode.type === 'fixed_amount' && promoCode.value) {
       console.log('Applying fixed amount discount:', promoCode.value);
+      discountAmount = (promoCode.value / calculatedPrice) * 100;
       newPrice = Math.max(0, calculatedPrice - promoCode.value);
     }
     
@@ -51,6 +55,7 @@ export const usePromoCode = (
       originalPrice: calculatedPrice,
       promoType: promoCode.type,
       promoValue: promoCode.value,
+      discountAmount,
       newPrice
     });
     
@@ -59,6 +64,7 @@ export const usePromoCode = (
     
     setFinalPrice(roundedPrice);
     form.setValue('finalPrice', roundedPrice);
+    form.setValue('discountAmount', discountAmount);
   };
 
   const handlePromoValidated = (isValid: boolean, promoCode?: any) => {
@@ -72,6 +78,7 @@ export const usePromoCode = (
       form.setValue('finalPrice', calculatedPrice);
       form.setValue('promoCode', '');
       form.setValue('promoCodeId', null);
+      form.setValue('discountAmount', 0);
     } else {
       console.log('Valid promo code, updating form values:', promoCode);
       form.setValue('promoCode', promoCode.code);

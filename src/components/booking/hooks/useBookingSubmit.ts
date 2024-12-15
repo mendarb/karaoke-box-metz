@@ -19,12 +19,14 @@ export const useBookingSubmit = (
       const finalPrice = form.getValues('finalPrice') || calculatedPrice;
       const promoCode = form.getValues('promoCode');
       const promoCodeId = form.getValues('promoCodeId');
+      const discountAmount = form.getValues('discountAmount') || 0;
 
       console.log('Prix initial de la réservation:', {
         calculatedPrice,
         finalPrice,
         promoCode,
         promoCodeId,
+        discountAmount,
         formValues: form.getValues()
       });
 
@@ -104,7 +106,8 @@ export const useBookingSubmit = (
         promoCodeId,
         userName: data.fullName,
         userPhone: data.phone,
-        userEmail: data.email
+        userEmail: data.email,
+        discountAmount
       };
 
       console.log('Création de la session de paiement avec les données:', bookingData);

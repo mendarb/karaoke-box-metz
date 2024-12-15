@@ -21,7 +21,7 @@ export const createCheckoutSession = async (
   // Format price description based on promo code
   let priceDescription = `${data.groupSize} personnes - ${data.duration}h`;
   if (data.promoCode) {
-    const discount = ((data.price - data.finalPrice) / data.price * 100).toFixed(0);
+    const discount = Math.round(((data.price - data.finalPrice) / data.price) * 100);
     priceDescription += ` (-${discount}% avec ${data.promoCode})`;
   }
 
@@ -58,7 +58,8 @@ export const createCheckoutSession = async (
       code: data.promoCode,
       id: data.promoCodeId,
       originalPrice: data.price,
-      finalPrice: data.finalPrice
+      finalPrice: data.finalPrice,
+      description: priceDescription
     }
   });
 

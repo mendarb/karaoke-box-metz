@@ -15,13 +15,16 @@ export const useBookingSubmit = (
     try {
       setIsSubmitting(true);
       
-      // S'assurer que nous avons le bon prix final
+      // Récupérer le prix final (avec ou sans code promo)
       const finalPrice = form.getValues('finalPrice') || calculatedPrice;
+      const promoCode = form.getValues('promoCode');
+      const promoCodeId = form.getValues('promoCodeId');
+
       console.log('Prix initial de la réservation:', {
         calculatedPrice,
         finalPrice,
-        promoCode: form.getValues('promoCode'),
-        promoCodeId: form.getValues('promoCodeId'),
+        promoCode,
+        promoCodeId,
         formValues: form.getValues()
       });
 
@@ -93,12 +96,12 @@ export const useBookingSubmit = (
         duration,
         groupSize,
         price: calculatedPrice,
-        finalPrice: finalPrice !== undefined ? finalPrice : calculatedPrice,
+        finalPrice,
         message: data.message,
         isTestMode: false,
         userId: currentSession.user.id,
-        promoCode: data.promoCode,
-        promoCodeId: data.promoCodeId,
+        promoCode,
+        promoCodeId,
         userName: data.fullName,
         userPhone: data.phone,
         userEmail: data.email

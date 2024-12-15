@@ -30,6 +30,7 @@ export const createMetadata = (data: CheckoutData): Record<string, string> => {
     promoCodeId: data.promoCodeId || '',
     originalPrice: String(data.price),
     finalPrice: String(data.finalPrice),
-    promoCode: data.promoCode || ''
+    promoCode: data.promoCode || '',
+    discountAmount: data.discountAmount ? String(data.discountAmount) : '0'
   };
 };

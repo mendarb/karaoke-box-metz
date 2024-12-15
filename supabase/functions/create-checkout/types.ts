@@ -13,6 +13,7 @@ export interface CheckoutData {
   userId: string;
   promoCodeId?: string;
   promoCode?: string;
+  discountAmount?: number;
 }
 
 export interface StripeMetadata {
@@ -29,4 +30,5 @@ export interface StripeMetadata {
   promoCode?: string;
   originalPrice: string;
   finalPrice: string;
+  discountAmount?: string;
 }

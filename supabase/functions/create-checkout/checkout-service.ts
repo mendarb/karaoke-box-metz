@@ -12,6 +12,7 @@ export const createCheckoutSession = async (
     finalPrice: data.finalPrice,
     promoCode: data.promoCode,
     promoCodeId: data.promoCodeId,
+    discountAmount: data.discountAmount,
     metadata: createMetadata(data)
   });
 
@@ -20,9 +21,8 @@ export const createCheckoutSession = async (
 
   // Format price description based on promo code
   let priceDescription = `${data.groupSize} personnes - ${data.duration}h`;
-  if (data.promoCode) {
-    const discount = Math.round(((data.price - data.finalPrice) / data.price) * 100);
-    priceDescription += ` (-${discount}% avec ${data.promoCode})`;
+  if (data.promoCode && data.discountAmount) {
+    priceDescription += ` (-${Math.round(data.discountAmount)}% avec ${data.promoCode})`;
   }
 
   const sessionConfig: Stripe.Checkout.SessionCreateParams = {
@@ -59,6 +59,7 @@ export const createCheckoutSession = async (
       id: data.promoCodeId,
       originalPrice: data.price,
       finalPrice: data.finalPrice,
+      discountAmount: data.discountAmount,
       description: priceDescription
     }
   });

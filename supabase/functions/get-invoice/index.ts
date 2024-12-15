@@ -1,5 +1,5 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@14.21.0";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import Stripe from 'https://esm.sh/stripe@14.21.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,85 +13,58 @@ serve(async (req) => {
 
   try {
     const { bookingId, paymentIntentId } = await req.json();
-    console.log('Getting invoice for booking:', { bookingId, paymentIntentId });
+    console.log('Getting invoice for:', { bookingId, paymentIntentId });
 
     if (!paymentIntentId) {
       throw new Error('Payment intent ID is required');
     }
 
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+    const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY');
+    if (!stripeSecretKey) {
+      throw new Error('Stripe secret key not configured');
+    }
+
+    const stripe = new Stripe(stripeSecretKey, {
       apiVersion: '2023-10-16',
       httpClient: Stripe.createFetchHttpClient(),
     });
 
-    // Récupérer le payment intent
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-    console.log('Payment intent retrieved:', {
-      id: paymentIntent.id,
-      invoice: paymentIntent.invoice,
-      customer: paymentIntent.customer
+    // Récupérer la facture associée au paiement
+    const invoices = await stripe.invoices.list({
+      payment_intent: paymentIntentId,
     });
 
-    // Si une facture existe déjà, la récupérer
-    if (paymentIntent.invoice) {
-      const invoice = await stripe.invoices.retrieve(paymentIntent.invoice as string);
-      console.log('Existing invoice retrieved:', invoice.id);
-
-      return new Response(
-        JSON.stringify({ url: invoice.invoice_pdf }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200 
-        }
-      );
+    if (!invoices.data.length) {
+      throw new Error('No invoice found for this payment');
     }
 
-    // Si pas de facture, en créer une nouvelle
-    console.log('Creating new invoice for payment intent:', paymentIntent.id);
-    const invoice = await stripe.invoices.create({
-      customer: paymentIntent.customer as string,
-      auto_advance: true,
-      collection_method: 'charge_automatically',
-      metadata: paymentIntent.metadata,
+    const invoice = invoices.data[0];
+    console.log('Invoice found:', invoice.id);
+
+    // Générer l'URL de téléchargement de la facture
+    const invoicePdf = await stripe.invoices.retrieve(invoice.id, {
+      expand: ['invoice_pdf'],
     });
 
-    // Ajouter le payment intent à la facture
-    await stripe.invoiceItems.create({
-      customer: paymentIntent.customer as string,
-      invoice: invoice.id,
-      amount: paymentIntent.amount,
-      currency: paymentIntent.currency,
-      description: `Réservation Karaoké BOX - ${paymentIntent.metadata?.date || 'N/A'}`,
-    });
-
-    // Finaliser et payer la facture
-    await stripe.invoices.finalizeInvoice(invoice.id);
-    await stripe.invoices.pay(invoice.id);
-
-    // Récupérer la facture mise à jour
-    const finalInvoice = await stripe.invoices.retrieve(invoice.id);
-    console.log('Invoice created and finalized:', {
-      id: finalInvoice.id,
-      status: finalInvoice.status,
-      pdfUrl: finalInvoice.invoice_pdf
-    });
+    if (!invoicePdf.invoice_pdf) {
+      throw new Error('Invoice PDF not available');
+    }
 
     return new Response(
-      JSON.stringify({ url: finalInvoice.invoice_pdf }),
-      { 
+      JSON.stringify({ url: invoicePdf.invoice_pdf }),
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
+        status: 200,
+      },
     );
-
   } catch (error) {
     console.error('Error getting invoice:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
-      { 
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400 
-      }
+        status: 400,
+      },
     );
   }
 });

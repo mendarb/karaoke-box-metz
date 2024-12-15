@@ -27,24 +27,26 @@ export const handleWebhook = async (
 
       // Pour les réservations gratuites, on considère le paiement comme complété
       const isFreeBooking = session.amount_total === 0;
-      if (!isFreeBooking && session.payment_status !== 'paid') {
-        console.log('⚠️ Skipping unpaid session');
-        return { received: true };
+      
+      // On vérifie si c'est une réservation gratuite ou si le paiement est complété
+      if (isFreeBooking || session.payment_status === 'paid') {
+        console.log('Creating booking with session:', {
+          sessionId: session.id,
+          metadata: session.metadata,
+          isFreeBooking
+        });
+
+        const booking = await createBooking(session, supabase);
+        console.log('✅ Booking created:', booking);
+
+        await sendConfirmationEmail(booking, supabase);
+        console.log('📧 Confirmation email sent');
+
+        return { received: true, booking };
       }
 
-      console.log('Creating booking with session:', {
-        sessionId: session.id,
-        metadata: session.metadata,
-        isFreeBooking
-      });
-
-      const booking = await createBooking(session, supabase);
-      console.log('✅ Booking created:', booking);
-
-      await sendConfirmationEmail(booking, supabase);
-      console.log('📧 Confirmation email sent');
-
-      return { received: true, booking };
+      console.log('⚠️ Skipping unpaid session');
+      return { received: true };
     }
 
     console.log(`⚠️ Unhandled event type: ${event.type}`);

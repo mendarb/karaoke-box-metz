@@ -19,30 +19,35 @@ export const createBooking = async (
     duration: metadata.duration,
     group_size: metadata.groupSize,
     status: 'confirmed',
-    price: session.amount_total ? session.amount_total / 100 : 0,
+    price: parseFloat(metadata.finalPrice),
     message: metadata.message || null,
     user_email: session.customer_email,
     user_name: metadata.userName,
     user_phone: metadata.userPhone,
     payment_status: session.amount_total === 0 ? 'paid' : session.payment_status,
     is_test_booking: metadata.isTestMode === 'true',
-    payment_intent_id: session.payment_intent,
+    payment_intent_id: session.payment_intent || null,
     promo_code_id: metadata.promoCodeId || null
   };
 
   console.log('📝 Creating booking with data:', bookingData);
 
-  const { data: booking, error: bookingError } = await supabase
-    .from('bookings')
-    .insert([bookingData])
-    .select()
-    .single();
+  try {
+    const { data: booking, error: bookingError } = await supabase
+      .from('bookings')
+      .insert([bookingData])
+      .select()
+      .single();
 
-  if (bookingError) {
-    console.error('❌ Error creating booking:', bookingError);
-    throw bookingError;
+    if (bookingError) {
+      console.error('❌ Error creating booking:', bookingError);
+      throw bookingError;
+    }
+
+    console.log('✅ Booking created successfully:', booking);
+    return booking;
+  } catch (error) {
+    console.error('❌ Error in createBooking:', error);
+    throw error;
   }
-
-  console.log('✅ Booking created successfully:', booking);
-  return booking;
 };

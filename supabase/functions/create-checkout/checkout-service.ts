@@ -24,7 +24,7 @@ export const createCheckoutSession = async (
     metadata,
     locale: 'fr',
     allow_promotion_codes: false,
-    payment_method_types: isFreeBooking ? ['card'] : ['card'],
+    payment_method_types: ['card'],
     line_items: [{
       price_data: {
         currency: 'eur',
@@ -51,7 +51,10 @@ export const createCheckoutSession = async (
   if (isFreeBooking) {
     console.log('Free booking - simulating webhook');
     try {
-      const response = await fetch(`${origin}/functions/v1/stripe-webhook`, {
+      const webhookUrl = `${origin}/functions/v1/stripe-webhook`;
+      console.log('Sending webhook to:', webhookUrl);
+      
+      const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

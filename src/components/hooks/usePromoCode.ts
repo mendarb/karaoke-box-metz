@@ -11,9 +11,10 @@ export const usePromoCode = (
 
   useEffect(() => {
     if (!isPromoValid || !promoData) {
-      console.log('Resetting price to original:', calculatedPrice);
+      console.log('No valid promo code, using original price:', calculatedPrice);
       setFinalPrice(calculatedPrice);
       form.setValue('finalPrice', calculatedPrice);
+      form.setValue('discountAmount', 0);
       return;
     }
 
@@ -25,6 +26,7 @@ export const usePromoCode = (
       console.log('No promo code, using original price:', calculatedPrice);
       setFinalPrice(calculatedPrice);
       form.setValue('finalPrice', calculatedPrice);
+      form.setValue('discountAmount', 0);
       return;
     }
 

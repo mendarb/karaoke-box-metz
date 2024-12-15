@@ -16,11 +16,12 @@ serve(async (req) => {
 
     const signature = req.headers.get('stripe-signature');
     const body = await req.text();
-    const eventData = JSON.parse(body);
+    console.log('Received webhook with signature:', signature);
 
     // Gestion spéciale pour les réservations gratuites
     if (signature === 'free-booking') {
       console.log('Processing free booking webhook');
+      const eventData = JSON.parse(body);
       const supabaseUrl = Deno.env.get('SUPABASE_URL');
       const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
@@ -40,12 +41,12 @@ serve(async (req) => {
       );
     }
 
-    // Traitement normal pour les réservations payantes
     const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
     if (!webhookSecret) {
       throw new Error('Webhook secret not configured');
     }
 
+    const eventData = JSON.parse(body);
     const isTestMode = eventData.data.object?.metadata?.isTestMode === 'true';
     const stripeSecretKey = isTestMode 
       ? Deno.env.get('STRIPE_TEST_SECRET_KEY')

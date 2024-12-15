@@ -16,7 +16,6 @@ export const createCheckoutSession = async (
   const metadata = createMetadata(data);
   const isFreeBooking = data.finalPrice === 0;
 
-  // Pour les réservations gratuites, on crée une session avec un montant de 0
   const sessionConfig: Stripe.Checkout.SessionCreateParams = {
     mode: 'payment',
     success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
@@ -25,8 +24,7 @@ export const createCheckoutSession = async (
     metadata,
     locale: 'fr',
     allow_promotion_codes: false,
-    payment_method_types: isFreeBooking ? [] : ['card'],
-    submit_type: 'auto-submit',
+    payment_method_types: isFreeBooking ? ['card'] : ['card'],
     line_items: [{
       price_data: {
         currency: 'eur',
@@ -44,37 +42,46 @@ export const createCheckoutSession = async (
   console.log('Final session config:', {
     mode: sessionConfig.mode,
     finalPrice: data.finalPrice,
-    isFreeBooking
+    isFreeBooking,
+    metadata: sessionConfig.metadata
   });
 
-  // Pour les réservations gratuites, on confirme automatiquement la session
   const session = await stripe.checkout.sessions.create(sessionConfig);
 
   if (isFreeBooking) {
-    console.log('Free booking - auto confirming session');
-    // Simuler un webhook pour les réservations gratuites
-    const response = await fetch(`${origin}/functions/v1/stripe-webhook`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'stripe-signature': 'free-booking'
-      },
-      body: JSON.stringify({
-        type: 'checkout.session.completed',
-        data: {
-          object: {
-            id: session.id,
-            metadata: session.metadata,
-            customer_email: session.customer_email,
-            amount_total: 0,
-            payment_status: 'paid'
+    console.log('Free booking - simulating webhook');
+    try {
+      const response = await fetch(`${origin}/functions/v1/stripe-webhook`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'stripe-signature': 'free-booking'
+        },
+        body: JSON.stringify({
+          type: 'checkout.session.completed',
+          data: {
+            object: {
+              id: session.id,
+              metadata: session.metadata,
+              customer_email: session.customer_email,
+              amount_total: 0,
+              payment_status: 'paid',
+              payment_intent: null
+            }
           }
-        }
-      })
-    });
+        })
+      });
 
-    if (!response.ok) {
-      console.error('Error auto confirming free booking:', await response.text());
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error simulating webhook for free booking:', errorText);
+        throw new Error(`Webhook simulation failed: ${errorText}`);
+      }
+
+      console.log('Webhook simulation successful for free booking');
+    } catch (error) {
+      console.error('Error in webhook simulation:', error);
+      throw error;
     }
   }
 

@@ -10,6 +10,7 @@ export interface BookingDetails {
   group_size: string;
   price: number;
   is_test_booking: boolean;
+  payment_status: string;
 }
 
 export const useBookingSuccess = () => {

@@ -1,7 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import Index from "@/pages/Index";
 import { MyBookings } from "@/pages/MyBookings";
-import { Success } from "@/pages/Success";
+import Success from "@/pages/Success";
 import { Calendar } from "@/pages/Calendar";
 import { Settings } from "@/pages/Settings";
 import { ProtectedRoute } from "./ProtectedRoute";

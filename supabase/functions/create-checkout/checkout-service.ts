@@ -19,7 +19,7 @@ export const createCheckoutSession = async (
   const metadata = createMetadata(data);
   const isFreeBooking = data.finalPrice === 0;
 
-  // Format price description based on promo code
+  // Format price description
   let priceDescription = `${data.groupSize} personnes - ${data.duration}h`;
   if (data.promoCode && data.discountAmount) {
     priceDescription += ` (-${Math.round(data.discountAmount)}% avec ${data.promoCode})`;
@@ -37,7 +37,7 @@ export const createCheckoutSession = async (
     line_items: [{
       price_data: {
         currency: 'eur',
-        unit_amount: Math.round(data.finalPrice * 100), // Convert to cents
+        unit_amount: Math.round(data.finalPrice * 100),
         product_data: {
           name: `${data.isTestMode ? '[TEST] ' : ''}Karaoké BOX - MB EI`,
           description: priceDescription,

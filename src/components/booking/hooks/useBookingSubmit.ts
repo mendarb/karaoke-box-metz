@@ -13,11 +13,13 @@ export const useBookingSubmit = (
 
   const handleSubmit = async (data: any) => {
     try {
+      console.log('🚀 Starting booking submission process');
       setIsSubmitting(true);
       
       // Vérifier si l'utilisateur est connecté
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
+        console.error('❌ No active session found');
         toast({
           title: "Erreur",
           description: "Vous devez être connecté pour effectuer une réservation",
@@ -27,9 +29,9 @@ export const useBookingSubmit = (
         return;
       }
 
-      console.log('Session active:', session);
+      console.log('✅ Session active:', session.user.email);
 
-      // Stocker les données de session pour la redirection après paiement
+      // Préparer les données de réservation
       const bookingData = {
         email: data.email,
         fullName: data.fullName,
@@ -51,7 +53,7 @@ export const useBookingSubmit = (
         userEmail: data.email
       };
 
-      console.log('Données de réservation:', bookingData);
+      console.log('📦 Données de réservation préparées:', bookingData);
 
       // Stocker la session et les données de réservation
       localStorage.setItem('currentBookingSession', JSON.stringify({
@@ -62,25 +64,28 @@ export const useBookingSubmit = (
         bookingData
       }));
 
+      console.log('💳 Création de la session de paiement...');
+      
       // Créer la session de paiement
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
         body: JSON.stringify(bookingData)
       });
 
       if (checkoutError) {
-        console.error('Erreur création checkout:', checkoutError);
+        console.error('❌ Erreur création checkout:', checkoutError);
         throw checkoutError;
       }
 
       if (!checkoutData?.url) {
+        console.error('❌ URL de paiement non reçue');
         throw new Error("URL de paiement non reçue");
       }
 
-      console.log('Redirection vers:', checkoutData.url);
+      console.log('✅ Redirection vers:', checkoutData.url);
       window.location.href = checkoutData.url;
 
     } catch (error: any) {
-      console.error('Erreur soumission réservation:', error);
+      console.error('❌ Erreur soumission réservation:', error);
       toast({
         title: "Erreur",
         description: error.message || "Une erreur est survenue lors de la réservation",

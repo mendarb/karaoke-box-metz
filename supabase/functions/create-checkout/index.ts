@@ -9,13 +9,15 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  console.log('📥 Received create-checkout request');
+  
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
     const data: CheckoutData = await req.json();
-    console.log('Received checkout request:', {
+    console.log('📦 Received booking data:', {
       email: data.userEmail,
       date: data.date,
       timeSlot: data.timeSlot,
@@ -30,7 +32,17 @@ serve(async (req) => {
     // Validation des données requises
     if (!data.userEmail || !data.date || !data.timeSlot || !data.duration || 
         !data.groupSize || data.price === undefined || data.finalPrice === undefined || !data.userId) {
-      console.error('Missing required fields:', data);
+      console.error('❌ Missing required fields:', {
+        hasEmail: !!data.userEmail,
+        hasDate: !!data.date,
+        hasTimeSlot: !!data.timeSlot,
+        hasDuration: !!data.duration,
+        hasGroupSize: !!data.groupSize,
+        hasPrice: data.price !== undefined,
+        hasFinalPrice: data.finalPrice !== undefined,
+        hasUserId: !!data.userId
+      });
+      
       return new Response(
         JSON.stringify({ 
           error: 'Missing required fields',
@@ -52,10 +64,11 @@ serve(async (req) => {
       );
     }
 
+    console.log('✅ All required fields present, creating Stripe session...');
     const stripe = getStripeInstance(data.isTestMode);
     const session = await createCheckoutSession(stripe, data, req.headers.get('origin') || '');
 
-    console.log('Checkout session created successfully:', {
+    console.log('✅ Checkout session created successfully:', {
       sessionId: session.id,
       url: session.url,
       isFree: data.finalPrice === 0
@@ -69,7 +82,7 @@ serve(async (req) => {
       },
     );
   } catch (error) {
-    console.error("Checkout error:", error);
+    console.error("❌ Checkout error:", error);
     return new Response(
       JSON.stringify({ 
         error: error.message,

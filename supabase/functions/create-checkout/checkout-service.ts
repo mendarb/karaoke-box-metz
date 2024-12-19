@@ -13,7 +13,8 @@ export const createCheckoutSession = async (
     promoCode: data.promoCode,
     promoCodeId: data.promoCodeId,
     discountAmount: data.discountAmount,
-    metadata: createMetadata(data)
+    metadata: createMetadata(data),
+    isTestMode: data.isTestMode
   });
 
   const metadata = createMetadata(data);
@@ -32,7 +33,8 @@ export const createCheckoutSession = async (
     originalPrice: data.price,
     discountAmount: data.discountAmount,
     finalPrice,
-    unitAmount
+    unitAmount,
+    isTestMode: data.isTestMode
   });
 
   const sessionConfig: Stripe.Checkout.SessionCreateParams = {
@@ -64,6 +66,7 @@ export const createCheckoutSession = async (
     unitAmount,
     isFreeBooking,
     metadata: sessionConfig.metadata,
+    isTestMode: data.isTestMode,
     promoDetails: {
       code: data.promoCode,
       id: data.promoCodeId,
@@ -76,48 +79,10 @@ export const createCheckoutSession = async (
 
   try {
     const session = await stripe.checkout.sessions.create(sessionConfig);
-    console.log('Stripe session created:', session.id);
-
-    if (isFreeBooking) {
-      console.log('Free booking - simulating webhook');
-      try {
-        const webhookUrl = `${origin}/functions/v1/stripe-webhook`;
-        console.log('Sending webhook to:', webhookUrl);
-        
-        const response = await fetch(webhookUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'stripe-signature': 'free-booking'
-          },
-          body: JSON.stringify({
-            type: 'checkout.session.completed',
-            data: {
-              object: {
-                id: session.id,
-                metadata: session.metadata,
-                customer_email: session.customer_email,
-                amount_total: 0,
-                payment_status: 'paid',
-                payment_intent: null
-              }
-            }
-          })
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('Error simulating webhook for free booking:', errorText);
-          throw new Error(`Webhook simulation failed: ${errorText}`);
-        }
-
-        console.log('Webhook simulation successful for free booking');
-      } catch (error) {
-        console.error('Error in webhook simulation:', error);
-        throw error;
-      }
-    }
-
+    console.log('Stripe session created:', {
+      sessionId: session.id,
+      isTestMode: data.isTestMode
+    });
     return session;
   } catch (error) {
     console.error('Error creating Stripe session:', error);

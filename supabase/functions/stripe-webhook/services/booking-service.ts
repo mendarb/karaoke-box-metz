@@ -5,6 +5,12 @@ export const createBooking = async (
   session: Stripe.Checkout.Session,
   supabase: ReturnType<typeof createClient>
 ) => {
+  console.log('Starting createBooking function with session:', {
+    id: session.id,
+    metadata: session.metadata,
+    customerEmail: session.customer_email
+  });
+
   const metadata = session.metadata;
   if (!metadata) {
     console.error('❌ No metadata found in session:', session);
@@ -17,59 +23,48 @@ export const createBooking = async (
     payment_status: session.payment_status,
     amount_total: session.amount_total,
     userId: metadata.userId,
-    sessionId: session.id
+    sessionId: session.id,
+    paymentIntent: session.payment_intent
   });
 
-  // Vérifier si la réservation existe déjà
-  const { data: existingBooking, error: searchError } = await supabase
-    .from('bookings')
-    .select('*')
-    .eq('payment_intent_id', session.payment_intent)
-    .single();
-
-  if (searchError) {
-    console.error('❌ Error searching for existing booking:', searchError);
-    throw searchError;
-  }
-
-  if (existingBooking) {
-    console.log('⚠️ Booking already exists:', existingBooking);
-    return existingBooking;
-  }
-
-  // Vérifier que l'utilisateur existe
-  const { data: userExists, error: userError } = await supabase
-    .from('bookings')
-    .select('user_id')
-    .eq('user_id', metadata.userId)
-    .limit(1);
-
-  if (userError) {
-    console.error('❌ Error checking user:', userError);
-    throw userError;
-  }
-
-  const bookingData = {
-    user_id: metadata.userId,
-    date: metadata.date,
-    time_slot: metadata.timeSlot,
-    duration: metadata.duration,
-    group_size: metadata.groupSize,
-    status: 'confirmed',
-    price: parseFloat(metadata.finalPrice),
-    message: metadata.message || null,
-    user_email: session.customer_email,
-    user_name: metadata.userName,
-    user_phone: metadata.userPhone,
-    payment_status: session.amount_total === 0 ? 'paid' : session.payment_status,
-    is_test_booking: metadata.isTestMode === 'true',
-    payment_intent_id: session.payment_intent || null,
-    promo_code_id: metadata.promoCodeId || null
-  };
-
-  console.log('📝 Attempting to create booking with data:', bookingData);
-
   try {
+    // Vérifier si la réservation existe déjà
+    const { data: existingBooking, error: searchError } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('payment_intent_id', session.payment_intent)
+      .single();
+
+    if (searchError) {
+      console.error('❌ Error searching for existing booking:', searchError);
+      throw searchError;
+    }
+
+    if (existingBooking) {
+      console.log('⚠️ Booking already exists:', existingBooking);
+      return existingBooking;
+    }
+
+    const bookingData = {
+      user_id: metadata.userId,
+      date: metadata.date,
+      time_slot: metadata.timeSlot,
+      duration: metadata.duration,
+      group_size: metadata.groupSize,
+      status: 'confirmed',
+      price: parseFloat(metadata.finalPrice),
+      message: metadata.message || null,
+      user_email: session.customer_email,
+      user_name: metadata.userName,
+      user_phone: metadata.userPhone,
+      payment_status: session.amount_total === 0 ? 'paid' : session.payment_status,
+      is_test_booking: metadata.isTestMode === 'true',
+      payment_intent_id: session.payment_intent || null,
+      promo_code_id: metadata.promoCodeId || null
+    };
+
+    console.log('📝 Attempting to create booking with data:', bookingData);
+
     const { data: booking, error: bookingError } = await supabase
       .from('bookings')
       .insert([bookingData])
@@ -84,7 +79,17 @@ export const createBooking = async (
     console.log('✅ Booking created successfully:', booking);
     return booking;
   } catch (error) {
-    console.error('❌ Error in createBooking:', error);
+    console.error('❌ Error in createBooking:', error, {
+      error: {
+        message: error.message,
+        stack: error.stack
+      },
+      session: {
+        id: session.id,
+        metadata: session.metadata,
+        customerEmail: session.customer_email
+      }
+    });
     throw error;
   }
 };

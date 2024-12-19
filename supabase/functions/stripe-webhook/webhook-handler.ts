@@ -11,7 +11,8 @@ export const handleWebhook = async (
   console.log('💳 Processing webhook event:', {
     type: event.type,
     metadata: event.data.object?.metadata,
-    eventId: event.id
+    eventId: event.id,
+    object: event.data.object
   });
 
   try {
@@ -25,7 +26,8 @@ export const handleWebhook = async (
         amountTotal: session.amount_total,
         customerEmail: session.customer_email,
         paymentIntent: session.payment_intent,
-        userId: session.metadata?.userId
+        userId: session.metadata?.userId,
+        rawSession: session
       });
 
       if (!session.metadata?.userId) {
@@ -65,7 +67,11 @@ export const handleWebhook = async (
     console.error('❌ Error processing webhook:', error, {
       eventType: event.type,
       sessionId: event.data.object?.id,
-      metadata: event.data.object?.metadata
+      metadata: event.data.object?.metadata,
+      error: {
+        message: error.message,
+        stack: error.stack
+      }
     });
     throw error;
   }

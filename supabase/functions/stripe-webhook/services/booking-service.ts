@@ -5,24 +5,18 @@ export const createBooking = async (
   session: Stripe.Checkout.Session,
   supabase: ReturnType<typeof createClient>
 ) => {
-  console.log('🎯 Starting createBooking function:', {
-    sessionId: session.id,
-    metadata: session.metadata,
-    customerEmail: session.customer_email
-  });
+  console.log('🎯 Creating booking for session:', session.id);
 
   const metadata = session.metadata;
   if (!metadata) {
-    console.error('❌ No metadata found in session:', session);
-    throw new Error('No metadata found in session');
+    console.error('❌ No metadata in session');
+    throw new Error('No metadata in session');
   }
-
-  console.log('📝 Preparing booking data with metadata:', metadata);
 
   try {
     // Vérifier si la réservation existe déjà
     if (session.payment_intent) {
-      console.log('🔍 Checking for existing booking with payment intent:', session.payment_intent);
+      console.log('🔍 Checking existing booking:', session.payment_intent);
       
       const { data: existingBooking, error: searchError } = await supabase
         .from('bookings')
@@ -31,10 +25,7 @@ export const createBooking = async (
         .maybeSingle();
 
       if (searchError) {
-        console.error('❌ Error searching for existing booking:', {
-          error: searchError,
-          paymentIntent: session.payment_intent
-        });
+        console.error('❌ Error checking existing booking:', searchError);
         throw searchError;
       }
 
@@ -62,36 +53,23 @@ export const createBooking = async (
       promo_code_id: metadata.promoCodeId || null
     };
 
-    console.log('📝 Attempting to create booking with data:', bookingData);
+    console.log('📝 Creating booking with data:', bookingData);
 
-    const { data: booking, error: bookingError } = await supabase
+    const { data: booking, error: insertError } = await supabase
       .from('bookings')
       .insert([bookingData])
       .select()
       .single();
 
-    if (bookingError) {
-      console.error('❌ Error creating booking:', {
-        error: bookingError,
-        data: bookingData
-      });
-      throw bookingError;
+    if (insertError) {
+      console.error('❌ Error creating booking:', insertError);
+      throw insertError;
     }
 
     console.log('✅ Booking created successfully:', booking);
     return booking;
   } catch (error) {
-    console.error('❌ Fatal error in createBooking:', {
-      error: {
-        message: error.message,
-        stack: error.stack
-      },
-      session: {
-        id: session.id,
-        metadata: session.metadata,
-        customerEmail: session.customer_email
-      }
-    });
+    console.error('❌ Error in createBooking:', error);
     throw error;
   }
 };

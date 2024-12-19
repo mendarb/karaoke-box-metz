@@ -20,7 +20,7 @@ serve(async (req) => {
     console.log('🔑 Webhook signature:', signature);
     
     const body = await req.text();
-    console.log('📦 Webhook body received:', body.substring(0, 500) + '...');
+    console.log('📦 Webhook body received');
 
     // Gestion spéciale pour les réservations gratuites
     if (signature === 'free-booking') {
@@ -30,7 +30,6 @@ serve(async (req) => {
       const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
       if (!supabaseUrl || !supabaseServiceRoleKey) {
-        console.error('❌ Missing Supabase credentials');
         throw new Error('Missing Supabase credentials');
       }
 
@@ -48,12 +47,11 @@ serve(async (req) => {
 
     const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
     if (!webhookSecret) {
-      console.error('❌ Webhook secret not configured');
       throw new Error('Webhook secret not configured');
     }
 
     const eventData = JSON.parse(body);
-    console.log('📊 Event data parsed:', {
+    console.log('📊 Event data:', {
       type: eventData.type,
       id: eventData.id
     });
@@ -66,8 +64,7 @@ serve(async (req) => {
       : Deno.env.get('STRIPE_SECRET_KEY');
 
     if (!stripeSecretKey) {
-      console.error('❌ Stripe key not configured for mode:', isTestMode ? 'TEST' : 'LIVE');
-      throw new Error(isTestMode ? 'Test mode API key not configured' : 'Live mode API key not configured');
+      throw new Error(`${isTestMode ? 'Test' : 'Live'} mode API key not configured`);
     }
 
     const stripe = new Stripe(stripeSecretKey, {
@@ -94,7 +91,6 @@ serve(async (req) => {
     const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!supabaseUrl || !supabaseServiceRoleKey) {
-      console.error('❌ Missing Supabase credentials');
       throw new Error('Missing Supabase credentials');
     }
 
@@ -109,12 +105,7 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('❌ Fatal error in webhook:', {
-      error: {
-        message: error.message,
-        stack: error.stack
-      }
-    });
+    console.error('❌ Fatal error in webhook:', error);
     return new Response(
       JSON.stringify({ error: error.message }), 
       { 

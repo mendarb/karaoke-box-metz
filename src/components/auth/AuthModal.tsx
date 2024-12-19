@@ -30,17 +30,10 @@ export function AuthModal({
     setIsLoading(true)
 
     try {
-      // First, sign out and clear any existing session
-      await supabase.auth.signOut()
-      
-      // Clear all storage to ensure no stale data
-      localStorage.clear()
-      sessionStorage.clear()
-      
       if (isLogin) {
         const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
+          email: email.trim(),
+          password: password.trim(),
         })
 
         if (error) {
@@ -65,10 +58,10 @@ export function AuthModal({
         }
       } else {
         const { error } = await supabase.auth.signUp({
-          email,
-          password,
+          email: email.trim(),
+          password: password.trim(),
           options: {
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: `${window.location.origin}/account`,
           },
         })
 

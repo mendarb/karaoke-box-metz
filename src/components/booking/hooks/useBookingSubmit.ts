@@ -18,6 +18,8 @@ export const useBookingSubmit = (
       
       // Vérifier si l'utilisateur est connecté
       const { data: { session } } = await supabase.auth.getSession();
+      console.log('Session check:', { session });
+      
       if (!session) {
         console.error('❌ No active session found');
         toast({

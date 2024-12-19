@@ -22,7 +22,13 @@ export const handleWebhook = async (event: any, stripe: Stripe | null, supabase:
 
   if (event.type === 'checkout.session.completed') {
     try {
-      // Mark the booking as paid and confirmed for both test and live payments
+      console.log('💳 Processing completed checkout session:', {
+        sessionId: session.id,
+        paymentStatus: session.payment_status,
+        bookingId: metadata.bookingId
+      });
+
+      // Mark the booking as paid and confirmed
       const { data: booking, error: updateError } = await supabase
         .from('bookings')
         .update({
@@ -40,7 +46,7 @@ export const handleWebhook = async (event: any, stripe: Stripe | null, supabase:
         throw updateError;
       }
 
-      console.log('✅ Booking updated:', {
+      console.log('✅ Booking updated successfully:', {
         bookingId: booking.id,
         status: booking.status,
         paymentStatus: booking.payment_status,
@@ -49,15 +55,20 @@ export const handleWebhook = async (event: any, stripe: Stripe | null, supabase:
 
       // Send confirmation email
       try {
+        console.log('📧 Sending confirmation email for booking:', booking.id);
+        
         const { error: emailError } = await supabase.functions.invoke('send-booking-email', {
           body: { booking }
         });
 
         if (emailError) {
           console.error('❌ Error sending confirmation email:', emailError);
+          throw emailError;
         }
+
+        console.log('✅ Confirmation email sent successfully');
       } catch (emailError) {
-        console.error('❌ Error invoking email function:', emailError);
+        console.error('❌ Error in email sending process:', emailError);
       }
 
       return { 

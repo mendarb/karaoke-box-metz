@@ -27,6 +27,8 @@ interface BookingEmailRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  console.log('📧 Starting email handler');
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -36,20 +38,27 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("RESEND_API_KEY is not configured");
     }
 
-    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
     const { booking }: BookingEmailRequest = await req.json();
+    console.log('📦 Received booking data:', booking);
 
-    // Récupérer les templates d'email depuis les paramètres
+    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+    // Get email templates from settings
     const { data: settings, error: settingsError } = await supabase
       .from('booking_settings')
       .select('*')
       .eq('key', 'email_templates')
       .single();
 
-    if (settingsError) throw settingsError;
+    if (settingsError) {
+      console.error('❌ Error fetching email templates:', settingsError);
+      throw settingsError;
+    }
 
     const templates = settings.value.confirmation;
     const isPaid = booking.payment_status === 'paid';
+    
+    // Format date
     const date = new Date(booking.date);
     const formattedDate = date.toLocaleDateString('fr-FR', {
       weekday: 'long',
@@ -60,33 +69,18 @@ const handler = async (req: Request): Promise<Response> => {
 
     const endTime = parseInt(booking.time_slot) + parseInt(booking.duration);
 
-    // Construire le lien de paiement si nécessaire
-    let paymentLink = '';
-    if (!isPaid) {
-      const { data: checkoutData } = await supabase.functions.invoke('create-checkout', {
-        body: JSON.stringify({
-          bookingId: booking.id,
-          price: booking.price,
-          userEmail: booking.user_email,
-          userName: booking.user_name,
-        })
-      });
-      paymentLink = checkoutData?.url || '';
-    }
-
     const emailHtml = `
       <!DOCTYPE html>
       <html>
         <head>
           <meta charset="utf-8">
-          <title>${templates.subject}</title>
+          <title>${isPaid ? templates.paid : templates.pending}</title>
           <style>
             body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
             .header { text-align: center; margin-bottom: 30px; }
             .details { background-color: #f9f9f9; padding: 20px; border-radius: 8px; }
             .footer { text-align: center; margin-top: 30px; font-size: 14px; color: #666; }
-            .button { display: inline-block; padding: 12px 24px; background-color: #7c3aed; color: white; text-decoration: none; border-radius: 6px; margin-top: 20px; }
           </style>
         </head>
         <body>
@@ -97,16 +91,11 @@ const handler = async (req: Request): Promise<Response> => {
             </div>
             <p>Bonjour ${booking.user_name},</p>
             <div class="details">
-              <h3>Détails de votre réservation :</h3>
               <p>📅 Date : ${formattedDate}</p>
               <p>🕒 Horaire : ${booking.time_slot}h - ${endTime}h</p>
               <p>👥 Nombre de personnes : ${booking.group_size}</p>
               <p>💶 Prix total : ${booking.price}€</p>
               <p>💳 Statut du paiement : ${isPaid ? 'Payé' : 'En attente de paiement'}</p>
-              ${!isPaid ? `
-                <p>Pour finaliser votre réservation, veuillez procéder au paiement en cliquant sur le bouton ci-dessous :</p>
-                <a href="${paymentLink}" class="button">Payer maintenant</a>
-              ` : ''}
             </div>
             <div class="footer">
               <p>Karaoke Box Metz<br>
@@ -119,7 +108,8 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
-    console.log('Sending email to:', booking.user_email);
+    console.log('📤 Sending email to:', booking.user_email);
+
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -129,13 +119,13 @@ const handler = async (req: Request): Promise<Response> => {
       body: JSON.stringify({
         from: "Karaoke Box Metz <onboarding@resend.dev>",
         to: [booking.user_email],
-        subject: templates.subject,
+        subject: isPaid ? "Votre réservation est confirmée !" : "Confirmation de votre réservation",
         html: emailHtml,
       }),
     });
 
     const data = await res.json();
-    console.log('Email sent:', data);
+    console.log('✅ Email sent:', data);
 
     return new Response(JSON.stringify(data), {
       status: 200,
@@ -143,7 +133,7 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
   } catch (error: any) {
-    console.error('Error in send-booking-email function:', error);
+    console.error('❌ Error in send-booking-email function:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       {

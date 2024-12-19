@@ -74,48 +74,53 @@ export const createCheckoutSession = async (
     }
   });
 
-  const session = await stripe.checkout.sessions.create(sessionConfig);
-  console.log('Stripe session created:', session.id);
+  try {
+    const session = await stripe.checkout.sessions.create(sessionConfig);
+    console.log('Stripe session created:', session.id);
 
-  if (isFreeBooking) {
-    console.log('Free booking - simulating webhook');
-    try {
-      const webhookUrl = `${origin}/functions/v1/stripe-webhook`;
-      console.log('Sending webhook to:', webhookUrl);
-      
-      const response = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'stripe-signature': 'free-booking'
-        },
-        body: JSON.stringify({
-          type: 'checkout.session.completed',
-          data: {
-            object: {
-              id: session.id,
-              metadata: session.metadata,
-              customer_email: session.customer_email,
-              amount_total: 0,
-              payment_status: 'paid',
-              payment_intent: null
+    if (isFreeBooking) {
+      console.log('Free booking - simulating webhook');
+      try {
+        const webhookUrl = `${origin}/functions/v1/stripe-webhook`;
+        console.log('Sending webhook to:', webhookUrl);
+        
+        const response = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'stripe-signature': 'free-booking'
+          },
+          body: JSON.stringify({
+            type: 'checkout.session.completed',
+            data: {
+              object: {
+                id: session.id,
+                metadata: session.metadata,
+                customer_email: session.customer_email,
+                amount_total: 0,
+                payment_status: 'paid',
+                payment_intent: null
+              }
             }
-          }
-        })
-      });
+          })
+        });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Error simulating webhook for free booking:', errorText);
-        throw new Error(`Webhook simulation failed: ${errorText}`);
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Error simulating webhook for free booking:', errorText);
+          throw new Error(`Webhook simulation failed: ${errorText}`);
+        }
+
+        console.log('Webhook simulation successful for free booking');
+      } catch (error) {
+        console.error('Error in webhook simulation:', error);
+        throw error;
       }
-
-      console.log('Webhook simulation successful for free booking');
-    } catch (error) {
-      console.error('Error in webhook simulation:', error);
-      throw error;
     }
-  }
 
-  return session;
+    return session;
+  } catch (error) {
+    console.error('Error creating Stripe session:', error);
+    throw error;
+  }
 };

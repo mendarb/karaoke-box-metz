@@ -44,19 +44,7 @@ serve(async (req) => {
       });
       
       return new Response(
-        JSON.stringify({ 
-          error: 'Missing required fields',
-          details: {
-            hasEmail: !!data.userEmail,
-            hasDate: !!data.date,
-            hasTimeSlot: !!data.timeSlot,
-            hasDuration: !!data.duration,
-            hasGroupSize: !!data.groupSize,
-            hasPrice: data.price !== undefined,
-            hasFinalPrice: data.finalPrice !== undefined,
-            hasUserId: !!data.userId
-          }
-        }),
+        JSON.stringify({ error: 'Missing required fields' }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 400,
@@ -88,10 +76,7 @@ serve(async (req) => {
       stack: error.stack
     });
     return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        type: error.constructor.name
-      }),
+      JSON.stringify({ error: error.message }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,

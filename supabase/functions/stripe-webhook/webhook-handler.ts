@@ -11,73 +11,38 @@ export const handleWebhook = async (event: any, stripe: Stripe | null, supabase:
   const session = event.data?.object;
   const metadata = session?.metadata || {};
   const isTestMode = metadata.isTestMode === 'true';
-  const isFreeBooking = session.amount_total === 0;
 
   console.log('📦 Session metadata:', {
     metadata,
     isTestMode,
     mode: isTestMode ? 'test' : 'live',
-    isFreeBooking,
     amount: session.amount_total
   });
 
-  if (event.type === 'checkout.session.completed' || isFreeBooking) {
+  if (event.type === 'checkout.session.completed') {
     try {
-      // Vérifier si la réservation existe déjà
-      const { data: existingBooking, error: searchError } = await supabase
+      // Mettre à jour la réservation existante
+      const { data: booking, error: updateError } = await supabase
         .from('bookings')
-        .select('*')
-        .eq('payment_intent_id', session.payment_intent)
-        .maybeSingle();
-
-      if (searchError) {
-        console.error('❌ Error checking existing booking:', searchError);
-        throw searchError;
-      }
-
-      if (existingBooking) {
-        console.log('⚠️ Booking already exists:', existingBooking);
-        return { message: 'Booking already exists', booking: existingBooking };
-      }
-
-      // Créer la nouvelle réservation
-      const bookingData = {
-        user_id: metadata.userId,
-        date: metadata.date,
-        time_slot: metadata.timeSlot,
-        duration: metadata.duration,
-        group_size: metadata.groupSize,
-        status: 'confirmed',
-        price: parseFloat(metadata.finalPrice),
-        message: metadata.message || null,
-        user_email: session.customer_email || metadata.userEmail,
-        user_name: metadata.userName,
-        user_phone: metadata.userPhone,
-        payment_status: isFreeBooking ? 'paid' : session.payment_status,
-        is_test_booking: isTestMode,
-        payment_intent_id: session.payment_intent || `free_${Date.now()}`,
-        promo_code_id: metadata.promoCodeId || null
-      };
-
-      console.log('📝 Creating booking with data:', bookingData);
-
-      const { data: booking, error: insertError } = await supabase
-        .from('bookings')
-        .insert([bookingData])
+        .update({
+          payment_status: 'paid',
+          payment_intent_id: session.payment_intent
+        })
+        .eq('id', metadata.bookingId)
         .select()
         .single();
 
-      if (insertError) {
-        console.error('❌ Error creating booking:', insertError);
-        throw insertError;
+      if (updateError) {
+        console.error('❌ Error updating booking:', updateError);
+        throw updateError;
       }
 
-      console.log('✅ Booking created successfully:', booking);
+      console.log('✅ Booking payment status updated:', booking);
 
       // Envoyer l'email de confirmation
       try {
         const { error: emailError } = await supabase.functions.invoke('send-booking-email', {
-          body: { bookingId: booking.id }
+          body: { booking }
         });
 
         if (emailError) {
@@ -87,7 +52,7 @@ export const handleWebhook = async (event: any, stripe: Stripe | null, supabase:
         console.error('❌ Error invoking email function:', emailError);
       }
 
-      return { message: 'Booking created successfully', booking };
+      return { message: 'Booking payment status updated successfully', booking };
     } catch (error) {
       console.error('❌ Error in webhook handler:', error);
       throw error;

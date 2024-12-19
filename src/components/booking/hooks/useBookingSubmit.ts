@@ -40,65 +40,76 @@ export const useBookingSubmit = (
       const isTestMode = settings?.isTestMode || false;
       console.log('Mode test activé:', isTestMode);
 
-      // Préparer les données de réservation
+      // Créer la réservation avec statut pending
       const bookingData = {
-        email: data.email,
-        fullName: data.fullName,
-        phone: data.phone,
+        user_id: session.user.id,
         date: data.date,
-        timeSlot: data.timeSlot,
-        duration,
-        groupSize,
+        time_slot: data.timeSlot,
+        duration: duration,
+        group_size: groupSize,
+        status: 'pending',
         price: calculatedPrice,
-        finalPrice: form.getValues('finalPrice') || calculatedPrice,
-        message: data.message,
-        isTestMode,
-        userId: session.user.id,
-        promoCode: form.getValues('promoCode'),
-        promoCodeId: form.getValues('promoCodeId'),
-        discountAmount: form.getValues('discountAmount'),
-        userName: data.fullName,
-        userPhone: data.phone,
-        userEmail: data.email
+        message: data.message || null,
+        user_email: data.email,
+        user_name: data.fullName,
+        user_phone: data.phone,
+        payment_status: 'unpaid',
+        is_test_booking: isTestMode,
+        promo_code_id: form.getValues('promoCodeId'),
       };
 
-      console.log('📦 Données de réservation préparées:', bookingData);
+      console.log('📝 Creating booking with data:', bookingData);
 
-      // Stocker la session et les données de réservation
-      const sessionData = {
-        session: {
-          access_token: session.access_token,
-          refresh_token: session.refresh_token,
-        },
-        bookingData
-      };
-      console.log('💾 Storing session data:', sessionData);
-      localStorage.setItem('currentBookingSession', JSON.stringify(sessionData));
+      const { data: booking, error: bookingError } = await supabase
+        .from('bookings')
+        .insert([bookingData])
+        .select()
+        .single();
 
-      console.log('💳 Création de la session de paiement...');
-      
+      if (bookingError) {
+        console.error('❌ Error creating booking:', bookingError);
+        throw bookingError;
+      }
+
+      console.log('✅ Booking created successfully:', booking);
+
       // Créer la session de paiement
+      console.log('💳 Creating payment session...');
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
-        body: bookingData
+        body: {
+          ...bookingData,
+          bookingId: booking.id,
+          finalPrice: form.getValues('finalPrice') || calculatedPrice,
+        }
       });
 
-      console.log('📫 Checkout response:', { checkoutData, checkoutError });
-
       if (checkoutError) {
-        console.error('❌ Erreur création checkout:', checkoutError);
-        throw checkoutError;
+        console.error('❌ Error creating checkout:', checkoutError);
+        toast({
+          title: "Réservation créée",
+          description: "Votre réservation a été créée mais le paiement n'a pas pu être initialisé. Vous recevrez un email avec un lien de paiement.",
+          variant: "default",
+        });
+        navigate('/success?booking_id=' + booking.id);
+        return;
       }
 
       if (!checkoutData?.url) {
-        console.error('❌ URL de paiement non reçue');
-        throw new Error("URL de paiement non reçue");
+        console.error('❌ Payment URL not received');
+        toast({
+          title: "Réservation créée",
+          description: "Votre réservation a été créée mais le paiement n'a pas pu être initialisé. Vous recevrez un email avec un lien de paiement.",
+          variant: "default",
+        });
+        navigate('/success?booking_id=' + booking.id);
+        return;
       }
 
-      console.log('✅ Redirection vers:', checkoutData.url);
+      console.log('✅ Redirecting to:', checkoutData.url);
       window.location.href = checkoutData.url;
 
     } catch (error: any) {
-      console.error('❌ Erreur soumission réservation:', error);
+      console.error('❌ Error in booking submission:', error);
       toast({
         title: "Erreur",
         description: error.message || "Une erreur est survenue lors de la réservation",

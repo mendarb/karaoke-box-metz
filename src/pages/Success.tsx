@@ -1,65 +1,75 @@
-import { useNavigate } from "react-router-dom";
-import { CheckCircle2 } from "lucide-react";
-import { useBookingSuccess } from "@/hooks/useBookingSuccess";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { BookingSuccessDetails } from "@/components/booking/BookingSuccessDetails";
+import { useBookingSuccess } from "@/hooks/useBookingSuccess";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { Button } from "@/components/ui/button";
+import { CheckCircle2, AlertTriangle } from "lucide-react";
 
-export const Success = () => {
-  const navigate = useNavigate();
+const Success = () => {
+  const [searchParams] = useSearchParams();
   const { bookingDetails, loading } = useBookingSuccess();
+  const [showPaymentWarning, setShowPaymentWarning] = useState(false);
+
+  useEffect(() => {
+    if (bookingDetails && bookingDetails.payment_status === 'unpaid') {
+      setShowPaymentWarning(true);
+    }
+  }, [bookingDetails]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (!bookingDetails) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
         <div className="text-center">
-          <p className="text-gray-600">Aucune réservation trouvée</p>
-          <button
-            onClick={() => navigate('/')}
-            className="mt-4 text-violet-600 hover:text-violet-700"
-          >
-            Retour à l'accueil
-          </button>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            Réservation non trouvée
+          </h1>
+          <p className="text-gray-600">
+            Nous n'avons pas pu trouver les détails de votre réservation.
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-violet-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
-          <div className="text-center mb-8">
-            <CheckCircle2 className="mx-auto h-12 w-12 text-green-500 mb-4" />
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              {bookingDetails.is_test_booking ? '[TEST] ' : ''}
-              Réservation confirmée !
-            </h1>
-            <p className="text-gray-600">
-              {bookingDetails.price === 0 
-                ? "Votre réservation gratuite a été enregistrée avec succès."
-                : "Votre réservation a été enregistrée avec succès."}
-            </p>
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6">
+        <div className="text-center mb-6">
+          <div className="flex justify-center mb-4">
+            {showPaymentWarning ? (
+              <AlertTriangle className="h-12 w-12 text-yellow-500" />
+            ) : (
+              <CheckCircle2 className="h-12 w-12 text-green-500" />
+            )}
           </div>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {showPaymentWarning ? "Réservation en attente de paiement" : "Réservation confirmée"}
+          </h1>
+          <p className="text-gray-600 mt-2">
+            {showPaymentWarning 
+              ? "Votre réservation a été enregistrée. Vous recevrez bientôt un email avec un lien pour effectuer le paiement."
+              : "Merci pour votre réservation ! Vous recevrez bientôt un email de confirmation."}
+          </p>
+        </div>
 
-          <BookingSuccessDetails bookingDetails={bookingDetails} />
+        <BookingSuccessDetails bookingDetails={bookingDetails} />
 
-          <div className="mt-8 text-center">
-            <button
-              onClick={() => navigate('/')}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-violet-600 hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500"
-            >
-              Retour à l'accueil
-            </button>
-          </div>
+        <div className="mt-6 text-center">
+          <Button
+            onClick={() => window.location.href = '/'}
+            className="bg-violet-600 hover:bg-violet-700"
+          >
+            Retour à l'accueil
+          </Button>
         </div>
       </div>
     </div>
   );
 };
+
+export default Success;

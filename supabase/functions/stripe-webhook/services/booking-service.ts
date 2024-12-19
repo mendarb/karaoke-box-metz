@@ -15,14 +15,20 @@ export const createBooking = async (
     customer_email: session.customer_email,
     payment_status: session.payment_status,
     amount_total: session.amount_total,
+    userId: metadata.userId
   });
 
   // Vérifier si la réservation existe déjà
-  const { data: existingBooking } = await supabase
+  const { data: existingBooking, error: searchError } = await supabase
     .from('bookings')
     .select('*')
     .eq('payment_intent_id', session.payment_intent)
     .maybeSingle();
+
+  if (searchError) {
+    console.error('Error searching for existing booking:', searchError);
+    throw searchError;
+  }
 
   if (existingBooking) {
     console.log('⚠️ Booking already exists:', existingBooking);

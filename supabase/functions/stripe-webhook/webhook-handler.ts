@@ -23,7 +23,8 @@ export const handleWebhook = async (
         paymentStatus: session.payment_status,
         amountTotal: session.amount_total,
         customerEmail: session.customer_email,
-        paymentIntent: session.payment_intent
+        paymentIntent: session.payment_intent,
+        userId: session.metadata?.userId
       });
 
       // Pour les réservations gratuites ou payées, on crée la réservation
@@ -35,7 +36,8 @@ export const handleWebhook = async (
           sessionId: session.id,
           metadata: session.metadata,
           isFreeBooking,
-          isPaid
+          isPaid,
+          userId: session.metadata?.userId
         });
 
         const booking = await createBooking(session, supabase);
@@ -54,7 +56,11 @@ export const handleWebhook = async (
     console.log(`⚠️ Unhandled event type: ${event.type}`);
     return { received: true, unhandled: true };
   } catch (error) {
-    console.error('❌ Error processing webhook:', error);
+    console.error('❌ Error processing webhook:', error, {
+      eventType: event.type,
+      sessionId: event.data.object?.id,
+      metadata: event.data.object?.metadata
+    });
     throw error;
   }
 };

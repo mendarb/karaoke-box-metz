@@ -68,33 +68,32 @@ export const useBookingSuccess = () => {
         await new Promise(resolve => setTimeout(resolve, 3000));
 
         // Récupérer la dernière réservation
-        const { data: bookings, error } = await supabase
+        const { data: booking, error } = await supabase
           .from('bookings')
           .select('*')
           .eq('user_id', bookingData.userId)
           .order('created_at', { ascending: false })
           .limit(1)
-          .single();
+          .maybeSingle();
 
         if (error) {
           console.error('Error fetching booking:', error);
-          // Si pas de réservation trouvée, utiliser les données stockées
-          if (error.code === 'PGRST116') {
-            console.log('Using stored booking data as fallback');
-            setBookingDetails({
-              date: bookingData.date,
-              time_slot: bookingData.timeSlot,
-              duration: bookingData.duration,
-              group_size: bookingData.groupSize,
-              price: bookingData.price,
-              is_test_booking: bookingData.isTestMode,
-            });
-          } else {
-            throw error;
-          }
+          throw error;
+        }
+
+        if (booking) {
+          console.log('Booking found:', booking);
+          setBookingDetails(booking);
         } else {
-          console.log('Booking found:', bookings);
-          setBookingDetails(bookings);
+          console.log('No booking found, using stored data as fallback');
+          setBookingDetails({
+            date: bookingData.date,
+            time_slot: bookingData.timeSlot,
+            duration: bookingData.duration,
+            group_size: bookingData.groupSize,
+            price: bookingData.price,
+            is_test_booking: bookingData.isTestMode,
+          });
         }
       } catch (error) {
         console.error('Error fetching booking details:', error);

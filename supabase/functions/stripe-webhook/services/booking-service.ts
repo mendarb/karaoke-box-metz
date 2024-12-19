@@ -11,6 +11,23 @@ export const createBooking = async (
   }
 
   console.log('📝 Creating booking with metadata:', metadata);
+  console.log('Session details:', {
+    customer_email: session.customer_email,
+    payment_status: session.payment_status,
+    amount_total: session.amount_total,
+  });
+
+  // Vérifier si la réservation existe déjà
+  const { data: existingBooking } = await supabase
+    .from('bookings')
+    .select('*')
+    .eq('payment_intent_id', session.payment_intent)
+    .maybeSingle();
+
+  if (existingBooking) {
+    console.log('⚠️ Booking already exists:', existingBooking);
+    return existingBooking;
+  }
 
   const bookingData = {
     user_id: metadata.userId,

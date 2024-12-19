@@ -13,6 +13,8 @@ export const useBookingSubmit = (
 
   const handleSubmit = async (data: any) => {
     try {
+      setIsSubmitting(true);
+      
       // Vérifier si l'utilisateur est connecté
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -21,8 +23,11 @@ export const useBookingSubmit = (
           description: "Vous devez être connecté pour effectuer une réservation",
           variant: "destructive",
         });
+        setIsSubmitting(false);
         return;
       }
+
+      console.log('Session active:', session);
 
       // Stocker les données de session pour la redirection après paiement
       const bookingData = {

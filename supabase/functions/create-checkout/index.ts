@@ -25,13 +25,24 @@ serve(async (req) => {
       finalPrice: data.finalPrice,
       promoCode: data.promoCode,
       userId: data.userId,
-      isTestMode: data.isTestMode
+      isTestMode: data.isTestMode,
+      bookingId: data.bookingId
     });
 
     // Validation des données requises
     if (!data.userEmail || !data.date || !data.timeSlot || !data.duration || 
-        !data.groupSize || data.price === undefined || data.finalPrice === undefined || !data.userId) {
-      console.error('❌ Missing required fields');
+        !data.groupSize || !data.finalPrice || !data.userId || !data.bookingId) {
+      console.error('❌ Missing required fields:', {
+        email: !data.userEmail,
+        date: !data.date,
+        timeSlot: !data.timeSlot,
+        duration: !data.duration,
+        groupSize: !data.groupSize,
+        finalPrice: !data.finalPrice,
+        userId: !data.userId,
+        bookingId: !data.bookingId
+      });
+      
       return new Response(
         JSON.stringify({ error: 'Missing required fields' }),
         {
@@ -50,9 +61,19 @@ serve(async (req) => {
       }
     );
 
-    // Utiliser l'URL de base du site pour les redirections
-    const baseUrl = req.headers.get('origin') || 'http://localhost:5173';
-    console.log('🌐 Base URL for redirects:', baseUrl);
+    // Get the origin from headers with fallback
+    const origin = req.headers.get('origin');
+    if (!origin) {
+      console.error('❌ No origin header found in request');
+      return new Response(
+        JSON.stringify({ error: 'Missing origin header' }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
+        },
+      );
+    }
+    console.log('🌐 Request origin:', origin);
 
     // Format price description
     let priceDescription = `${data.groupSize} personnes - ${data.duration}h`;
@@ -71,13 +92,14 @@ serve(async (req) => {
           product_data: {
             name: data.isTestMode ? '[TEST MODE] Karaoké BOX - MB EI' : 'Karaoké BOX - MB EI',
             description: priceDescription,
+            images: ['https://raw.githubusercontent.com/lovable-karaoke/assets/main/logo.png'],
           },
         },
         quantity: 1,
       }],
       mode: 'payment',
-      success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}`,
+      success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}`,
       customer_email: data.userEmail,
       metadata: {
         bookingId: data.bookingId,

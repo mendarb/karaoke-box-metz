@@ -26,7 +26,8 @@ serve(async (req) => {
       price: data.price,
       finalPrice: data.finalPrice,
       promoCode: data.promoCode,
-      userId: data.userId
+      userId: data.userId,
+      isTestMode: data.isTestMode
     });
 
     // Validation des données requises
@@ -60,7 +61,7 @@ serve(async (req) => {
     console.log('✅ Checkout session created successfully:', {
       sessionId: session.id,
       url: session.url,
-      isFree: data.finalPrice === 0
+      isTestMode: data.isTestMode
     });
 
     return new Response(

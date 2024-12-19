@@ -1,7 +1,8 @@
-import Stripe from 'https://esm.sh/stripe@12.0.0?target=deno';
-import { CheckoutData } from './types.ts';
+import { Stripe } from 'https://esm.sh/stripe@12.0.0?target=deno';
 
 export const getStripeInstance = (isTestMode: boolean): Stripe => {
+  console.log('🔑 Getting Stripe instance for mode:', isTestMode ? 'TEST' : 'LIVE');
+  
   const stripeSecretKey = isTestMode 
     ? Deno.env.get('STRIPE_TEST_SECRET_KEY')
     : Deno.env.get('STRIPE_SECRET_KEY');
@@ -16,7 +17,7 @@ export const getStripeInstance = (isTestMode: boolean): Stripe => {
   });
 };
 
-export const createMetadata = (data: CheckoutData): Record<string, string> => {
+export const createMetadata = (data: any): Record<string, string> => {
   return {
     date: data.date,
     timeSlot: data.timeSlot,

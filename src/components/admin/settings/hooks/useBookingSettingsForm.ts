@@ -1,51 +1,75 @@
 import { useForm } from "react-hook-form";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
-import { BookingSettings } from "./bookingSettingsTypes";
-import { fetchBookingSettings, saveBookingSettings } from "./bookingSettingsDb";
+import { supabase } from "@/lib/supabase";
+import { useEffect, useState } from "react";
+import { BookingSettings, defaultSettings } from "./bookingSettingsTypes";
 
 export const useBookingSettingsForm = () => {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const form = useForm<BookingSettings>();
-
-  const { data: settings, isLoading: isLoadingSettings } = useQuery({
-    queryKey: ['booking-settings'],
-    queryFn: fetchBookingSettings,
-    retry: 1,
-    staleTime: 0,
-    meta: {
-      onSuccess: (data: BookingSettings) => {
-        console.log('Settings loaded, resetting form:', data);
-        form.reset(data);
-      }
-    }
+  const [isLoading, setIsLoading] = useState(true);
+  const form = useForm<BookingSettings>({
+    defaultValues: defaultSettings,
   });
 
-  const mutation = useMutation({
-    mutationFn: saveBookingSettings,
-    onSuccess: (data) => {
-      queryClient.setQueryData(['booking-settings'], data);
-      form.reset(data);
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('booking_settings')
+          .select('*')
+          .eq('key', 'settings')
+          .single();
+
+        if (error) throw error;
+
+        if (data) {
+          console.log('Settings loaded:', data.value);
+          form.reset(data.value);
+        }
+      } catch (error) {
+        console.error('Error loading settings:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les paramètres",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadSettings();
+  }, [form, toast]);
+
+  const onSubmit = async (data: BookingSettings) => {
+    try {
+      console.log('Saving settings:', data);
+      const { error } = await supabase
+        .from('booking_settings')
+        .upsert({
+          key: 'settings',
+          value: data,
+        });
+
+      if (error) throw error;
+
       toast({
-        title: "Paramètres mis à jour",
-        description: "Les paramètres ont été sauvegardés avec succès.",
+        title: "Succès",
+        description: "Les paramètres ont été enregistrés",
       });
-    },
-    onError: (error) => {
-      console.error('Mutation error:', error);
+    } catch (error) {
+      console.error('Error saving settings:', error);
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de la sauvegarde des paramètres.",
+        description: "Impossible d'enregistrer les paramètres",
         variant: "destructive",
       });
-    },
-  });
+    }
+  };
 
   return {
     form,
-    settings,
-    isLoadingSettings,
-    mutation,
+    isLoading,
+    onSubmit,
   };
 };

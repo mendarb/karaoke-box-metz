@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from 'https://esm.sh/stripe@14.21.0';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -51,15 +50,17 @@ serve(async (req) => {
       }
     );
 
-    // Récupérer l'origine de la requête de manière sécurisée
-    const origin = new URL(req.url).origin;
-    console.log('🌐 Request origin:', origin);
+    // Utiliser l'URL de base du site pour les redirections
+    const baseUrl = req.headers.get('origin') || 'http://localhost:5173';
+    console.log('🌐 Base URL for redirects:', baseUrl);
 
     // Format price description
     let priceDescription = `${data.groupSize} personnes - ${data.duration}h`;
     if (data.promoCode) {
       priceDescription += ` (Code: ${data.promoCode})`;
     }
+
+    console.log('💰 Creating Stripe session with amount:', Math.round(data.finalPrice * 100));
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -75,8 +76,8 @@ serve(async (req) => {
         quantity: 1,
       }],
       mode: 'payment',
-      success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}`,
+      success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}`,
       customer_email: data.userEmail,
       metadata: {
         bookingId: data.bookingId,

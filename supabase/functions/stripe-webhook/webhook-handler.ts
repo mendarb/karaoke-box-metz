@@ -22,29 +22,37 @@ export const handleWebhook = async (event: any, stripe: Stripe | null, supabase:
     try {
       const { error: bookingError } = await supabase
         .from('bookings')
-        .update({
+        .insert([{
+          user_id: metadata.userId,
+          date: metadata.date,
+          time_slot: metadata.timeSlot,
+          duration: metadata.duration,
+          group_size: metadata.groupSize,
+          price: parseFloat(metadata.finalPrice),
+          message: metadata.message || null,
+          user_email: metadata.userEmail,
+          user_name: metadata.userName,
+          user_phone: metadata.userPhone,
           payment_status: 'paid',
-          payment_intent_id: session.payment_intent,
+          status: 'confirmed',
           is_test_booking: isTestMode,
-          status: 'confirmed'
-        })
-        .eq('user_id', metadata.userId)
-        .eq('date', metadata.date)
-        .eq('time_slot', metadata.timeSlot);
+          payment_intent_id: session.payment_intent,
+          promo_code_id: metadata.promoCodeId || null
+        }]);
 
       if (bookingError) {
-        console.error('Error updating booking:', bookingError);
+        console.error('Error creating booking:', bookingError);
         throw bookingError;
       }
 
-      console.log('Booking updated successfully:', {
+      console.log('Booking created successfully:', {
         userId: metadata.userId,
         date: metadata.date,
         timeSlot: metadata.timeSlot,
         isTestMode
       });
 
-      return { message: 'Booking updated successfully' };
+      return { message: 'Booking created successfully' };
     } catch (error) {
       console.error('Error processing webhook:', error);
       throw error;

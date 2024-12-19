@@ -2,6 +2,7 @@ import { UseFormReturn } from "react-hook-form";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
+import { useBookingSettings } from "../date-time/hooks/useBookingSettings";
 
 export const useBookingSubmit = (
   form: UseFormReturn<any>,
@@ -12,6 +13,7 @@ export const useBookingSubmit = (
 ) => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { data: settings } = useBookingSettings();
 
   const handleSubmit = async (data: any) => {
     try {
@@ -35,6 +37,9 @@ export const useBookingSubmit = (
 
       console.log('✅ Session active:', session.user.email);
 
+      const isTestMode = settings?.isTestMode || false;
+      console.log('Mode test activé:', isTestMode);
+
       // Préparer les données de réservation
       const bookingData = {
         email: data.email,
@@ -47,7 +52,7 @@ export const useBookingSubmit = (
         price: calculatedPrice,
         finalPrice: form.getValues('finalPrice') || calculatedPrice,
         message: data.message,
-        isTestMode: false,
+        isTestMode,
         userId: session.user.id,
         promoCode: form.getValues('promoCode'),
         promoCodeId: form.getValues('promoCodeId'),
@@ -74,7 +79,7 @@ export const useBookingSubmit = (
       
       // Créer la session de paiement
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
-        body: JSON.stringify(bookingData)
+        body: bookingData
       });
 
       console.log('📫 Checkout response:', { checkoutData, checkoutError });

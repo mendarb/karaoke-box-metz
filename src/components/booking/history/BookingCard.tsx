@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { BookingStatusBadge } from "../../admin/BookingStatusBadge";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
+import { Badge } from "@/components/ui/badge";
 
 interface BookingCardProps {
   booking: any;
@@ -27,7 +28,8 @@ export const BookingCard = ({ booking }: BookingCardProps) => {
       const { data, error } = await supabase.functions.invoke('get-invoice', {
         body: { 
           bookingId: booking.id,
-          paymentIntentId: booking.payment_intent_id
+          paymentIntentId: booking.payment_intent_id,
+          isTestMode: booking.is_test_booking
         }
       });
 
@@ -36,7 +38,6 @@ export const BookingCard = ({ booking }: BookingCardProps) => {
       if (error) throw error;
       if (!data?.url) throw new Error('URL de facture non disponible');
 
-      // Ouvrir l'URL de la facture dans un nouvel onglet
       window.open(data.url, '_blank', 'noopener,noreferrer');
     } catch (error: any) {
       console.error('Error downloading invoice:', error);
@@ -55,7 +56,7 @@ export const BookingCard = ({ booking }: BookingCardProps) => {
           <h3 className="text-lg font-semibold">
             {format(new Date(booking.date), 'EEEE d MMMM yyyy', { locale: fr })}
           </h3>
-          <p className="text-gray-600">
+          <p className="text-sm text-muted-foreground">
             {`${booking.time_slot}:00 - ${endHour}:00`}
           </p>
         </div>
@@ -90,12 +91,12 @@ export const BookingCard = ({ booking }: BookingCardProps) => {
       {booking.is_test_booking && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-4">
           <p className="text-sm text-yellow-800">
-            Ceci est une réservation de test. Aucun paiement n'a été effectué.
+            Ceci est une réservation de test. Aucun paiement réel n'a été effectué.
           </p>
         </div>
       )}
 
-      {booking.payment_status === 'paid' && booking.payment_intent_id && (
+      {booking.payment_status === 'paid' && booking.payment_intent_id && !booking.is_test_booking && (
         <Button
           variant="outline"
           className="w-full"

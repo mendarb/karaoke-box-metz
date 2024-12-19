@@ -10,21 +10,9 @@ import { PricingSettings } from "./settings/PricingSettings";
 import { useBookingSettingsForm } from "./hooks/useBookingSettingsForm";
 
 export const BookingSettingsForm = () => {
-  const { form, settings, isLoadingSettings, mutation } = useBookingSettingsForm();
+  const { form, isLoading, onSubmit } = useBookingSettingsForm();
 
-  useEffect(() => {
-    if (settings) {
-      console.log('Resetting form with settings:', settings);
-      form.reset(settings);
-    }
-  }, [settings, form]);
-
-  const onSubmit = (data: any) => {
-    console.log('Form submitted with data:', data);
-    mutation.mutate(data);
-  };
-
-  if (isLoadingSettings) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center p-6">
         <Loader2 className="h-6 w-6 animate-spin" />
@@ -38,42 +26,34 @@ export const BookingSettingsForm = () => {
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardContent className="pt-6">
-              <PricingSettings form={form} defaultValue={settings?.basePrice} />
+              <PricingSettings form={form} />
             </CardContent>
           </Card>
 
           <Card>
             <CardContent className="pt-6">
-              <BookingWindowSettings form={form} defaultValue={settings?.bookingWindow} />
+              <BookingWindowSettings form={form} />
             </CardContent>
           </Card>
         </div>
 
         <Card>
           <CardContent className="pt-6">
-            <OpeningHoursSettings form={form} defaultValue={settings?.openingHours} />
+            <OpeningHoursSettings form={form} />
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="pt-6">
-            <ExcludedDaysSettings form={form} defaultValue={settings?.excludedDays} />
+            <ExcludedDaysSettings form={form} />
           </CardContent>
         </Card>
 
         <Button
           type="submit"
           className="w-full"
-          disabled={mutation.isPending}
         >
-          {mutation.isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Sauvegarde en cours...
-            </>
-          ) : (
-            "Sauvegarder les modifications"
-          )}
+          Sauvegarder les modifications
         </Button>
       </form>
     </Form>

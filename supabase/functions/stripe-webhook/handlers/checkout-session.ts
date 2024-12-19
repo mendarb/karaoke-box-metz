@@ -17,14 +17,33 @@ export const handleCheckoutSession = async (
   try {
     // Pour les réservations gratuites, on considère le paiement comme complété
     const isFreeBooking = session.amount_total === 0;
-    if (!isFreeBooking && session.payment_status !== 'paid') {
-      console.log('⚠️ Skipping unpaid session');
-      return { received: true };
+    const isPaid = isFreeBooking || session.payment_status === 'paid';
+
+    // Mettre à jour le statut de la réservation
+    const bookingId = session.metadata?.bookingId;
+    if (!bookingId) {
+      throw new Error('Booking ID not found in session metadata');
     }
 
-    const booking = await createBooking(session, supabase);
-    console.log('✅ Booking created:', booking);
+    const { data: booking, error: updateError } = await supabase
+      .from('bookings')
+      .update({
+        payment_status: isPaid ? 'paid' : 'unpaid',
+        status: isPaid ? 'confirmed' : 'cancelled',
+        payment_intent_id: session.payment_intent as string,
+      })
+      .eq('id', bookingId)
+      .select()
+      .single();
 
+    if (updateError) {
+      console.error('❌ Error updating booking:', updateError);
+      throw updateError;
+    }
+
+    console.log('✅ Booking updated:', booking);
+
+    // Envoyer l'email de confirmation avec le statut approprié
     await sendConfirmationEmail(booking, supabase);
     console.log('📧 Confirmation email sent');
 

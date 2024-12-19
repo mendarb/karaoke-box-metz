@@ -73,6 +73,24 @@ export const useBookingSubmit = (
 
       console.log('✅ Booking created successfully:', booking);
 
+      // Stocker les données de session pour la page de succès
+      const sessionData = {
+        session: {
+          access_token: session.access_token,
+          refresh_token: session.refresh_token,
+        },
+        bookingData: {
+          userId: session.user.id,
+          date: data.date,
+          timeSlot: data.timeSlot,
+          duration: duration,
+          groupSize: groupSize,
+          price: calculatedPrice,
+          isTestMode: isTestMode,
+        },
+      };
+      localStorage.setItem('currentBookingSession', JSON.stringify(sessionData));
+
       // Créer la session de paiement
       console.log('💳 Creating payment session...');
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
@@ -86,37 +104,23 @@ export const useBookingSubmit = (
       if (checkoutError) {
         console.error('❌ Error creating checkout:', checkoutError);
         toast({
-          title: "Erreur",
-          description: "Une erreur est survenue lors de la création de la session de paiement",
-          variant: "destructive",
+          title: "Réservation créée",
+          description: "Votre réservation a été créée mais le paiement n'a pas pu être initialisé. Vous recevrez un email avec un lien de paiement.",
+          variant: "default",
         });
-        setIsSubmitting(false);
+        navigate('/success?booking_id=' + booking.id);
         return;
       }
 
       if (!checkoutData?.url) {
         console.error('❌ Payment URL not received');
         toast({
-          title: "Erreur",
-          description: "Une erreur est survenue lors de la création de la session de paiement",
-          variant: "destructive",
+          title: "Réservation créée",
+          description: "Votre réservation a été créée mais le paiement n'a pas pu être initialisé. Vous recevrez un email avec un lien de paiement.",
+          variant: "default",
         });
-        setIsSubmitting(false);
+        navigate('/success?booking_id=' + booking.id);
         return;
-      }
-
-      // Envoyer l'email de confirmation
-      try {
-        console.log('📧 Sending confirmation email...');
-        const { error: emailError } = await supabase.functions.invoke('send-booking-email', {
-          body: { booking }
-        });
-
-        if (emailError) {
-          console.error('❌ Error sending confirmation email:', emailError);
-        }
-      } catch (emailError) {
-        console.error('❌ Error invoking email function:', emailError);
       }
 
       console.log('✅ Redirecting to:', checkoutData.url);

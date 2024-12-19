@@ -13,7 +13,7 @@ export const useBookingSubmit = (
 
   const handleSubmit = async (data: any) => {
     try {
-      console.log('🚀 Starting booking submission process');
+      console.log('🚀 Starting booking submission process', { data });
       setIsSubmitting(true);
       
       // Vérifier si l'utilisateur est connecté
@@ -56,13 +56,15 @@ export const useBookingSubmit = (
       console.log('📦 Données de réservation préparées:', bookingData);
 
       // Stocker la session et les données de réservation
-      localStorage.setItem('currentBookingSession', JSON.stringify({
+      const sessionData = {
         session: {
           access_token: session.access_token,
           refresh_token: session.refresh_token,
         },
         bookingData
-      }));
+      };
+      console.log('💾 Storing session data:', sessionData);
+      localStorage.setItem('currentBookingSession', JSON.stringify(sessionData));
 
       console.log('💳 Création de la session de paiement...');
       
@@ -70,6 +72,8 @@ export const useBookingSubmit = (
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
         body: JSON.stringify(bookingData)
       });
+
+      console.log('📫 Checkout response:', { checkoutData, checkoutError });
 
       if (checkoutError) {
         console.error('❌ Erreur création checkout:', checkoutError);

@@ -42,7 +42,9 @@ export const Success = () => {
               Réservation confirmée !
             </h1>
             <p className="text-gray-600">
-              Votre réservation a été enregistrée avec succès.
+              {bookingDetails.price === 0 
+                ? "Votre réservation gratuite a été enregistrée avec succès."
+                : "Votre réservation a été enregistrée avec succès."}
             </p>
           </div>
 

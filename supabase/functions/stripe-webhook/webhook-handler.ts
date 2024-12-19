@@ -58,7 +58,10 @@ export const handleWebhook = async (event: any, stripe: Stripe | null, supabase:
         console.log('📧 Sending confirmation email for booking:', booking.id);
         
         const { error: emailError } = await supabase.functions.invoke('send-booking-email', {
-          body: { booking }
+          body: { 
+            booking,
+            type: 'confirmation'
+          }
         });
 
         if (emailError) {

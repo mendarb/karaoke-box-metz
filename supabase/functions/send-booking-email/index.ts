@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "https://esm.sh/@resend/node@0.16.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,10 +14,15 @@ serve(async (req) => {
     const { booking, type } = await req.json();
     console.log('📧 Sending email for booking:', { bookingId: booking.id, type });
 
-    const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
-
     const startHour = parseInt(booking.time_slot);
     const endHour = startHour + parseInt(booking.duration);
+    const date = new Date(booking.date);
+    const formattedDate = date.toLocaleDateString('fr-FR', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
 
     const emailContent = `
       <h1>Réservation ${type === 'confirmation' ? 'confirmée' : 'en attente'}</h1>
@@ -28,7 +32,7 @@ serve(async (req) => {
         : 'Votre réservation est en attente de paiement.'}</p>
       <h2>Détails de la réservation :</h2>
       <ul>
-        <li>Date : ${new Date(booking.date).toLocaleDateString('fr-FR')}</li>
+        <li>Date : ${formattedDate}</li>
         <li>Horaire : ${startHour}h00 - ${endHour}h00</li>
         <li>Durée : ${booking.duration}h</li>
         <li>Nombre de personnes : ${booking.group_size}</li>
@@ -38,19 +42,35 @@ serve(async (req) => {
       <p>À bientôt !</p>
     `;
 
-    const { data, error } = await resend.emails.send({
-      from: 'Karaoké BOX <reservation@karaoke-box.fr>',
-      to: booking.user_email,
-      subject: `Réservation ${type === 'confirmation' ? 'confirmée' : 'en attente'} - Karaoké BOX`,
-      html: emailContent,
-    });
-
-    if (error) {
-      console.error('❌ Error sending email:', error);
-      throw error;
+    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+    if (!RESEND_API_KEY) {
+      throw new Error('Missing RESEND_API_KEY');
     }
 
-    console.log('✅ Email sent successfully:', data);
+    console.log('Sending email with content:', emailContent);
+
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: 'Karaoké BOX <reservation@karaoke-box.fr>',
+        to: booking.user_email,
+        subject: `Réservation ${type === 'confirmation' ? 'confirmée' : 'en attente'} - Karaoké BOX`,
+        html: emailContent,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('Error sending email:', error);
+      throw new Error(`Failed to send email: ${error}`);
+    }
+
+    const result = await response.json();
+    console.log('✅ Email sent successfully:', result);
 
     return new Response(
       JSON.stringify({ message: 'Email sent successfully' }),

@@ -53,10 +53,11 @@ serve(async (req) => {
     const eventData = JSON.parse(body);
     console.log('📊 Event data:', {
       type: eventData.type,
-      id: eventData.id
+      id: eventData.id,
+      metadata: eventData.data?.object?.metadata
     });
 
-    const isTestMode = eventData.data.object?.metadata?.isTestMode === 'true';
+    const isTestMode = eventData.data?.object?.metadata?.isTestMode === 'true';
     console.log('🔧 Mode:', isTestMode ? 'TEST' : 'LIVE');
 
     const stripeSecretKey = isTestMode 

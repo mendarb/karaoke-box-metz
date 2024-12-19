@@ -66,7 +66,8 @@ serve(async (req) => {
 
     console.log('✅ All required fields present, creating Stripe session...');
     const stripe = getStripeInstance(data.isTestMode);
-    const session = await createCheckoutSession(stripe, data, req.headers.get('origin') || '');
+    const origin = req.headers.get('origin') || '';
+    const session = await createCheckoutSession(stripe, data, origin);
 
     console.log('✅ Checkout session created successfully:', {
       sessionId: session.id,
@@ -82,7 +83,10 @@ serve(async (req) => {
       },
     );
   } catch (error) {
-    console.error("❌ Checkout error:", error);
+    console.error("❌ Checkout error:", {
+      message: error.message,
+      stack: error.stack
+    });
     return new Response(
       JSON.stringify({ 
         error: error.message,
@@ -90,7 +94,7 @@ serve(async (req) => {
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
+        status: 500,
       },
     );
   }

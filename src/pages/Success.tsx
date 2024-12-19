@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useBookingSuccess } from "@/hooks/useBookingSuccess";
 import { BookingSuccessDetails } from "@/components/booking/BookingSuccessDetails";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";

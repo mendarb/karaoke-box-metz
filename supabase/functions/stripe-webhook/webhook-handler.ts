@@ -11,6 +11,7 @@ export const handleWebhook = async (
   console.log('💳 Processing webhook event:', {
     type: event.type,
     metadata: event.data.object?.metadata,
+    eventId: event.id
   });
 
   try {
@@ -26,6 +27,11 @@ export const handleWebhook = async (
         paymentIntent: session.payment_intent,
         userId: session.metadata?.userId
       });
+
+      if (!session.metadata?.userId) {
+        console.error('❌ No user ID in session metadata');
+        throw new Error('No user ID in session metadata');
+      }
 
       // Pour les réservations gratuites ou payées, on crée la réservation
       const isFreeBooking = session.amount_total === 0;

@@ -7,6 +7,7 @@ export const createBooking = async (
 ) => {
   const metadata = session.metadata;
   if (!metadata) {
+    console.error('❌ No metadata found in session:', session);
     throw new Error('No metadata found in session');
   }
 
@@ -15,7 +16,8 @@ export const createBooking = async (
     customer_email: session.customer_email,
     payment_status: session.payment_status,
     amount_total: session.amount_total,
-    userId: metadata.userId
+    userId: metadata.userId,
+    sessionId: session.id
   });
 
   // Vérifier si la réservation existe déjà
@@ -23,16 +25,28 @@ export const createBooking = async (
     .from('bookings')
     .select('*')
     .eq('payment_intent_id', session.payment_intent)
-    .maybeSingle();
+    .single();
 
   if (searchError) {
-    console.error('Error searching for existing booking:', searchError);
+    console.error('❌ Error searching for existing booking:', searchError);
     throw searchError;
   }
 
   if (existingBooking) {
     console.log('⚠️ Booking already exists:', existingBooking);
     return existingBooking;
+  }
+
+  // Vérifier que l'utilisateur existe
+  const { data: userExists, error: userError } = await supabase
+    .from('bookings')
+    .select('user_id')
+    .eq('user_id', metadata.userId)
+    .limit(1);
+
+  if (userError) {
+    console.error('❌ Error checking user:', userError);
+    throw userError;
   }
 
   const bookingData = {
@@ -53,7 +67,7 @@ export const createBooking = async (
     promo_code_id: metadata.promoCodeId || null
   };
 
-  console.log('📝 Creating booking with data:', bookingData);
+  console.log('📝 Attempting to create booking with data:', bookingData);
 
   try {
     const { data: booking, error: bookingError } = await supabase

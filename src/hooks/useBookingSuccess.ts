@@ -24,8 +24,10 @@ export const useBookingSuccess = () => {
     const fetchBookingDetails = async () => {
       try {
         const sessionId = searchParams.get('session_id');
-        if (!sessionId) {
-          console.error('No session ID found in URL');
+        const bookingId = searchParams.get('booking_id');
+
+        if (!sessionId && !bookingId) {
+          console.error('No session ID or booking ID found in URL');
           navigate('/');
           return;
         }
@@ -84,7 +86,15 @@ export const useBookingSuccess = () => {
 
         if (booking) {
           console.log('Booking found:', booking);
-          setBookingDetails(booking);
+          setBookingDetails({
+            date: booking.date,
+            time_slot: booking.time_slot,
+            duration: booking.duration,
+            group_size: booking.group_size,
+            price: booking.price,
+            is_test_booking: booking.is_test_booking,
+            payment_status: booking.payment_status
+          });
         } else {
           console.log('No booking found, using stored data as fallback');
           setBookingDetails({
@@ -94,6 +104,7 @@ export const useBookingSuccess = () => {
             group_size: bookingData.groupSize,
             price: bookingData.price,
             is_test_booking: bookingData.isTestMode,
+            payment_status: 'unpaid'
           });
         }
       } catch (error) {

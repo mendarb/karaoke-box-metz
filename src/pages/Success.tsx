@@ -1,13 +1,11 @@
-import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { BookingSuccessDetails } from "@/components/booking/BookingSuccessDetails";
+import { useEffect } from "react";
 import { useBookingSuccess } from "@/hooks/useBookingSuccess";
+import { BookingSuccessDetails } from "@/components/booking/BookingSuccessDetails";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, AlertTriangle } from "lucide-react";
 
 const Success = () => {
-  const [searchParams] = useSearchParams();
   const { bookingDetails, loading } = useBookingSuccess();
   const [showPaymentWarning, setShowPaymentWarning] = useState(false);
 

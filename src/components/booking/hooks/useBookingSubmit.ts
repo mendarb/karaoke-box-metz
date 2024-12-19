@@ -73,6 +73,24 @@ export const useBookingSubmit = (
 
       console.log('✅ Booking created successfully:', booking);
 
+      // Stocker les données de session pour la page de succès
+      const sessionData = {
+        session: {
+          access_token: session.access_token,
+          refresh_token: session.refresh_token,
+        },
+        bookingData: {
+          userId: session.user.id,
+          date: data.date,
+          timeSlot: data.timeSlot,
+          duration: duration,
+          groupSize: groupSize,
+          price: calculatedPrice,
+          isTestMode: isTestMode,
+        },
+      };
+      localStorage.setItem('currentBookingSession', JSON.stringify(sessionData));
+
       // Créer la session de paiement
       console.log('💳 Creating payment session...');
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {

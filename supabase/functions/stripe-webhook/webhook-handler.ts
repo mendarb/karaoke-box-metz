@@ -11,14 +11,17 @@ export const handleWebhook = async (event: any, stripe: Stripe | null, supabase:
   const session = event.data?.object;
   const metadata = session?.metadata || {};
   const isTestMode = metadata.isTestMode === 'true';
+  const isFreeBooking = session.amount_total === 0;
 
   console.log('📦 Session metadata:', {
     metadata,
     isTestMode,
-    mode: isTestMode ? 'test' : 'live'
+    mode: isTestMode ? 'test' : 'live',
+    isFreeBooking,
+    amount: session.amount_total
   });
 
-  if (event.type === 'checkout.session.completed') {
+  if (event.type === 'checkout.session.completed' || isFreeBooking) {
     try {
       // Vérifier si la réservation existe déjà
       const { data: existingBooking, error: searchError } = await supabase
@@ -44,15 +47,15 @@ export const handleWebhook = async (event: any, stripe: Stripe | null, supabase:
         time_slot: metadata.timeSlot,
         duration: metadata.duration,
         group_size: metadata.groupSize,
+        status: 'confirmed',
         price: parseFloat(metadata.finalPrice),
         message: metadata.message || null,
         user_email: session.customer_email || metadata.userEmail,
         user_name: metadata.userName,
         user_phone: metadata.userPhone,
-        payment_status: session.payment_status,
-        status: 'confirmed',
+        payment_status: isFreeBooking ? 'paid' : session.payment_status,
         is_test_booking: isTestMode,
-        payment_intent_id: session.payment_intent,
+        payment_intent_id: session.payment_intent || `free_${Date.now()}`,
         promo_code_id: metadata.promoCodeId || null
       };
 

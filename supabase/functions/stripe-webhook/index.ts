@@ -54,7 +54,8 @@ serve(async (req) => {
     console.log('📊 Event data:', {
       type: eventData.type,
       id: eventData.id,
-      metadata: eventData.data?.object?.metadata
+      metadata: eventData.data?.object?.metadata,
+      amount: eventData.data?.object?.amount_total
     });
 
     const isTestMode = eventData.data?.object?.metadata?.isTestMode === 'true';

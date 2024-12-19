@@ -7,27 +7,13 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  console.log('📥 Received create-checkout request');
-  
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const data = await req.json();
-    console.log('📦 Received booking data:', {
-      email: data.userEmail,
-      date: data.date,
-      timeSlot: data.timeSlot,
-      duration: data.duration,
-      groupSize: data.groupSize,
-      price: data.price,
-      finalPrice: data.finalPrice,
-      promoCode: data.promoCode,
-      userId: data.userId,
-      isTestMode: data.isTestMode,
-      bookingId: data.bookingId
-    });
+    console.log('📦 Received booking data:', data);
 
     // Validation des données requises
     if (!data.userEmail || !data.date || !data.timeSlot || !data.duration || 
@@ -45,34 +31,17 @@ serve(async (req) => {
       
       return new Response(
         JSON.stringify({ error: 'Missing required fields' }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 400,
-        },
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
     }
 
-    console.log('✅ All required fields present, creating Stripe session...');
     const stripe = new Stripe(data.isTestMode ? 
       Deno.env.get('STRIPE_TEST_SECRET_KEY') || '' : 
       Deno.env.get('STRIPE_SECRET_KEY') || '', 
-      {
-        apiVersion: '2023-10-16',
-      }
+      { apiVersion: '2023-10-16' }
     );
 
-    // Get the origin from headers with fallback
-    const origin = req.headers.get('origin');
-    if (!origin) {
-      console.error('❌ No origin header found in request');
-      return new Response(
-        JSON.stringify({ error: 'Missing origin header' }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 400,
-        },
-      );
-    }
+    const origin = req.headers.get('origin') || 'http://localhost:5173';
     console.log('🌐 Request origin:', origin);
 
     // Format price description
@@ -83,7 +52,7 @@ serve(async (req) => {
 
     console.log('💰 Creating Stripe session with amount:', Math.round(data.finalPrice * 100));
 
-    const session = await stripe.checkout.sessions.create({
+    const sessionConfig = {
       payment_method_types: ['card'],
       line_items: [{
         price_data: {
@@ -113,7 +82,12 @@ serve(async (req) => {
         finalPrice: String(data.finalPrice),
         promoCodeId: data.promoCodeId || '',
       },
-    });
+      expires_at: Math.floor(Date.now() / 1000) + (30 * 60), // Session expires in 30 minutes
+    };
+
+    console.log('✨ Creating checkout session with config:', sessionConfig);
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
 
     console.log('✅ Checkout session created:', {
       sessionId: session.id,
@@ -123,19 +97,13 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ url: session.url }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      },
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
   } catch (error) {
     console.error('❌ Error creating checkout session:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
-      },
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }
 });

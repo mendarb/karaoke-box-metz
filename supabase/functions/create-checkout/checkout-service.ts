@@ -42,7 +42,10 @@ export const createCheckoutSession = async (
     success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}`,
     customer_email: data.userEmail,
-    metadata,
+    metadata: {
+      ...metadata,
+      isTestMode: String(data.isTestMode)
+    },
     locale: 'fr',
     allow_promotion_codes: false,
     payment_method_types: ['card'],
@@ -51,7 +54,7 @@ export const createCheckoutSession = async (
         currency: 'eur',
         unit_amount: unitAmount,
         product_data: {
-          name: `${data.isTestMode ? '[TEST] ' : ''}Karaoké BOX - MB EI`,
+          name: data.isTestMode ? '[TEST MODE] Karaoké BOX - MB EI' : 'Karaoké BOX - MB EI',
           description: priceDescription,
           images: ['https://raw.githubusercontent.com/lovable-karaoke/assets/main/logo.png'],
         },
@@ -81,7 +84,8 @@ export const createCheckoutSession = async (
     const session = await stripe.checkout.sessions.create(sessionConfig);
     console.log('Stripe session created:', {
       sessionId: session.id,
-      isTestMode: data.isTestMode
+      isTestMode: data.isTestMode,
+      mode: data.isTestMode ? 'test' : 'live'
     });
     return session;
   } catch (error) {

@@ -1,71 +1,55 @@
-import { Stripe } from 'https://esm.sh/stripe@14.21.0';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
-import { createBooking } from './services/booking-service.ts';
-import { sendConfirmationEmail } from './services/email-service.ts';
+import Stripe from 'https://esm.sh/stripe@14.21.0';
 
-export const handleWebhook = async (
-  event: Stripe.Event,
-  stripe: Stripe | null,
-  supabase: ReturnType<typeof createClient>
-) => {
-  console.log('🚀 Processing webhook event:', {
+export const handleWebhook = async (event: any, stripe: Stripe | null, supabase: any) => {
+  console.log('Processing webhook event:', {
     type: event.type,
     id: event.id,
-    object: event.data.object,
+    isTestMode: event.data?.object?.metadata?.isTestMode === 'true'
   });
 
-  try {
-    if (event.type === 'checkout.session.completed') {
-      const session = event.data.object as Stripe.Checkout.Session;
-      
-      console.log('💳 Processing completed checkout session:', {
-        id: session.id,
-        metadata: session.metadata,
-        paymentStatus: session.payment_status,
-        amountTotal: session.amount_total,
-      });
+  const session = event.data?.object;
+  const metadata = session?.metadata || {};
+  const isTestMode = metadata.isTestMode === 'true';
 
-      if (!session.metadata?.userId) {
-        console.error('❌ No user ID in session metadata');
-        throw new Error('No user ID in session metadata');
+  console.log('Session metadata:', {
+    metadata,
+    isTestMode,
+    mode: isTestMode ? 'test' : 'live'
+  });
+
+  if (event.type === 'checkout.session.completed') {
+    try {
+      const { error: bookingError } = await supabase
+        .from('bookings')
+        .update({
+          payment_status: 'paid',
+          payment_intent_id: session.payment_intent,
+          is_test_booking: isTestMode,
+          status: 'confirmed'
+        })
+        .eq('user_id', metadata.userId)
+        .eq('date', metadata.date)
+        .eq('time_slot', metadata.timeSlot);
+
+      if (bookingError) {
+        console.error('Error updating booking:', bookingError);
+        throw bookingError;
       }
 
-      // Pour les réservations gratuites ou payées
-      const isFreeBooking = session.amount_total === 0;
-      const isPaid = session.payment_status === 'paid';
-      
-      console.log('💰 Payment status:', {
-        isFreeBooking,
-        isPaid,
-        paymentStatus: session.payment_status,
-        amountTotal: session.amount_total
+      console.log('Booking updated successfully:', {
+        userId: metadata.userId,
+        date: metadata.date,
+        timeSlot: metadata.timeSlot,
+        isTestMode
       });
 
-      if (isFreeBooking || isPaid) {
-        console.log('✨ Creating booking for session:', session.id);
-
-        const booking = await createBooking(session, supabase);
-        console.log('✅ Booking created:', booking);
-
-        try {
-          await sendConfirmationEmail(booking, supabase);
-          console.log('📧 Confirmation email sent');
-        } catch (emailError) {
-          console.error('❌ Error sending confirmation email:', emailError);
-          // Continue even if email fails
-        }
-
-        return { received: true, booking };
-      }
-
-      console.log('⚠️ Skipping unpaid session:', session.id);
-      return { received: true, skipped: true };
+      return { message: 'Booking updated successfully' };
+    } catch (error) {
+      console.error('Error processing webhook:', error);
+      throw error;
     }
-
-    console.log('⚠️ Unhandled event type:', event.type);
-    return { received: true, unhandled: true };
-  } catch (error) {
-    console.error('❌ Error in webhook handler:', error);
-    throw error;
   }
+
+  return { message: `Unhandled event type: ${event.type}` };
 };

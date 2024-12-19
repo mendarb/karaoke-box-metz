@@ -59,42 +59,6 @@ export const useBookingSubmit = (
 
       console.log('📦 Données de réservation préparées:', bookingData);
 
-      // Si la réservation est gratuite (100% de réduction)
-      if (bookingData.discountAmount === 100 || bookingData.finalPrice === 0) {
-        console.log('🎁 Réservation gratuite détectée');
-        
-        // Créer directement la réservation
-        const { data: booking, error: bookingError } = await supabase
-          .from('bookings')
-          .insert({
-            user_id: session.user.id,
-            date: data.date,
-            time_slot: data.timeSlot,
-            duration: duration,
-            group_size: groupSize,
-            price: calculatedPrice,
-            message: data.message,
-            user_email: data.email,
-            user_name: data.fullName,
-            user_phone: data.phone,
-            payment_status: 'paid',
-            status: 'confirmed',
-            promo_code_id: form.getValues('promoCodeId'),
-            is_test_booking: false
-          })
-          .select()
-          .single();
-
-        if (bookingError) {
-          console.error('❌ Erreur création réservation:', bookingError);
-          throw bookingError;
-        }
-
-        console.log('✅ Réservation gratuite créée:', booking);
-        navigate(`/success?session_id=${booking.id}`);
-        return;
-      }
-
       // Stocker la session et les données de réservation
       const sessionData = {
         session: {

@@ -17,7 +17,7 @@ export const createCheckoutSession = async (
   });
 
   const metadata = createMetadata(data);
-  const isFreeBooking = data.finalPrice === 0;
+  const isFreeBooking = data.finalPrice === 0 || data.discountAmount === 100;
 
   // Format price description
   let priceDescription = `${data.groupSize} personnes - ${data.duration}h`;
@@ -25,9 +25,15 @@ export const createCheckoutSession = async (
     priceDescription += ` (-${Math.round(data.discountAmount)}% avec ${data.promoCode})`;
   }
 
-  // Ensure finalPrice is a number and convert to cents for Stripe
-  const unitAmount = Math.round((data.finalPrice || 0) * 100);
-  console.log('Final price in cents:', unitAmount);
+  // Si le discount est de 100%, le prix final doit être 0
+  const finalPrice = data.discountAmount === 100 ? 0 : data.finalPrice;
+  const unitAmount = Math.round((finalPrice || 0) * 100);
+  console.log('Final price calculation:', {
+    originalPrice: data.price,
+    discountAmount: data.discountAmount,
+    finalPrice,
+    unitAmount
+  });
 
   const sessionConfig: Stripe.Checkout.SessionCreateParams = {
     mode: 'payment',
@@ -54,7 +60,7 @@ export const createCheckoutSession = async (
 
   console.log('Final session config:', {
     mode: sessionConfig.mode,
-    finalPrice: data.finalPrice,
+    finalPrice,
     unitAmount,
     isFreeBooking,
     metadata: sessionConfig.metadata,
@@ -62,7 +68,7 @@ export const createCheckoutSession = async (
       code: data.promoCode,
       id: data.promoCodeId,
       originalPrice: data.price,
-      finalPrice: data.finalPrice,
+      finalPrice,
       discountAmount: data.discountAmount,
       description: priceDescription
     }

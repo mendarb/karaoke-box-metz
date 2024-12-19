@@ -20,7 +20,6 @@ export const useBookingSubmit = (
       console.log('🚀 Starting booking submission process', { data });
       setIsSubmitting(true);
       
-      // Vérifier si l'utilisateur est connecté
       const { data: { session } } = await supabase.auth.getSession();
       console.log('Session check:', { session });
       
@@ -92,12 +91,29 @@ export const useBookingSubmit = (
       localStorage.setItem('currentBookingSession', JSON.stringify(sessionData));
 
       // Créer la session de paiement
-      console.log('💳 Creating payment session...');
+      console.log('💳 Creating payment session with data:', {
+        ...bookingData,
+        bookingId: booking.id,
+        finalPrice: form.getValues('finalPrice') || calculatedPrice,
+      });
+
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
         body: {
-          ...bookingData,
           bookingId: booking.id,
+          userEmail: data.email,
+          date: data.date,
+          timeSlot: data.timeSlot,
+          duration: duration,
+          groupSize: groupSize,
+          price: calculatedPrice,
           finalPrice: form.getValues('finalPrice') || calculatedPrice,
+          message: data.message || '',
+          userId: session.user.id,
+          userName: data.fullName,
+          userPhone: data.phone,
+          isTestMode: isTestMode,
+          promoCodeId: form.getValues('promoCodeId'),
+          promoCode: form.getValues('promoCode'),
         }
       });
 

@@ -9,23 +9,28 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  console.log('📥 Webhook request received');
+  
   try {
     if (req.method === 'OPTIONS') {
       return new Response(null, { headers: corsHeaders });
     }
 
     const signature = req.headers.get('stripe-signature');
+    console.log('🔑 Webhook signature:', signature);
+    
     const body = await req.text();
-    console.log('Received webhook with signature:', signature);
+    console.log('📦 Webhook body received:', body.substring(0, 500) + '...');
 
     // Gestion spéciale pour les réservations gratuites
     if (signature === 'free-booking') {
-      console.log('Processing free booking webhook');
+      console.log('🆓 Processing free booking webhook');
       const eventData = JSON.parse(body);
       const supabaseUrl = Deno.env.get('SUPABASE_URL');
       const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
       if (!supabaseUrl || !supabaseServiceRoleKey) {
+        console.error('❌ Missing Supabase credentials');
         throw new Error('Missing Supabase credentials');
       }
 
@@ -43,16 +48,25 @@ serve(async (req) => {
 
     const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
     if (!webhookSecret) {
+      console.error('❌ Webhook secret not configured');
       throw new Error('Webhook secret not configured');
     }
 
     const eventData = JSON.parse(body);
+    console.log('📊 Event data parsed:', {
+      type: eventData.type,
+      id: eventData.id
+    });
+
     const isTestMode = eventData.data.object?.metadata?.isTestMode === 'true';
+    console.log('🔧 Mode:', isTestMode ? 'TEST' : 'LIVE');
+
     const stripeSecretKey = isTestMode 
       ? Deno.env.get('STRIPE_TEST_SECRET_KEY')
       : Deno.env.get('STRIPE_SECRET_KEY');
 
     if (!stripeSecretKey) {
+      console.error('❌ Stripe key not configured for mode:', isTestMode ? 'TEST' : 'LIVE');
       throw new Error(isTestMode ? 'Test mode API key not configured' : 'Live mode API key not configured');
     }
 
@@ -64,8 +78,9 @@ serve(async (req) => {
     let event: Stripe.Event;
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+      console.log('✅ Webhook signature verified');
     } catch (err) {
-      console.error('Webhook signature verification failed:', err);
+      console.error('❌ Webhook signature verification failed:', err);
       return new Response(
         JSON.stringify({ error: err.message }), 
         { 
@@ -79,6 +94,7 @@ serve(async (req) => {
     const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!supabaseUrl || !supabaseServiceRoleKey) {
+      console.error('❌ Missing Supabase credentials');
       throw new Error('Missing Supabase credentials');
     }
 
@@ -93,7 +109,12 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('Fatal error in webhook:', error);
+    console.error('❌ Fatal error in webhook:', {
+      error: {
+        message: error.message,
+        stack: error.stack
+      }
+    });
     return new Response(
       JSON.stringify({ error: error.message }), 
       { 

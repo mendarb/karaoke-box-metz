@@ -5,8 +5,8 @@ export const createBooking = async (
   session: Stripe.Checkout.Session,
   supabase: ReturnType<typeof createClient>
 ) => {
-  console.log('Starting createBooking function with session:', {
-    id: session.id,
+  console.log('🎯 Starting createBooking function:', {
+    sessionId: session.id,
     metadata: session.metadata,
     customerEmail: session.customer_email
   });
@@ -17,18 +17,12 @@ export const createBooking = async (
     throw new Error('No metadata found in session');
   }
 
-  console.log('📝 Creating booking with metadata:', metadata);
-  console.log('Session details:', {
-    customer_email: session.customer_email,
-    payment_status: session.payment_status,
-    amount_total: session.amount_total,
-    userId: metadata.userId,
-    sessionId: session.id,
-    paymentIntent: session.payment_intent
-  });
+  console.log('📝 Preparing booking data with metadata:', metadata);
 
   try {
     // Vérifier si la réservation existe déjà
+    console.log('🔍 Checking for existing booking with payment intent:', session.payment_intent);
+    
     const { data: existingBooking, error: searchError } = await supabase
       .from('bookings')
       .select('*')
@@ -36,7 +30,10 @@ export const createBooking = async (
       .single();
 
     if (searchError) {
-      console.error('❌ Error searching for existing booking:', searchError);
+      console.error('❌ Error searching for existing booking:', {
+        error: searchError,
+        paymentIntent: session.payment_intent
+      });
       throw searchError;
     }
 
@@ -72,14 +69,17 @@ export const createBooking = async (
       .single();
 
     if (bookingError) {
-      console.error('❌ Error creating booking:', bookingError);
+      console.error('❌ Error creating booking:', {
+        error: bookingError,
+        data: bookingData
+      });
       throw bookingError;
     }
 
     console.log('✅ Booking created successfully:', booking);
     return booking;
   } catch (error) {
-    console.error('❌ Error in createBooking:', error, {
+    console.error('❌ Fatal error in createBooking:', {
       error: {
         message: error.message,
         stack: error.stack

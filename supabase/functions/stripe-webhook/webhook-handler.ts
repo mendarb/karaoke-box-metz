@@ -8,18 +8,19 @@ export const handleWebhook = async (
   stripe: Stripe | null,
   supabase: ReturnType<typeof createClient>
 ) => {
-  console.log('💳 Processing webhook event:', {
+  console.log('🚀 Webhook event received:', {
     type: event.type,
+    id: event.id,
+    object: event.data.object,
+    created: event.created,
     metadata: event.data.object?.metadata,
-    eventId: event.id,
-    object: event.data.object
   });
 
   try {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
       
-      console.log('Session data:', {
+      console.log('💳 Processing checkout session:', {
         id: session.id,
         metadata: session.metadata,
         paymentStatus: session.payment_status,
@@ -27,7 +28,6 @@ export const handleWebhook = async (
         customerEmail: session.customer_email,
         paymentIntent: session.payment_intent,
         userId: session.metadata?.userId,
-        rawSession: session
       });
 
       if (!session.metadata?.userId) {
@@ -39,8 +39,15 @@ export const handleWebhook = async (
       const isFreeBooking = session.amount_total === 0;
       const isPaid = session.payment_status === 'paid';
       
+      console.log('💰 Payment status check:', {
+        isFreeBooking,
+        isPaid,
+        paymentStatus: session.payment_status,
+        amountTotal: session.amount_total
+      });
+
       if (isFreeBooking || isPaid) {
-        console.log('Creating booking with session:', {
+        console.log('✨ Creating booking for session:', {
           sessionId: session.id,
           metadata: session.metadata,
           isFreeBooking,
@@ -49,28 +56,33 @@ export const handleWebhook = async (
         });
 
         const booking = await createBooking(session, supabase);
-        console.log('✅ Booking created:', booking);
+        console.log('✅ Booking created successfully:', booking);
 
         await sendConfirmationEmail(booking, supabase);
-        console.log('📧 Confirmation email sent');
+        console.log('📧 Confirmation email sent for booking:', booking.id);
 
         return { received: true, booking };
       }
 
-      console.log('⚠️ Skipping unpaid session');
+      console.log('⚠️ Skipping unpaid session:', {
+        sessionId: session.id,
+        paymentStatus: session.payment_status
+      });
       return { received: true, skipped: true };
     }
 
     console.log(`⚠️ Unhandled event type: ${event.type}`);
     return { received: true, unhandled: true };
   } catch (error) {
-    console.error('❌ Error processing webhook:', error, {
-      eventType: event.type,
-      sessionId: event.data.object?.id,
-      metadata: event.data.object?.metadata,
+    console.error('❌ Error processing webhook:', {
       error: {
         message: error.message,
         stack: error.stack
+      },
+      event: {
+        type: event.type,
+        id: event.id,
+        object: event.data.object
       }
     });
     throw error;

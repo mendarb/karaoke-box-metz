@@ -21,16 +21,16 @@ export const createBooking = async (
 
   try {
     // Vérifier si la réservation existe déjà
-    console.log('🔍 Checking for existing booking with payment intent:', session.payment_intent);
-    
     if (session.payment_intent) {
+      console.log('🔍 Checking for existing booking with payment intent:', session.payment_intent);
+      
       const { data: existingBooking, error: searchError } = await supabase
         .from('bookings')
         .select('*')
         .eq('payment_intent_id', session.payment_intent)
-        .single();
+        .maybeSingle();
 
-      if (searchError && searchError.code !== 'PGRST116') {
+      if (searchError) {
         console.error('❌ Error searching for existing booking:', {
           error: searchError,
           paymentIntent: session.payment_intent
@@ -53,7 +53,7 @@ export const createBooking = async (
       status: 'confirmed',
       price: parseFloat(metadata.finalPrice),
       message: metadata.message || null,
-      user_email: session.customer_email,
+      user_email: session.customer_email || metadata.userEmail,
       user_name: metadata.userName,
       user_phone: metadata.userPhone,
       payment_status: session.amount_total === 0 ? 'paid' : session.payment_status,

@@ -12,6 +12,11 @@ export const calculateDiscountedPrice = (originalPrice: number, promoCode: any):
   let finalPrice = originalPrice;
   let discountAmount = 0;
 
+  console.log('Calculating discounted price:', {
+    originalPrice,
+    promoCode
+  });
+
   switch (promoCode.type) {
     case 'free':
       finalPrice = 0;
@@ -26,12 +31,19 @@ export const calculateDiscountedPrice = (originalPrice: number, promoCode: any):
     case 'fixed_amount':
       if (promoCode.value) {
         finalPrice = Math.max(0, originalPrice - promoCode.value);
-        discountAmount = (promoCode.value / originalPrice) * 100;
+        discountAmount = Math.min(100, (promoCode.value / originalPrice) * 100);
       }
       break;
     default:
       break;
   }
+
+  console.log('Price calculation result:', {
+    originalPrice,
+    finalPrice,
+    discountAmount,
+    promoType: promoCode.type
+  });
 
   return {
     finalPrice: Math.round(finalPrice * 100) / 100,

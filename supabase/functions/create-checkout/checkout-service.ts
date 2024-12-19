@@ -25,6 +25,10 @@ export const createCheckoutSession = async (
     priceDescription += ` (-${Math.round(data.discountAmount)}% avec ${data.promoCode})`;
   }
 
+  // Ensure finalPrice is a number and convert to cents for Stripe
+  const unitAmount = Math.round((data.finalPrice || 0) * 100);
+  console.log('Final price in cents:', unitAmount);
+
   const sessionConfig: Stripe.Checkout.SessionCreateParams = {
     mode: 'payment',
     success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
@@ -37,7 +41,7 @@ export const createCheckoutSession = async (
     line_items: [{
       price_data: {
         currency: 'eur',
-        unit_amount: Math.round(data.finalPrice * 100),
+        unit_amount: unitAmount,
         product_data: {
           name: `${data.isTestMode ? '[TEST] ' : ''}Karaoké BOX - MB EI`,
           description: priceDescription,
@@ -51,7 +55,7 @@ export const createCheckoutSession = async (
   console.log('Final session config:', {
     mode: sessionConfig.mode,
     finalPrice: data.finalPrice,
-    unitAmount: Math.round(data.finalPrice * 100),
+    unitAmount,
     isFreeBooking,
     metadata: sessionConfig.metadata,
     promoDetails: {

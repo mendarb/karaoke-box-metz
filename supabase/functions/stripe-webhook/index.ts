@@ -22,7 +22,7 @@ serve(async (req) => {
     const body = await req.text();
     console.log('📦 Webhook body received');
 
-    // Gestion spéciale pour les réservations gratuites
+    // Handle free bookings
     if (signature === 'free-booking') {
       console.log('🆓 Processing free booking webhook');
       const eventData = JSON.parse(body);
@@ -38,10 +38,7 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify(result),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200 
-        }
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -55,7 +52,8 @@ serve(async (req) => {
       type: eventData.type,
       id: eventData.id,
       metadata: eventData.data?.object?.metadata,
-      amount: eventData.data?.object?.amount_total
+      amount: eventData.data?.object?.amount_total,
+      paymentStatus: eventData.data?.object?.payment_status
     });
 
     const isTestMode = eventData.data?.object?.metadata?.isTestMode === 'true';
@@ -82,10 +80,7 @@ serve(async (req) => {
       console.error('❌ Webhook signature verification failed:', err);
       return new Response(
         JSON.stringify({ error: err.message }), 
-        { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -101,19 +96,13 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify(result),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
     console.error('❌ Fatal error in webhook:', error);
     return new Response(
       JSON.stringify({ error: error.message }), 
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500 
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }
 });

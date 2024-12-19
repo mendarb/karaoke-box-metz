@@ -16,17 +16,20 @@ export const handleWebhook = async (event: any, stripe: Stripe | null, supabase:
     metadata,
     isTestMode,
     mode: isTestMode ? 'test' : 'live',
-    amount: session.amount_total
+    amount: session.amount_total,
+    paymentStatus: session.payment_status
   });
 
   if (event.type === 'checkout.session.completed') {
     try {
-      // Mettre à jour la réservation existante
+      // Mark the booking as paid and confirmed for both test and live payments
       const { data: booking, error: updateError } = await supabase
         .from('bookings')
         .update({
           payment_status: 'paid',
-          payment_intent_id: session.payment_intent
+          status: 'confirmed',
+          payment_intent_id: session.payment_intent,
+          updated_at: new Date().toISOString()
         })
         .eq('id', metadata.bookingId)
         .select()
@@ -37,9 +40,14 @@ export const handleWebhook = async (event: any, stripe: Stripe | null, supabase:
         throw updateError;
       }
 
-      console.log('✅ Booking payment status updated:', booking);
+      console.log('✅ Booking updated:', {
+        bookingId: booking.id,
+        status: booking.status,
+        paymentStatus: booking.payment_status,
+        isTestMode: booking.is_test_booking
+      });
 
-      // Envoyer l'email de confirmation
+      // Send confirmation email
       try {
         const { error: emailError } = await supabase.functions.invoke('send-booking-email', {
           body: { booking }
@@ -52,7 +60,11 @@ export const handleWebhook = async (event: any, stripe: Stripe | null, supabase:
         console.error('❌ Error invoking email function:', emailError);
       }
 
-      return { message: 'Booking payment status updated successfully', booking };
+      return { 
+        message: 'Booking payment status updated successfully', 
+        booking,
+        isTestMode 
+      };
     } catch (error) {
       console.error('❌ Error in webhook handler:', error);
       throw error;

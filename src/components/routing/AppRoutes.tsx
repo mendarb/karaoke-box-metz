@@ -7,6 +7,9 @@ import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { BookingHistory } from "@/components/booking/BookingHistory";
 import { AccountPage } from "@/components/account/AccountPage";
 import { ProtectedRoute } from "./ProtectedRoute";
+import { Calendar } from "@/pages/Calendar";
+import { Settings } from "@/pages/Settings";
+import { MyBookings } from "@/pages/MyBookings";
 
 export const AppRoutes = () => {
   return (
@@ -16,10 +19,26 @@ export const AppRoutes = () => {
       <Route path="/legal/privacy" element={<Privacy />} />
       <Route path="/legal/cancellation" element={<Cancellation />} />
       <Route
-        path="/admin/*"
+        path="/admin"
         element={
           <ProtectedRoute adminOnly>
             <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/calendar"
+        element={
+          <ProtectedRoute adminOnly>
+            <Calendar />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/settings"
+        element={
+          <ProtectedRoute adminOnly>
+            <Settings />
           </ProtectedRoute>
         }
       />
@@ -35,7 +54,7 @@ export const AppRoutes = () => {
         path="/bookings"
         element={
           <ProtectedRoute>
-            <BookingHistory />
+            <MyBookings />
           </ProtectedRoute>
         }
       />

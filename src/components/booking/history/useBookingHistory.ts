@@ -1,34 +1,43 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { useUserState } from "@/hooks/useUserState";
+import { useToast } from "@/components/ui/use-toast";
 
 export const useBookingHistory = () => {
-  const { user } = useUserState();
+  const { toast } = useToast();
 
   return useQuery({
-    queryKey: ['user-bookings', user?.id],
+    queryKey: ['user-bookings'],
     queryFn: async () => {
-      if (!user?.id) {
-        console.log('No user ID found');
-        return [];
-      }
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session?.user) {
+          throw new Error('No session found');
+        }
 
-      console.log('Fetching bookings for user:', user.id);
-      const { data, error } = await supabase
-        .from('bookings')
-        .select('*')
-        .eq('user_id', user.id)
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+        const { data, error } = await supabase
+          .from('bookings')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching bookings:', error);
+        if (error) {
+          console.error('Error fetching bookings:', error);
+          throw error;
+        }
+
+        return data;
+      } catch (error: any) {
+        console.error('Error in useBookingHistory:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger vos réservations",
+          variant: "destructive",
+        });
         throw error;
       }
-
-      console.log('Fetched bookings:', data);
-      return data || [];
     },
-    enabled: !!user?.id,
+    retry: false,
   });
 };

@@ -1,8 +1,16 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { Session } from "@supabase/supabase-js";
+import { Session, User } from "@supabase/supabase-js";
 
-export const useUserState = () => {
+interface UserState {
+  session: Session | null;
+  user: User | null;
+  isAdmin: boolean;
+  isLoading: boolean;
+  sessionChecked: boolean;
+}
+
+export const useUserState = (): UserState => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [sessionChecked, setSessionChecked] = useState(false);

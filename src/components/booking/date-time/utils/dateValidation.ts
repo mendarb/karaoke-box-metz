@@ -1,42 +1,60 @@
 import { startOfDay, isBefore, isAfter } from "date-fns";
-import type { BookingSettings } from "@/components/admin/settings/types/bookingSettings";
+import { BookingSettings } from "@/components/admin/settings/types/bookingSettings";
+import { toast } from "@/hooks/use-toast";
 
-export const isDateExcluded = (
+export const validateDate = (
   date: Date,
   settings: BookingSettings | null | undefined,
   minDate: Date,
   maxDate: Date
-): boolean => {
-  if (!settings) return true;
+): { isValid: boolean; error?: string } => {
+  if (!settings) {
+    return { 
+      isValid: false, 
+      error: "Les paramètres de réservation ne sont pas disponibles" 
+    };
+  }
   
   const dateToCheck = startOfDay(date);
   
-  // Vérifier si la date est dans la plage autorisée
-  if (isBefore(dateToCheck, minDate) || isAfter(dateToCheck, maxDate)) {
-    console.log('Date outside booking window:', {
-      date: dateToCheck,
-      minDate,
-      maxDate,
-      beforeMin: isBefore(dateToCheck, minDate),
-      afterMax: isAfter(dateToCheck, maxDate)
-    });
-    return true;
+  if (isBefore(dateToCheck, minDate)) {
+    return { 
+      isValid: false, 
+      error: "La date sélectionnée est trop proche. Veuillez choisir une date plus éloignée." 
+    };
   }
 
-  // Vérifier si le jour est ouvert
+  if (isAfter(dateToCheck, maxDate)) {
+    return { 
+      isValid: false, 
+      error: "La date sélectionnée est trop éloignée. Veuillez choisir une date plus proche." 
+    };
+  }
+
   const dayOfWeek = dateToCheck.getDay().toString();
   const daySettings = settings.openingHours?.[dayOfWeek];
   
   if (!daySettings?.isOpen) {
-    console.log('Day is closed:', { date: dateToCheck, dayOfWeek });
-    return true;
+    return { 
+      isValid: false, 
+      error: "Nous sommes fermés ce jour-là" 
+    };
   }
 
-  // Vérifier si la date est exclue
   if (settings.excludedDays?.includes(dateToCheck.getTime())) {
-    console.log('Date is excluded:', dateToCheck);
-    return true;
+    return { 
+      isValid: false, 
+      error: "Cette date n'est pas disponible à la réservation" 
+    };
   }
 
-  return false;
+  return { isValid: true };
+};
+
+export const showDateValidationError = (error: string) => {
+  toast({
+    title: "Date non disponible",
+    description: error,
+    variant: "destructive",
+  });
 };

@@ -27,6 +27,7 @@ serve(async (req) => {
       userName: booking.user_name
     });
 
+    // Format the date and time
     const startHour = parseInt(booking.time_slot);
     const endHour = startHour + parseInt(booking.duration);
     const date = new Date(booking.date);
@@ -37,86 +38,81 @@ serve(async (req) => {
       day: 'numeric'
     });
 
+    // Construct the email content
     const emailContent = `
       <!DOCTYPE html>
       <html>
         <head>
           <meta charset="utf-8">
-          <title>Réservation ${type === 'confirmation' ? 'confirmée' : 'en attente'}</title>
           <style>
             body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
             .header { text-align: center; margin-bottom: 30px; }
-            .details { background-color: #f9f9f9; padding: 20px; border-radius: 8px; }
-            .footer { text-align: center; margin-top: 30px; font-size: 14px; color: #666; }
+            .details { background: #f9f9f9; padding: 20px; border-radius: 5px; }
+            .footer { text-align: center; margin-top: 30px; font-size: 0.9em; color: #666; }
           </style>
         </head>
         <body>
           <div class="container">
             <div class="header">
-              <h1>Karaoké BOX</h1>
               <h2>Réservation ${type === 'confirmation' ? 'confirmée' : 'en attente'}</h2>
             </div>
             <p>Bonjour ${booking.user_name},</p>
-            ${type === 'confirmation' ? `
-              <p>Votre réservation a été confirmée avec succès ! Voici les détails :</p>
-              <div class="details">
-                <p>📅 Date : ${formattedDate}</p>
-                <p>🕒 Horaire : ${startHour}h00 - ${endHour}h00</p>
-                <p>👥 Nombre de personnes : ${booking.group_size}</p>
-                <p>💶 Prix total : ${booking.price}€</p>
-              </div>
-              <p>Nous avons hâte de vous accueillir !</p>
-            ` : `
-              <p>Votre réservation est en attente de paiement.</p>
-              <p>N'hésitez pas à effectuer une nouvelle réservation sur notre site.</p>
-            `}
+            <p>${
+              type === 'confirmation' 
+                ? 'Votre réservation a été confirmée !' 
+                : 'Nous avons bien reçu votre demande de réservation.'
+            }</p>
+            <div class="details">
+              <h3>Détails de la réservation :</h3>
+              <p>📅 Date : ${formattedDate}</p>
+              <p>⏰ Horaire : ${startHour}h - ${endHour}h</p>
+              <p>👥 Nombre de personnes : ${booking.group_size}</p>
+              <p>💶 Prix total : ${booking.price}€</p>
+            </div>
             <div class="footer">
-              <p>Karaoké BOX<br>
-              📍 [Adresse]<br>
-              📞 [Téléphone]<br>
-              ✉️ contact@karaoke-box.fr</p>
+              <p>À bientôt !</p>
+              <p>L'équipe Lovable Karaoké</p>
             </div>
           </div>
         </body>
       </html>
     `;
 
-    console.log('📤 Sending email to:', booking.user_email);
-
+    // Send the email using Resend
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Karaoké BOX <onboarding@resend.dev>',
-        to: [booking.user_email],
-        subject: `Réservation ${type === 'confirmation' ? 'confirmée' : 'en attente'} - Karaoké BOX`,
+        from: 'Lovable Karaoké <reservation@lovablekaraoke.fr>',
+        to: booking.user_email,
+        subject: `Réservation ${type === 'confirmation' ? 'confirmée' : 'en attente'} - Lovable Karaoké`,
         html: emailContent,
       }),
     });
 
-    const result = await response.json();
-    
     if (!response.ok) {
-      console.error('❌ Error from Resend API:', result);
-      throw new Error(`Resend API error: ${JSON.stringify(result)}`);
+      const error = await response.json();
+      console.error('❌ Failed to send email:', error);
+      throw new Error('Failed to send email');
     }
-    
-    console.log('✅ Email sent successfully:', result);
 
-    return new Response(JSON.stringify(result), {
+    console.log('✅ Email sent successfully');
+    return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
     });
 
   } catch (error) {
-    console.error('❌ Error in email function:', error);
+    console.error('❌ Error processing email request:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      { 
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
     );
   }
 });

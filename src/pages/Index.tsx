@@ -4,7 +4,6 @@ import { AuthModal } from "@/components/auth/AuthModal";
 import { Navbar } from "@/components/navigation/Navbar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { AdminDashboardButton } from "@/components/admin/AdminDashboardButton";
 import { useUserState } from "@/hooks/useUserState";
 import { LegalLinks } from "@/components/legal/LegalLinks";
 import { CookieConsent } from "@/components/legal/CookieConsent";
@@ -12,7 +11,7 @@ import { CookieConsent } from "@/components/legal/CookieConsent";
 const Index = () => {
   const isMobile = useIsMobile();
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const { isAdmin, isLoading, sessionChecked } = useUserState();
+  const { isLoading, sessionChecked } = useUserState();
 
   if (isLoading && !sessionChecked) {
     return <LoadingSpinner />;
@@ -24,8 +23,6 @@ const Index = () => {
       
       <main className="flex-grow container mx-auto py-6 sm:py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto">
-          {isAdmin && <AdminDashboardButton />}
-
           <div className="mb-8 sm:mb-10 animate-fadeIn">
             <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
               Réservez votre box karaoké
@@ -52,15 +49,9 @@ const Index = () => {
             <div>
               <h3 className="text-lg font-semibold mb-4">Contact</h3>
               <div className="space-y-2 text-gray-600">
-                <p>
-                  Email: contact@karaoke-cabin.fr
-                </p>
-                <p>
-                  Tél: 01 23 45 67 89
-                </p>
-                <p>
-                  Adresse: 1 rue du Karaoké, 57000 Metz
-                </p>
+                <p>Email: contact@karaoke-cabin.fr</p>
+                <p>Tél: 01 23 45 67 89</p>
+                <p>Adresse: 1 rue du Karaoké, 57000 Metz</p>
               </div>
             </div>
             <div>
@@ -68,9 +59,7 @@ const Index = () => {
               <div className="space-y-2 text-gray-600">
                 <p>Du mercredi au dimanche</p>
                 <p>14h00 - 22h00</p>
-                <p className="text-sm italic mt-2">
-                  Fermé le lundi et mardi
-                </p>
+                <p className="text-sm italic mt-2">Fermé le lundi et mardi</p>
               </div>
             </div>
           </div>

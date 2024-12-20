@@ -13,28 +13,14 @@ export const DesktopNav = ({ user, isAdmin, onSignOut, onShowAuth }: DesktopNavP
   return (
     <div className="hidden md:flex items-center gap-4">
       {user && (
-        <>
-          <Link to="/my-bookings">
-            <Button variant="ghost">
-              Mes réservations
-            </Button>
-          </Link>
-          <Link to="/account">
-            <Button variant="ghost">
-              Mon compte
-            </Button>
-          </Link>
-        </>
-      )}
-      {isAdmin && (
-        <Link to="/admin">
+        <Link to="/my-bookings">
           <Button variant="ghost">
-            Admin
+            Mes réservations
           </Button>
         </Link>
       )}
       {user ? (
-        <UserNav onSignOut={onSignOut} />
+        <UserNav onSignOut={onSignOut} isAdmin={isAdmin} />
       ) : (
         <Button
           variant="outline"

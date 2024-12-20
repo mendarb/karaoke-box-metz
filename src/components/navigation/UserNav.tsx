@@ -11,9 +11,10 @@ import { User } from "lucide-react";
 
 interface UserNavProps {
   onSignOut: () => Promise<void>;
+  isAdmin: boolean;
 }
 
-export const UserNav = ({ onSignOut }: UserNavProps) => {
+export const UserNav = ({ onSignOut, isAdmin }: UserNavProps) => {
   const navigate = useNavigate();
 
   return (
@@ -30,6 +31,14 @@ export const UserNav = ({ onSignOut }: UserNavProps) => {
         <DropdownMenuItem onClick={() => navigate('/my-bookings')}>
           Mes réservations
         </DropdownMenuItem>
+        {isAdmin && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => navigate('/admin')}>
+              Administration
+            </DropdownMenuItem>
+          </>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={onSignOut} className="text-red-600">
           Déconnexion

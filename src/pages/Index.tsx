@@ -6,6 +6,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { AdminDashboardButton } from "@/components/admin/AdminDashboardButton";
 import { useUserState } from "@/hooks/useUserState";
+import { LegalLinks } from "@/components/legal/LegalLinks";
 
 const Index = () => {
   const isMobile = useIsMobile();
@@ -37,6 +38,13 @@ const Index = () => {
           </div>
         </div>
       </div>
+
+      <footer className="py-6 border-t mt-12">
+        <div className="max-w-2xl mx-auto px-4 flex justify-center">
+          <LegalLinks />
+        </div>
+      </footer>
+
       <AuthModal 
         isOpen={showAuthModal} 
         onClose={() => setShowAuthModal(false)} 

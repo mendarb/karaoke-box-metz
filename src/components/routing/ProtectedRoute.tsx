@@ -1,5 +1,6 @@
 import { Navigate } from "react-router-dom";
 import { useUserState } from "@/hooks/useUserState";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -15,7 +16,7 @@ export const ProtectedRoute = ({
   if (!sessionChecked || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+        <LoadingSpinner />
       </div>
     );
   }

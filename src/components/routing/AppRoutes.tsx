@@ -4,7 +4,6 @@ import Terms from "@/pages/legal/Terms";
 import Privacy from "@/pages/legal/Privacy";
 import Cancellation from "@/pages/legal/Cancellation";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
-import { BookingHistory } from "@/components/booking/BookingHistory";
 import { AccountPage } from "@/components/account/AccountPage";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { Calendar } from "@/pages/Calendar";
@@ -18,6 +17,8 @@ export const AppRoutes = () => {
       <Route path="/legal/terms" element={<Terms />} />
       <Route path="/legal/privacy" element={<Privacy />} />
       <Route path="/legal/cancellation" element={<Cancellation />} />
+      
+      {/* Routes protégées pour l'admin */}
       <Route
         path="/admin"
         element={
@@ -42,6 +43,8 @@ export const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+
+      {/* Routes protégées pour les utilisateurs */}
       <Route
         path="/account"
         element={
@@ -51,7 +54,7 @@ export const AppRoutes = () => {
         }
       />
       <Route
-        path="/bookings"
+        path="/my-bookings"
         element={
           <ProtectedRoute>
             <MyBookings />

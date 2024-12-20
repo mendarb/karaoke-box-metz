@@ -5,11 +5,13 @@ import { Session } from "@supabase/supabase-js";
 export const useUserState = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [sessionChecked, setSessionChecked] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setIsLoading(false);
+      setSessionChecked(true);
     });
 
     const {
@@ -17,6 +19,7 @@ export const useUserState = () => {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setIsLoading(false);
+      setSessionChecked(true);
     });
 
     return () => subscription.unsubscribe();
@@ -30,5 +33,6 @@ export const useUserState = () => {
     user,
     isAdmin,
     isLoading,
+    sessionChecked,
   };
 };

@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { addDays, startOfDay } from "date-fns";
+import { toast } from "@/hooks/use-toast";
+import type { BookingSettings } from "@/components/admin/settings/types/bookingSettings";
 
 export const useBookingSettings = () => {
   const { data: settings, isLoading } = useQuery({
@@ -11,16 +13,28 @@ export const useBookingSettings = () => {
         .from('booking_settings')
         .select('*')
         .eq('key', 'booking_settings')
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching settings:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les paramètres de réservation",
+          variant: "destructive",
+        });
         throw error;
       }
 
-      console.log('Loaded settings:', data?.value);
-      return data?.value;
+      if (!data?.value) {
+        console.log('No settings found');
+        return null;
+      }
+
+      console.log('Loaded settings:', data.value);
+      return data.value as BookingSettings;
     },
+    retry: 1,
+    staleTime: 30000,
   });
 
   const today = startOfDay(new Date());

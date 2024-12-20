@@ -2,31 +2,28 @@ import { startOfDay, isBefore, isAfter } from "date-fns";
 import type { BookingSettings } from "@/components/admin/settings/types/bookingSettings";
 
 export const isDateExcluded = (
-  date: Date, 
-  settings: BookingSettings | undefined, 
-  minDate: Date, 
+  date: Date,
+  settings: BookingSettings | null | undefined,
+  minDate: Date,
   maxDate: Date
-) => {
+): boolean => {
   if (!settings) return true;
   
   const dateToCheck = startOfDay(date);
   
-  if (isBefore(dateToCheck, minDate)) {
-    console.log('Date before minimum allowed:', {
+  // Vérifier si la date est dans la plage autorisée
+  if (isBefore(dateToCheck, minDate) || isAfter(dateToCheck, maxDate)) {
+    console.log('Date outside booking window:', {
       date: dateToCheck,
       minDate,
-    });
-    return true;
-  }
-
-  if (isAfter(dateToCheck, maxDate)) {
-    console.log('Date after maximum allowed:', {
-      date: dateToCheck,
       maxDate,
+      beforeMin: isBefore(dateToCheck, minDate),
+      afterMax: isAfter(dateToCheck, maxDate)
     });
     return true;
   }
 
+  // Vérifier si le jour est ouvert
   const dayOfWeek = dateToCheck.getDay().toString();
   const daySettings = settings.openingHours?.[dayOfWeek];
   
@@ -35,6 +32,7 @@ export const isDateExcluded = (
     return true;
   }
 
+  // Vérifier si la date est exclue
   if (settings.excludedDays?.includes(dateToCheck.getTime())) {
     console.log('Date is excluded:', dateToCheck);
     return true;

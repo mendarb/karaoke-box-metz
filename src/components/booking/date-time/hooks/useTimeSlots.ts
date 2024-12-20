@@ -3,7 +3,7 @@ import { toast } from "@/hooks/use-toast";
 import type { BookingSettings } from "@/components/admin/settings/types/bookingSettings";
 
 export const useTimeSlots = () => {
-  const getAvailableSlots = async (date: Date, settings: BookingSettings | undefined) => {
+  const getAvailableSlots = async (date: Date, settings: BookingSettings | null | undefined) => {
     if (!settings?.openingHours) {
       console.log('No opening hours settings found');
       return [];
@@ -70,7 +70,7 @@ export const useTimeSlots = () => {
   const getAvailableHoursForSlot = async (
     date: Date, 
     timeSlot: string, 
-    settings: BookingSettings | undefined
+    settings: BookingSettings | null | undefined
   ) => {
     if (!settings?.openingHours) {
       toast({

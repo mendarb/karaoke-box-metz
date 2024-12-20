@@ -7,6 +7,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { AdminDashboardButton } from "@/components/admin/AdminDashboardButton";
 import { useUserState } from "@/hooks/useUserState";
 import { LegalLinks } from "@/components/legal/LegalLinks";
+import { CookieConsent } from "@/components/legal/CookieConsent";
 
 const Index = () => {
   const isMobile = useIsMobile();
@@ -49,6 +50,7 @@ const Index = () => {
         isOpen={showAuthModal} 
         onClose={() => setShowAuthModal(false)} 
       />
+      <CookieConsent />
     </div>
   );
 };

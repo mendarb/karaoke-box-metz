@@ -49,12 +49,13 @@ export const useBookingSubmit = (
         status: 'pending',
         price: calculatedPrice,
         message: data.message || null,
-        user_email: data.email,
-        user_name: data.fullName,
+        user_email: data.email || session.user.email,
+        user_name: data.fullName || session.user.user_metadata?.full_name,
         user_phone: data.phone,
         payment_status: 'unpaid',
         is_test_booking: isTestMode,
         promo_code_id: form.getValues('promoCodeId'),
+        cabin: data.cabin,
       };
 
       console.log('📝 Creating booking with data:', bookingData);
@@ -86,6 +87,7 @@ export const useBookingSubmit = (
           groupSize: groupSize,
           price: calculatedPrice,
           isTestMode: isTestMode,
+          cabin: data.cabin,
         },
       };
       localStorage.setItem('currentBookingSession', JSON.stringify(sessionData));
@@ -100,7 +102,7 @@ export const useBookingSubmit = (
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
         body: {
           bookingId: booking.id,
-          userEmail: data.email,
+          userEmail: data.email || session.user.email,
           date: data.date,
           timeSlot: data.timeSlot,
           duration: duration,
@@ -109,11 +111,12 @@ export const useBookingSubmit = (
           finalPrice: form.getValues('finalPrice') || calculatedPrice,
           message: data.message || '',
           userId: session.user.id,
-          userName: data.fullName,
+          userName: data.fullName || session.user.user_metadata?.full_name,
           userPhone: data.phone,
           isTestMode: isTestMode,
           promoCodeId: form.getValues('promoCodeId'),
           promoCode: form.getValues('promoCode'),
+          cabin: data.cabin,
         }
       });
 

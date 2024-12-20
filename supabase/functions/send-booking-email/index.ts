@@ -1,23 +1,26 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { booking, type } = await req.json();
-    console.log('📧 Starting email sending process for booking:', { 
-      bookingId: booking.id, 
-      type,
-      userEmail: booking.user_email,
-      userName: booking.user_name
-    });
+    if (!RESEND_API_KEY) {
+      console.error('❌ RESEND_API_KEY is not configured');
+      throw new Error('RESEND_API_KEY is not configured');
+    }
+
+    const { booking, type = 'confirmation' } = await req.json();
+    console.log('📧 Processing email request:', { bookingId: booking.id, type });
 
     const startHour = parseInt(booking.time_slot);
     const endHour = startHour + parseInt(booking.duration);
@@ -74,13 +77,7 @@ serve(async (req) => {
       </html>
     `;
 
-    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-    if (!RESEND_API_KEY) {
-      console.error('❌ RESEND_API_KEY is not configured');
-      throw new Error('RESEND_API_KEY is not configured');
-    }
-
-    console.log('📤 Attempting to send email to:', booking.user_email);
+    console.log('📤 Sending email to:', booking.user_email);
 
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -89,30 +86,21 @@ serve(async (req) => {
         'Authorization': `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: 'Karaoké BOX <reservation@karaoke-box.fr>',
-        to: booking.user_email,
+        from: 'Karaoké BOX <onboarding@resend.dev>',
+        to: [booking.user_email],
         subject: `Réservation ${type === 'confirmation' ? 'confirmée' : 'en attente'} - Karaoké BOX`,
         html: emailContent,
       }),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ Resend API error:', {
-        status: response.status,
-        statusText: response.statusText,
-        error: errorText
-      });
-      throw new Error(`Failed to send email: ${errorText}`);
-    }
-
     const result = await response.json();
     console.log('✅ Email sent successfully:', result);
 
-    return new Response(
-      JSON.stringify({ message: 'Email sent successfully', result }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify(result), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: response.ok ? 200 : 400,
+    });
+
   } catch (error) {
     console.error('❌ Error in email function:', error);
     return new Response(

@@ -47,9 +47,11 @@
 @keyframes fadeIn {
   from {
     opacity: 0;
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -60,4 +62,32 @@
 
 .glass-hover {
   @apply hover:bg-white/80 transition-all duration-300;
+}
+
+/* Card styles */
+.card-hover {
+  @apply transition-all duration-300 hover:shadow-lg hover:scale-[1.01];
+}
+
+/* Container styles */
+.container {
+  @apply px-4 mx-auto max-w-7xl sm:px-6 lg:px-8;
+}
+
+/* Form styles */
+.form-container {
+  @apply space-y-6;
+}
+
+.form-section {
+  @apply space-y-4;
+}
+
+/* Button styles */
+.btn-primary {
+  @apply bg-violet-600 text-white hover:bg-violet-700 transition-colors;
+}
+
+.btn-secondary {
+  @apply bg-gray-100 text-gray-900 hover:bg-gray-200 transition-colors;
 }

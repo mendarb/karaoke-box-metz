@@ -20,7 +20,12 @@ serve(async (req) => {
     }
 
     const { booking, type = 'confirmation' } = await req.json();
-    console.log('📧 Processing email request:', { bookingId: booking.id, type });
+    console.log('📧 Processing email request:', { 
+      bookingId: booking.id, 
+      type,
+      userEmail: booking.user_email,
+      userName: booking.user_name
+    });
 
     const startHour = parseInt(booking.time_slot);
     const endHour = startHour + parseInt(booking.duration);
@@ -94,11 +99,17 @@ serve(async (req) => {
     });
 
     const result = await response.json();
+    
+    if (!response.ok) {
+      console.error('❌ Error from Resend API:', result);
+      throw new Error(`Resend API error: ${JSON.stringify(result)}`);
+    }
+    
     console.log('✅ Email sent successfully:', result);
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: response.ok ? 200 : 400,
+      status: 200,
     });
 
   } catch (error) {

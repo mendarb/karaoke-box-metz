@@ -28,6 +28,7 @@ export const Navbar = ({ onShowAuth }: NavbarProps) => {
           />
           <MobileNav
             user={user}
+            isAdmin={isAdmin}
             onSignOut={handleSignOut}
             onShowAuth={onShowAuth}
           />

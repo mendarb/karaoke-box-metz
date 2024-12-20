@@ -3,11 +3,13 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const DashboardSidebar = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const location = useLocation();
+  const isMobile = useIsMobile();
 
   const handleLogout = async () => {
     try {
@@ -27,12 +29,12 @@ export const DashboardSidebar = () => {
   };
 
   return (
-    <div className="h-screen bg-card p-4 flex flex-col border-r relative">
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold px-4 mb-4">Karaoke Admin</h2>
+    <div className={`h-full bg-card flex flex-col border-r relative ${isMobile ? 'min-h-screen' : ''}`}>
+      <div className="p-4 mb-4">
+        <h2 className="text-lg font-semibold px-4">Karaoke Admin</h2>
       </div>
 
-      <nav className="space-y-2 flex-1">
+      <nav className="space-y-2 flex-1 p-4">
         <Button 
           variant={isActive("/admin") ? "secondary" : "ghost"} 
           className="w-full justify-start" 

@@ -16,19 +16,22 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   if (isMobile) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="flex items-center border-b p-4">
+        <div className="sticky top-0 z-40 flex items-center border-b bg-background p-4">
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="outline" size="icon">
+              <Button variant="outline" size="icon" className="mr-4">
                 <Menu className="h-4 w-4" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="p-0">
+            <SheetContent side="left" className="p-0 w-[240px]">
               <DashboardSidebar />
             </SheetContent>
           </Sheet>
+          <h1 className="text-lg font-semibold">Dashboard Admin</h1>
         </div>
-        {children}
+        <div className="p-4">
+          {children}
+        </div>
       </div>
     );
   }

@@ -41,35 +41,42 @@ export const TermsDialog = ({ onAccept }: TermsDialogProps) => {
             <section>
               <h3 className="font-semibold mb-2">1. Objet</h3>
               <p>
-                Les présentes Conditions Générales de Vente (CGV) régissent les relations entre [Nom de l'entreprise] et les clients utilisant notre service de réservation en ligne.
+                Les présentes Conditions Générales de Vente (CGV) régissent l'ensemble des relations entre [Nom de l'entreprise], ci-après dénommée "le Prestataire", et toute personne physique ou morale effectuant une réservation, ci-après dénommée "le Client".
               </p>
             </section>
 
             <section>
-              <h3 className="font-semibold mb-2">2. Réservation</h3>
+              <h3 className="font-semibold mb-2">2. Prix et Modalités de Paiement</h3>
               <p>
-                La réservation n'est définitive qu'après confirmation de notre part et réception du paiement intégral.
+                Les prix sont indiqués en euros TTC. Le paiement s'effectue en ligne au moment de la réservation. La réservation n'est définitive qu'après confirmation du paiement.
               </p>
             </section>
 
             <section>
-              <h3 className="font-semibold mb-2">3. Prix et Paiement</h3>
+              <h3 className="font-semibold mb-2">3. Droit de Rétractation</h3>
               <p>
-                Les prix sont indiqués en euros TTC. Le paiement s'effectue en ligne au moment de la réservation.
+                Conformément à l'article L221-28 12° du Code de la consommation, le droit de rétractation ne peut être exercé pour les prestations de services d'activités de loisirs qui doivent être fournis à une date déterminée.
               </p>
             </section>
 
             <section>
-              <h3 className="font-semibold mb-2">4. Annulation et Remboursement</h3>
+              <h3 className="font-semibold mb-2">4. Responsabilité</h3>
               <p>
-                Toute annulation doit être effectuée au moins 48 heures avant la date réservée pour un remboursement intégral.
+                Le Prestataire ne pourra être tenu responsable des dommages directs ou indirects causés au matériel du Client lors de l'utilisation du service.
               </p>
             </section>
 
             <section>
-              <h3 className="font-semibold mb-2">5. Responsabilité</h3>
+              <h3 className="font-semibold mb-2">5. Protection des Données Personnelles</h3>
               <p>
-                Nous nous réservons le droit de modifier ou d'annuler une réservation en cas de force majeure.
+                Les données personnelles collectées sont traitées conformément au Règlement Général sur la Protection des Données (RGPD) et à la loi Informatique et Libertés.
+              </p>
+            </section>
+
+            <section>
+              <h3 className="font-semibold mb-2">6. Droit Applicable</h3>
+              <p>
+                Les présentes CGV sont soumises au droit français. En cas de litige, une solution amiable sera recherchée avant toute action judiciaire.
               </p>
             </section>
           </div>

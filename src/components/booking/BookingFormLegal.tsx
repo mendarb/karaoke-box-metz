@@ -28,13 +28,22 @@ export const BookingFormLegal = ({ form }: BookingFormLegalProps) => {
               <p className="text-sm text-gray-500">
                 J'accepte les <TermsDialog onAccept={() => field.onChange(true)} />, la{" "}
                 <PrivacyDialog /> et la{" "}
-                <CancellationDialog />
+                <CancellationDialog />. En cochant cette case, je consens au traitement de mes données personnelles conformément à la politique de confidentialité.
               </p>
               <FormMessage />
             </div>
           </FormItem>
         )}
       />
+
+      <div className="text-xs text-gray-500 space-y-2">
+        <p>
+          Conformément au RGPD, vous disposez d'un droit d'accès, de rectification, d'effacement, et de portabilité des données vous concernant.
+        </p>
+        <p>
+          Vos données sont utilisées uniquement dans le cadre de votre réservation et ne sont pas transmises à des tiers.
+        </p>
+      </div>
     </div>
   );
 };

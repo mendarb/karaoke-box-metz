@@ -29,28 +29,66 @@ export const PrivacyDialog = () => {
             <section>
               <h3 className="font-semibold mb-2">1. Collecte des Données</h3>
               <p>
-                Nous collectons uniquement les données nécessaires à la gestion de vos réservations : nom, prénom, email, numéro de téléphone.
+                Conformément au RGPD, nous collectons et traitons les données suivantes :
+                - Nom et prénom
+                - Adresse email
+                - Numéro de téléphone
+                - Informations de réservation
               </p>
             </section>
 
             <section>
-              <h3 className="font-semibold mb-2">2. Utilisation des Données</h3>
+              <h3 className="font-semibold mb-2">2. Finalités du Traitement</h3>
               <p>
-                Vos données sont utilisées exclusivement pour la gestion de vos réservations et pour vous contacter en cas de nécessité.
+                Vos données sont collectées pour :
+                - La gestion de vos réservations
+                - L'envoi de confirmations et rappels
+                - La facturation
+                - Le service client
               </p>
             </section>
 
             <section>
-              <h3 className="font-semibold mb-2">3. Protection des Données</h3>
+              <h3 className="font-semibold mb-2">3. Base Légale</h3>
               <p>
-                Nous mettons en œuvre toutes les mesures nécessaires pour protéger vos données personnelles conformément au RGPD.
+                Le traitement de vos données est basé sur :
+                - L'exécution du contrat de réservation
+                - Votre consentement explicite
+                - Nos obligations légales
               </p>
             </section>
 
             <section>
-              <h3 className="font-semibold mb-2">4. Vos Droits</h3>
+              <h3 className="font-semibold mb-2">4. Durée de Conservation</h3>
               <p>
-                Vous disposez d'un droit d'accès, de rectification et de suppression de vos données personnelles.
+                Vos données sont conservées pendant la durée nécessaire à la finalité du traitement, conformément aux obligations légales.
+              </p>
+            </section>
+
+            <section>
+              <h3 className="font-semibold mb-2">5. Vos Droits</h3>
+              <p>
+                Vous disposez des droits suivants :
+                - Droit d'accès
+                - Droit de rectification
+                - Droit à l'effacement
+                - Droit à la portabilité
+                - Droit d'opposition
+                - Droit à la limitation du traitement
+              </p>
+            </section>
+
+            <section>
+              <h3 className="font-semibold mb-2">6. Contact DPO</h3>
+              <p>
+                Pour exercer vos droits ou pour toute question, contactez notre Délégué à la Protection des Données à [email DPO].
+              </p>
+            </section>
+
+            <section>
+              <h3 className="font-semibold mb-2">7. CNIL</h3>
+              <p>
+                Vous pouvez introduire une réclamation auprès de la CNIL : www.cnil.fr
               </p>
             </section>
           </div>

@@ -13,7 +13,7 @@ export const useBookingSubmit = (
 ) => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { data: settings } = useBookingSettings();
+  const { settings } = useBookingSettings();
 
   const handleSubmit = async (data: any) => {
     try {

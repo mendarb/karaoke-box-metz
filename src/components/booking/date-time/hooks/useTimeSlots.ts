@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { toast } from "@/hooks/use-toast";
 import type { BookingSettings } from "@/components/admin/settings/types/bookingSettings";
 
 export const useTimeSlots = () => {
@@ -29,7 +30,12 @@ export const useTimeSlots = () => {
 
       if (error) {
         console.error('Error checking bookings:', error);
-        throw error;
+        toast({
+          title: "Erreur",
+          description: "Impossible de vérifier les disponibilités",
+          variant: "destructive",
+        });
+        return [];
       }
 
       const availableSlots = slots.filter(slot => {
@@ -52,7 +58,12 @@ export const useTimeSlots = () => {
       return availableSlots;
     } catch (error) {
       console.error('Error fetching bookings:', error);
-      return slots;
+      toast({
+        title: "Erreur",
+        description: "Impossible de vérifier les disponibilités",
+        variant: "destructive",
+      });
+      return [];
     }
   };
 
@@ -61,7 +72,14 @@ export const useTimeSlots = () => {
     timeSlot: string, 
     settings: BookingSettings | undefined
   ) => {
-    if (!settings?.openingHours) return 0;
+    if (!settings?.openingHours) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de vérifier les disponibilités",
+        variant: "destructive",
+      });
+      return 0;
+    }
 
     const daySettings = settings.openingHours[date.getDay().toString()];
     if (!daySettings?.isOpen || !daySettings.slots) {
@@ -94,7 +112,12 @@ export const useTimeSlots = () => {
 
       if (error) {
         console.error('Error checking bookings:', error);
-        throw error;
+        toast({
+          title: "Erreur",
+          description: "Impossible de vérifier les disponibilités",
+          variant: "destructive",
+        });
+        return 0;
       }
 
       if (!bookings || bookings.length === 0) {
@@ -103,7 +126,6 @@ export const useTimeSlots = () => {
       }
 
       const slotTime = parseInt(timeSlot.split(':')[0]);
-      
       let availableHours = maxPossibleHours;
 
       bookings.forEach(booking => {
@@ -120,7 +142,12 @@ export const useTimeSlots = () => {
       return availableHours;
     } catch (error) {
       console.error('Error calculating available hours:', error);
-      return maxPossibleHours;
+      toast({
+        title: "Erreur",
+        description: "Impossible de vérifier les disponibilités",
+        variant: "destructive",
+      });
+      return 0;
     }
   };
 

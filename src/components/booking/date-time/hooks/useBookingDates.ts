@@ -1,11 +1,10 @@
 import { useBookingSettings } from "./useBookingSettings";
-import { getDateBoundaries, isDateExcluded } from "../utils/dateValidation";
+import { isDateExcluded } from "../utils/dateValidation";
 import { useTimeSlots } from "./useTimeSlots";
 
 export const useBookingDates = () => {
-  const { data: settings } = useBookingSettings();
+  const { settings, isLoading, minDate, maxDate } = useBookingSettings();
   const { getAvailableSlots, getAvailableHoursForSlot } = useTimeSlots();
-  const { minDate, maxDate } = getDateBoundaries(settings);
 
   console.log('useBookingDates settings:', {
     settings,
@@ -20,6 +19,7 @@ export const useBookingDates = () => {
 
   return {
     settings,
+    isLoading,
     minDate,
     maxDate,
     isDayExcluded,

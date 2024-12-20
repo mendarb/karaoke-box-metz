@@ -3,6 +3,7 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/comp
 import { UseFormReturn } from "react-hook-form";
 import { startOfDay, format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface BookingCalendarProps {
   form: UseFormReturn<any>;
@@ -11,6 +12,7 @@ interface BookingCalendarProps {
   selectedDate?: Date;
   minDate: Date;
   maxDate: Date;
+  isLoading?: boolean;
 }
 
 export const BookingCalendar = ({ 
@@ -19,8 +21,18 @@ export const BookingCalendar = ({
   onDateSelect,
   selectedDate,
   minDate,
-  maxDate
+  maxDate,
+  isLoading = false
 }: BookingCalendarProps) => {
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-6 w-24" />
+        <Skeleton className="h-[350px] w-full" />
+      </div>
+    );
+  }
+
   return (
     <FormField
       control={form.control}
@@ -48,6 +60,11 @@ export const BookingCalendar = ({
             toDate={maxDate}
             initialFocus
             locale={fr}
+            className="rounded-md border shadow-sm"
+            classNames={{
+              day_selected: "bg-violet-600 hover:bg-violet-700 focus:bg-violet-700",
+              day_today: "bg-violet-100 text-violet-900",
+            }}
           />
           <FormMessage />
           {selectedDate && (

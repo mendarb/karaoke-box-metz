@@ -12,7 +12,12 @@ serve(async (req) => {
 
   try {
     const { booking, type } = await req.json();
-    console.log('📧 Sending email for booking:', { bookingId: booking.id, type });
+    console.log('📧 Starting email sending process for booking:', { 
+      bookingId: booking.id, 
+      type,
+      userEmail: booking.user_email,
+      userName: booking.user_name
+    });
 
     const startHour = parseInt(booking.time_slot);
     const endHour = startHour + parseInt(booking.duration);
@@ -25,29 +30,57 @@ serve(async (req) => {
     });
 
     const emailContent = `
-      <h1>Réservation ${type === 'confirmation' ? 'confirmée' : 'en attente'}</h1>
-      <p>Bonjour ${booking.user_name},</p>
-      <p>${type === 'confirmation' 
-        ? 'Votre réservation a été confirmée.' 
-        : 'Votre réservation est en attente de paiement.'}</p>
-      <h2>Détails de la réservation :</h2>
-      <ul>
-        <li>Date : ${formattedDate}</li>
-        <li>Horaire : ${startHour}h00 - ${endHour}h00</li>
-        <li>Durée : ${booking.duration}h</li>
-        <li>Nombre de personnes : ${booking.group_size}</li>
-        <li>Prix : ${booking.price}€</li>
-      </ul>
-      ${booking.is_test_booking ? '<p><em>Ceci est une réservation de test.</em></p>' : ''}
-      <p>À bientôt !</p>
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Réservation ${type === 'confirmation' ? 'confirmée' : 'en attente'}</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { text-align: center; margin-bottom: 30px; }
+            .details { background-color: #f9f9f9; padding: 20px; border-radius: 8px; }
+            .footer { text-align: center; margin-top: 30px; font-size: 14px; color: #666; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Karaoké BOX</h1>
+              <h2>Réservation ${type === 'confirmation' ? 'confirmée' : 'en attente'}</h2>
+            </div>
+            <p>Bonjour ${booking.user_name},</p>
+            ${type === 'confirmation' ? `
+              <p>Votre réservation a été confirmée avec succès ! Voici les détails :</p>
+              <div class="details">
+                <p>📅 Date : ${formattedDate}</p>
+                <p>🕒 Horaire : ${startHour}h00 - ${endHour}h00</p>
+                <p>👥 Nombre de personnes : ${booking.group_size}</p>
+                <p>💶 Prix total : ${booking.price}€</p>
+              </div>
+              <p>Nous avons hâte de vous accueillir !</p>
+            ` : `
+              <p>Votre réservation est en attente de paiement.</p>
+              <p>N'hésitez pas à effectuer une nouvelle réservation sur notre site.</p>
+            `}
+            <div class="footer">
+              <p>Karaoké BOX<br>
+              📍 [Adresse]<br>
+              📞 [Téléphone]<br>
+              ✉️ contact@karaoke-box.fr</p>
+            </div>
+          </div>
+        </body>
+      </html>
     `;
 
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
     if (!RESEND_API_KEY) {
-      throw new Error('Missing RESEND_API_KEY');
+      console.error('❌ RESEND_API_KEY is not configured');
+      throw new Error('RESEND_API_KEY is not configured');
     }
 
-    console.log('Sending email with content:', emailContent);
+    console.log('📤 Attempting to send email to:', booking.user_email);
 
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -64,16 +97,20 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      console.error('Error sending email:', error);
-      throw new Error(`Failed to send email: ${error}`);
+      const errorText = await response.text();
+      console.error('❌ Resend API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText
+      });
+      throw new Error(`Failed to send email: ${errorText}`);
     }
 
     const result = await response.json();
     console.log('✅ Email sent successfully:', result);
 
     return new Response(
-      JSON.stringify({ message: 'Email sent successfully' }),
+      JSON.stringify({ message: 'Email sent successfully', result }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {

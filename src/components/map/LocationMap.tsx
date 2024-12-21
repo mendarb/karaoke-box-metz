@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { LoadingSpinner } from '../ui/loading-spinner';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import { LatLngExpression, Map as LeafletMap } from 'leaflet';
+import { LatLngExpression, LatLngTuple } from 'leaflet';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 
 // Fix for default marker icons in Leaflet
@@ -26,7 +26,7 @@ interface Location {
 }
 
 // Component to handle map initialization
-const MapInitializer = ({ center }: { center: LatLngExpression }) => {
+const MapInitializer = ({ center }: { center: LatLngTuple }) => {
   const map = useMap();
   
   useEffect(() => {
@@ -60,14 +60,14 @@ const LocationMap = () => {
   }
 
   // Calculate map center based on locations
-  const center = locations.reduce(
+  const center: LatLngTuple = locations.reduce(
     (acc, location) => {
       acc[0] += location.latitude;
       acc[1] += location.longitude;
       return acc;
     },
     [0, 0]
-  ).map(coord => coord / locations.length) as [number, number];
+  ).map(coord => coord / locations.length) as LatLngTuple;
 
   return (
     <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg">

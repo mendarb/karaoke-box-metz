@@ -17,7 +17,8 @@ serve(async (req) => {
       bookingId: data.bookingId,
       email: data.userEmail,
       isTestMode: data.isTestMode,
-      price: data.finalPrice
+      price: data.finalPrice,
+      mode: data.isTestMode ? 'TEST' : 'LIVE'
     });
 
     const requiredFields = [
@@ -45,13 +46,14 @@ serve(async (req) => {
       );
     }
 
-    // Sélectionner la clé API Stripe en fonction du mode
+    // Get the appropriate Stripe key based on mode
     const stripeKey = data.isTestMode 
       ? Deno.env.get('STRIPE_TEST_SECRET_KEY') 
       : Deno.env.get('STRIPE_SECRET_KEY');
 
     if (!stripeKey) {
       const mode = data.isTestMode ? 'test' : 'live';
+      console.error(`❌ Stripe ${mode} mode API key not found`);
       throw new Error(`Stripe ${mode} mode API key not configured`);
     }
 
@@ -120,21 +122,31 @@ serve(async (req) => {
       mode: data.isTestMode ? 'TEST' : 'LIVE',
       amount: sessionConfig.line_items[0].price_data.unit_amount,
       email: data.userEmail,
-      bookingId: data.bookingId
+      bookingId: data.bookingId,
+      isTestMode: data.isTestMode
     });
 
-    const session = await stripe.checkout.sessions.create(sessionConfig);
+    try {
+      const session = await stripe.checkout.sessions.create(sessionConfig);
+      console.log('✅ Checkout session created:', {
+        sessionId: session.id,
+        mode: data.isTestMode ? 'TEST' : 'LIVE',
+        url: session.url,
+        isTestMode: data.isTestMode
+      });
 
-    console.log('✅ Checkout session created:', {
-      sessionId: session.id,
-      mode: data.isTestMode ? 'TEST' : 'LIVE',
-      url: session.url
-    });
-
-    return new Response(
-      JSON.stringify({ url: session.url }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
-    );
+      return new Response(
+        JSON.stringify({ url: session.url }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      );
+    } catch (stripeError) {
+      console.error('❌ Stripe error:', {
+        error: stripeError,
+        mode: data.isTestMode ? 'TEST' : 'LIVE',
+        amount: sessionConfig.line_items[0].price_data.unit_amount
+      });
+      throw stripeError;
+    }
   } catch (error) {
     console.error('❌ Error creating checkout session:', error);
     return new Response(

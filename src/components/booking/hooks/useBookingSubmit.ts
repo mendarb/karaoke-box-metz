@@ -39,7 +39,7 @@ export const useBookingSubmit = (
       const isTestMode = settings?.isTestMode || false;
       console.log('Mode test activé:', isTestMode);
 
-      // Créer la réservation avec statut pending
+      // Créer la réservation
       const bookingData = {
         user_id: session.user.id,
         date: data.date,
@@ -72,24 +72,6 @@ export const useBookingSubmit = (
 
       console.log('✅ Booking created successfully:', booking);
 
-      // Stocker les données de session pour la page de succès
-      const sessionData = {
-        session: {
-          access_token: session.access_token,
-          refresh_token: session.refresh_token,
-        },
-        bookingData: {
-          userId: session.user.id,
-          date: data.date,
-          timeSlot: data.timeSlot,
-          duration: duration,
-          groupSize: groupSize,
-          price: calculatedPrice,
-          isTestMode: isTestMode,
-        },
-      };
-      localStorage.setItem('currentBookingSession', JSON.stringify(sessionData));
-
       // Créer la session de paiement
       console.log('💳 Creating payment session with data:', {
         ...bookingData,
@@ -120,11 +102,10 @@ export const useBookingSubmit = (
       if (checkoutError) {
         console.error('❌ Error creating checkout:', checkoutError);
         toast({
-          title: "Réservation créée",
-          description: "Votre réservation a été créée mais le paiement n'a pas pu être initialisé. Vous recevrez un email avec un lien de paiement.",
-          variant: "default",
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la création de la session de paiement.",
+          variant: "destructive",
         });
-        navigate('/success?booking_id=' + booking.id);
         return;
       }
 

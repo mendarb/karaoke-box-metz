@@ -16,7 +16,12 @@ const Success = () => {
   }, [bookingDetails]);
 
   if (loading) {
-    return <LoadingSpinner />;
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+        <LoadingSpinner />
+        <p className="mt-4 text-gray-600">Chargement de votre réservation...</p>
+      </div>
+    );
   }
 
   if (!bookingDetails) {
@@ -26,9 +31,15 @@ const Success = () => {
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
             Réservation non trouvée
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 mb-8">
             Nous n'avons pas pu trouver les détails de votre réservation.
           </p>
+          <Button
+            onClick={() => window.location.href = '/'}
+            className="bg-violet-600 hover:bg-violet-700"
+          >
+            Retour à l'accueil
+          </Button>
         </div>
       </div>
     );

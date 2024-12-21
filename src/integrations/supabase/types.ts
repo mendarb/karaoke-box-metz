@@ -52,7 +52,7 @@ export type Database = {
           time_slot: string
           updated_at: string | null
           user_email: string
-          user_id: string
+          user_id: string | null
           user_name: string
           user_phone: string
         }
@@ -74,7 +74,7 @@ export type Database = {
           time_slot: string
           updated_at?: string | null
           user_email: string
-          user_id: string
+          user_id?: string | null
           user_name: string
           user_phone: string
         }
@@ -96,7 +96,7 @@ export type Database = {
           time_slot?: string
           updated_at?: string | null
           user_email?: string
-          user_id?: string
+          user_id?: string | null
           user_name?: string
           user_phone?: string
         }

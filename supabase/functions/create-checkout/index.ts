@@ -15,23 +15,29 @@ serve(async (req) => {
     const data = await req.json();
     console.log('📦 Received booking data:', data);
 
-    // Validation des données requises
-    if (!data.userEmail || !data.date || !data.timeSlot || !data.duration || 
-        !data.groupSize || !data.finalPrice || !data.userId || !data.bookingId) {
-      console.error('❌ Missing required fields:', {
-        email: !data.userEmail,
-        date: !data.date,
-        timeSlot: !data.timeSlot,
-        duration: !data.duration,
-        groupSize: !data.groupSize,
-        finalPrice: !data.finalPrice,
-        userId: !data.userId,
-        bookingId: !data.bookingId
-      });
-      
+    // Validation détaillée des données requises
+    const requiredFields = [
+      'userEmail',
+      'date',
+      'timeSlot',
+      'duration',
+      'groupSize',
+      'finalPrice',
+      'bookingId'
+    ];
+
+    const missingFields = requiredFields.filter(field => !data[field]);
+    if (missingFields.length > 0) {
+      console.error('❌ Missing required fields:', missingFields);
       return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        JSON.stringify({ 
+          error: `Missing required fields: ${missingFields.join(', ')}`,
+          receivedData: data 
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
+          status: 400 
+        }
       );
     }
 
@@ -76,7 +82,7 @@ serve(async (req) => {
         timeSlot: data.timeSlot,
         duration: data.duration,
         groupSize: data.groupSize,
-        userId: data.userId,
+        userId: data.userId || '',
         isTestMode: String(data.isTestMode),
         originalPrice: String(data.price),
         finalPrice: String(data.finalPrice),

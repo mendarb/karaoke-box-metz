@@ -10,7 +10,6 @@ interface CreateCheckoutParams {
   price: number;
   finalPrice: number;
   message?: string;
-  userId: string;
   userName: string;
   userPhone: string;
   isTestMode: boolean;

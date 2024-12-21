@@ -39,6 +39,10 @@ export const AdminBookingForm = () => {
   const onSubmit = async (data: any) => {
     try {
       setIsLoading(true);
+      console.log('Creating booking with data:', {
+        ...data,
+        price: calculatedPrice,
+      });
 
       // Créer la réservation
       const { data: booking, error } = await supabase
@@ -60,7 +64,12 @@ export const AdminBookingForm = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error creating booking:', error);
+        throw error;
+      }
+
+      console.log('Booking created:', booking);
 
       // Générer le lien de paiement
       const checkoutUrl = await createCheckoutSession({
@@ -73,7 +82,6 @@ export const AdminBookingForm = () => {
         price: calculatedPrice,
         finalPrice: calculatedPrice,
         message: data.message,
-        userId: booking.user_id,
         userName: data.fullName,
         userPhone: data.phone,
         isTestMode: false,

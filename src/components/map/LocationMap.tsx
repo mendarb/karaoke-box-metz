@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { LoadingSpinner } from '../ui/loading-spinner';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import { LatLngExpression, LatLngTuple, Map as LeafletMap } from 'leaflet';
+import { LatLngExpression, LatLngTuple } from 'leaflet';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 
 // Fix for default marker icons in Leaflet
@@ -73,11 +73,11 @@ const LocationMap = () => {
     <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg">
       <Suspense fallback={<LoadingSpinner />}>
         <MapContainer
-          center={center}
           zoom={13}
           scrollWheelZoom={false}
           className="h-full w-full"
           style={{ height: '100%', width: '100%' }}
+          center={center as [number, number]}
         >
           <MapInitializer center={center} />
           <TileLayer

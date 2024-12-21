@@ -13,18 +13,9 @@ export const useAdminBookingSubmit = (form: UseFormReturn<any>) => {
     try {
       setIsLoading(true);
 
-      // Vérifier si l'utilisateur existe déjà
-      const { data: existingUsers } = await supabase
-        .from('bookings')
-        .select('user_id')
-        .eq('user_email', data.email)
-        .not('user_id', 'is', null)
-        .limit(1)
-        .single();
+      let userId = data.userId;
 
-      let userId = existingUsers?.user_id;
-
-      // Si l'utilisateur n'existe pas, on récupère son ID après l'envoi de l'email
+      // Si l'utilisateur n'existe pas, on crée un compte
       if (!userId) {
         const { data: authData } = await supabase.auth.signInWithOtp({
           email: data.email,

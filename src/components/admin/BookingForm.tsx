@@ -1,14 +1,16 @@
 import { useForm } from "react-hook-form";
-import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { PriceCalculator } from "@/components/PriceCalculator";
-import { UserSelection } from "./booking-form/UserSelection";
-import { BookingFormFields } from "./booking-form/BookingFormFields";
 import { useAdminBookingSubmit } from "./booking-form/hooks/useAdminBookingSubmit";
-import { PaymentLinkDisplay } from "./booking-form/PaymentLinkDisplay";
 import { useBookingOverlap } from "@/hooks/useBookingOverlap";
+import { ClientSelection } from "./booking-form/steps/ClientSelection";
+import { BookingDetails } from "./booking-form/steps/BookingDetails";
+import { Confirmation } from "./booking-form/steps/Confirmation";
+import { BookingSteps } from "@/components/BookingSteps";
+import { useState } from "react";
 
 export const AdminBookingForm = () => {
+  const [currentStep, setCurrentStep] = useState(1);
+  
   const form = useForm({
     defaultValues: {
       email: "",
@@ -20,6 +22,7 @@ export const AdminBookingForm = () => {
       groupSize: "1",
       message: "",
       calculatedPrice: 0,
+      userId: null,
     },
   });
 
@@ -33,7 +36,9 @@ export const AdminBookingForm = () => {
     form.setValue("calculatedPrice", price);
   };
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async () => {
+    const data = form.getValues();
+    
     // Vérifier les chevauchements
     const hasOverlap = await checkOverlap(data.date, data.timeSlot, data.duration);
     if (hasOverlap) return;
@@ -41,32 +46,64 @@ export const AdminBookingForm = () => {
     await handleSubmit(data);
   };
 
+  const steps = [
+    {
+      id: 1,
+      name: "Client",
+      description: "Sélection du client",
+      completed: currentStep > 1,
+      current: currentStep === 1,
+    },
+    {
+      id: 2,
+      name: "Détails",
+      description: "Date et informations",
+      completed: currentStep > 2,
+      current: currentStep === 2,
+    },
+    {
+      id: 3,
+      name: "Confirmation",
+      description: "Validation",
+      completed: currentStep > 3,
+      current: currentStep === 3,
+    },
+  ];
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <UserSelection form={form} />
+      <div className="space-y-6">
+        <BookingSteps steps={steps} currentStep={currentStep} />
 
-        <BookingFormFields 
-          form={form}
-          durations={durations}
-          groupSizes={groupSizes}
-          isLoading={isLoading}
-        />
-
-        <div className="mt-6">
-          <PriceCalculator
-            groupSize={form.watch("groupSize")}
-            duration={form.watch("duration")}
-            onPriceCalculated={handlePriceCalculated}
+        {currentStep === 1 && (
+          <ClientSelection
+            form={form}
+            onNext={() => setCurrentStep(2)}
           />
-        </div>
+        )}
 
-        <Button type="submit" disabled={isLoading} className="w-full">
-          {isLoading ? "Création..." : "Créer la réservation"}
-        </Button>
+        {currentStep === 2 && (
+          <BookingDetails
+            form={form}
+            durations={durations}
+            groupSizes={groupSizes}
+            isLoading={isLoading}
+            onPriceCalculated={handlePriceCalculated}
+            onBack={() => setCurrentStep(1)}
+            onNext={() => setCurrentStep(3)}
+          />
+        )}
 
-        {paymentLink && <PaymentLinkDisplay paymentLink={paymentLink} />}
-      </form>
+        {currentStep === 3 && (
+          <Confirmation
+            form={form}
+            isLoading={isLoading}
+            paymentLink={paymentLink}
+            onBack={() => setCurrentStep(2)}
+            onSubmit={onSubmit}
+          />
+        )}
+      </div>
     </Form>
   );
 };

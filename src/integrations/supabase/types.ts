@@ -110,6 +110,54 @@ export type Database = {
           },
         ]
       }
+      locations: {
+        Row: {
+          address: string
+          capacity: number
+          city: string
+          created_at: string
+          deleted_at: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          latitude: number | null
+          longitude: number | null
+          name: string
+          postal_code: string
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          capacity: number
+          city: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          postal_code: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          capacity?: number
+          city?: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          postal_code?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       promo_codes: {
         Row: {
           code: string

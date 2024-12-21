@@ -74,13 +74,15 @@ const LocationMap = () => {
       <Suspense fallback={<LoadingSpinner />}>
         <MapContainer
           className="h-full w-full"
+          center={[0, 0]} // Set initial center
           zoom={13}
           scrollWheelZoom={false}
+          style={{ height: '100%', width: '100%' }}
         >
           <MapInitializer center={center} />
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
           {locations.map((location) => (
             <Marker

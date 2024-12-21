@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from 'https://esm.sh/stripe@14.21.0';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,8 +14,10 @@ serve(async (req) => {
   try {
     const data = await req.json();
     console.log('📦 Received booking data:', {
-      ...data,
-      isTestMode: data.isTestMode
+      bookingId: data.bookingId,
+      email: data.userEmail,
+      isTestMode: data.isTestMode,
+      price: data.finalPrice
     });
 
     const requiredFields = [
@@ -44,13 +45,14 @@ serve(async (req) => {
       );
     }
 
-    // Use test key if isTestMode is true, otherwise use live key
-    const stripeKey = data.isTestMode ? 
-      Deno.env.get('STRIPE_TEST_SECRET_KEY') : 
-      Deno.env.get('STRIPE_SECRET_KEY');
+    // Sélectionner la clé API Stripe en fonction du mode
+    const stripeKey = data.isTestMode 
+      ? Deno.env.get('STRIPE_TEST_SECRET_KEY') 
+      : Deno.env.get('STRIPE_SECRET_KEY');
 
     if (!stripeKey) {
-      throw new Error(data.isTestMode ? 'Test mode API key not configured' : 'Live mode API key not configured');
+      const mode = data.isTestMode ? 'test' : 'live';
+      throw new Error(`Stripe ${mode} mode API key not configured`);
     }
 
     console.log('🔑 Using Stripe key for mode:', data.isTestMode ? 'TEST' : 'LIVE');
@@ -115,16 +117,18 @@ serve(async (req) => {
     };
 
     console.log('✨ Creating checkout session with config:', {
-      ...sessionConfig,
-      isTestMode: data.isTestMode
+      mode: data.isTestMode ? 'TEST' : 'LIVE',
+      amount: sessionConfig.line_items[0].price_data.unit_amount,
+      email: data.userEmail,
+      bookingId: data.bookingId
     });
 
     const session = await stripe.checkout.sessions.create(sessionConfig);
 
     console.log('✅ Checkout session created:', {
       sessionId: session.id,
-      url: session.url,
-      isTestMode: data.isTestMode
+      mode: data.isTestMode ? 'TEST' : 'LIVE',
+      url: session.url
     });
 
     return new Response(

@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { addDays, startOfDay } from "date-fns";
-import { toast } from "@/hooks/use-toast";
-import type { BookingSettings } from "@/components/admin/settings/types/bookingSettings";
 
+/**
+ * Hook to manage booking settings and date boundaries
+ * @returns Object containing settings, loading state, and date boundaries
+ */
 export const useBookingSettings = () => {
   const { data: settings, isLoading } = useQuery({
     queryKey: ['booking-settings'],
@@ -13,28 +15,16 @@ export const useBookingSettings = () => {
         .from('booking_settings')
         .select('*')
         .eq('key', 'booking_settings')
-        .maybeSingle();
+        .single();
 
       if (error) {
         console.error('Error fetching settings:', error);
-        toast({
-          title: "Erreur",
-          description: "Impossible de charger les paramètres de réservation",
-          variant: "destructive",
-        });
         throw error;
       }
 
-      if (!data?.value) {
-        console.log('No settings found');
-        return null;
-      }
-
-      console.log('Loaded settings:', data.value);
-      return data.value as BookingSettings;
+      console.log('Loaded settings:', data?.value);
+      return data?.value;
     },
-    retry: 1,
-    staleTime: 30000,
   });
 
   const today = startOfDay(new Date());
@@ -48,9 +38,9 @@ export const useBookingSettings = () => {
     ? addDays(today, 365)
     : addDays(today, settings?.bookingWindow?.endDays || 30);
 
-  console.log('Date boundaries:', {
-    minDate,
-    maxDate,
+  console.log('Date boundaries:', { 
+    minDate, 
+    maxDate, 
     isTestMode: settings?.isTestMode,
     startDays: settings?.bookingWindow?.startDays,
     endDays: settings?.bookingWindow?.endDays

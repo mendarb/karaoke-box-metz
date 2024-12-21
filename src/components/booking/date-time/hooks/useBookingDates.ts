@@ -2,6 +2,10 @@ import { useBookingSettings } from "./useBookingSettings";
 import { validateDate, showDateValidationError } from "../utils/dateValidation";
 import { getAvailableSlots, calculateAvailableHours } from "../utils/slotUtils";
 
+/**
+ * Hook to manage booking dates, validation, and availability
+ * @returns Object containing date-related utilities and validation functions
+ */
 export const useBookingDates = () => {
   const { settings, isLoading, minDate, maxDate } = useBookingSettings();
 

@@ -3,7 +3,7 @@ import { LoadingSpinner } from '../ui/loading-spinner';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { LatLngTuple } from 'leaflet';
-import { MapContainer, TileLayer } from 'react-leaflet';
+import { MapContainer, TileLayer, MapContainerProps } from 'react-leaflet';
 import { MapInitializer } from './MapInitializer';
 import { MapMarker } from './MapMarker';
 import { useLocations } from './useLocations';
@@ -44,7 +44,7 @@ const LocationMap = () => {
     <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg">
       <Suspense fallback={<LoadingSpinner />}>
         <MapContainer
-          center={center}
+          defaultCenter={center}
           zoom={13}
           scrollWheelZoom={false}
           className="h-full w-full"

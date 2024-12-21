@@ -75,7 +75,7 @@ serve(async (req) => {
             </div>
             <div class="footer">
               <p>À bientôt !</p>
-              <p>L'équipe Lovable Karaoké</p>
+              <p>L'équipe Karaoke Box Metz</p>
               <p>📍 1 rue du Karaoké, 57000 Metz</p>
               <p>📞 01 23 45 67 89</p>
             </div>
@@ -94,9 +94,9 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Lovable Karaoké <reservation@lovablekaraoke.fr>',
+        from: 'Karaoke Box Metz <onboarding@resend.dev>',
         to: booking.user_email,
-        subject: `Réservation ${type === 'confirmation' ? 'confirmée' : 'en attente'} - Lovable Karaoké`,
+        subject: `Réservation ${type === 'confirmation' ? 'confirmée' : 'en attente'} - Karaoke Box Metz`,
         html: emailContent,
       }),
     });

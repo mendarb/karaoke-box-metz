@@ -7,11 +7,14 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
 import { useState } from "react";
 import { createCheckoutSession } from "@/services/checkoutService";
+import { PriceCalculator } from "@/components/PriceCalculator";
+import { cn } from "@/lib/utils";
 
 export const AdminBookingForm = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [paymentLink, setPaymentLink] = useState<string | null>(null);
+  const [calculatedPrice, setCalculatedPrice] = useState(0);
 
   const form = useForm({
     defaultValues: {
@@ -20,18 +23,22 @@ export const AdminBookingForm = () => {
       phone: "",
       date: "",
       timeSlot: "",
-      duration: "",
-      groupSize: "",
+      duration: "1",
+      groupSize: "1",
       message: "",
     },
   });
 
+  const durations = ["1", "2", "3", "4"];
+  const groupSizes = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"];
+
+  const handlePriceCalculated = (price: number) => {
+    setCalculatedPrice(price);
+  };
+
   const onSubmit = async (data: any) => {
     try {
       setIsLoading(true);
-      
-      // Calculer le prix (20€ par personne et par heure)
-      const price = parseInt(data.groupSize) * parseInt(data.duration) * 20;
 
       // Créer la réservation
       const { data: booking, error } = await supabase
@@ -44,7 +51,7 @@ export const AdminBookingForm = () => {
           time_slot: data.timeSlot,
           duration: data.duration,
           group_size: data.groupSize,
-          price: price,
+          price: calculatedPrice,
           message: data.message,
           status: 'pending',
           payment_status: 'unpaid',
@@ -63,8 +70,8 @@ export const AdminBookingForm = () => {
         timeSlot: data.timeSlot,
         duration: data.duration,
         groupSize: data.groupSize,
-        price: price,
-        finalPrice: price,
+        price: calculatedPrice,
+        finalPrice: calculatedPrice,
         message: data.message,
         userId: booking.user_id,
         userName: data.fullName,
@@ -91,7 +98,7 @@ export const AdminBookingForm = () => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <label>Email</label>
@@ -113,14 +120,56 @@ export const AdminBookingForm = () => {
             <label>Heure de début</label>
             <Input {...form.register("timeSlot")} type="number" min="14" max="23" required />
           </div>
-          <div className="space-y-2">
-            <label>Durée (heures)</label>
-            <Input {...form.register("duration")} type="number" min="1" max="4" required />
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block mb-2">Durée (heures)</label>
+            <div className="flex flex-wrap gap-2">
+              {durations.map((duration) => (
+                <Button
+                  key={duration}
+                  type="button"
+                  variant={form.watch("duration") === duration ? "default" : "outline"}
+                  className={cn(
+                    "flex-1 min-w-[60px]",
+                    form.watch("duration") === duration && "bg-violet-600 hover:bg-violet-700"
+                  )}
+                  onClick={() => form.setValue("duration", duration)}
+                >
+                  {duration}h
+                </Button>
+              ))}
+            </div>
           </div>
-          <div className="space-y-2">
-            <label>Nombre de personnes</label>
-            <Input {...form.register("groupSize")} type="number" min="1" max="15" required />
+
+          <div>
+            <label className="block mb-2">Nombre de personnes</label>
+            <div className="flex flex-wrap gap-2">
+              {groupSizes.map((size) => (
+                <Button
+                  key={size}
+                  type="button"
+                  variant={form.watch("groupSize") === size ? "default" : "outline"}
+                  className={cn(
+                    "flex-1 min-w-[60px]",
+                    form.watch("groupSize") === size && "bg-violet-600 hover:bg-violet-700"
+                  )}
+                  onClick={() => form.setValue("groupSize", size)}
+                >
+                  {size}
+                </Button>
+              ))}
+            </div>
           </div>
+        </div>
+
+        <div className="mt-6">
+          <PriceCalculator
+            groupSize={form.watch("groupSize")}
+            duration={form.watch("duration")}
+            onPriceCalculated={handlePriceCalculated}
+          />
         </div>
         
         <div className="space-y-2">
@@ -128,7 +177,7 @@ export const AdminBookingForm = () => {
           <Textarea {...form.register("message")} />
         </div>
 
-        <Button type="submit" disabled={isLoading}>
+        <Button type="submit" disabled={isLoading} className="w-full">
           {isLoading ? "Création..." : "Créer la réservation"}
         </Button>
 

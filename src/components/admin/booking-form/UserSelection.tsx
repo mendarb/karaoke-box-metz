@@ -18,14 +18,19 @@ export const UserSelection = ({ form }: UserSelectionProps) => {
   const searchUser = async () => {
     setIsSearching(true);
     try {
-      const { data: user, error } = await supabase.auth.admin.getUserByEmail(searchEmail);
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('user_name, user_phone, user_email')
+        .eq('user_email', searchEmail)
+        .limit(1)
+        .single();
 
       if (error) throw error;
 
-      if (user) {
-        form.setValue("email", user.email || "");
-        form.setValue("fullName", user.user_metadata?.full_name || "");
-        form.setValue("phone", user.user_metadata?.phone || "");
+      if (data) {
+        form.setValue("email", data.user_email);
+        form.setValue("fullName", data.user_name);
+        form.setValue("phone", data.user_phone);
         toast({
           title: "Utilisateur trouvé",
           description: "Les informations ont été remplies automatiquement",

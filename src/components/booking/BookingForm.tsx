@@ -5,11 +5,8 @@ import { useBookingSubmit } from "./hooks/useBookingSubmit";
 import { BookingSteps } from "../BookingSteps";
 import { BookingFormContent } from "./BookingFormContent";
 import { BookingFormActions } from "./BookingFormActions";
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
 
 export const BookingForm = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const {
     form,
     groupSize,
@@ -21,24 +18,13 @@ export const BookingForm = () => {
     calculatedPrice,
     isSubmitting,
     setIsSubmitting,
-    availableHours,
     handlePriceCalculated,
     handleAvailabilityChange,
     handlePrevious,
+    availableHours,
   } = useBookingForm();
 
-  useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setIsAuthenticated(!!session);
-      if (session && currentStep === 1) {
-        setCurrentStep(2);
-      }
-    };
-    checkSession();
-  }, [currentStep]);
-
-  const steps = useBookingSteps(currentStep, isAuthenticated);
+  const steps = useBookingSteps(currentStep);
   const { handleSubmit: submitBooking } = useBookingSubmit(
     form, 
     groupSize, 
@@ -48,7 +34,7 @@ export const BookingForm = () => {
   );
 
   const onSubmit = async (data: any) => {
-    if (currentStep < 5) {
+    if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
       return;
     }
@@ -73,7 +59,6 @@ export const BookingForm = () => {
             onPriceCalculated={handlePriceCalculated}
             onAvailabilityChange={handleAvailabilityChange}
             availableHours={availableHours}
-            isAuthenticated={isAuthenticated}
           />
         </div>
 

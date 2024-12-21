@@ -8,12 +8,14 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     if (!RESEND_API_KEY) {
+      console.error('❌ RESEND_API_KEY is not configured');
       throw new Error('RESEND_API_KEY is not configured');
     }
 
@@ -36,52 +38,7 @@ serve(async (req) => {
       day: 'numeric'
     });
 
-    let subject = '';
-    let content = '';
-
-    switch (type) {
-      case 'confirmation':
-        subject = 'Votre réservation est confirmée !';
-        content = `
-          <p>Votre réservation a été confirmée avec succès !</p>
-          <div class="details">
-            <h3>Détails de la réservation :</h3>
-            <p>📅 Date : ${formattedDate}</p>
-            <p>⏰ Horaire : ${startHour}h - ${endHour}h</p>
-            <p>👥 Nombre de personnes : ${booking.group_size}</p>
-            <p>💶 Prix total : ${booking.price}€</p>
-            ${booking.cabin ? `<p>🎤 Cabine : ${booking.cabin}</p>` : ''}
-          </div>
-          <p>Nous avons hâte de vous accueillir !</p>
-        `;
-        break;
-      case 'cancelled':
-        subject = 'Votre réservation a été annulée';
-        content = `
-          <p>Votre réservation a été annulée.</p>
-          <div class="details">
-            <h3>Détails de la réservation annulée :</h3>
-            <p>📅 Date : ${formattedDate}</p>
-            <p>⏰ Horaire : ${startHour}h - ${endHour}h</p>
-          </div>
-          <p>N'hésitez pas à effectuer une nouvelle réservation sur notre site.</p>
-        `;
-        break;
-      default:
-        subject = 'Mise à jour de votre réservation';
-        content = `
-          <p>Voici les détails de votre réservation :</p>
-          <div class="details">
-            <h3>Détails de la réservation :</h3>
-            <p>📅 Date : ${formattedDate}</p>
-            <p>⏰ Horaire : ${startHour}h - ${endHour}h</p>
-            <p>👥 Nombre de personnes : ${booking.group_size}</p>
-            <p>💶 Prix total : ${booking.price}€</p>
-            ${booking.cabin ? `<p>🎤 Cabine : ${booking.cabin}</p>` : ''}
-          </div>
-        `;
-    }
-
+    // Construct the email content
     const emailContent = `
       <!DOCTYPE html>
       <html>
@@ -91,18 +48,28 @@ serve(async (req) => {
             body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
             .header { text-align: center; margin-bottom: 30px; }
-            .details { background: #f9f9f9; padding: 20px; border-radius: 5px; margin: 20px 0; }
+            .details { background: #f9f9f9; padding: 20px; border-radius: 5px; }
             .footer { text-align: center; margin-top: 30px; font-size: 0.9em; color: #666; }
-            .button { display: inline-block; padding: 10px 20px; background-color: #7c3aed; color: white; text-decoration: none; border-radius: 5px; margin-top: 20px; }
           </style>
         </head>
         <body>
           <div class="container">
             <div class="header">
-              <h2>${subject}</h2>
+              <h2>Réservation ${type === 'confirmation' ? 'confirmée' : 'en attente'}</h2>
             </div>
             <p>Bonjour ${booking.user_name},</p>
-            ${content}
+            <p>${
+              type === 'confirmation' 
+                ? 'Votre réservation a été confirmée !' 
+                : 'Nous avons bien reçu votre demande de réservation.'
+            }</p>
+            <div class="details">
+              <h3>Détails de la réservation :</h3>
+              <p>📅 Date : ${formattedDate}</p>
+              <p>⏰ Horaire : ${startHour}h - ${endHour}h</p>
+              <p>👥 Nombre de personnes : ${booking.group_size}</p>
+              <p>💶 Prix total : ${booking.price}€</p>
+            </div>
             <div class="footer">
               <p>À bientôt !</p>
               <p>L'équipe Lovable Karaoké</p>
@@ -112,6 +79,7 @@ serve(async (req) => {
       </html>
     `;
 
+    // Send the email using Resend
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -121,14 +89,14 @@ serve(async (req) => {
       body: JSON.stringify({
         from: 'Lovable Karaoké <reservation@lovablekaraoke.fr>',
         to: booking.user_email,
-        subject: subject,
+        subject: `Réservation ${type === 'confirmation' ? 'confirmée' : 'en attente'} - Lovable Karaoké`,
         html: emailContent,
       }),
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      console.error('❌ Error sending email:', error);
+      const error = await response.json();
+      console.error('❌ Failed to send email:', error);
       throw new Error('Failed to send email');
     }
 
@@ -138,7 +106,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('❌ Error in email sending process:', error);
+    console.error('❌ Error processing email request:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 

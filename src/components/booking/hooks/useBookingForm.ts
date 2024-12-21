@@ -11,11 +11,7 @@ export const useBookingForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [availableHours, setAvailableHours] = useState(4);
-  const form = useForm({
-    defaultValues: {
-      cabin: "metz",
-    }
-  });
+  const form = useForm();
 
   const handlePriceCalculated = (price: number) => {
     console.log('Price calculated:', price);

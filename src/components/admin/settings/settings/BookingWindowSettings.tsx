@@ -6,21 +6,22 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Calendar } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 
 interface BookingWindowSettingsProps {
   form: UseFormReturn<any>;
-  defaultValue?: {
-    startDays: number;
-    endDays: number;
-  };
 }
 
-export const BookingWindowSettings = ({ form, defaultValue }: BookingWindowSettingsProps) => {
+export const BookingWindowSettings = ({ form }: BookingWindowSettingsProps) => {
   const isTestMode = form.watch("isTestMode");
 
   return (
@@ -31,7 +32,7 @@ export const BookingWindowSettings = ({ form, defaultValue }: BookingWindowSetti
           Fenêtre de réservation
         </CardTitle>
         <CardDescription>
-          Configurez les délais de réservation et le mode test
+          Configurez les dates de réservation et le mode test
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -68,21 +69,43 @@ export const BookingWindowSettings = ({ form, defaultValue }: BookingWindowSetti
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
-            name="bookingWindow.startDays"
-            defaultValue={defaultValue?.startDays}
+            name="bookingWindow.startDate"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>Délai minimum (jours)</FormLabel>
-                <FormControl>
-                  <Input 
-                    type="number" 
-                    min="0"
-                    {...field}
-                    onChange={(e) => field.onChange(Math.max(0, parseInt(e.target.value) || 0))}
-                  />
-                </FormControl>
+              <FormItem className="flex flex-col">
+                <FormLabel>Date de début des réservations</FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full pl-3 text-left font-normal",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        {field.value ? (
+                          format(field.value, "PPP", { locale: fr })
+                        ) : (
+                          <span>Sélectionner une date</span>
+                        )}
+                        <Calendar className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={field.value}
+                      onSelect={field.onChange}
+                      disabled={(date) =>
+                        date < new Date() || (form.watch("bookingWindow.endDate") && date > form.watch("bookingWindow.endDate"))
+                      }
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
                 <FormDescription>
-                  Nombre de jours minimum avant une réservation
+                  Date à partir de laquelle les clients peuvent réserver
                 </FormDescription>
               </FormItem>
             )}
@@ -90,21 +113,43 @@ export const BookingWindowSettings = ({ form, defaultValue }: BookingWindowSetti
 
           <FormField
             control={form.control}
-            name="bookingWindow.endDays"
-            defaultValue={defaultValue?.endDays}
+            name="bookingWindow.endDate"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>Délai maximum (jours)</FormLabel>
-                <FormControl>
-                  <Input 
-                    type="number" 
-                    min="1"
-                    {...field}
-                    onChange={(e) => field.onChange(Math.max(1, parseInt(e.target.value) || 1))}
-                  />
-                </FormControl>
+              <FormItem className="flex flex-col">
+                <FormLabel>Date de fin des réservations</FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full pl-3 text-left font-normal",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        {field.value ? (
+                          format(field.value, "PPP", { locale: fr })
+                        ) : (
+                          <span>Sélectionner une date</span>
+                        )}
+                        <Calendar className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={field.value}
+                      onSelect={field.onChange}
+                      disabled={(date) =>
+                        date < new Date() || (form.watch("bookingWindow.startDate") && date < form.watch("bookingWindow.startDate"))
+                      }
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
                 <FormDescription>
-                  Nombre de jours maximum pour réserver à l'avance
+                  Date jusqu'à laquelle les clients peuvent réserver
                 </FormDescription>
               </FormItem>
             )}

@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { useEffect, useState } from "react";
 import { BookingSettings, defaultSettings } from "./bookingSettingsTypes";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { addDays, startOfDay } from "date-fns";
 
 export const useBookingSettingsForm = () => {
   const { toast } = useToast();
@@ -11,7 +12,13 @@ export const useBookingSettingsForm = () => {
   const queryClient = useQueryClient();
   
   const form = useForm<BookingSettings>({
-    defaultValues: defaultSettings,
+    defaultValues: {
+      ...defaultSettings,
+      bookingWindow: {
+        startDate: startOfDay(addDays(new Date(), 1)),
+        endDate: startOfDay(addDays(new Date(), 30)),
+      }
+    },
   });
 
   // Query to fetch settings
@@ -26,6 +33,17 @@ export const useBookingSettingsForm = () => {
           .single();
 
         if (error) throw error;
+        
+        // Convert string dates to Date objects
+        if (data?.value?.bookingWindow) {
+          data.value.bookingWindow.startDate = data.value.bookingWindow.startDate 
+            ? new Date(data.value.bookingWindow.startDate)
+            : startOfDay(addDays(new Date(), 1));
+          data.value.bookingWindow.endDate = data.value.bookingWindow.endDate
+            ? new Date(data.value.bookingWindow.endDate)
+            : startOfDay(addDays(new Date(), 30));
+        }
+        
         return data?.value;
       } catch (error) {
         console.error('Error loading settings:', error);

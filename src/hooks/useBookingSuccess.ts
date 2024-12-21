@@ -32,49 +32,27 @@ export const useBookingSuccess = () => {
           return;
         }
 
-        // Récupérer les données de réservation stockées
-        const storedSession = localStorage.getItem('currentBookingSession');
-        if (!storedSession) {
-          console.error('No booking session found in localStorage');
+        // Récupérer la session utilisateur
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user?.id) {
+          console.error('No user session found');
           toast({
             title: "Erreur",
-            description: "Session de réservation non trouvée",
+            description: "Session utilisateur non trouvée",
             variant: "destructive",
           });
           navigate('/');
           return;
         }
 
-        const { session, bookingData } = JSON.parse(storedSession);
-        console.log('Retrieved stored session:', { session, bookingData });
-
-        // Restaurer la session utilisateur
-        if (session?.access_token) {
-          const { error: sessionError } = await supabase.auth.setSession({
-            access_token: session.access_token,
-            refresh_token: session.refresh_token,
-          });
-
-          if (sessionError) {
-            console.error('Error restoring session:', sessionError);
-            toast({
-              title: "Erreur de session",
-              description: "Impossible de restaurer votre session. Veuillez vous reconnecter.",
-              variant: "destructive",
-            });
-            navigate('/');
-            return;
-          }
-        }
-
         // Attendre que le webhook traite la réservation
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        await new Promise(resolve => setTimeout(resolve, 2000));
 
         // Récupérer la dernière réservation
         const { data: booking, error } = await supabase
           .from('bookings')
           .select('*')
-          .eq('user_id', bookingData.userId)
+          .eq('user_id', session.user.id)
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
@@ -96,16 +74,13 @@ export const useBookingSuccess = () => {
             payment_status: booking.payment_status
           });
         } else {
-          console.log('No booking found, using stored data as fallback');
-          setBookingDetails({
-            date: bookingData.date,
-            time_slot: bookingData.timeSlot,
-            duration: bookingData.duration,
-            group_size: bookingData.groupSize,
-            price: bookingData.price,
-            is_test_booking: bookingData.isTestMode,
-            payment_status: 'unpaid'
+          console.error('No booking found');
+          toast({
+            title: "Erreur",
+            description: "Réservation non trouvée",
+            variant: "destructive",
           });
+          navigate('/');
         }
       } catch (error) {
         console.error('Error fetching booking details:', error);

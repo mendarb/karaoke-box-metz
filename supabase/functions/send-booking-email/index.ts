@@ -69,10 +69,13 @@ serve(async (req) => {
               <p>⏰ Horaire : ${startHour}h - ${endHour}h</p>
               <p>👥 Nombre de personnes : ${booking.group_size}</p>
               <p>💶 Prix total : ${booking.price}€</p>
+              ${booking.is_test_booking ? '<p>⚠️ Ceci est une réservation de test</p>' : ''}
             </div>
             <div class="footer">
               <p>À bientôt !</p>
               <p>L'équipe Lovable Karaoké</p>
+              <p>📍 1 rue du Karaoké, 57000 Metz</p>
+              <p>📞 01 23 45 67 89</p>
             </div>
           </div>
         </body>

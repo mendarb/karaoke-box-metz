@@ -45,13 +45,13 @@ export const useBookingSubmit = (
         email: data.email,
         fullName: data.fullName,
         phone: data.phone,
-        isTestMode: data.isTestMode,
+        isTestMode: form.getValues('isTestMode') || false,
         promoCodeId: form.getValues('promoCodeId'),
       });
 
       console.log('✅ Booking created:', booking);
 
-      // Generate checkout URL
+      // Generate checkout URL with explicit test mode parameter
       const checkoutUrl = await createCheckoutSession({
         bookingId: booking.id,
         userEmail: data.email,
@@ -64,14 +64,14 @@ export const useBookingSubmit = (
         message: data.message,
         userName: data.fullName,
         userPhone: data.phone,
-        isTestMode: data.isTestMode,
+        isTestMode: form.getValues('isTestMode') || false,
         promoCodeId: form.getValues('promoCodeId'),
         promoCode: form.getValues('promoCode'),
       });
 
       console.log('✅ Checkout URL generated:', {
         url: checkoutUrl,
-        isTestMode: data.isTestMode
+        isTestMode: form.getValues('isTestMode') || false
       });
       
       window.location.href = checkoutUrl;

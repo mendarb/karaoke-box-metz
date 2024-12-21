@@ -1,10 +1,10 @@
 import { Form } from "@/components/ui/form";
-import { useBookingForm } from "./booking/hooks/useBookingForm";
-import { useBookingSteps } from "./booking/hooks/useBookingSteps";
-import { useBookingSubmit } from "./booking/hooks/useBookingSubmit";
-import { BookingSteps } from "./BookingSteps";
-import { BookingFormContent } from "./booking/BookingFormContent";
-import { BookingFormActions } from "./booking/BookingFormActions";
+import { useBookingForm } from "./hooks/useBookingForm";
+import { useBookingSteps } from "./hooks/useBookingSteps";
+import { useBookingSubmit } from "./hooks/useBookingSubmit";
+import { BookingSteps } from "../BookingSteps";
+import { BookingFormContent } from "./BookingFormContent";
+import { BookingFormActions } from "./BookingFormActions";
 import { useEffect } from "react";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { toast } from "@/components/ui/use-toast";
@@ -122,6 +122,9 @@ export const BookingForm = () => {
       return;
     }
 
+    // Set test mode based on environment
+    form.setValue('isTestMode', import.meta.env.VITE_STRIPE_MODE === 'test');
+    
     await submitBooking(data);
   };
 

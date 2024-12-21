@@ -20,11 +20,14 @@ interface CreateCheckoutParams {
 export const createCheckoutSession = async (params: CreateCheckoutParams) => {
   console.log('💳 Creating checkout session with data:', {
     ...params,
-    isTestMode: params.isTestMode
+    isTestMode: Boolean(params.isTestMode)
   });
 
   const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
-    body: params
+    body: {
+      ...params,
+      isTestMode: Boolean(params.isTestMode)
+    }
   });
 
   if (error) {
@@ -39,7 +42,7 @@ export const createCheckoutSession = async (params: CreateCheckoutParams) => {
 
   console.log('✅ Checkout session created successfully:', {
     url: checkoutData.url,
-    isTestMode: params.isTestMode
+    isTestMode: Boolean(params.isTestMode)
   });
   
   return checkoutData.url;

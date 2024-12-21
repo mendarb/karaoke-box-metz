@@ -73,7 +73,7 @@ const LocationMap = () => {
     <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg">
       <Suspense fallback={<LoadingSpinner />}>
         <MapContainer
-          center={center as LatLngExpression}
+          center={center}
           zoom={13}
           scrollWheelZoom={false}
           className="h-full w-full"
@@ -81,8 +81,8 @@ const LocationMap = () => {
         >
           <MapInitializer center={center} />
           <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           {locations.map((location) => (
             <Marker

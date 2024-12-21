@@ -73,7 +73,6 @@ export const useBookingSubmit = (
         price: calculatedPrice,
         finalPrice: form.getValues('finalPrice') || calculatedPrice,
         message: data.message,
-        userId: session.user.id,
         userName: data.fullName,
         userPhone: data.phone,
         isTestMode,

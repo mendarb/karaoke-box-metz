@@ -4,28 +4,28 @@ export const useBookingSteps = (currentStep: number, isAuthenticated: boolean): 
   const steps = [
     {
       id: 1,
-      name: "Informations personnelles",
+      name: "Informations",
       description: "Vos coordonnées",
       completed: currentStep > 1 || isAuthenticated,
       current: currentStep === 1 && !isAuthenticated,
     },
     {
       id: 2,
-      name: "Cabine",
+      name: "Lieu",
       description: "Choisissez votre cabine",
       completed: currentStep > 2,
       current: (currentStep === 2) || (currentStep === 1 && isAuthenticated),
     },
     {
       id: 3,
-      name: "Date et heure",
+      name: "Date",
       description: "Choisissez votre créneau",
       completed: currentStep > 3,
       current: currentStep === 3,
     },
     {
       id: 4,
-      name: "Groupe et durée",
+      name: "Groupe",
       description: "Taille du groupe et durée",
       completed: currentStep > 4,
       current: currentStep === 4,

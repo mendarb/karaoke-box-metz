@@ -72,6 +72,7 @@ export const handleWebhook = async (event: any, stripe: Stripe | null, supabase:
         console.log('✅ Confirmation email sent successfully');
       } catch (emailError) {
         console.error('❌ Error in email sending process:', emailError);
+        // Continue even if email fails
       }
 
       return { 
@@ -81,6 +82,55 @@ export const handleWebhook = async (event: any, stripe: Stripe | null, supabase:
       };
     } catch (error) {
       console.error('❌ Error in webhook handler:', error);
+      throw error;
+    }
+  }
+
+  if (event.type === 'checkout.session.expired') {
+    try {
+      console.log('⏰ Processing expired checkout session:', {
+        sessionId: session.id,
+        bookingId: metadata.bookingId
+      });
+
+      const { data: booking, error: updateError } = await supabase
+        .from('bookings')
+        .update({
+          status: 'cancelled',
+          payment_status: 'expired',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', metadata.bookingId)
+        .select()
+        .single();
+
+      if (updateError) {
+        console.error('❌ Error updating expired booking:', updateError);
+        throw updateError;
+      }
+
+      // Send cancellation email
+      try {
+        const { error: emailError } = await supabase.functions.invoke('send-booking-email', {
+          body: { 
+            booking,
+            type: 'cancelled'
+          }
+        });
+
+        if (emailError) {
+          console.error('❌ Error sending cancellation email:', emailError);
+        }
+      } catch (emailError) {
+        console.error('❌ Error in cancellation email process:', emailError);
+      }
+
+      return {
+        message: 'Booking marked as cancelled due to expired session',
+        booking
+      };
+    } catch (error) {
+      console.error('❌ Error handling expired session:', error);
       throw error;
     }
   }

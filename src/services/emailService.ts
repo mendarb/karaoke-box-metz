@@ -1,22 +1,26 @@
 import { supabase } from "@/lib/supabase";
 import { Booking } from "@/hooks/useBookings";
 
-export const sendBookingEmail = async (booking: Booking) => {
+export const sendBookingEmail = async (booking: Booking, type: 'confirmation' | 'pending' = 'confirmation') => {
   try {
-    console.log('Sending booking email for:', booking);
+    console.log('Sending booking email:', { booking, type });
+    
     const { error } = await supabase.functions.invoke('send-booking-email', {
-      body: { booking },
+      body: { 
+        booking,
+        type
+      }
     });
 
     if (error) {
-      console.error('Error invoking send-booking-email function:', error);
+      console.error('Error sending email:', error);
       throw error;
     }
-    
-    console.log('Email sent successfully for booking:', booking.id);
+
+    console.log('Email sent successfully');
     return { success: true };
   } catch (error) {
-    console.error('Error sending email:', error);
+    console.error('Error in sendBookingEmail:', error);
     throw error;
   }
 };

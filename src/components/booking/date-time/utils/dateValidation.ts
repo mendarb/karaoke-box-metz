@@ -1,22 +1,14 @@
 import { startOfDay, isBefore, isAfter } from "date-fns";
+import { toast } from "@/components/ui/use-toast";
 import { BookingSettings } from "@/components/admin/settings/types/bookingSettings";
-import { toast } from "@/hooks/use-toast";
 
-/**
- * Validates if a given date is valid for booking based on settings
- * @param date The date to validate
- * @param settings Booking settings configuration
- * @param minDate Minimum allowed date
- * @param maxDate Maximum allowed date
- * @returns Object containing validation result and error message if invalid
- */
 export const validateDate = (
   date: Date,
   settings: BookingSettings | null | undefined,
   minDate: Date,
   maxDate: Date
 ): { isValid: boolean; error?: string } => {
-  console.log('🔍 Validating date:', {
+  console.log('🔍 Validation de la date:', {
     date,
     settings,
     minDate,
@@ -25,7 +17,7 @@ export const validateDate = (
   });
   
   if (!settings) {
-    console.log('❌ Settings not available');
+    console.log('❌ Paramètres non disponibles');
     return { 
       isValid: false, 
       error: "Les paramètres de réservation ne sont pas disponibles" 
@@ -34,14 +26,14 @@ export const validateDate = (
 
   // En mode test, on ignore toutes les validations
   if (settings.isTestMode) {
-    console.log('✅ Test mode: bypassing date validation');
+    console.log('✅ Mode test: validation de date ignorée');
     return { isValid: true };
   }
   
   const dateToCheck = startOfDay(date);
   
   if (isBefore(dateToCheck, minDate)) {
-    console.log('❌ Date too close:', { date: dateToCheck, minDate });
+    console.log('❌ Date trop proche:', { date: dateToCheck, minDate });
     return { 
       isValid: false, 
       error: "La date sélectionnée est trop proche. Veuillez choisir une date plus éloignée." 
@@ -49,7 +41,7 @@ export const validateDate = (
   }
 
   if (isAfter(dateToCheck, maxDate)) {
-    console.log('❌ Date too far:', { date: dateToCheck, maxDate });
+    console.log('❌ Date trop éloignée:', { date: dateToCheck, maxDate });
     return { 
       isValid: false, 
       error: "La date sélectionnée est trop éloignée. Veuillez choisir une date plus proche." 
@@ -60,7 +52,7 @@ export const validateDate = (
   const daySettings = settings.openingHours?.[dayOfWeek];
   
   if (!daySettings?.isOpen) {
-    console.log('❌ Day is closed:', { date: dateToCheck, dayOfWeek, settings });
+    console.log('❌ Jour fermé:', { date: dateToCheck, dayOfWeek });
     return { 
       isValid: false, 
       error: "Nous sommes fermés ce jour-là" 
@@ -68,19 +60,19 @@ export const validateDate = (
   }
 
   if (settings.excludedDays?.includes(dateToCheck.getTime())) {
-    console.log('❌ Date is excluded:', dateToCheck);
+    console.log('❌ Date exclue:', dateToCheck);
     return { 
       isValid: false, 
       error: "Cette date n'est pas disponible à la réservation" 
     };
   }
 
-  console.log('✅ Date is valid:', dateToCheck);
+  console.log('✅ Date valide:', dateToCheck);
   return { isValid: true };
 };
 
 export const showDateValidationError = (error: string) => {
-  console.log('🚨 Showing date validation error:', error);
+  console.log('🚨 Affichage de l\'erreur de validation:', error);
   toast({
     title: "Date non disponible",
     description: error,

@@ -1,23 +1,28 @@
 import { supabase } from "@/lib/supabase";
+import { toast } from "@/components/ui/use-toast";
 import { BookingSettings } from "@/components/admin/settings/types/bookingSettings";
-import { toast } from "@/hooks/use-toast";
 
 export const getAvailableSlots = async (date: Date, settings: BookingSettings | null) => {
-  console.log('🔍 Getting available slots for date:', date);
+  console.log('🔍 Récupération des créneaux disponibles pour la date:', date);
 
   if (!settings) {
-    console.log('❌ No settings available');
+    console.log('❌ Paramètres non disponibles');
+    toast({
+      title: "Erreur",
+      description: "Les paramètres de réservation ne sont pas disponibles",
+      variant: "destructive",
+    });
     return [];
   }
 
   // En mode test, retourner tous les créneaux possibles
   if (settings.isTestMode) {
-    console.log('🧪 Test mode: returning all possible slots');
+    console.log('🧪 Mode test: retour de tous les créneaux possibles');
     return ['14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00'];
   }
 
   if (!settings.openingHours) {
-    console.log('❌ No opening hours settings found');
+    console.log('❌ Horaires d\'ouverture non définis');
     return [];
   }
 
@@ -25,12 +30,12 @@ export const getAvailableSlots = async (date: Date, settings: BookingSettings | 
   const daySettings = settings.openingHours[dayOfWeek];
 
   if (!daySettings?.isOpen) {
-    console.log('❌ Day is closed:', { date, dayOfWeek });
+    console.log('❌ Jour fermé:', { date, dayOfWeek });
     return [];
   }
 
   const slots = daySettings.slots || [];
-  console.log('📋 Potential slots for day:', slots);
+  console.log('📋 Créneaux potentiels pour le jour:', slots);
 
   try {
     const { data: bookings, error } = await supabase
@@ -41,7 +46,7 @@ export const getAvailableSlots = async (date: Date, settings: BookingSettings | 
       .is('deleted_at', null);
 
     if (error) {
-      console.error('❌ Error checking bookings:', error);
+      console.error('❌ Erreur lors de la vérification des réservations:', error);
       toast({
         title: "Erreur",
         description: "Impossible de vérifier les disponibilités",
@@ -61,15 +66,15 @@ export const getAvailableSlots = async (date: Date, settings: BookingSettings | 
       });
       
       if (isBooked) {
-        console.log('❌ Slot is booked:', slot);
+        console.log('❌ Créneau réservé:', slot);
       }
       return !isBooked;
     });
 
-    console.log('✅ Available slots after filtering:', availableSlots);
+    console.log('✅ Créneaux disponibles après filtrage:', availableSlots);
     return availableSlots;
   } catch (error) {
-    console.error('❌ Error fetching slots:', error);
+    console.error('❌ Erreur lors de la récupération des créneaux:', error);
     toast({
       title: "Erreur",
       description: "Impossible de vérifier les disponibilités",
@@ -84,13 +89,13 @@ export const calculateAvailableHours = async (
   timeSlot: string,
   settings: BookingSettings | null
 ): Promise<number> => {
-  console.log('🔍 Calculating available hours for:', { date, timeSlot });
+  console.log('🔍 Calcul des heures disponibles pour:', { date, timeSlot });
 
   if (!settings) {
-    console.log('❌ No settings available');
+    console.log('❌ Paramètres non disponibles');
     toast({
       title: "Erreur",
-      description: "Impossible de vérifier les disponibilités",
+      description: "Les paramètres de réservation ne sont pas disponibles",
       variant: "destructive",
     });
     return 0;
@@ -98,35 +103,30 @@ export const calculateAvailableHours = async (
 
   // En mode test, toujours retourner 4 heures disponibles
   if (settings.isTestMode) {
-    console.log('🧪 Test mode: returning maximum hours (4)');
+    console.log('🧪 Mode test: retour du maximum d\'heures (4)');
     return 4;
   }
 
   if (!settings.openingHours) {
-    console.log('❌ No opening hours settings found');
-    toast({
-      title: "Erreur",
-      description: "Impossible de vérifier les disponibilités",
-      variant: "destructive",
-    });
+    console.log('❌ Horaires d\'ouverture non définis');
     return 0;
   }
 
   const daySettings = settings.openingHours[date.getDay().toString()];
   if (!daySettings?.isOpen || !daySettings.slots) {
-    console.log('❌ Day is closed or no slots available');
+    console.log('❌ Jour fermé ou pas de créneaux disponibles');
     return 0;
   }
 
   const slots = daySettings.slots;
   const slotIndex = slots.indexOf(timeSlot);
   if (slotIndex === -1) {
-    console.log('❌ Invalid time slot:', timeSlot);
+    console.log('❌ Créneau horaire invalide:', timeSlot);
     return 0;
   }
 
   if (slotIndex === slots.length - 1) {
-    console.log('ℹ️ Last slot of the day, limiting to 1 hour');
+    console.log('ℹ️ Dernier créneau du jour, limité à 1 heure');
     return 1;
   }
 
@@ -142,7 +142,7 @@ export const calculateAvailableHours = async (
       .is('deleted_at', null);
 
     if (error) {
-      console.error('❌ Error checking bookings:', error);
+      console.error('❌ Erreur lors de la vérification des réservations:', error);
       toast({
         title: "Erreur",
         description: "Impossible de vérifier les disponibilités",
@@ -152,7 +152,7 @@ export const calculateAvailableHours = async (
     }
 
     if (!bookings?.length) {
-      console.log('✅ No existing bookings, returning max hours:', maxPossibleHours);
+      console.log('✅ Pas de réservations existantes, retour du maximum d\'heures:', maxPossibleHours);
       return maxPossibleHours;
     }
 
@@ -166,14 +166,14 @@ export const calculateAvailableHours = async (
       }
     });
 
-    console.log('✅ Available hours calculated:', {
+    console.log('✅ Heures disponibles calculées:', {
       slot: timeSlot,
       availableHours,
       maxPossibleHours
     });
     return availableHours;
   } catch (error) {
-    console.error('❌ Error calculating available hours:', error);
+    console.error('❌ Erreur lors du calcul des heures disponibles:', error);
     toast({
       title: "Erreur",
       description: "Impossible de vérifier les disponibilités",

@@ -2,15 +2,11 @@ import { useBookingSettings } from "./useBookingSettings";
 import { validateDate, showDateValidationError } from "../utils/dateValidation";
 import { getAvailableSlots, calculateAvailableHours } from "../utils/slotUtils";
 
-/**
- * Hook to manage booking dates, validation, and availability
- * @returns Object containing date-related utilities and validation functions
- */
 export const useBookingDates = () => {
-  const { settings, isLoading, minDate, maxDate } = useBookingSettings();
+  const { settings, isLoading, error, minDate, maxDate } = useBookingSettings();
 
   const isDayExcluded = (date: Date) => {
-    console.log('🔍 Checking date availability:', {
+    console.log('🔍 Vérification de la disponibilité de la date:', {
       date,
       settings,
       isTestMode: settings?.isTestMode,
@@ -20,17 +16,17 @@ export const useBookingDates = () => {
 
     // En mode test, aucun jour n'est exclu
     if (settings?.isTestMode) {
-      console.log('✅ Test mode: all dates are available');
+      console.log('✅ Mode test: tous les jours sont disponibles');
       return false;
     }
 
     const validation = validateDate(date, settings, minDate, maxDate);
     
     if (!validation.isValid && validation.error) {
-      console.log('❌ Date validation failed:', validation.error);
+      console.log('❌ Validation de date échouée:', validation.error);
       showDateValidationError(validation.error);
     } else {
-      console.log('✅ Date validation passed');
+      console.log('✅ Validation de date réussie');
     }
     
     return !validation.isValid;
@@ -39,6 +35,7 @@ export const useBookingDates = () => {
   return {
     settings,
     isLoading,
+    error,
     minDate,
     maxDate,
     isDayExcluded,

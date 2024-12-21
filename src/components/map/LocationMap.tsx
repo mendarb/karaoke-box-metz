@@ -1,12 +1,12 @@
-import React, { Suspense, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import React, { Suspense } from 'react';
 import { LoadingSpinner } from '../ui/loading-spinner';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import { LatLngExpression, LatLngTuple } from 'leaflet';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import type { MapContainerProps, TileLayerProps } from 'react-leaflet';
+import { LatLngTuple } from 'leaflet';
+import { MapContainer, TileLayer } from 'react-leaflet';
+import { MapInitializer } from './MapInitializer';
+import { MapMarker } from './MapMarker';
+import { useLocations } from './useLocations';
 
 // Fix for default marker icons in Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -16,41 +16,19 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-interface Location {
-  id: string;
-  name: string;
-  address: string;
-  city: string;
-  latitude: number;
-  longitude: number;
-  capacity: number;
-}
-
-// Component to handle map initialization
-const MapInitializer = ({ center }: { center: LatLngTuple }) => {
-  const map = useMap();
-  
-  useEffect(() => {
-    map.setView(center);
-  }, [center, map]);
-  
-  return null;
+const calculateMapCenter = (locations: { latitude: number; longitude: number }[]): LatLngTuple => {
+  return locations.reduce(
+    (acc, location) => {
+      acc[0] += location.latitude;
+      acc[1] += location.longitude;
+      return acc;
+    },
+    [0, 0]
+  ).map(coord => coord / locations.length) as LatLngTuple;
 };
 
 const LocationMap = () => {
-  const { data: locations, isLoading } = useQuery({
-    queryKey: ['locations'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('locations')
-        .select('*')
-        .eq('is_active', true)
-        .is('deleted_at', null);
-
-      if (error) throw error;
-      return data as Location[];
-    }
-  });
+  const { data: locations, isLoading } = useLocations();
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -60,15 +38,7 @@ const LocationMap = () => {
     return <div>Aucun lieu disponible</div>;
   }
 
-  // Calculate map center based on locations
-  const center: LatLngTuple = locations.reduce(
-    (acc, location) => {
-      acc[0] += location.latitude;
-      acc[1] += location.longitude;
-      return acc;
-    },
-    [0, 0]
-  ).map(coord => coord / locations.length) as LatLngTuple;
+  const center = calculateMapCenter(locations);
 
   return (
     <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg">
@@ -86,18 +56,7 @@ const LocationMap = () => {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
           {locations.map((location) => (
-            <Marker
-              key={location.id}
-              position={[location.latitude, location.longitude] as LatLngExpression}
-            >
-              <Popup>
-                <div className="p-2">
-                  <h3 className="font-semibold">{location.name}</h3>
-                  <p className="text-sm">{location.address}, {location.city}</p>
-                  <p className="text-sm mt-1">Capacité: {location.capacity} personnes</p>
-                </div>
-              </Popup>
-            </Marker>
+            <MapMarker key={location.id} location={location} />
           ))}
         </MapContainer>
       </Suspense>

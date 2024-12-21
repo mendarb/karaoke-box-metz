@@ -16,7 +16,7 @@ interface CreateBookingParams {
 }
 
 export const fetchBookings = async () => {
-  console.log('📝 Fetching bookings');
+  console.log('📝 Récupération des réservations');
   
   const { data, error } = await supabase
     .from('bookings')
@@ -25,16 +25,25 @@ export const fetchBookings = async () => {
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.error('❌ Error fetching bookings:', error);
+    console.error('❌ Erreur lors de la récupération des réservations:', error);
     throw error;
   }
 
-  console.log('✅ Bookings fetched successfully:', data);
+  console.log('✅ Réservations récupérées avec succès:', {
+    count: data?.length,
+    firstBookingId: data?.[0]?.id
+  });
   return data;
 };
 
 export const createBooking = async (params: CreateBookingParams) => {
-  console.log('📝 Creating booking with data:', params);
+  console.log('📝 Création d\'une réservation client:', {
+    userId: params.userId,
+    email: params.email,
+    date: params.date,
+    timeSlot: params.timeSlot,
+    isTestMode: params.isTestMode
+  });
 
   const bookingData = {
     user_id: params.userId,
@@ -60,10 +69,14 @@ export const createBooking = async (params: CreateBookingParams) => {
     .single();
 
   if (error) {
-    console.error('❌ Error creating booking:', error);
+    console.error('❌ Erreur lors de la création de la réservation:', error);
     throw error;
   }
 
-  console.log('✅ Booking created successfully:', booking);
+  console.log('✅ Réservation client créée avec succès:', {
+    bookingId: booking.id,
+    status: booking.status,
+    paymentStatus: booking.payment_status
+  });
   return booking;
 };

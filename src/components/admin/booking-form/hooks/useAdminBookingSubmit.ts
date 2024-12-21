@@ -10,6 +10,12 @@ export const useAdminBookingSubmit = (form: UseFormReturn<any>) => {
   const { toast } = useToast();
 
   const handleSubmit = async (data: any) => {
+    console.log('🎯 Début du processus de réservation admin:', {
+      email: data.email,
+      fullName: data.fullName,
+      date: data.date
+    });
+
     try {
       setIsLoading(true);
 
@@ -23,12 +29,13 @@ export const useAdminBookingSubmit = (form: UseFormReturn<any>) => {
       const checkoutUrl = await generatePaymentLink(booking, data);
       setPaymentLink(checkoutUrl);
 
+      console.log('✅ Processus de réservation admin terminé avec succès');
       toast({
         title: "Réservation créée",
         description: "Le lien de paiement a été généré avec succès.",
       });
     } catch (error: any) {
-      console.error('Error in handleSubmit:', error);
+      console.error('❌ Erreur dans le processus de réservation admin:', error);
       toast({
         title: "Erreur",
         description: error.message,

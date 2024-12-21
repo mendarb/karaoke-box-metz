@@ -2,6 +2,16 @@ import { supabase } from "@/lib/supabase";
 import { createCheckoutSession } from "@/services/checkoutService";
 
 export const createBooking = async (data: any, userId: string | null) => {
+  console.log('📝 Création d\'une nouvelle réservation :', {
+    userId,
+    email: data.email,
+    date: data.date,
+    timeSlot: data.timeSlot,
+    duration: data.duration,
+    groupSize: data.groupSize,
+    price: data.calculatedPrice
+  });
+
   const { data: booking, error } = await supabase
     .from('bookings')
     .insert([{
@@ -23,15 +33,23 @@ export const createBooking = async (data: any, userId: string | null) => {
     .single();
 
   if (error) {
-    console.error('Error creating booking:', error);
+    console.error('❌ Erreur lors de la création de la réservation:', error);
     throw error;
   }
+
+  console.log('✅ Réservation créée avec succès:', {
+    bookingId: booking.id,
+    status: booking.status,
+    paymentStatus: booking.payment_status
+  });
 
   return booking;
 };
 
 export const generatePaymentLink = async (booking: any, data: any) => {
-  return await createCheckoutSession({
+  console.log('💰 Génération du lien de paiement pour la réservation:', booking.id);
+
+  const checkoutUrl = await createCheckoutSession({
     bookingId: booking.id,
     userEmail: data.email,
     date: data.date,
@@ -45,4 +63,7 @@ export const generatePaymentLink = async (booking: any, data: any) => {
     userPhone: data.phone,
     isTestMode: false,
   });
+
+  console.log('✅ Lien de paiement généré:', checkoutUrl);
+  return checkoutUrl;
 };

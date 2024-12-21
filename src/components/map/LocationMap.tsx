@@ -73,10 +73,10 @@ const LocationMap = () => {
     <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg">
       <Suspense fallback={<LoadingSpinner />}>
         <MapContainer
-          className="h-full w-full"
-          center={[0, 0]} // Set initial center
+          center={center as LatLngExpression}
           zoom={13}
           scrollWheelZoom={false}
+          className="h-full w-full"
           style={{ height: '100%', width: '100%' }}
         >
           <MapInitializer center={center} />

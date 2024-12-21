@@ -18,16 +18,11 @@ export const UserSelection = ({ form }: UserSelectionProps) => {
   const searchUser = async () => {
     setIsSearching(true);
     try {
-      const { data: { users }, error } = await supabase.auth.admin.listUsers({
-        filters: {
-          email: searchEmail
-        }
-      });
+      const { data: user, error } = await supabase.auth.admin.getUserByEmail(searchEmail);
 
       if (error) throw error;
 
-      if (users && users.length > 0) {
-        const user = users[0];
+      if (user) {
         form.setValue("email", user.email || "");
         form.setValue("fullName", user.user_metadata?.full_name || "");
         form.setValue("phone", user.user_metadata?.phone || "");

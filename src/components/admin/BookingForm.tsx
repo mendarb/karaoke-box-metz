@@ -93,11 +93,9 @@ export const AdminBookingForm = () => {
       setPaymentLink(checkoutUrl);
 
       // Envoyer un email pour créer un compte si l'utilisateur n'existe pas
-      const { data: { users } } = await supabase.auth.admin.listUsers({
-        filters: { email: data.email }
-      });
+      const { data: existingUser } = await supabase.auth.admin.getUserByEmail(data.email);
 
-      if (!users || users.length === 0) {
+      if (!existingUser) {
         const { error: signupError } = await supabase.auth.signInWithOtp({
           email: data.email,
           options: {

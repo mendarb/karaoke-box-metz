@@ -35,6 +35,17 @@ export const useBookingSubmit = (
         return;
       }
 
+      // Vérifier que tous les champs requis sont présents
+      if (!data.fullName || !data.email || !data.phone) {
+        toast({
+          title: "Erreur",
+          description: "Veuillez remplir tous les champs obligatoires",
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
       const isTestMode = settings?.isTestMode || false;
 
       // Créer la réservation

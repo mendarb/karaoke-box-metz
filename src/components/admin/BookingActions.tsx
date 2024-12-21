@@ -4,6 +4,7 @@ import { BookingStatus } from "@/integrations/supabase/types/booking";
 import { DeleteBookingDialog } from "./actions/DeleteBookingDialog";
 import { BookingActionsMenu } from "./actions/BookingActionsMenu";
 import { useBookingEmail } from "@/hooks/useBookingEmail";
+import { useToast } from "@/components/ui/use-toast";
 
 interface BookingActionsProps {
   bookingId: string;
@@ -18,6 +19,7 @@ export const BookingActions = ({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { updateBookingStatus, deleteBooking, isLoading } = useBookingActions();
   const { sendEmail } = useBookingEmail();
+  const { toast } = useToast();
 
   const handleStatusChange = async (newStatus: BookingStatus) => {
     try {
@@ -31,14 +33,29 @@ export const BookingActions = ({
       setIsOpen(false);
     } catch (error) {
       console.error('Error in handleStatusChange:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour le statut",
+        variant: "destructive",
+      });
     }
   };
 
   const handleDelete = async () => {
     try {
       await deleteBooking(bookingId);
+      setShowDeleteDialog(false);
+      toast({
+        title: "Succès",
+        description: "La réservation a été supprimée",
+      });
     } catch (error) {
       console.error('Error deleting booking:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer la réservation",
+        variant: "destructive",
+      });
     }
   };
 

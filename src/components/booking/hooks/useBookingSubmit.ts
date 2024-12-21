@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { useBookingSettings } from "../date-time/hooks/useBookingSettings";
 import { createBooking } from "@/services/bookingService";
 import { createCheckoutSession } from "@/services/checkoutService";
+import { sendBookingEmail } from "@/services/emailService";
 
 export const useBookingSubmit = (
   form: UseFormReturn<any>,
@@ -51,6 +52,15 @@ export const useBookingSubmit = (
         isTestMode,
         promoCodeId: form.getValues('promoCodeId'),
       });
+
+      console.log('📧 Sending initial booking email');
+      try {
+        await sendBookingEmail(booking);
+        console.log('✅ Initial booking email sent successfully');
+      } catch (emailError) {
+        console.error('❌ Error sending initial booking email:', emailError);
+        // Continue even if email fails
+      }
 
       // Créer la session de paiement
       const checkoutUrl = await createCheckoutSession({

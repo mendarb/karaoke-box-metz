@@ -38,7 +38,7 @@ export const handleWebhook = async (event: any, stripe: Stripe | null, supabase:
           updated_at: new Date().toISOString()
         })
         .eq('id', metadata.bookingId)
-        .select()
+        .select('*')
         .single();
 
       if (updateError) {
@@ -72,6 +72,7 @@ export const handleWebhook = async (event: any, stripe: Stripe | null, supabase:
         console.log('✅ Confirmation email sent successfully');
       } catch (emailError) {
         console.error('❌ Error in email sending process:', emailError);
+        // Continue even if email fails
       }
 
       return { 

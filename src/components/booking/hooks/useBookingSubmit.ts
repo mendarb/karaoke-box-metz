@@ -1,5 +1,5 @@
 import { UseFormReturn } from "react-hook-form";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
 import { createBooking } from "@/services/bookingService";
 import { createCheckoutSession } from "@/services/checkoutService";
@@ -27,11 +27,11 @@ export const useBookingSubmit = (
 
   const handleSubmit = async (data: any) => {
     try {
-      console.log('🚀 Starting booking submission process', { data });
+      console.log('🚀 Starting booking submission process', data);
       setIsSubmitting(true);
       
       const { data: { session } } = await supabase.auth.getSession();
-      console.log('Session check:', { session });
+      console.log('Session check:', session);
       
       if (!session?.user) {
         toast({

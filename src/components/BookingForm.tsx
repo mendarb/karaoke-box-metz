@@ -1,7 +1,7 @@
 import { Form } from "@/components/ui/form";
 import { useBookingForm } from "./booking/hooks/useBookingForm";
-import { useBookingSteps } from "./booking/hooks/useBookingSteps";
-import { useBookingSubmit } from "./booking/hooks/useBookingSubmit";
+import { useBookingSteps } from "./hooks/useBookingSteps";
+import { useBookingSubmit } from "./hooks/useBookingSubmit";
 import { BookingSteps } from "./BookingSteps";
 import { BookingFormContent } from "./booking/BookingFormContent";
 import { BookingFormActions } from "./booking/BookingFormActions";
@@ -29,12 +29,12 @@ export const BookingForm = () => {
     handlePrevious,
   } = useBookingForm();
 
-  // Charger les informations de l'utilisateur connecté
+  // Load user data
   useEffect(() => {
     const loadUserData = async () => {
       if (session?.user) {
         try {
-          const { data: lastBooking } = await supabase
+          const { data: lastBooking, error } = await supabase
             .from('bookings')
             .select('user_name, user_phone')
             .eq('user_id', session.user.id)
@@ -43,14 +43,26 @@ export const BookingForm = () => {
             .limit(1)
             .maybeSingle();
 
+          if (error) {
+            console.error('Error fetching user data:', error);
+            return;
+          }
+
+          // Set email from session
           form.setValue('email', session.user.email || '');
           
+          // Set name and phone if available from last booking
           if (lastBooking) {
             form.setValue('fullName', lastBooking.user_name);
             form.setValue('phone', lastBooking.user_phone);
           }
         } catch (error) {
           console.error('Error loading user data:', error);
+          toast({
+            title: "Erreur",
+            description: "Impossible de charger vos informations",
+            variant: "destructive",
+          });
         }
       }
     };

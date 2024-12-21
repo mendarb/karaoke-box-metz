@@ -18,7 +18,10 @@ interface CreateCheckoutParams {
 }
 
 export const createCheckoutSession = async (params: CreateCheckoutParams) => {
-  console.log('💳 Creating checkout session with data:', params);
+  console.log('💳 Creating checkout session with data:', {
+    ...params,
+    isTestMode: params.isTestMode
+  });
 
   const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
     body: params
@@ -34,6 +37,10 @@ export const createCheckoutSession = async (params: CreateCheckoutParams) => {
     throw new Error('Payment URL not received');
   }
 
-  console.log('✅ Checkout session created successfully');
+  console.log('✅ Checkout session created successfully:', {
+    url: checkoutData.url,
+    isTestMode: params.isTestMode
+  });
+  
   return checkoutData.url;
 };

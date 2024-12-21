@@ -11,25 +11,16 @@ export const useBookingSubmit = (
   calculatedPrice: number,
   setIsSubmitting: (value: boolean) => void
 ) => {
-  const validateBookingData = (data: any) => {
-    const requiredFields = ['email', 'fullName', 'phone', 'date', 'timeSlot', 'groupSize', 'duration'];
-    const missingFields = requiredFields.filter(field => !data[field]);
-    
-    if (missingFields.length > 0) {
-      console.error('Missing required fields:', missingFields);
-      throw new Error(`Veuillez remplir tous les champs obligatoires`);
-    }
-
-    if (!calculatedPrice && calculatedPrice !== 0) {
-      throw new Error('Le prix n\'a pas été calculé correctement');
-    }
-  };
-
   const handleSubmit = async (data: any) => {
     try {
-      console.log('🚀 Starting booking submission process', data);
+      console.log('🎯 Starting booking submission process:', {
+        email: data.email,
+        date: data.date,
+        isTestMode: data.isTestMode
+      });
+
       setIsSubmitting(true);
-      
+
       const { data: { session } } = await supabase.auth.getSession();
       console.log('Session check:', session);
       
@@ -42,8 +33,7 @@ export const useBookingSubmit = (
         return;
       }
 
-      validateBookingData(data);
-
+      // Create booking
       const booking = await createBooking({
         userId: session.user.id,
         date: data.date,
@@ -55,12 +45,13 @@ export const useBookingSubmit = (
         email: data.email,
         fullName: data.fullName,
         phone: data.phone,
-        isTestMode: false,
+        isTestMode: data.isTestMode,
         promoCodeId: form.getValues('promoCodeId'),
       });
 
       console.log('✅ Booking created:', booking);
 
+      // Generate checkout URL
       const checkoutUrl = await createCheckoutSession({
         bookingId: booking.id,
         userEmail: data.email,
@@ -73,12 +64,16 @@ export const useBookingSubmit = (
         message: data.message,
         userName: data.fullName,
         userPhone: data.phone,
-        isTestMode: false,
+        isTestMode: data.isTestMode,
         promoCodeId: form.getValues('promoCodeId'),
         promoCode: form.getValues('promoCode'),
       });
 
-      console.log('✅ Checkout URL generated:', checkoutUrl);
+      console.log('✅ Checkout URL generated:', {
+        url: checkoutUrl,
+        isTestMode: data.isTestMode
+      });
+      
       window.location.href = checkoutUrl;
 
     } catch (error: any) {

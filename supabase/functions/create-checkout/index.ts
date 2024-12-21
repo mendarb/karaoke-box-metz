@@ -13,7 +13,10 @@ serve(async (req) => {
 
   try {
     const data = await req.json();
-    console.log('📦 Received booking data:', data);
+    console.log('📦 Received booking data:', {
+      ...data,
+      isTestMode: data.isTestMode
+    });
 
     const requiredFields = [
       'userEmail',
@@ -40,11 +43,20 @@ serve(async (req) => {
       );
     }
 
-    const stripe = new Stripe(data.isTestMode ? 
-      Deno.env.get('STRIPE_TEST_SECRET_KEY') || '' : 
-      Deno.env.get('STRIPE_SECRET_KEY') || '', 
-      { apiVersion: '2023-10-16' }
-    );
+    // Use test key if isTestMode is true, otherwise use live key
+    const stripeKey = data.isTestMode ? 
+      Deno.env.get('STRIPE_TEST_SECRET_KEY') : 
+      Deno.env.get('STRIPE_SECRET_KEY');
+
+    if (!stripeKey) {
+      throw new Error(data.isTestMode ? 'Test mode API key not configured' : 'Live mode API key not configured');
+    }
+
+    console.log('🔑 Using Stripe key for mode:', data.isTestMode ? 'TEST' : 'LIVE');
+
+    const stripe = new Stripe(stripeKey, {
+      apiVersion: '2023-10-16'
+    });
 
     // Get origin from request headers or URL
     let origin = req.headers.get('origin');
@@ -101,7 +113,10 @@ serve(async (req) => {
       expires_at: Math.floor(Date.now() / 1000) + (30 * 60), // Session expires in 30 minutes
     };
 
-    console.log('✨ Creating checkout session with config:', sessionConfig);
+    console.log('✨ Creating checkout session with config:', {
+      ...sessionConfig,
+      isTestMode: data.isTestMode
+    });
 
     const session = await stripe.checkout.sessions.create(sessionConfig);
 

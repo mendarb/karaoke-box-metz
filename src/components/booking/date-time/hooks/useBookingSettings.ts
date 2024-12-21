@@ -10,7 +10,7 @@ export const useBookingSettings = () => {
   const { data: settings, isLoading } = useQuery({
     queryKey: ['booking-settings'],
     queryFn: async () => {
-      console.log('Fetching booking settings...');
+      console.log('📚 Fetching booking settings...');
       const { data, error } = await supabase
         .from('booking_settings')
         .select('*')
@@ -18,11 +18,16 @@ export const useBookingSettings = () => {
         .single();
 
       if (error) {
-        console.error('Error fetching settings:', error);
+        console.error('❌ Error fetching settings:', error);
         throw error;
       }
 
-      console.log('Loaded settings:', data?.value);
+      console.log('✅ Loaded settings:', {
+        isTestMode: data?.value?.isTestMode,
+        openingHours: data?.value?.openingHours,
+        bookingWindow: data?.value?.bookingWindow
+      });
+      
       return data?.value;
     },
   });
@@ -38,7 +43,7 @@ export const useBookingSettings = () => {
     ? addDays(today, 365)
     : addDays(today, settings?.bookingWindow?.endDays || 30);
 
-  console.log('Date boundaries:', { 
+  console.log('📅 Date boundaries calculated:', { 
     minDate, 
     maxDate, 
     isTestMode: settings?.isTestMode,

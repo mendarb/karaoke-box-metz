@@ -16,7 +16,7 @@ export const validateDate = (
   minDate: Date,
   maxDate: Date
 ): { isValid: boolean; error?: string } => {
-  console.log('Validating date:', {
+  console.log('🔍 Validating date:', {
     date,
     settings,
     minDate,
@@ -25,60 +25,62 @@ export const validateDate = (
   });
   
   if (!settings) {
-    console.log('Settings not available');
+    console.log('❌ Settings not available');
     return { 
       isValid: false, 
       error: "Les paramètres de réservation ne sont pas disponibles" 
     };
   }
+
+  // En mode test, on ignore toutes les validations
+  if (settings.isTestMode) {
+    console.log('✅ Test mode: bypassing date validation');
+    return { isValid: true };
+  }
   
   const dateToCheck = startOfDay(date);
   
-  // En mode test, on ne vérifie pas les dates min/max
-  if (!settings.isTestMode) {
-    if (isBefore(dateToCheck, minDate)) {
-      console.log('Date too close:', { date: dateToCheck, minDate });
-      return { 
-        isValid: false, 
-        error: "La date sélectionnée est trop proche. Veuillez choisir une date plus éloignée." 
-      };
-    }
+  if (isBefore(dateToCheck, minDate)) {
+    console.log('❌ Date too close:', { date: dateToCheck, minDate });
+    return { 
+      isValid: false, 
+      error: "La date sélectionnée est trop proche. Veuillez choisir une date plus éloignée." 
+    };
+  }
 
-    if (isAfter(dateToCheck, maxDate)) {
-      console.log('Date too far:', { date: dateToCheck, maxDate });
-      return { 
-        isValid: false, 
-        error: "La date sélectionnée est trop éloignée. Veuillez choisir une date plus proche." 
-      };
-    }
+  if (isAfter(dateToCheck, maxDate)) {
+    console.log('❌ Date too far:', { date: dateToCheck, maxDate });
+    return { 
+      isValid: false, 
+      error: "La date sélectionnée est trop éloignée. Veuillez choisir une date plus proche." 
+    };
   }
 
   const dayOfWeek = dateToCheck.getDay().toString();
   const daySettings = settings.openingHours?.[dayOfWeek];
   
-  if (!settings.isTestMode && (!daySettings?.isOpen)) {
-    console.log('Day is closed:', { date: dateToCheck, dayOfWeek, settings });
+  if (!daySettings?.isOpen) {
+    console.log('❌ Day is closed:', { date: dateToCheck, dayOfWeek, settings });
     return { 
       isValid: false, 
       error: "Nous sommes fermés ce jour-là" 
     };
   }
 
-  // En mode test, on ignore les jours exclus
-  if (!settings.isTestMode && settings.excludedDays?.includes(dateToCheck.getTime())) {
-    console.log('Date is excluded:', dateToCheck);
+  if (settings.excludedDays?.includes(dateToCheck.getTime())) {
+    console.log('❌ Date is excluded:', dateToCheck);
     return { 
       isValid: false, 
       error: "Cette date n'est pas disponible à la réservation" 
     };
   }
 
-  console.log('Date is valid:', dateToCheck);
+  console.log('✅ Date is valid:', dateToCheck);
   return { isValid: true };
 };
 
 export const showDateValidationError = (error: string) => {
-  console.log('Showing date validation error:', error);
+  console.log('🚨 Showing date validation error:', error);
   toast({
     title: "Date non disponible",
     description: error,

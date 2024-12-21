@@ -16,6 +16,19 @@ export const useBookingSubmit = (
   const { toast } = useToast();
   const { settings } = useBookingSettings();
 
+  const validateBookingData = (data: any) => {
+    const requiredFields = ['fullName', 'email', 'phone', 'date', 'timeSlot', 'groupSize', 'duration'];
+    const missingFields = requiredFields.filter(field => !data[field]);
+    
+    if (missingFields.length > 0) {
+      throw new Error(`Champs requis manquants : ${missingFields.join(', ')}`);
+    }
+
+    if (!calculatedPrice && calculatedPrice !== 0) {
+      throw new Error('Le prix n\'a pas été calculé correctement');
+    }
+  };
+
   const handleSubmit = async (data: any) => {
     try {
       console.log('🚀 Starting booking submission process', { data });
@@ -31,20 +44,11 @@ export const useBookingSubmit = (
           description: "Vous devez être connecté pour effectuer une réservation",
           variant: "destructive",
         });
-        setIsSubmitting(false);
         return;
       }
 
-      // Vérifier que tous les champs requis sont présents
-      if (!data.fullName || !data.email || !data.phone) {
-        toast({
-          title: "Erreur",
-          description: "Veuillez remplir tous les champs obligatoires",
-          variant: "destructive",
-        });
-        setIsSubmitting(false);
-        return;
-      }
+      // Validation des données
+      validateBookingData(data);
 
       const isTestMode = settings?.isTestMode || false;
 
@@ -70,7 +74,6 @@ export const useBookingSubmit = (
         console.log('✅ Initial booking email sent successfully');
       } catch (emailError) {
         console.error('❌ Error sending initial booking email:', emailError);
-        // Continue even if email fails
       }
 
       // Créer la session de paiement
@@ -101,6 +104,7 @@ export const useBookingSubmit = (
         description: error.message || "Une erreur est survenue lors de la réservation",
         variant: "destructive",
       });
+    } finally {
       setIsSubmitting(false);
     }
   };

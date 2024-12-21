@@ -7,6 +7,7 @@ import { BookingFormContent } from "./booking/BookingFormContent";
 import { BookingFormActions } from "./booking/BookingFormActions";
 import { useEffect } from "react";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { toast } from "@/components/ui/use-toast";
 
 export const BookingForm = () => {
   const { session } = useAuthSession();
@@ -46,6 +47,35 @@ export const BookingForm = () => {
   );
 
   const onSubmit = async (data: any) => {
+    // Validation des champs requis selon l'étape
+    const requiredFields = {
+      1: ['email', 'fullName', 'phone'],
+      2: ['date', 'timeSlot'],
+      3: ['groupSize', 'duration'],
+      4: []
+    }[currentStep];
+
+    const isValid = requiredFields?.every(field => {
+      const value = form.getValues(field);
+      if (!value) {
+        form.setError(field, {
+          type: 'required',
+          message: 'Ce champ est requis'
+        });
+        return false;
+      }
+      return true;
+    });
+
+    if (!isValid) {
+      toast({
+        title: "Erreur de validation",
+        description: "Veuillez remplir tous les champs obligatoires",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
       return;

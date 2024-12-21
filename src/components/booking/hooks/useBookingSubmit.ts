@@ -1,8 +1,9 @@
 import { UseFormReturn } from "react-hook-form";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
-import { useNavigate } from "react-router-dom";
 import { useBookingSettings } from "../date-time/hooks/useBookingSettings";
+import { createBooking } from "@/services/bookingService";
+import { createCheckoutSession } from "@/services/checkoutService";
 
 export const useBookingSubmit = (
   form: UseFormReturn<any>,
@@ -12,7 +13,6 @@ export const useBookingSubmit = (
   setIsSubmitting: (value: boolean) => void
 ) => {
   const { toast } = useToast();
-  const navigate = useNavigate();
   const { settings } = useBookingSettings();
 
   const handleSubmit = async (data: any) => {
@@ -34,93 +34,45 @@ export const useBookingSubmit = (
         return;
       }
 
-      console.log('✅ Session active:', session.user.email);
-
       const isTestMode = settings?.isTestMode || false;
-      console.log('Mode test activé:', isTestMode);
 
       // Créer la réservation
-      const bookingData = {
-        user_id: session.user.id,
+      const booking = await createBooking({
+        userId: session.user.id,
         date: data.date,
-        time_slot: data.timeSlot,
-        duration: duration,
-        group_size: groupSize,
-        status: 'pending',
+        timeSlot: data.timeSlot,
+        duration,
+        groupSize,
         price: calculatedPrice,
-        message: data.message || null,
-        user_email: data.email,
-        user_name: data.fullName,
-        user_phone: data.phone,
-        payment_status: 'unpaid',
-        is_test_booking: isTestMode,
-        promo_code_id: form.getValues('promoCodeId'),
-      };
-
-      console.log('📝 Creating booking with data:', bookingData);
-
-      const { data: booking, error: bookingError } = await supabase
-        .from('bookings')
-        .insert([bookingData])
-        .select()
-        .single();
-
-      if (bookingError) {
-        console.error('❌ Error creating booking:', bookingError);
-        throw bookingError;
-      }
-
-      console.log('✅ Booking created successfully:', booking);
+        message: data.message,
+        email: data.email,
+        fullName: data.fullName,
+        phone: data.phone,
+        isTestMode,
+        promoCodeId: form.getValues('promoCodeId'),
+      });
 
       // Créer la session de paiement
-      console.log('💳 Creating payment session with data:', {
-        ...bookingData,
+      const checkoutUrl = await createCheckoutSession({
         bookingId: booking.id,
+        userEmail: data.email,
+        date: data.date,
+        timeSlot: data.timeSlot,
+        duration,
+        groupSize,
+        price: calculatedPrice,
         finalPrice: form.getValues('finalPrice') || calculatedPrice,
+        message: data.message,
+        userId: session.user.id,
+        userName: data.fullName,
+        userPhone: data.phone,
+        isTestMode,
+        promoCodeId: form.getValues('promoCodeId'),
+        promoCode: form.getValues('promoCode'),
       });
 
-      const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
-        body: {
-          bookingId: booking.id,
-          userEmail: data.email,
-          date: data.date,
-          timeSlot: data.timeSlot,
-          duration: duration,
-          groupSize: groupSize,
-          price: calculatedPrice,
-          finalPrice: form.getValues('finalPrice') || calculatedPrice,
-          message: data.message || '',
-          userId: session.user.id,
-          userName: data.fullName,
-          userPhone: data.phone,
-          isTestMode: isTestMode,
-          promoCodeId: form.getValues('promoCodeId'),
-          promoCode: form.getValues('promoCode'),
-        }
-      });
-
-      if (checkoutError) {
-        console.error('❌ Error creating checkout:', checkoutError);
-        toast({
-          title: "Erreur",
-          description: "Une erreur est survenue lors de la création de la session de paiement.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (!checkoutData?.url) {
-        console.error('❌ Payment URL not received');
-        toast({
-          title: "Erreur",
-          description: "Une erreur est survenue lors de la création de la session de paiement.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      console.log('✅ Redirecting to:', checkoutData.url);
-      window.location.href = checkoutData.url;
+      console.log('✅ Redirecting to:', checkoutUrl);
+      window.location.href = checkoutUrl;
 
     } catch (error: any) {
       console.error('❌ Error in booking submission:', error);

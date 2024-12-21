@@ -1,39 +1,53 @@
 import { supabase } from "@/lib/supabase";
-import { Booking } from "@/hooks/useBookings";
+import { UseFormReturn } from "react-hook-form";
+import { useToast } from "@/components/ui/use-toast";
 
-export const updateBookingStatus = async (bookingId: string, newStatus: string): Promise<Booking> => {
-  const { data, error } = await supabase
+interface CreateBookingParams {
+  userId: string;
+  date: string;
+  timeSlot: string;
+  duration: string;
+  groupSize: string;
+  price: number;
+  message?: string;
+  email: string;
+  fullName: string;
+  phone: string;
+  isTestMode: boolean;
+  promoCodeId?: string;
+}
+
+export const createBooking = async (params: CreateBookingParams) => {
+  console.log('📝 Creating booking with data:', params);
+
+  const bookingData = {
+    user_id: params.userId,
+    date: params.date,
+    time_slot: params.timeSlot,
+    duration: params.duration,
+    group_size: params.groupSize,
+    status: 'pending',
+    price: params.price,
+    message: params.message || null,
+    user_email: params.email,
+    user_name: params.fullName,
+    user_phone: params.phone,
+    payment_status: 'unpaid',
+    is_test_booking: params.isTestMode,
+    promo_code_id: params.promoCodeId,
+  };
+
+  const { data: booking, error } = await supabase
     .from('bookings')
-    .update({ 
-      status: newStatus,
-      updated_at: new Date().toISOString()
-    })
-    .eq('id', bookingId)
+    .insert([bookingData])
     .select()
     .single();
 
   if (error) {
-    console.error('Erreur mise à jour réservation:', error);
+    console.error('❌ Error creating booking:', error);
     throw error;
   }
 
-  if (!data) {
-    throw new Error('Réservation non trouvée');
-  }
-
-  return data;
-};
-
-export const fetchBookings = async (): Promise<Booking[]> => {
-  const { data, error } = await supabase
-    .from('bookings')
-    .select('*')
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('Erreur récupération réservations:', error);
-    throw error;
-  }
-
-  return data || [];
+  console.log('✅ Booking created successfully:', booking);
+  return booking;
 };

@@ -16,7 +16,8 @@ export const useBookingSubmit = (
     const missingFields = requiredFields.filter(field => !data[field]);
     
     if (missingFields.length > 0) {
-      throw new Error(`Champs requis manquants : ${missingFields.join(', ')}`);
+      console.error('Missing required fields:', missingFields);
+      throw new Error(`Veuillez remplir tous les champs obligatoires`);
     }
 
     if (!calculatedPrice && calculatedPrice !== 0) {
@@ -58,6 +59,8 @@ export const useBookingSubmit = (
         promoCodeId: form.getValues('promoCodeId'),
       });
 
+      console.log('✅ Booking created:', booking);
+
       const checkoutUrl = await createCheckoutSession({
         bookingId: booking.id,
         userEmail: data.email,
@@ -75,12 +78,13 @@ export const useBookingSubmit = (
         promoCode: form.getValues('promoCode'),
       });
 
+      console.log('✅ Checkout URL generated:', checkoutUrl);
       window.location.href = checkoutUrl;
 
     } catch (error: any) {
       console.error('❌ Error in booking submission:', error);
       toast({
-        title: "Erreur",
+        title: "Erreur lors de la réservation",
         description: error.message || "Une erreur est survenue lors de la réservation",
         variant: "destructive",
       });

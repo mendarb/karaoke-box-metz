@@ -47,9 +47,16 @@ serve(async (req) => {
     );
 
     // Get origin from request headers or URL
-    const origin = req.headers.get('origin') || 
-                  req.headers.get('referer')?.replace(/\/$/, '') ||
-                  'http://localhost:5173';
+    let origin = req.headers.get('origin');
+    if (!origin) {
+      const referer = req.headers.get('referer');
+      if (referer) {
+        const url = new URL(referer);
+        origin = `${url.protocol}//${url.host}`;
+      } else {
+        origin = 'http://localhost:5173';
+      }
+    }
                   
     console.log('🌐 Request origin:', origin);
 

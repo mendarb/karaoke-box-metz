@@ -41,17 +41,13 @@ export const BookingForm = () => {
             .is('deleted_at', null)
             .order('created_at', { ascending: false })
             .limit(1)
-            .single();
+            .maybeSingle();
 
           form.setValue('email', session.user.email || '');
           
           if (lastBooking) {
             form.setValue('fullName', lastBooking.user_name);
             form.setValue('phone', lastBooking.user_phone);
-          }
-
-          if (currentStep === 1) {
-            setCurrentStep(2);
           }
         } catch (error) {
           console.error('Error loading user data:', error);
@@ -60,7 +56,7 @@ export const BookingForm = () => {
     };
 
     loadUserData();
-  }, [session, currentStep, setCurrentStep, form]);
+  }, [session, form]);
 
   const steps = useBookingSteps(currentStep);
   const { handleSubmit: submitBooking } = useBookingSubmit(

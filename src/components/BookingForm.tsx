@@ -5,8 +5,11 @@ import { useBookingSubmit } from "./booking/hooks/useBookingSubmit";
 import { BookingSteps } from "./BookingSteps";
 import { BookingFormContent } from "./booking/BookingFormContent";
 import { BookingFormActions } from "./booking/BookingFormActions";
+import { useEffect } from "react";
+import { useAuthSession } from "@/hooks/useAuthSession";
 
 export const BookingForm = () => {
+  const { session } = useAuthSession();
   const {
     form,
     groupSize,
@@ -23,6 +26,15 @@ export const BookingForm = () => {
     handleAvailabilityChange,
     handlePrevious,
   } = useBookingForm();
+
+  // Si l'utilisateur est connecté, on commence à l'étape 2
+  useEffect(() => {
+    if (session?.user && currentStep === 1) {
+      setCurrentStep(2);
+      // Pré-remplir les informations de l'utilisateur
+      form.setValue('email', session.user.email || '');
+    }
+  }, [session, currentStep, setCurrentStep, form]);
 
   const steps = useBookingSteps(currentStep);
   const { handleSubmit: submitBooking } = useBookingSubmit(

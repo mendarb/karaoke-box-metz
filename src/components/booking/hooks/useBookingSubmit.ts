@@ -131,11 +131,10 @@ export const useBookingSubmit = (
       if (!checkoutData?.url) {
         console.error('❌ Payment URL not received');
         toast({
-          title: "Réservation créée",
-          description: "Votre réservation a été créée mais le paiement n'a pas pu être initialisé. Vous recevrez un email avec un lien de paiement.",
-          variant: "default",
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la création de la session de paiement.",
+          variant: "destructive",
         });
-        navigate('/success?booking_id=' + booking.id);
         return;
       }
 

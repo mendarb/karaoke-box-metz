@@ -5,6 +5,8 @@ import { useBookingSubmit } from "./hooks/useBookingSubmit";
 import { BookingSteps } from "../BookingSteps";
 import { BookingFormContent } from "./BookingFormContent";
 import { BookingFormActions } from "./BookingFormActions";
+import { useBookingOverlap } from "@/hooks/useBookingOverlap";
+import { useRealtimeBookings } from "@/hooks/useRealtimeBookings";
 
 export const BookingForm = () => {
   const {
@@ -32,10 +34,20 @@ export const BookingForm = () => {
     calculatedPrice, 
     setIsSubmitting
   );
+  const { checkOverlap } = useBookingOverlap();
+
+  // Activer les mises à jour en temps réel
+  useRealtimeBookings();
 
   const onSubmit = async (data: any) => {
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
+      return;
+    }
+
+    // Vérifier les chevauchements avant de soumettre
+    const hasOverlap = await checkOverlap(data.date, data.timeSlot, duration);
+    if (hasOverlap) {
       return;
     }
 

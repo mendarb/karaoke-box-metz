@@ -11,11 +11,15 @@ import { Booking } from "@/hooks/useBookings";
 import { useToast } from "@/components/ui/use-toast";
 import { DashboardSidebar } from "@/components/admin/DashboardSidebar";
 import { BookingsList } from "@/components/admin/calendar/BookingsList";
+import { useRealtimeBookings } from "@/hooks/useRealtimeBookings";
 
 export const Calendar = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const { toast } = useToast();
+
+  // Activer les mises à jour en temps réel
+  useRealtimeBookings();
 
   const { data: bookings = [], isLoading } = useQuery({
     queryKey: ['bookings'],
@@ -35,6 +39,7 @@ export const Calendar = () => {
         const { data, error } = await supabase
           .from('bookings')
           .select('*')
+          .is('deleted_at', null)
           .order('time_slot', { ascending: true });
 
         if (error) {
@@ -55,7 +60,6 @@ export const Calendar = () => {
     },
     refetchOnWindowFocus: true,
     refetchOnMount: true,
-    refetchInterval: 30000,
   });
 
   // Filtrer les réservations pour la date sélectionnée

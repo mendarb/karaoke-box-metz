@@ -16,7 +16,7 @@ serve(async (req) => {
     console.log('📦 Received booking data:', {
       bookingId: data.bookingId,
       email: data.userEmail,
-      isTestMode: data.isTestMode,
+      isTestMode: Boolean(data.isTestMode),
       price: data.finalPrice,
       mode: data.isTestMode ? 'TEST' : 'LIVE'
     });
@@ -46,36 +46,25 @@ serve(async (req) => {
       );
     }
 
+    // Ensure isTestMode is a boolean
+    const isTestMode = Boolean(data.isTestMode);
+    console.log('🔧 Payment mode:', isTestMode ? 'TEST' : 'LIVE');
+
     // Get the appropriate Stripe key based on mode
-    const stripeKey = data.isTestMode 
+    const stripeKey = isTestMode 
       ? Deno.env.get('STRIPE_TEST_SECRET_KEY') 
       : Deno.env.get('STRIPE_SECRET_KEY');
 
     if (!stripeKey) {
-      const mode = data.isTestMode ? 'test' : 'live';
+      const mode = isTestMode ? 'test' : 'live';
       console.error(`❌ Stripe ${mode} mode API key not found`);
       throw new Error(`Stripe ${mode} mode API key not configured`);
     }
 
-    console.log('🔑 Using Stripe key for mode:', data.isTestMode ? 'TEST' : 'LIVE');
-
     const stripe = new Stripe(stripeKey, {
-      apiVersion: '2023-10-16'
+      apiVersion: '2023-10-16',
+      httpClient: Stripe.createFetchHttpClient(),
     });
-
-    // Get origin from request headers or URL
-    let origin = req.headers.get('origin');
-    if (!origin) {
-      const referer = req.headers.get('referer');
-      if (referer) {
-        const url = new URL(referer);
-        origin = `${url.protocol}//${url.host}`;
-      } else {
-        origin = 'http://localhost:5173';
-      }
-    }
-                  
-    console.log('🌐 Request origin:', origin);
 
     // Format price description
     let priceDescription = `${data.groupSize} personnes - ${data.duration}h`;
@@ -92,7 +81,7 @@ serve(async (req) => {
           currency: 'eur',
           unit_amount: Math.round(data.finalPrice * 100),
           product_data: {
-            name: data.isTestMode ? '[TEST MODE] Karaoké BOX - MB EI' : 'Karaoké BOX - MB EI',
+            name: isTestMode ? '[TEST MODE] Karaoké BOX - MB EI' : 'Karaoké BOX - MB EI',
             description: priceDescription,
             images: ['https://raw.githubusercontent.com/lovable-karaoke/assets/main/logo.png'],
           },
@@ -100,8 +89,8 @@ serve(async (req) => {
         quantity: 1,
       }],
       mode: 'payment',
-      success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}`,
+      success_url: `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${req.headers.get('origin')}`,
       customer_email: data.userEmail,
       metadata: {
         bookingId: data.bookingId,
@@ -110,7 +99,7 @@ serve(async (req) => {
         duration: data.duration,
         groupSize: data.groupSize,
         userId: data.userId || '',
-        isTestMode: String(data.isTestMode),
+        isTestMode: String(isTestMode),
         originalPrice: String(data.price),
         finalPrice: String(data.finalPrice),
         promoCodeId: data.promoCodeId || '',
@@ -119,20 +108,20 @@ serve(async (req) => {
     };
 
     console.log('✨ Creating checkout session with config:', {
-      mode: data.isTestMode ? 'TEST' : 'LIVE',
+      mode: isTestMode ? 'TEST' : 'LIVE',
       amount: sessionConfig.line_items[0].price_data.unit_amount,
       email: data.userEmail,
       bookingId: data.bookingId,
-      isTestMode: data.isTestMode
+      isTestMode: isTestMode
     });
 
     try {
       const session = await stripe.checkout.sessions.create(sessionConfig);
       console.log('✅ Checkout session created:', {
         sessionId: session.id,
-        mode: data.isTestMode ? 'TEST' : 'LIVE',
+        mode: isTestMode ? 'TEST' : 'LIVE',
         url: session.url,
-        isTestMode: data.isTestMode
+        isTestMode: isTestMode
       });
 
       return new Response(
@@ -142,7 +131,7 @@ serve(async (req) => {
     } catch (stripeError) {
       console.error('❌ Stripe error:', {
         error: stripeError,
-        mode: data.isTestMode ? 'TEST' : 'LIVE',
+        mode: isTestMode ? 'TEST' : 'LIVE',
         amount: sessionConfig.line_items[0].price_data.unit_amount
       });
       throw stripeError;
@@ -150,7 +139,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('❌ Error creating checkout session:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error.message }), 
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }

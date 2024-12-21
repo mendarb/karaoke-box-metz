@@ -39,6 +39,7 @@ export const useBookingSettings = () => {
 
   const today = startOfDay(new Date());
   
+  // En mode test, on permet de réserver dès aujourd'hui et jusqu'à un an
   const minDate = settings?.isTestMode 
     ? today
     : addDays(today, settings?.bookingWindow?.startDays || 1);
@@ -46,6 +47,14 @@ export const useBookingSettings = () => {
   const maxDate = settings?.isTestMode
     ? addDays(today, 365)
     : addDays(today, settings?.bookingWindow?.endDays || 30);
+
+  console.log('Date boundaries:', {
+    minDate,
+    maxDate,
+    isTestMode: settings?.isTestMode,
+    startDays: settings?.bookingWindow?.startDays,
+    endDays: settings?.bookingWindow?.endDays
+  });
 
   return {
     settings,

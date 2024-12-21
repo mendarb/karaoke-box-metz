@@ -6,10 +6,13 @@ export const useBookingDates = () => {
   const { settings, isLoading, minDate, maxDate } = useBookingSettings();
 
   const isDayExcluded = (date: Date) => {
+    console.log('Checking date:', date, 'Settings:', settings);
     const validation = validateDate(date, settings, minDate, maxDate);
+    
     if (!validation.isValid && validation.error) {
       showDateValidationError(validation.error);
     }
+    
     return !validation.isValid;
   };
 

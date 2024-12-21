@@ -17,18 +17,21 @@ export const validateDate = (
   
   const dateToCheck = startOfDay(date);
   
-  if (isBefore(dateToCheck, minDate)) {
-    return { 
-      isValid: false, 
-      error: "La date sélectionnée est trop proche. Veuillez choisir une date plus éloignée." 
-    };
-  }
+  // En mode test, on ne vérifie pas les dates min/max
+  if (!settings.isTestMode) {
+    if (isBefore(dateToCheck, minDate)) {
+      return { 
+        isValid: false, 
+        error: "La date sélectionnée est trop proche. Veuillez choisir une date plus éloignée." 
+      };
+    }
 
-  if (isAfter(dateToCheck, maxDate)) {
-    return { 
-      isValid: false, 
-      error: "La date sélectionnée est trop éloignée. Veuillez choisir une date plus proche." 
-    };
+    if (isAfter(dateToCheck, maxDate)) {
+      return { 
+        isValid: false, 
+        error: "La date sélectionnée est trop éloignée. Veuillez choisir une date plus proche." 
+      };
+    }
   }
 
   const dayOfWeek = dateToCheck.getDay().toString();
@@ -41,7 +44,8 @@ export const validateDate = (
     };
   }
 
-  if (settings.excludedDays?.includes(dateToCheck.getTime())) {
+  // En mode test, on ignore les jours exclus
+  if (!settings.isTestMode && settings.excludedDays?.includes(dateToCheck.getTime())) {
     return { 
       isValid: false, 
       error: "Cette date n'est pas disponible à la réservation" 

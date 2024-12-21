@@ -1,6 +1,4 @@
 import { supabase } from "@/lib/supabase";
-import { UseFormReturn } from "react-hook-form";
-import { useToast } from "@/components/ui/use-toast";
 
 interface CreateBookingParams {
   userId: string;
@@ -16,6 +14,24 @@ interface CreateBookingParams {
   isTestMode: boolean;
   promoCodeId?: string;
 }
+
+export const fetchBookings = async () => {
+  console.log('📝 Fetching bookings');
+  
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('*')
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('❌ Error fetching bookings:', error);
+    throw error;
+  }
+
+  console.log('✅ Bookings fetched successfully:', data);
+  return data;
+};
 
 export const createBooking = async (params: CreateBookingParams) => {
   console.log('📝 Creating booking with data:', params);

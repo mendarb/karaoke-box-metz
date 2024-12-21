@@ -13,10 +13,47 @@ export const useAdminBookingSubmit = (form: UseFormReturn<any>) => {
     try {
       setIsLoading(true);
 
-      // Créer la réservation
+      // Vérifier si l'utilisateur existe déjà
+      const { data: existingUsers } = await supabase
+        .from('bookings')
+        .select('user_id')
+        .eq('user_email', data.email)
+        .not('user_id', 'is', null)
+        .limit(1)
+        .single();
+
+      let userId = existingUsers?.user_id;
+
+      // Si l'utilisateur n'existe pas, on récupère son ID après l'envoi de l'email
+      if (!userId) {
+        const { data: authData } = await supabase.auth.signInWithOtp({
+          email: data.email,
+          options: {
+            data: {
+              full_name: data.fullName,
+              phone: data.phone,
+            }
+          }
+        });
+
+        // On attend un peu pour laisser le temps à l'utilisateur d'être créé
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // On récupère l'ID de l'utilisateur nouvellement créé
+        const { data: newUser } = await supabase
+          .from('auth.users')
+          .select('id')
+          .eq('email', data.email)
+          .single();
+
+        userId = newUser?.id;
+      }
+
+      // Créer la réservation avec l'ID de l'utilisateur
       const { data: booking, error } = await supabase
         .from('bookings')
         .insert([{
+          user_id: userId,
           user_email: data.email,
           user_name: data.fullName,
           user_phone: data.phone,
@@ -55,41 +92,6 @@ export const useAdminBookingSubmit = (form: UseFormReturn<any>) => {
       });
 
       setPaymentLink(checkoutUrl);
-
-      // Envoyer un email pour créer un compte si l'utilisateur n'existe pas
-      const { data: users } = await supabase
-        .from('bookings')
-        .select('user_id')
-        .eq('user_email', data.email)
-        .not('user_id', 'is', null)
-        .limit(1)
-        .single();
-
-      if (!users?.user_id) {
-        const { error: signupError } = await supabase.auth.signInWithOtp({
-          email: data.email,
-          options: {
-            data: {
-              full_name: data.fullName,
-              phone: data.phone,
-            }
-          }
-        });
-
-        if (signupError) {
-          console.error('Error sending signup email:', signupError);
-          toast({
-            title: "Attention",
-            description: "Impossible d'envoyer l'email de création de compte",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Email envoyé",
-            description: "Un email a été envoyé pour créer un compte",
-          });
-        }
-      }
 
       toast({
         title: "Réservation créée",

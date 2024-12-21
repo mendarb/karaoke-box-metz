@@ -46,13 +46,11 @@ const LocationMap = () => {
         <MapContainer
           style={{ height: '100%', width: '100%' }}
           className="h-full w-full"
-          zoom={13}
           scrollWheelZoom={false}
         >
           <MapInitializer center={center} />
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
           {locations.map((location) => (
             <MapMarker key={location.id} location={location} />

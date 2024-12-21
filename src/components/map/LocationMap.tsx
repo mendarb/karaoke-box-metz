@@ -5,7 +5,6 @@ import L from 'leaflet';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import { MapMarker } from './MapMarker';
 import { useLocations } from './useLocations';
-import { MapInitializer } from './MapInitializer';
 
 // Fix for default marker icons in Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -32,12 +31,12 @@ const LocationMap = () => {
   return (
     <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg">
       <Suspense fallback={<LoadingSpinner />}>
-        <MapContainer
-          className="h-full w-full"
+        <MapContainer 
+          center={DEFAULT_CENTER}
           zoom={DEFAULT_ZOOM}
-          style={{ height: '100%', width: '100%' }}
+          scrollWheelZoom={false}
+          className="h-full w-full"
         >
-          <MapInitializer center={DEFAULT_CENTER} />
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           {locations.map((location) => (
             <MapMarker key={location.id} location={location} />

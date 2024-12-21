@@ -15,7 +15,6 @@ serve(async (req) => {
     const data = await req.json();
     console.log('📦 Received booking data:', data);
 
-    // Validation détaillée des données requises
     const requiredFields = [
       'userEmail',
       'date',
@@ -47,7 +46,11 @@ serve(async (req) => {
       { apiVersion: '2023-10-16' }
     );
 
-    const origin = req.headers.get('origin') || 'http://localhost:5173';
+    // Get origin from request headers or URL
+    const origin = req.headers.get('origin') || 
+                  req.headers.get('referer')?.replace(/\/$/, '') ||
+                  'http://localhost:5173';
+                  
     console.log('🌐 Request origin:', origin);
 
     // Format price description

@@ -8,6 +8,7 @@ import { BookingFormActions } from "./booking/BookingFormActions";
 import { useEffect } from "react";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { toast } from "@/components/ui/use-toast";
+import { supabase } from "@/lib/supabase";
 
 export const BookingForm = () => {
   const { session } = useAuthSession();
@@ -28,13 +29,37 @@ export const BookingForm = () => {
     handlePrevious,
   } = useBookingForm();
 
-  // Si l'utilisateur est connecté, on commence à l'étape 2
+  // Charger les informations de l'utilisateur connecté
   useEffect(() => {
-    if (session?.user && currentStep === 1) {
-      setCurrentStep(2);
-      // Pré-remplir les informations de l'utilisateur
-      form.setValue('email', session.user.email || '');
-    }
+    const loadUserData = async () => {
+      if (session?.user) {
+        try {
+          const { data: lastBooking } = await supabase
+            .from('bookings')
+            .select('user_name, user_phone')
+            .eq('user_id', session.user.id)
+            .is('deleted_at', null)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+
+          form.setValue('email', session.user.email || '');
+          
+          if (lastBooking) {
+            form.setValue('fullName', lastBooking.user_name);
+            form.setValue('phone', lastBooking.user_phone);
+          }
+
+          if (currentStep === 1) {
+            setCurrentStep(2);
+          }
+        } catch (error) {
+          console.error('Error loading user data:', error);
+        }
+      }
+    };
+
+    loadUserData();
   }, [session, currentStep, setCurrentStep, form]);
 
   const steps = useBookingSteps(currentStep);
@@ -46,16 +71,17 @@ export const BookingForm = () => {
     setIsSubmitting
   );
 
-  const onSubmit = async (data: any) => {
-    // Validation des champs requis selon l'étape
+  const validateStep = (step: number) => {
     const requiredFields = {
       1: ['email', 'fullName', 'phone'],
       2: ['date', 'timeSlot'],
       3: ['groupSize', 'duration'],
       4: []
-    }[currentStep];
+    }[step];
 
-    const isValid = requiredFields?.every(field => {
+    if (!requiredFields) return true;
+
+    const isValid = requiredFields.every(field => {
       const value = form.getValues(field);
       if (!value) {
         form.setError(field, {
@@ -73,6 +99,13 @@ export const BookingForm = () => {
         description: "Veuillez remplir tous les champs obligatoires",
         variant: "destructive",
       });
+    }
+
+    return isValid;
+  };
+
+  const onSubmit = async (data: any) => {
+    if (!validateStep(currentStep)) {
       return;
     }
 

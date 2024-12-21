@@ -9,7 +9,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Calendar } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface BookingWindowSettingsProps {
   form: UseFormReturn<any>;
@@ -23,10 +24,17 @@ export const BookingWindowSettings = ({ form, defaultValue }: BookingWindowSetti
   const isTestMode = form.watch("isTestMode");
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col space-y-4">
-        <h3 className="text-lg font-medium">Fenêtre de réservation</h3>
-        
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Calendar className="h-5 w-5 text-violet-500" />
+          Fenêtre de réservation
+        </CardTitle>
+        <CardDescription>
+          Configurez les délais de réservation et le mode test
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
         <FormField
           control={form.control}
           name="isTestMode"
@@ -56,53 +64,53 @@ export const BookingWindowSettings = ({ form, defaultValue }: BookingWindowSetti
             </AlertDescription>
           </Alert>
         )}
-      </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <FormField
-          control={form.control}
-          name="bookingWindow.startDays"
-          defaultValue={defaultValue?.startDays}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Délai minimum (jours)</FormLabel>
-              <FormControl>
-                <Input 
-                  type="number" 
-                  min="0"
-                  {...field}
-                  onChange={(e) => field.onChange(Math.max(0, parseInt(e.target.value) || 0))}
-                />
-              </FormControl>
-              <FormDescription>
-                Nombre de jours minimum avant une réservation
-              </FormDescription>
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="bookingWindow.startDays"
+            defaultValue={defaultValue?.startDays}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Délai minimum (jours)</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    min="0"
+                    {...field}
+                    onChange={(e) => field.onChange(Math.max(0, parseInt(e.target.value) || 0))}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Nombre de jours minimum avant une réservation
+                </FormDescription>
+              </FormItem>
+            )}
+          />
 
-        <FormField
-          control={form.control}
-          name="bookingWindow.endDays"
-          defaultValue={defaultValue?.endDays}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Délai maximum (jours)</FormLabel>
-              <FormControl>
-                <Input 
-                  type="number" 
-                  min="1"
-                  {...field}
-                  onChange={(e) => field.onChange(Math.max(1, parseInt(e.target.value) || 1))}
-                />
-              </FormControl>
-              <FormDescription>
-                Nombre de jours maximum pour réserver à l'avance
-              </FormDescription>
-            </FormItem>
-          )}
-        />
-      </div>
-    </div>
+          <FormField
+            control={form.control}
+            name="bookingWindow.endDays"
+            defaultValue={defaultValue?.endDays}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Délai maximum (jours)</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    min="1"
+                    {...field}
+                    onChange={(e) => field.onChange(Math.max(1, parseInt(e.target.value) || 1))}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Nombre de jours maximum pour réserver à l'avance
+                </FormDescription>
+              </FormItem>
+            )}
+          />
+        </div>
+      </CardContent>
+    </Card>
   );
 };

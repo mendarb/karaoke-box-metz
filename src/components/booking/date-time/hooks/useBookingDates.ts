@@ -1,5 +1,5 @@
 import { useBookingSettings } from "./useBookingSettings";
-import { validateDate, showDateValidationError } from "../utils/dateValidation";
+import { validateDate } from "../utils/dateValidation";
 import { getAvailableSlots, calculateAvailableHours } from "../utils/slotUtils";
 
 export const useBookingDates = () => {
@@ -21,12 +21,8 @@ export const useBookingDates = () => {
     }
 
     const validation = validateDate(date, settings, minDate, maxDate);
-    
-    if (!validation.isValid && validation.error) {
-      console.log('❌ Validation de date échouée:', validation.error);
-      showDateValidationError(validation.error);
-    } else {
-      console.log('✅ Validation de date réussie');
+    if (!validation.isValid) {
+      console.log('❌ Date non valide:', validation.error);
     }
     
     return !validation.isValid;

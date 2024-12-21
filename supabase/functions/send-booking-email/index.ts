@@ -24,7 +24,9 @@ serve(async (req) => {
       bookingId: booking.id, 
       type,
       userEmail: booking.user_email,
-      userName: booking.user_name
+      userName: booking.user_name,
+      paymentStatus: booking.payment_status,
+      status: booking.status
     });
 
     // Format the date and time
@@ -81,6 +83,8 @@ serve(async (req) => {
         </body>
       </html>
     `;
+
+    console.log('📧 Sending email to:', booking.user_email);
 
     // Send the email using Resend
     const response = await fetch('https://api.resend.com/emails', {

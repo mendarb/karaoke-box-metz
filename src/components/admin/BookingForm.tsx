@@ -1,20 +1,22 @@
+import { useState } from "react";
 import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
-import { useState } from "react";
 import { createCheckoutSession } from "@/services/checkoutService";
 import { PriceCalculator } from "@/components/PriceCalculator";
-import { cn } from "@/lib/utils";
+import { UserSelection } from "./booking-form/UserSelection";
+import { BookingFormFields } from "./booking-form/BookingFormFields";
+import { useBookingOverlap } from "@/hooks/useBookingOverlap";
 
 export const AdminBookingForm = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [paymentLink, setPaymentLink] = useState<string | null>(null);
   const [calculatedPrice, setCalculatedPrice] = useState(0);
+  const { checkOverlap } = useBookingOverlap();
 
   const form = useForm({
     defaultValues: {
@@ -39,10 +41,13 @@ export const AdminBookingForm = () => {
   const onSubmit = async (data: any) => {
     try {
       setIsLoading(true);
-      console.log('Creating booking with data:', {
-        ...data,
-        price: calculatedPrice,
-      });
+
+      // Vérifier les chevauchements
+      const hasOverlap = await checkOverlap(data.date, data.timeSlot, data.duration);
+      if (hasOverlap) {
+        setIsLoading(false);
+        return;
+      }
 
       // Créer la réservation
       const { data: booking, error } = await supabase
@@ -69,8 +74,6 @@ export const AdminBookingForm = () => {
         throw error;
       }
 
-      console.log('Booking created:', booking);
-
       // Générer le lien de paiement
       const checkoutUrl = await createCheckoutSession({
         bookingId: booking.id,
@@ -88,6 +91,38 @@ export const AdminBookingForm = () => {
       });
 
       setPaymentLink(checkoutUrl);
+
+      // Envoyer un email pour créer un compte si l'utilisateur n'existe pas
+      const { data: { users } } = await supabase.auth.admin.listUsers({
+        filters: { email: data.email }
+      });
+
+      if (!users || users.length === 0) {
+        const { error: signupError } = await supabase.auth.signInWithOtp({
+          email: data.email,
+          options: {
+            data: {
+              full_name: data.fullName,
+              phone: data.phone,
+            }
+          }
+        });
+
+        if (signupError) {
+          console.error('Error sending signup email:', signupError);
+          toast({
+            title: "Attention",
+            description: "Impossible d'envoyer l'email de création de compte",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Email envoyé",
+            description: "Un email a été envoyé pour créer un compte",
+          });
+        }
+      }
+
       toast({
         title: "Réservation créée",
         description: "Le lien de paiement a été généré avec succès.",
@@ -107,70 +142,14 @@ export const AdminBookingForm = () => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label>Email</label>
-            <Input {...form.register("email")} type="email" required />
-          </div>
-          <div className="space-y-2">
-            <label>Nom complet</label>
-            <Input {...form.register("fullName")} required />
-          </div>
-          <div className="space-y-2">
-            <label>Téléphone</label>
-            <Input {...form.register("phone")} required />
-          </div>
-          <div className="space-y-2">
-            <label>Date</label>
-            <Input {...form.register("date")} type="date" required />
-          </div>
-          <div className="space-y-2">
-            <label>Heure de début</label>
-            <Input {...form.register("timeSlot")} type="number" min="14" max="23" required />
-          </div>
-        </div>
+        <UserSelection form={form} />
 
-        <div className="space-y-4">
-          <div>
-            <label className="block mb-2">Durée (heures)</label>
-            <div className="flex flex-wrap gap-2">
-              {durations.map((duration) => (
-                <Button
-                  key={duration}
-                  type="button"
-                  variant={form.watch("duration") === duration ? "default" : "outline"}
-                  className={cn(
-                    "flex-1 min-w-[60px]",
-                    form.watch("duration") === duration && "bg-violet-600 hover:bg-violet-700"
-                  )}
-                  onClick={() => form.setValue("duration", duration)}
-                >
-                  {duration}h
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label className="block mb-2">Nombre de personnes</label>
-            <div className="flex flex-wrap gap-2">
-              {groupSizes.map((size) => (
-                <Button
-                  key={size}
-                  type="button"
-                  variant={form.watch("groupSize") === size ? "default" : "outline"}
-                  className={cn(
-                    "flex-1 min-w-[60px]",
-                    form.watch("groupSize") === size && "bg-violet-600 hover:bg-violet-700"
-                  )}
-                  onClick={() => form.setValue("groupSize", size)}
-                >
-                  {size}
-                </Button>
-              ))}
-            </div>
-          </div>
-        </div>
+        <BookingFormFields 
+          form={form}
+          durations={durations}
+          groupSizes={groupSizes}
+          isLoading={isLoading}
+        />
 
         <div className="mt-6">
           <PriceCalculator
@@ -178,11 +157,6 @@ export const AdminBookingForm = () => {
             duration={form.watch("duration")}
             onPriceCalculated={handlePriceCalculated}
           />
-        </div>
-        
-        <div className="space-y-2">
-          <label>Message</label>
-          <Textarea {...form.register("message")} />
         </div>
 
         <Button type="submit" disabled={isLoading} className="w-full">

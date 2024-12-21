@@ -1,15 +1,5 @@
-import { LatLngExpression } from 'leaflet';
 import { Marker, Popup } from 'react-leaflet';
-
-interface Location {
-  id: string;
-  name: string;
-  address: string;
-  city: string;
-  latitude: number;
-  longitude: number;
-  capacity: number;
-}
+import { Location } from './useLocations';
 
 interface MapMarkerProps {
   location: Location;
@@ -17,10 +7,7 @@ interface MapMarkerProps {
 
 export const MapMarker = ({ location }: MapMarkerProps) => {
   return (
-    <Marker
-      key={location.id}
-      position={[location.latitude, location.longitude] as LatLngExpression}
-    >
+    <Marker position={[location.latitude, location.longitude]}>
       <Popup>
         <div className="p-2">
           <h3 className="font-semibold">{location.name}</h3>

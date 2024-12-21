@@ -9,11 +9,13 @@ import { ProtectedRoute } from "./ProtectedRoute";
 import { Calendar } from "@/pages/Calendar";
 import { Settings } from "@/pages/Settings";
 import { MyBookings } from "@/pages/MyBookings";
+import Success from "@/pages/Success";
 
 export const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<Index />} />
+      <Route path="/success" element={<Success />} />
       <Route path="/legal/terms" element={<Terms />} />
       <Route path="/legal/privacy" element={<Privacy />} />
       <Route path="/legal/cancellation" element={<Cancellation />} />

@@ -4,7 +4,7 @@ import { AccountPage } from "@/components/account/AccountPage";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { BookingsPage } from "@/pages/Bookings";
 import { Calendar } from "@/pages/Calendar";
-import { Index } from "@/pages/Index";
+import Index from "@/pages/Index";
 import { Settings } from "@/pages/Settings";
 import Success from "@/pages/Success";
 import PaymentSuccess from "@/pages/PaymentSuccess";

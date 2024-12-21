@@ -8,14 +8,12 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     if (!RESEND_API_KEY) {
-      console.error('❌ RESEND_API_KEY is not configured');
       throw new Error('RESEND_API_KEY is not configured');
     }
 
@@ -84,7 +82,6 @@ serve(async (req) => {
         `;
     }
 
-    // Construct the email content
     const emailContent = `
       <!DOCTYPE html>
       <html>
@@ -115,7 +112,6 @@ serve(async (req) => {
       </html>
     `;
 
-    // Send the email using Resend
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -131,8 +127,8 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      console.error('❌ Failed to send email:', error);
+      const error = await response.text();
+      console.error('❌ Error sending email:', error);
       throw new Error('Failed to send email');
     }
 
@@ -142,7 +138,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('❌ Error processing email request:', error);
+    console.error('❌ Error in email sending process:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 

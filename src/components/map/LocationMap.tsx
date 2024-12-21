@@ -6,6 +6,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { LatLngExpression, LatLngTuple } from 'leaflet';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import type { MapContainerProps, TileLayerProps } from 'react-leaflet';
 
 // Fix for default marker icons in Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -73,7 +74,7 @@ const LocationMap = () => {
     <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg">
       <Suspense fallback={<LoadingSpinner />}>
         <MapContainer
-          center={center as [number, number]}
+          center={center}
           zoom={13}
           scrollWheelZoom={false}
           className="h-full w-full"

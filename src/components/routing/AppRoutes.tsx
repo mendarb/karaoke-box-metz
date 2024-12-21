@@ -10,6 +10,7 @@ import { Calendar } from "@/pages/Calendar";
 import { Settings } from "@/pages/Settings";
 import { MyBookings } from "@/pages/MyBookings";
 import Success from "@/pages/Success";
+import { DocumentationPage } from "@/components/admin/documentation/DocumentationPage";
 
 export const AppRoutes = () => {
   return (
@@ -42,6 +43,14 @@ export const AppRoutes = () => {
         element={
           <ProtectedRoute adminOnly>
             <Settings />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/documentation"
+        element={
+          <ProtectedRoute adminOnly>
+            <DocumentationPage />
           </ProtectedRoute>
         }
       />

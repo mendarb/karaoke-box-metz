@@ -1,4 +1,4 @@
-import { Home, Calendar, Settings, LogOut, ArrowLeft } from "lucide-react";
+import { Home, Calendar, Settings, LogOut, ArrowLeft, BookOpen } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -58,6 +58,14 @@ export const DashboardSidebar = () => {
         >
           <Settings className="mr-2 h-4 w-4" />
           Paramètres
+        </Button>
+        <Button 
+          variant={isActive("/admin/documentation") ? "secondary" : "ghost"} 
+          className="w-full justify-start"
+          onClick={() => navigate("/admin/documentation")}
+        >
+          <BookOpen className="mr-2 h-4 w-4" />
+          Documentation
         </Button>
       </nav>
 

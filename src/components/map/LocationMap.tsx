@@ -1,9 +1,18 @@
-import React, { useEffect, useRef } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import React from 'react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { LoadingSpinner } from '../ui/loading-spinner';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Fix for default marker icons in Leaflet
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
 interface Location {
   id: string;
@@ -16,10 +25,6 @@ interface Location {
 }
 
 const LocationMap = () => {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
-  const markersRef = useRef<mapboxgl.Marker[]>([]);
-
   const { data: locations, isLoading } = useQuery({
     queryKey: ['locations'],
     queryFn: async () => {
@@ -34,74 +39,51 @@ const LocationMap = () => {
     }
   });
 
-  useEffect(() => {
-    if (!mapContainer.current || !locations?.length) return;
-
-    const initializeMap = async () => {
-      try {
-        const { data: { publicToken }, error } = await supabase.functions.invoke('get-mapbox-token');
-        
-        if (error) {
-          console.error('Error fetching Mapbox token:', error);
-          return;
-        }
-
-        mapboxgl.accessToken = publicToken;
-
-        // Calculer le centre de la carte basé sur les emplacements
-        const bounds = new mapboxgl.LngLatBounds();
-        locations.forEach((location) => {
-          bounds.extend([location.longitude, location.latitude]);
-        });
-
-        map.current = new mapboxgl.Map({
-          container: mapContainer.current,
-          style: 'mapbox://styles/mapbox/streets-v12',
-          bounds: bounds,
-          fitBoundsOptions: { padding: 50 }
-        });
-
-        // Ajouter les contrôles de navigation
-        map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-
-        // Ajouter les marqueurs pour chaque emplacement
-        locations.forEach((location) => {
-          const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
-            <div class="p-2">
-              <h3 class="font-semibold">${location.name}</h3>
-              <p class="text-sm">${location.address}, ${location.city}</p>
-              <p class="text-sm mt-1">Capacité: ${location.capacity} personnes</p>
-            </div>
-          `);
-
-          const marker = new mapboxgl.Marker()
-            .setLngLat([location.longitude, location.latitude])
-            .setPopup(popup)
-            .addTo(map.current!);
-
-          markersRef.current.push(marker);
-        });
-      } catch (error) {
-        console.error('Error initializing map:', error);
-      }
-    };
-
-    initializeMap();
-
-    return () => {
-      markersRef.current.forEach(marker => marker.remove());
-      markersRef.current = [];
-      map.current?.remove();
-    };
-  }, [locations]);
-
   if (isLoading) {
     return <LoadingSpinner />;
   }
 
+  if (!locations?.length) {
+    return <div>Aucun lieu disponible</div>;
+  }
+
+  // Calculate map center based on locations
+  const center = locations.reduce(
+    (acc, location) => {
+      acc[0] += location.latitude;
+      acc[1] += location.longitude;
+      return acc;
+    },
+    [0, 0]
+  ).map(coord => coord / locations.length);
+
   return (
     <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg">
-      <div ref={mapContainer} className="w-full h-full" />
+      <MapContainer
+        center={[center[0], center[1]]}
+        zoom={13}
+        scrollWheelZoom={false}
+        style={{ height: '100%', width: '100%' }}
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        {locations.map((location) => (
+          <Marker
+            key={location.id}
+            position={[location.latitude, location.longitude]}
+          >
+            <Popup>
+              <div className="p-2">
+                <h3 className="font-semibold">{location.name}</h3>
+                <p className="text-sm">{location.address}, {location.city}</p>
+                <p className="text-sm mt-1">Capacité: {location.capacity} personnes</p>
+              </div>
+            </Popup>
+          </Marker>
+        ))}
+      </MapContainer>
     </div>
   );
 };

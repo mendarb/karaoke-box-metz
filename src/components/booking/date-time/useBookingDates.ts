@@ -6,7 +6,6 @@ export const useBookingDates = () => {
   const { data: settings } = useQuery({
     queryKey: ['booking-settings'],
     queryFn: async () => {
-      console.log('Fetching booking settings...');
       const { data, error } = await supabase
         .from('booking_settings')
         .select('*')
@@ -18,59 +17,47 @@ export const useBookingDates = () => {
         throw error;
       }
 
-      console.log('Loaded settings:', data?.value);
       return data?.value;
     },
   });
 
   const today = startOfDay(new Date());
+  const isTestMode = import.meta.env.VITE_STRIPE_MODE === 'test';
   
-  // Calcul des dates min et max en fonction des paramètres
-  const minDate = settings?.isTestMode 
+  // Calculate min and max dates based on settings
+  const minDate = isTestMode 
     ? today
     : addDays(today, settings?.bookingWindow?.startDays || 1);
     
-  const maxDate = settings?.isTestMode
+  const maxDate = isTestMode
     ? addDays(today, 365)
     : addDays(today, settings?.bookingWindow?.endDays || 30);
-
-  console.log('Date boundaries:', { 
-    minDate, 
-    maxDate, 
-    isTestMode: settings?.isTestMode,
-    startDays: settings?.bookingWindow?.startDays,
-    endDays: settings?.bookingWindow?.endDays
-  });
 
   const isDayExcluded = (date: Date) => {
     if (!settings) return true;
     
     const dateToCheck = startOfDay(date);
     
-    // Vérifier si la date est dans la plage autorisée
+    // In test mode, all days are available
+    if (isTestMode) {
+      return false;
+    }
+    
+    // Check if date is within allowed range
     if (isBefore(dateToCheck, minDate) || isAfter(dateToCheck, maxDate)) {
-      console.log('Date outside booking window:', {
-        date: dateToCheck,
-        minDate,
-        maxDate,
-        beforeMin: isBefore(dateToCheck, minDate),
-        afterMax: isAfter(dateToCheck, maxDate)
-      });
       return true;
     }
 
-    // Vérifier si le jour est ouvert
+    // Check if day is open
     const dayOfWeek = dateToCheck.getDay().toString();
     const daySettings = settings.openingHours?.[dayOfWeek];
     
     if (!daySettings?.isOpen) {
-      console.log('Day is closed:', { date: dateToCheck, dayOfWeek });
       return true;
     }
 
-    // Vérifier si la date est exclue
+    // Check if date is excluded
     if (settings.excludedDays?.includes(dateToCheck.getTime())) {
-      console.log('Date is excluded:', dateToCheck);
       return true;
     }
 
@@ -79,23 +66,24 @@ export const useBookingDates = () => {
 
   const getAvailableSlots = async (date: Date) => {
     if (!settings?.openingHours) {
-      console.log('No opening hours settings found');
       return [];
+    }
+
+    // In test mode, return all possible slots
+    if (isTestMode) {
+      return ['14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00'];
     }
 
     const dayOfWeek = date.getDay().toString();
     const daySettings = settings.openingHours[dayOfWeek];
 
     if (!daySettings?.isOpen) {
-      console.log('Day is closed:', { date, dayOfWeek });
       return [];
     }
 
     const slots = daySettings.slots || [];
-    console.log('Potential slots for day:', slots);
 
     try {
-      // Vérifier les réservations existantes avec authentification
       const { data: bookings, error } = await supabase
         .from('bookings')
         .select('*')
@@ -104,63 +92,50 @@ export const useBookingDates = () => {
         .is('deleted_at', null);
 
       if (error) {
-        console.error('Error checking bookings:', error);
         throw error;
       }
 
-      // Filtrer les créneaux déjà réservés
-      const availableSlots = slots.filter(slot => {
+      return slots.filter(slot => {
         const slotTime = parseInt(slot.split(':')[0]);
-        
-        const isBooked = bookings?.some(booking => {
+        return !bookings?.some(booking => {
           const bookingStartTime = parseInt(booking.time_slot.split(':')[0]);
           const bookingDuration = parseInt(booking.duration);
-          
           return slotTime >= bookingStartTime && slotTime < (bookingStartTime + bookingDuration);
         });
-        
-        if (isBooked) {
-          console.log('Slot is booked:', slot);
-        }
-        return !isBooked;
       });
-
-      console.log('Available slots after filtering:', availableSlots);
-      return availableSlots;
     } catch (error) {
       console.error('Error fetching bookings:', error);
-      return slots; // En cas d'erreur, retourner tous les créneaux
+      return slots;
     }
   };
 
   const getAvailableHoursForSlot = async (date: Date, timeSlot: string) => {
     if (!settings?.openingHours) return 0;
 
+    // In test mode, always return 4 hours
+    if (isTestMode) {
+      return 4;
+    }
+
     const daySettings = settings.openingHours[date.getDay().toString()];
     if (!daySettings?.isOpen || !daySettings.slots) {
-      console.log('Day is closed or no slots available');
       return 0;
     }
 
     const slots = daySettings.slots;
     const slotIndex = slots.indexOf(timeSlot);
     if (slotIndex === -1) {
-      console.log('Invalid time slot:', timeSlot);
       return 0;
     }
 
-    // Si c'est le dernier créneau, on ne permet qu'une heure
     if (slotIndex === slots.length - 1) {
-      console.log('Last slot of the day, limiting to 1 hour');
       return 1;
     }
 
-    // Pour les autres créneaux, calculer les heures disponibles
     const remainingSlots = slots.length - slotIndex - 1;
     const maxPossibleHours = Math.min(4, remainingSlots + 1);
 
     try {
-      // Vérifier les réservations existantes
       const { data: bookings, error } = await supabase
         .from('bookings')
         .select('*')
@@ -169,35 +144,27 @@ export const useBookingDates = () => {
         .is('deleted_at', null);
 
       if (error) {
-        console.error('Error checking bookings:', error);
         throw error;
       }
 
-      if (!bookings || bookings.length === 0) {
-        console.log('No existing bookings, returning max hours:', maxPossibleHours);
+      if (!bookings?.length) {
         return maxPossibleHours;
       }
 
       const slotTime = parseInt(timeSlot.split(':')[0]);
-      
-      // Trouver la première réservation qui bloque
       let availableHours = maxPossibleHours;
 
       bookings.forEach(booking => {
         const bookingStartTime = parseInt(booking.time_slot.split(':')[0]);
-        const bookingDuration = parseInt(booking.duration);
-        
         if (bookingStartTime > slotTime) {
-          const hoursUntilBooking = bookingStartTime - slotTime;
-          availableHours = Math.min(availableHours, hoursUntilBooking);
+          availableHours = Math.min(availableHours, bookingStartTime - slotTime);
         }
       });
 
-      console.log(`Available hours for slot ${timeSlot}:`, availableHours);
       return availableHours;
     } catch (error) {
       console.error('Error calculating available hours:', error);
-      return maxPossibleHours; // En cas d'erreur, retourner le maximum possible
+      return maxPossibleHours;
     }
   };
 
@@ -207,6 +174,7 @@ export const useBookingDates = () => {
     maxDate,
     isDayExcluded,
     getAvailableSlots,
-    getAvailableHoursForSlot
+    getAvailableHoursForSlot,
+    isTestMode
   };
 };

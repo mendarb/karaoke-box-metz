@@ -46,21 +46,13 @@ serve(async (req) => {
       );
     }
 
-    // Ensure isTestMode is a boolean and log it
-    const isTestMode = Boolean(data.isTestMode);
-    console.log('🔧 Payment mode configuration:', {
-      rawValue: data.isTestMode,
-      parsedValue: isTestMode,
-      mode: isTestMode ? 'TEST' : 'LIVE'
-    });
-
     // Get the appropriate Stripe key based on mode
-    const stripeKey = isTestMode 
+    const stripeKey = data.isTestMode 
       ? Deno.env.get('STRIPE_TEST_SECRET_KEY') 
       : Deno.env.get('STRIPE_SECRET_KEY');
 
     if (!stripeKey) {
-      const mode = isTestMode ? 'test' : 'live';
+      const mode = data.isTestMode ? 'test' : 'live';
       console.error(`❌ Stripe ${mode} mode API key not found`);
       throw new Error(`Stripe ${mode} mode API key not configured`);
     }
@@ -85,7 +77,7 @@ serve(async (req) => {
           currency: 'eur',
           unit_amount: Math.round(data.finalPrice * 100),
           product_data: {
-            name: isTestMode ? '[TEST MODE] Karaoké BOX - MB EI' : 'Karaoké BOX - MB EI',
+            name: data.isTestMode ? '[TEST MODE] Karaoké BOX - MB EI' : 'Karaoké BOX - MB EI',
             description: priceDescription,
             images: ['https://raw.githubusercontent.com/lovable-karaoke/assets/main/logo.png'],
           },
@@ -103,7 +95,7 @@ serve(async (req) => {
         duration: data.duration,
         groupSize: data.groupSize,
         userId: data.userId || '',
-        isTestMode: String(isTestMode),
+        isTestMode: String(data.isTestMode),
         originalPrice: String(data.price),
         finalPrice: String(data.finalPrice),
         promoCodeId: data.promoCodeId || '',
@@ -111,21 +103,12 @@ serve(async (req) => {
       expires_at: Math.floor(Date.now() / 1000) + (30 * 60), // Session expires in 30 minutes
     };
 
-    console.log('✨ Creating checkout session with config:', {
-      mode: isTestMode ? 'TEST' : 'LIVE',
-      amount: sessionConfig.line_items[0].price_data.unit_amount,
-      email: data.userEmail,
-      bookingId: data.bookingId,
-      isTestMode: isTestMode
-    });
-
     try {
       const session = await stripe.checkout.sessions.create(sessionConfig);
       console.log('✅ Checkout session created:', {
         sessionId: session.id,
-        mode: isTestMode ? 'TEST' : 'LIVE',
+        mode: data.isTestMode ? 'TEST' : 'LIVE',
         url: session.url,
-        isTestMode: isTestMode
       });
 
       return new Response(
@@ -135,7 +118,7 @@ serve(async (req) => {
     } catch (stripeError) {
       console.error('❌ Stripe error:', {
         error: stripeError,
-        mode: isTestMode ? 'TEST' : 'LIVE',
+        mode: data.isTestMode ? 'TEST' : 'LIVE',
         amount: sessionConfig.line_items[0].price_data.unit_amount
       });
       throw stripeError;

@@ -122,8 +122,15 @@ export const BookingForm = () => {
       return;
     }
 
-    // Set test mode based on environment
-    form.setValue('isTestMode', import.meta.env.VITE_STRIPE_MODE === 'test');
+    // Explicitly set test mode based on environment variable
+    const isTestMode = import.meta.env.VITE_STRIPE_MODE === 'test';
+    console.log('🔧 Payment mode:', isTestMode ? 'TEST' : 'LIVE', {
+      envValue: import.meta.env.VITE_STRIPE_MODE,
+      isTestMode
+    });
+    
+    // Set test mode in form data
+    form.setValue('isTestMode', isTestMode);
     
     await submitBooking(data);
   };

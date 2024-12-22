@@ -7,6 +7,7 @@ import { BookingFormContent } from "./BookingFormContent";
 import { BookingFormActions } from "./BookingFormActions";
 import { useBookingMode } from "./hooks/useBookingMode";
 import { useBookingOverlap } from "@/hooks/useBookingOverlap";
+import { toast } from "@/hooks/use-toast";
 
 export const BookingFormWrapper = () => {
   const {

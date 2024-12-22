@@ -1,16 +1,21 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from 'react';
 
 export const useBookingMode = () => {
   const [isTestMode, setIsTestMode] = useState(false);
 
   useEffect(() => {
-    // Explicitly check for 'test' value
-    const mode = import.meta.env.VITE_STRIPE_MODE;
-    setIsTestMode(mode === 'test');
-    console.log('🔧 Booking mode initialized:', {
-      envValue: mode,
-      isTestMode: mode === 'test'
-    });
+    // Vérifier si nous sommes en mode test
+    const checkTestMode = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const testMode = urlParams.get('test') === 'true';
+      setIsTestMode(testMode);
+      
+      console.log('🔧 Booking mode initialized:', {
+        isTestMode: testMode
+      });
+    };
+
+    checkTestMode();
   }, []);
 
   return { isTestMode };

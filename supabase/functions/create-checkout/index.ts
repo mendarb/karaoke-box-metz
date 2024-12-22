@@ -16,9 +16,8 @@ serve(async (req) => {
     console.log('📦 Received booking data:', {
       bookingId: data.bookingId,
       email: data.userEmail,
-      isTestMode: Boolean(data.isTestMode),
+      isTestMode: data.isTestMode,
       price: data.finalPrice,
-      mode: data.isTestMode ? 'TEST' : 'LIVE'
     });
 
     const requiredFields = [

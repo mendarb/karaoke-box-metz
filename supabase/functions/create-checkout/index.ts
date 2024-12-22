@@ -57,7 +57,10 @@ serve(async (req) => {
       throw new Error(`Stripe ${mode} mode API key not configured`);
     }
 
-    console.log('🔑 Using Stripe mode:', data.isTestMode ? 'TEST' : 'LIVE');
+    console.log('🔑 Using Stripe mode:', data.isTestMode ? 'TEST' : 'LIVE', {
+      isTestMode: data.isTestMode,
+      mode: data.isTestMode ? 'TEST' : 'LIVE'
+    });
 
     const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',

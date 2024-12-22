@@ -28,7 +28,8 @@ serve(async (req) => {
       'duration',
       'groupSize',
       'finalPrice',
-      'bookingId'
+      'bookingId',
+      'isTestMode'
     ];
 
     const missingFields = requiredFields.filter(field => !data[field]);
@@ -46,9 +47,13 @@ serve(async (req) => {
       );
     }
 
-    // Ensure isTestMode is a boolean
+    // Ensure isTestMode is a boolean and log it
     const isTestMode = Boolean(data.isTestMode);
-    console.log('🔧 Payment mode:', isTestMode ? 'TEST' : 'LIVE');
+    console.log('🔧 Payment mode configuration:', {
+      rawValue: data.isTestMode,
+      parsedValue: isTestMode,
+      mode: isTestMode ? 'TEST' : 'LIVE'
+    });
 
     // Get the appropriate Stripe key based on mode
     const stripeKey = isTestMode 

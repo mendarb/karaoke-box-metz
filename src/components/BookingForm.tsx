@@ -132,7 +132,8 @@ export const BookingForm = () => {
     // Set test mode in form data
     form.setValue('isTestMode', isTestMode);
     
-    await submitBooking(data);
+    // Pass isTestMode to submitBooking
+    await submitBooking({ ...data, isTestMode });
   };
 
   return (

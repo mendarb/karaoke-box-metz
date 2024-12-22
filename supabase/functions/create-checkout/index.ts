@@ -31,7 +31,7 @@ serve(async (req) => {
       'isTestMode'
     ];
 
-    const missingFields = requiredFields.filter(field => !data[field]);
+    const missingFields = requiredFields.filter(field => data[field] === undefined);
     if (missingFields.length > 0) {
       console.error('❌ Missing required fields:', missingFields);
       return new Response(

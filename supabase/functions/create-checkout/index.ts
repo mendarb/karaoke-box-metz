@@ -44,7 +44,8 @@ serve(async (req) => {
           price_data: {
             currency: 'eur',
             product_data: {
-              name: `Booking #${data.bookingId}`,
+              name: data.isTestMode ? '[TEST MODE] Karaoké BOX - MB EI' : 'Karaoké BOX - MB EI',
+              description: `${data.groupSize} personnes - ${data.duration}h`,
             },
             unit_amount: data.price * 100, // Convert to cents
           },
@@ -54,6 +55,10 @@ serve(async (req) => {
       mode: 'payment',
       success_url: `${data.successUrl}?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: data.cancelUrl,
+      metadata: {
+        bookingId: data.bookingId,
+        isTestMode: String(data.isTestMode)
+      }
     });
 
     console.log('✅ Checkout session created:', {

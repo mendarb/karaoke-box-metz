@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { useBookingDates } from "./useBookingDates";
 
@@ -10,39 +10,25 @@ export const useDateTimeSelection = (
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const { getAvailableSlots, getAvailableHoursForSlot } = useBookingDates();
 
-  const handleDateSelect = async (date: Date) => {
-    try {
-      console.log('🗓️ Date sélectionnée:', date);
-      setSelectedDate(date);
-      form.setValue("date", date);
-      form.setValue("timeSlot", "");
-      
-      const slots = await getAvailableSlots(date);
-      console.log('📅 Créneaux disponibles:', slots);
-      
-      setAvailableSlots(slots);
-      onAvailabilityChange(date, 0);
-    } catch (error) {
-      console.error('❌ Erreur récupération créneaux:', error);
-      setAvailableSlots([]);
-    }
-  };
+  const handleDateSelect = useCallback(async (date: Date) => {
+    setSelectedDate(date);
+    form.setValue("date", date);
+    form.setValue("timeSlot", "");
+    
+    const slots = await getAvailableSlots(date);
+    setAvailableSlots(slots);
+    onAvailabilityChange(date, 0);
+  }, [form, getAvailableSlots, onAvailabilityChange]);
 
-  const handleTimeSlotChange = async (timeSlot: string) => {
+  const handleTimeSlotChange = useCallback(async (timeSlot: string) => {
     if (!selectedDate || !timeSlot) {
       onAvailabilityChange(selectedDate, 0);
       return;
     }
 
-    try {
-      const availableHours = await getAvailableHoursForSlot(selectedDate, timeSlot);
-      console.log(`⏰ Heures disponibles pour ${timeSlot}:`, availableHours);
-      onAvailabilityChange(selectedDate, availableHours);
-    } catch (error) {
-      console.error('❌ Erreur calcul heures disponibles:', error);
-      onAvailabilityChange(selectedDate, 0);
-    }
-  };
+    const availableHours = await getAvailableHoursForSlot(selectedDate, timeSlot);
+    onAvailabilityChange(selectedDate, availableHours);
+  }, [selectedDate, getAvailableHoursForSlot, onAvailabilityChange]);
 
   return {
     selectedDate,

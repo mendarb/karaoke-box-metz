@@ -11,23 +11,17 @@ export const useDisabledDates = ({ minDate, maxDate, isDayExcluded }: UseDisable
   const [disabledDates, setDisabledDates] = useState<Date[]>([]);
 
   useEffect(() => {
-    console.log('🔄 Calcul des dates désactivées...');
-    const calculateDisabledDates = () => {
-      const dates: Date[] = [];
-      let currentDate = startOfDay(minDate);
-      
-      while (currentDate <= maxDate) {
-        if (isDayExcluded(currentDate)) {
-          dates.push(new Date(currentDate));
-        }
-        currentDate = addDays(currentDate, 1);
-      }
-
-      console.log(`✅ ${dates.length} dates désactivées calculées`);
-      setDisabledDates(dates);
-    };
+    const dates: Date[] = [];
+    let currentDate = startOfDay(minDate);
     
-    calculateDisabledDates();
+    while (currentDate <= maxDate) {
+      if (isDayExcluded(currentDate)) {
+        dates.push(new Date(currentDate));
+      }
+      currentDate = addDays(currentDate, 1);
+    }
+
+    setDisabledDates(dates);
   }, [minDate, maxDate, isDayExcluded]);
 
   return { disabledDates };

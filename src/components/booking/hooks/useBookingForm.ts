@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useUserState } from "@/hooks/useUserState";
 import { supabase } from "@/lib/supabase";
 
@@ -12,7 +12,7 @@ export const useBookingForm = () => {
   const [currentStep, setCurrentStep] = useState(user ? 2 : 1);
   const [calculatedPrice, setCalculatedPrice] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [availableHours, setAvailableHours] = useState(4);
   const form = useForm();
 
@@ -38,7 +38,7 @@ export const useBookingForm = () => {
   };
 
   // Load user data on mount
-  useState(() => {
+  useEffect(() => {
     loadUserData();
   }, [user]);
 

@@ -1,3 +1,4 @@
+import React from "react";
 import { Step } from "../../BookingSteps";
 import { User, Calendar, Users, Settings } from "lucide-react";
 
@@ -7,7 +8,7 @@ export const useBookingSteps = (currentStep: number): Step[] => {
       id: 1,
       title: "Informations personnelles",
       description: "Vos coordonnées",
-      icon: <User className="h-5 w-5" />,
+      icon: React.createElement(User, { className: "h-5 w-5" }),
       completed: currentStep > 1,
       current: currentStep === 1,
     },
@@ -15,7 +16,7 @@ export const useBookingSteps = (currentStep: number): Step[] => {
       id: 2,
       title: "Date et heure",
       description: "Choisissez votre créneau",
-      icon: <Calendar className="h-5 w-5" />,
+      icon: React.createElement(Calendar, { className: "h-5 w-5" }),
       completed: currentStep > 2,
       current: currentStep === 2,
     },
@@ -23,7 +24,7 @@ export const useBookingSteps = (currentStep: number): Step[] => {
       id: 3,
       title: "Groupe et durée",
       description: "Taille du groupe et durée",
-      icon: <Users className="h-5 w-5" />,
+      icon: React.createElement(Users, { className: "h-5 w-5" }),
       completed: currentStep > 3,
       current: currentStep === 3,
     },
@@ -31,7 +32,7 @@ export const useBookingSteps = (currentStep: number): Step[] => {
       id: 4,
       title: "Finalisation",
       description: "Informations complémentaires",
-      icon: <Settings className="h-5 w-5" />,
+      icon: React.createElement(Settings, { className: "h-5 w-5" }),
       completed: currentStep > 4,
       current: currentStep === 4,
     },

@@ -1,14 +1,7 @@
-import { Button } from "@/components/ui/button";
-import { 
-  FormControl, 
-  FormField,
-  FormItem, 
-  FormLabel, 
-  FormMessage 
-} from "@/components/ui/form";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { UseFormReturn } from "react-hook-form";
-import { Clock, Loader2 } from "lucide-react";
+import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
+import { Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TimeSlotsProps {
@@ -17,22 +10,18 @@ interface TimeSlotsProps {
   isLoading?: boolean;
 }
 
-export const TimeSlots = ({ 
-  form, 
-  availableSlots,
-  isLoading = false 
-}: TimeSlotsProps) => {
+export const TimeSlots = ({ form, availableSlots, isLoading = false }: TimeSlotsProps) => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
       </div>
     );
   }
 
   if (!availableSlots.length) {
     return (
-      <div className="text-center py-4 text-gray-500">
+      <div className="text-center py-6 text-gray-500 bg-gray-50/50 rounded-lg border border-gray-100">
         Aucun créneau disponible pour cette date
       </div>
     );
@@ -44,37 +33,31 @@ export const TimeSlots = ({
       name="timeSlot"
       rules={{ required: "L'heure est requise" }}
       render={({ field }) => (
-        <FormItem>
-          <FormLabel>Heure *</FormLabel>
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-            <TooltipProvider>
-              {availableSlots.map((slot) => (
-                <Tooltip key={slot}>
-                  <TooltipTrigger asChild>
-                    <div>
-                      <FormControl>
-                        <Button
-                          type="button"
-                          variant={field.value === slot ? "default" : "outline"}
-                          className={cn(
-                            "w-full transition-all duration-200",
-                            field.value === slot
-                              ? "bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-100 scale-105"
-                              : "hover:border-violet-300 hover:scale-105"
-                          )}
-                          onClick={() => field.onChange(slot)}
-                        >
-                          <Clock className="w-4 h-4 mr-2" />
-                          {slot}
-                        </Button>
-                      </FormControl>
-                    </div>
-                  </TooltipTrigger>
-                </Tooltip>
-              ))}
-            </TooltipProvider>
+        <FormItem className="space-y-4">
+          <FormLabel className="text-base">Heure *</FormLabel>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {availableSlots.map((slot) => (
+              <FormControl key={slot}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className={cn(
+                    "w-full h-12 gap-2 transition-all duration-200",
+                    field.value === slot
+                      ? "bg-violet-600 text-white hover:bg-violet-700 border-violet-600 hover:border-violet-700 shadow-lg shadow-violet-100 scale-105"
+                      : "hover:border-violet-300 hover:bg-violet-50/50"
+                  )}
+                  onClick={() => field.onChange(slot)}
+                >
+                  <Clock className={cn(
+                    "w-4 h-4",
+                    field.value === slot ? "text-white" : "text-violet-600"
+                  )} />
+                  {slot}
+                </Button>
+              </FormControl>
+            ))}
           </div>
-          <FormMessage />
         </FormItem>
       )}
     />

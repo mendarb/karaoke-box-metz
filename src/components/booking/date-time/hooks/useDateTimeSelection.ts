@@ -2,7 +2,6 @@ import { useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { useBookingDates } from "./useBookingDates";
 import { toast } from "@/components/ui/use-toast";
-import { useBookingSettings } from "./useBookingSettings";
 
 export const useDateTimeSelection = (
   form: UseFormReturn<any>,

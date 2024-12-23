@@ -17,9 +17,11 @@ export const useBookingForm = () => {
   const form = useForm();
 
   const loadUserData = async () => {
-    if (user) {
-      form.setValue('email', user.email || '');
-      
+    if (!user) return;
+
+    form.setValue('email', user.email || '');
+    
+    try {
       const { data: lastBooking } = await supabase
         .from('bookings')
         .select('user_name, user_phone')
@@ -33,12 +35,14 @@ export const useBookingForm = () => {
         form.setValue('fullName', lastBooking.user_name);
         form.setValue('phone', lastBooking.user_phone);
       }
+    } catch (error) {
+      console.error('Error loading user data:', error);
     }
   };
 
   useEffect(() => {
     loadUserData();
-  }, [user]);
+  }, [user, form]);
 
   const handlePriceCalculated = (price: number) => {
     console.log('Price calculated:', price);
@@ -52,7 +56,6 @@ export const useBookingForm = () => {
   };
 
   const handlePrevious = () => {
-    // Si l'utilisateur est connecté, ne pas revenir à l'étape 1
     if (currentStep > (user ? 2 : 1)) {
       setCurrentStep(currentStep - 1);
     }

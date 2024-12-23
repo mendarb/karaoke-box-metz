@@ -8,15 +8,48 @@ import { useUserState } from "@/hooks/useUserState";
 import { LegalLinks } from "@/components/legal/LegalLinks";
 import { CookieConsent } from "@/components/legal/CookieConsent";
 import { Calendar, Music2, Users } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
 
 const Index = () => {
   const isMobile = useIsMobile();
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const { isLoading, sessionChecked } = useUserState();
+  const { isLoading: userLoading, sessionChecked } = useUserState();
 
-  if (isLoading && !sessionChecked) {
+  const { data: siteSettings, isLoading: settingsLoading } = useQuery({
+    queryKey: ['site-settings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('*');
+
+      if (error) throw error;
+      
+      const settingsMap = data.reduce((acc: any, curr) => {
+        acc[curr.key] = curr.value;
+        return acc;
+      }, {});
+
+      console.log('Site settings loaded:', settingsMap);
+      return settingsMap;
+    },
+  });
+
+  if (userLoading && !sessionChecked || settingsLoading) {
     return <LoadingSpinner />;
   }
+
+  const contactInfo = siteSettings?.contact_info || {
+    email: 'contact@karaoke-cabin.fr',
+    phone: '01 23 45 67 89',
+    address: '1 rue du Karaoké, 57000 Metz'
+  };
+
+  const businessHours = siteSettings?.business_hours || {
+    description: 'Du mercredi au dimanche',
+    hours: '14h00 - 22h00',
+    closed: 'Fermé le lundi et mardi'
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-violet-50 via-white to-violet-50">
@@ -38,7 +71,6 @@ const Index = () => {
             <BookingForm />
           </div>
 
-          {/* Features section déplacée en dessous */}
           <div className="space-y-12 sm:space-y-16 py-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
               <div className="glass p-6 rounded-xl transform transition-all duration-300 hover:scale-105">
@@ -77,17 +109,17 @@ const Index = () => {
             <div>
               <h3 className="text-lg font-semibold mb-4">Contact</h3>
               <div className="space-y-2 text-gray-600">
-                <p>Email: contact@karaoke-cabin.fr</p>
-                <p>Tél: 01 23 45 67 89</p>
-                <p>Adresse: 1 rue du Karaoké, 57000 Metz</p>
+                <p>Email: {contactInfo.email}</p>
+                <p>Tél: {contactInfo.phone}</p>
+                <p>Adresse: {contactInfo.address}</p>
               </div>
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-4">Horaires</h3>
               <div className="space-y-2 text-gray-600">
-                <p>Du mercredi au dimanche</p>
-                <p>14h00 - 22h00</p>
-                <p className="text-sm italic mt-2">Fermé le lundi et mardi</p>
+                <p>{businessHours.description}</p>
+                <p>{businessHours.hours}</p>
+                <p className="text-sm italic mt-2">{businessHours.closed}</p>
               </div>
             </div>
           </div>

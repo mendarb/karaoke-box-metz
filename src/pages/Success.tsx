@@ -3,14 +3,12 @@ import { useBookingSuccess } from "@/hooks/useBookingSuccess";
 import { BookingSuccessDetails } from "@/components/booking/BookingSuccessDetails";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { CheckCircle2, AlertTriangle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Success = () => {
   const { bookingDetails, loading } = useBookingSuccess();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const sessionId = searchParams.get('session_id');
 
   if (loading) {
     return (
@@ -24,8 +22,8 @@ const Success = () => {
   if (!bookingDetails) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-        <div className="text-center">
-          <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
+          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
             Réservation non trouvée
           </h1>
@@ -43,8 +41,7 @@ const Success = () => {
     );
   }
 
-  // Si nous avons un session_id de Stripe, le paiement est confirmé
-  const isPaid = sessionId || bookingDetails.payment_status === 'paid';
+  const isPaid = bookingDetails.payment_status === 'paid';
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">

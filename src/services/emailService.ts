@@ -12,7 +12,7 @@ export const sendBookingEmail = async (booking: Booking) => {
     const { error } = await supabase.functions.invoke('send-booking-email', {
       body: { 
         booking,
-        type: booking.status === 'confirmed' ? 'confirmation' : 'pending'
+        type: 'confirmation'
       },
     });
 

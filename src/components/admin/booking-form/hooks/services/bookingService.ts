@@ -51,17 +51,18 @@ export const generatePaymentLink = async (booking: any, data: any) => {
 
   const checkoutUrl = await createCheckoutSession({
     bookingId: booking.id,
+    userId: booking.user_id,
     userEmail: data.email,
     date: data.date,
     timeSlot: data.timeSlot,
     duration: data.duration,
     groupSize: data.groupSize,
-    price: data.calculatedPrice,
-    finalPrice: data.calculatedPrice,
+    price: data.price || data.calculatedPrice,
+    finalPrice: data.finalPrice || data.calculatedPrice,
     message: data.message,
     userName: data.fullName,
     userPhone: data.phone,
-    isTestMode: false,
+    isTestMode: data.isTestMode || false,
   });
 
   console.log('✅ Lien de paiement généré:', checkoutUrl);

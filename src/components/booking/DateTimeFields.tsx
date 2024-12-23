@@ -4,7 +4,8 @@ import { TimeSlots } from "./date-time/TimeSlots";
 import { useBookingDates } from "./date-time/hooks/useBookingDates";
 import { useDisabledDates } from "./date-time/hooks/useDisabledDates";
 import { BookingCalendar } from "./date-time/BookingCalendar";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
+import { useBookingSettings } from "./date-time/hooks/useBookingSettings";
 
 interface DateTimeFieldsProps {
   form: UseFormReturn<any>;
@@ -13,19 +14,21 @@ interface DateTimeFieldsProps {
 
 export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
-  const [bookedSlots, setBookedSlots] = useState<{ [key: string]: number }>({});
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const { settings, minDate, maxDate } = useBookingSettings();
   
-  const { minDate, maxDate, isDayExcluded, getAvailableSlots, getAvailableHoursForSlot } = useBookingDates();
+  const { isDayExcluded, getAvailableSlots, getAvailableHoursForSlot } = useBookingDates();
   const { disabledDates } = useDisabledDates({ minDate, maxDate, isDayExcluded });
 
   // Gérer le changement de date
   const handleDateSelect = async (date: Date) => {
     try {
+      console.log('🗓️ Date selected:', date);
       setSelectedDate(date);
-      // Réinitialiser le créneau horaire sélectionné
       form.setValue("timeSlot", "");
+      
       const slots = await getAvailableSlots(date);
+      console.log('📅 Available slots:', slots);
       
       if (slots.length === 0) {
         toast({
@@ -36,11 +39,9 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
       }
       
       setAvailableSlots(slots);
-      console.log('Available slots updated:', slots);
-      // Réinitialiser les heures disponibles
       onAvailabilityChange(date, 0);
     } catch (error) {
-      console.error('Error fetching available slots:', error);
+      console.error('❌ Error fetching available slots:', error);
       toast({
         title: "Erreur",
         description: "Impossible de récupérer les créneaux disponibles",
@@ -50,30 +51,34 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
   };
 
   // Gérer le changement de créneau horaire
+  const handleTimeSlotChange = async (timeSlot: string) => {
+    if (!selectedDate || !timeSlot) {
+      onAvailabilityChange(selectedDate, 0);
+      return;
+    }
+
+    try {
+      const availableHours = await getAvailableHoursForSlot(selectedDate, timeSlot);
+      console.log(`⏰ Available hours for ${timeSlot}:`, availableHours);
+      onAvailabilityChange(selectedDate, availableHours);
+    } catch (error) {
+      console.error('❌ Error calculating available hours:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de calculer les heures disponibles",
+        variant: "destructive",
+      });
+      onAvailabilityChange(selectedDate, 0);
+    }
+  };
+
+  // Observer les changements de créneau horaire
   useEffect(() => {
-    const updateAvailableHours = async () => {
-      const timeSlot = form.watch("timeSlot");
-      if (!selectedDate || !timeSlot || availableSlots.length === 0) {
-        onAvailabilityChange(selectedDate, 0);
-        return;
-      }
-
-      try {
-        const availableHours = await getAvailableHoursForSlot(selectedDate, timeSlot);
-        console.log(`Available hours for ${timeSlot}:`, availableHours);
-        onAvailabilityChange(selectedDate, availableHours);
-      } catch (error) {
-        console.error('Error calculating available hours:', error);
-        toast({
-          title: "Erreur",
-          description: "Impossible de calculer les heures disponibles",
-          variant: "destructive",
-        });
-      }
-    };
-
-    updateAvailableHours();
-  }, [form.watch("timeSlot"), selectedDate, availableSlots]);
+    const timeSlot = form.watch("timeSlot");
+    if (timeSlot) {
+      handleTimeSlotChange(timeSlot);
+    }
+  }, [form.watch("timeSlot")]);
 
   return (
     <div className="space-y-6">
@@ -90,7 +95,7 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
         <TimeSlots
           form={form}
           availableSlots={availableSlots}
-          bookedSlots={bookedSlots}
+          isLoading={false}
         />
       )}
     </div>

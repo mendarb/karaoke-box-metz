@@ -14,18 +14,14 @@ import { cn } from "@/lib/utils";
 interface TimeSlotsProps {
   form: UseFormReturn<any>;
   availableSlots: string[];
-  bookedSlots: { [key: string]: number };
   isLoading?: boolean;
 }
 
 export const TimeSlots = ({ 
   form, 
-  availableSlots, 
-  bookedSlots,
+  availableSlots,
   isLoading = false 
 }: TimeSlotsProps) => {
-  const isSlotAvailable = (slot: string) => !bookedSlots[slot];
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -52,40 +48,30 @@ export const TimeSlots = ({
           <FormLabel>Heure *</FormLabel>
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
             <TooltipProvider>
-              {availableSlots.map((slot) => {
-                const isAvailable = isSlotAvailable(slot);
-                return (
-                  <Tooltip key={slot}>
-                    <TooltipTrigger asChild>
-                      <div>
-                        <FormControl>
-                          <Button
-                            type="button"
-                            variant={field.value === slot ? "default" : "outline"}
-                            className={cn(
-                              "w-full transition-all duration-200",
-                              field.value === slot
-                                ? "bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-100 scale-105"
-                                : "hover:border-violet-300 hover:scale-105",
-                              !isAvailable && "opacity-50 cursor-not-allowed bg-gray-100 hover:bg-gray-100 hover:scale-100"
-                            )}
-                            onClick={() => isAvailable && field.onChange(slot)}
-                            disabled={!isAvailable}
-                          >
-                            <Clock className="w-4 h-4 mr-2" />
-                            {slot}
-                          </Button>
-                        </FormControl>
-                      </div>
-                    </TooltipTrigger>
-                    {!isAvailable && (
-                      <TooltipContent>
-                        <p>Créneau déjà réservé</p>
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
-                );
-              })}
+              {availableSlots.map((slot) => (
+                <Tooltip key={slot}>
+                  <TooltipTrigger asChild>
+                    <div>
+                      <FormControl>
+                        <Button
+                          type="button"
+                          variant={field.value === slot ? "default" : "outline"}
+                          className={cn(
+                            "w-full transition-all duration-200",
+                            field.value === slot
+                              ? "bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-100 scale-105"
+                              : "hover:border-violet-300 hover:scale-105"
+                          )}
+                          onClick={() => field.onChange(slot)}
+                        >
+                          <Clock className="w-4 h-4 mr-2" />
+                          {slot}
+                        </Button>
+                      </FormControl>
+                    </div>
+                  </TooltipTrigger>
+                </Tooltip>
+              ))}
             </TooltipProvider>
           </div>
           <FormMessage />

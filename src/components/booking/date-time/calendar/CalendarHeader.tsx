@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DayPicker } from "react-day-picker";
+import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
 interface CalendarHeaderProps {
@@ -31,7 +31,7 @@ export const CalendarHeader = ({ currentMonth, onMonthChange }: CalendarHeaderPr
         <ChevronLeft className="h-4 w-4" />
       </Button>
       <div className="text-lg font-medium text-gray-900">
-        {currentMonth.toLocaleString(fr, { month: 'long', year: 'numeric' })}
+        {format(currentMonth, 'MMMM yyyy', { locale: fr })}
       </div>
       <Button
         variant="ghost"

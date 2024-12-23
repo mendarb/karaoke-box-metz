@@ -18,7 +18,9 @@ export const getDateRange = (settings: BookingSettings | null | undefined, isTes
 export const convertJsWeekDayToSettings = (jsWeekDay: number): number => {
   // JavaScript: 0 (dimanche) - 6 (samedi)
   // Notre format: 1 (lundi) - 7 (dimanche)
-  return jsWeekDay === 0 ? 7 : jsWeekDay;
+  const settingsWeekDay = jsWeekDay === 0 ? 7 : jsWeekDay;
+  console.log('📅 Conversion jour:', { jsWeekDay, settingsWeekDay });
+  return settingsWeekDay;
 };
 
 export const isDayExcluded = (
@@ -43,14 +45,6 @@ export const isDayExcluded = (
   const jsWeekDay = dateToCheck.getDay();
   const settingsWeekDay = convertJsWeekDayToSettings(jsWeekDay);
   
-  console.log('Vérification jour:', { 
-    date: dateToCheck.toISOString(), 
-    jsWeekDay,
-    settingsWeekDay,
-    openingHours: settings.openingHours,
-    isOpen: settings.openingHours?.[settingsWeekDay]?.isOpen
-  });
-
   const daySettings = settings.openingHours?.[settingsWeekDay];
   
   if (!daySettings?.isOpen) {

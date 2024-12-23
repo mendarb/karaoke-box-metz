@@ -22,8 +22,9 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
   const { minDate, maxDate, settings } = useBookingSettings();
   const { disabledDates } = useDisabledDates({ minDate, maxDate, isDayExcluded: (date) => {
     if (!settings?.openingHours) return true;
-    const dayOfWeek = date.getDay().toString();
-    return !settings.openingHours[dayOfWeek]?.isOpen;
+    const dayOfWeek = date.getDay();
+    const settingsWeekDay = dayOfWeek === 0 ? 7 : dayOfWeek;
+    return !settings.openingHours[settingsWeekDay]?.isOpen;
   }});
 
   useEffect(() => {
@@ -32,13 +33,6 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
       handleTimeSlotChange(timeSlot);
     }
   }, [form.watch("timeSlot")]);
-
-  console.log('DateTimeFields render:', {
-    selectedDate,
-    minDate,
-    maxDate,
-    disabledDates: disabledDates.length
-  });
 
   return (
     <div className="space-y-8">

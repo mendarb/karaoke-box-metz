@@ -11,16 +11,18 @@ import { UseFormReturn } from "react-hook-form";
 import { useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { Mail } from "lucide-react";
+import { useUserState } from "@/hooks/useUserState";
 
 interface PersonalInfoFieldsProps {
   form: UseFormReturn<any>;
 }
 
 export const PersonalInfoFields = ({ form }: PersonalInfoFieldsProps) => {
+  const { user } = useUserState();
+
   useEffect(() => {
     const loadUserData = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           form.setValue('email', user.email || '');
           
@@ -44,7 +46,12 @@ export const PersonalInfoFields = ({ form }: PersonalInfoFieldsProps) => {
     };
 
     loadUserData();
-  }, [form]);
+  }, [form, user]);
+
+  // Si l'utilisateur est connecté, on ne montre pas les champs
+  if (user) {
+    return null;
+  }
 
   return (
     <div className="space-y-4 animate-fadeIn">

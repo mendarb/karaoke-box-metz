@@ -81,9 +81,8 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
     <div className="space-y-8">
       <div className="w-full max-w-[600px] mx-auto">
         <BookingCalendar
-          form={form}
           disabledDates={disabledDates}
-          onDateSelect={handleDateSelect}
+          onSelect={handleDateSelect}
           selectedDate={selectedDate}
           minDate={minDate}
           maxDate={maxDate}

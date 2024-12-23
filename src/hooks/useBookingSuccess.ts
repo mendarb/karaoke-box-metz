@@ -1,11 +1,25 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { Booking } from "./useBookings";
 import { useBookingEmail } from "./useBookingEmail";
 
+// Export the BookingDetails type
+export interface BookingDetails {
+  id: string;
+  date: string;
+  time_slot: string;
+  duration: string;
+  group_size: string;
+  price: number;
+  user_email: string;
+  user_name: string;
+  user_phone: string;
+  payment_status: string;
+  is_test_booking?: boolean;
+}
+
 export const useBookingSuccess = () => {
-  const [bookingDetails, setBookingDetails] = useState<Booking | null>(null);
+  const [bookingDetails, setBookingDetails] = useState<BookingDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('session_id');

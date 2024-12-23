@@ -1,60 +1,47 @@
-import { User, Calendar, Users, Check } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { User2, Calendar, Users, CreditCard } from "lucide-react";
 
-export type BookingStep = {
-  id: number;
-  name: string;
+interface Step {
+  title: string;
   description: string;
-  completed: boolean;
-  current: boolean;
-};
+  icon: React.ReactNode;
+}
 
-export const BookingSteps = ({
-  steps,
-  currentStep,
-}: {
-  steps: BookingStep[];
+interface BookingStepsProps {
+  steps: Step[];
   currentStep: number;
-}) => {
-  const isMobile = useIsMobile();
+}
 
-  const getStepIcon = (stepId: number) => {
-    switch (stepId) {
-      case 1:
-        return <User className="w-5 h-5" />;
-      case 2:
-        return <Calendar className="w-5 h-5" />;
-      case 3:
-        return <Users className="w-5 h-5" />;
-      case 4:
-        return <Check className="w-5 h-5" />;
-      default:
-        return null;
-    }
-  };
-
+export const BookingSteps = ({ steps, currentStep }: BookingStepsProps) => {
   return (
-    <div className="pb-4">
-      <nav aria-label="Progress">
-        <ol role="list" className="flex justify-between space-x-2">
-          {steps.map((step) => (
-            <li key={step.id} className="flex-1">
-              <div
-                className={`flex items-center justify-center p-2 rounded-full transition-all duration-300 ${
-                  step.current
-                    ? "bg-violet-600 text-white"
-                    : step.completed
-                    ? "bg-violet-100 text-violet-600"
-                    : "bg-gray-100 text-gray-400"
-                }`}
-                title={`${step.name}: ${step.description}`}
-              >
-                {getStepIcon(step.id)}
-              </div>
-            </li>
-          ))}
-        </ol>
-      </nav>
+    <div className="w-full mb-8">
+      <div className="flex justify-between">
+        {[
+          { icon: <User2 className="w-6 h-6" />, title: "Coordonnées" },
+          { icon: <Calendar className="w-6 h-6" />, title: "Date & Heure" },
+          { icon: <Users className="w-6 h-6" />, title: "Groupe" },
+          { icon: <CreditCard className="w-6 h-6" />, title: "Paiement" },
+        ].map((step, index) => (
+          <div
+            key={index}
+            className={`flex flex-col items-center w-full ${
+              index !== 3 ? "border-r border-gray-200" : ""
+            } ${index === currentStep - 1 ? "opacity-100" : "opacity-50"}`}
+          >
+            <div
+              className={`rounded-full p-3 mb-2 ${
+                index === currentStep - 1
+                  ? "bg-violet-100 text-violet-600"
+                  : "bg-gray-100 text-gray-400"
+              }`}
+            >
+              {step.icon}
+            </div>
+            <span className="text-sm font-medium hidden sm:block">
+              {step.title}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

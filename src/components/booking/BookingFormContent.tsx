@@ -3,6 +3,7 @@ import { PersonalInfoFields } from "./PersonalInfoFields";
 import { DateTimeFields } from "./DateTimeFields";
 import { GroupSizeAndDurationFields } from "./GroupSizeAndDurationFields";
 import { AdditionalFields } from "./AdditionalFields";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface BookingFormContentProps {
   currentStep: number;
@@ -29,34 +30,48 @@ export const BookingFormContent = ({
   onAvailabilityChange,
   availableHours,
 }: BookingFormContentProps) => {
-  switch (currentStep) {
-    case 1:
-      return <PersonalInfoFields form={form} />;
-    case 2:
-      return <DateTimeFields 
-        form={form} 
-        onAvailabilityChange={onAvailabilityChange}
-      />;
-    case 3:
-      return (
-        <GroupSizeAndDurationFields
-          form={form}
-          onGroupSizeChange={onGroupSizeChange}
-          onDurationChange={onDurationChange}
-          onPriceCalculated={onPriceCalculated}
-          availableHours={availableHours}
-        />
-      );
-    case 4:
-      return (
-        <AdditionalFields 
-          form={form} 
-          calculatedPrice={calculatedPrice}
-          groupSize={groupSize}
-          duration={duration}
-        />
-      );
-    default:
-      return null;
-  }
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 1:
+        return <PersonalInfoFields form={form} />;
+      case 2:
+        return (
+          <DateTimeFields 
+            form={form} 
+            onAvailabilityChange={onAvailabilityChange}
+          />
+        );
+      case 3:
+        return (
+          <GroupSizeAndDurationFields
+            form={form}
+            onGroupSizeChange={onGroupSizeChange}
+            onDurationChange={onDurationChange}
+            onPriceCalculated={onPriceCalculated}
+            availableHours={availableHours}
+          />
+        );
+      case 4:
+        return (
+          <AdditionalFields 
+            form={form} 
+            calculatedPrice={calculatedPrice}
+            groupSize={groupSize}
+            duration={duration}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <Card className="bg-white/50 backdrop-blur-sm border-none shadow-none">
+      <CardContent className="pt-6">
+        <div className="min-h-[300px] animate-fadeIn">
+          {renderStepContent()}
+        </div>
+      </CardContent>
+    </Card>
+  );
 };

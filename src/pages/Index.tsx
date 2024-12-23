@@ -24,43 +24,45 @@ const Index = () => {
       
       <main className="flex-grow container mx-auto py-6 sm:py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
-          <div className="mb-12 sm:mb-16 animate-fadeIn text-center">
+          <div className="mb-8 sm:mb-12 animate-fadeIn text-center">
             <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-6">
               Votre Box Karaoké Privative à Metz
             </h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-12">
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Vivez une expérience unique dans un cadre confortable et moderne. 
               Chantez vos chansons préférées en toute intimité !
             </p>
+          </div>
 
-            {/* Features section */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-              <div className="glass p-6 rounded-xl">
-                <div className="flex flex-col items-center">
+          <div className="glass rounded-3xl shadow-xl p-6 sm:p-8 transition-all duration-300 hover:shadow-violet-100/20 mb-12">
+            <BookingForm />
+          </div>
+
+          {/* Features section déplacée en dessous */}
+          <div className="space-y-12 sm:space-y-16 py-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+              <div className="glass p-6 rounded-xl transform transition-all duration-300 hover:scale-105">
+                <div className="flex flex-col items-center text-center">
                   <Users className="w-12 h-12 text-violet-600 mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Jusqu'à 10 personnes</h3>
+                  <h3 className="text-lg font-semibold mb-3">Jusqu'à 10 personnes</h3>
                   <p className="text-gray-600">Idéal pour vos soirées entre amis ou en famille</p>
                 </div>
               </div>
-              <div className="glass p-6 rounded-xl">
-                <div className="flex flex-col items-center">
+              <div className="glass p-6 rounded-xl transform transition-all duration-300 hover:scale-105">
+                <div className="flex flex-col items-center text-center">
                   <Music2 className="w-12 h-12 text-violet-600 mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Large choix de titres</h3>
+                  <h3 className="text-lg font-semibold mb-3">Large choix de titres</h3>
                   <p className="text-gray-600">Des milliers de chansons disponibles</p>
                 </div>
               </div>
-              <div className="glass p-6 rounded-xl">
-                <div className="flex flex-col items-center">
+              <div className="glass p-6 rounded-xl transform transition-all duration-300 hover:scale-105">
+                <div className="flex flex-col items-center text-center">
                   <Calendar className="w-12 h-12 text-violet-600 mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Réservation simple</h3>
+                  <h3 className="text-lg font-semibold mb-3">Réservation simple</h3>
                   <p className="text-gray-600">Choisissez votre créneau en quelques clics</p>
                 </div>
               </div>
             </div>
-          </div>
-
-          <div className="glass rounded-3xl shadow-xl p-6 sm:p-8 transition-all duration-300 hover:shadow-violet-100/20">
-            <BookingForm />
           </div>
         </div>
       </main>

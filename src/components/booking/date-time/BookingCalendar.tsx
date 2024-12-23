@@ -67,8 +67,8 @@ export const BookingCalendar = ({
               initialFocus
               locale={fr}
               className={cn(
-                "rounded-md",
-                "w-full max-w-[400px] mx-auto"
+                "rounded-md mx-auto",
+                "w-full max-w-[400px]"
               )}
               classNames={{
                 months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
@@ -78,7 +78,7 @@ export const BookingCalendar = ({
                 nav: "flex items-center gap-1",
                 nav_button: cn(
                   "h-9 w-9 bg-transparent p-0 text-gray-500 hover:text-gray-900 hover:bg-violet-50 rounded-full transition-colors",
-                  "opacity-100 cursor-pointer" // Correction ici
+                  "opacity-100 cursor-pointer"
                 ),
                 nav_button_previous: "absolute left-1",
                 nav_button_next: "absolute right-1",

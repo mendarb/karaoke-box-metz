@@ -42,8 +42,16 @@ export const AdminBookingForm = () => {
   const onSubmit = async () => {
     const data = form.getValues();
     
+    // Convert string date to Date object
+    const bookingDate = data.date ? new Date(data.date) : null;
+    
+    if (!bookingDate) {
+      console.error('Invalid date');
+      return;
+    }
+    
     // Vérifier les chevauchements
-    const hasOverlap = await checkOverlap(data.date, data.timeSlot, data.duration);
+    const hasOverlap = await checkOverlap(bookingDate, data.timeSlot, data.duration);
     if (hasOverlap) return;
 
     await handleSubmit(data);

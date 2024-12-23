@@ -26,10 +26,14 @@ export const useBookingDates = () => {
       return true;
     }
 
-    // Vérifier si le jour est fermé (lundi = 1, mardi = 2)
-    const dayOfWeek = dateToCheck.getDay();
-    if (dayOfWeek === 1 || dayOfWeek === 2) {
-      console.log('❌ Jour fermé (lundi ou mardi):', dayOfWeek);
+    // Vérifier si le jour est ouvert dans les paramètres
+    // JavaScript getDay() returns 0-6 (Sunday-Saturday)
+    // Convert to match the business_hours format where Monday is 1 and Sunday is 7
+    const dayOfWeek = date.getDay();
+    const businessDay = dayOfWeek === 0 ? 7 : dayOfWeek; // Convert Sunday from 0 to 7
+    
+    if (!settings.openingHours?.[businessDay]?.isOpen) {
+      console.log('❌ Jour fermé:', { date, dayOfWeek: businessDay });
       return true;
     }
 
@@ -50,13 +54,16 @@ export const useBookingDates = () => {
       return 4;
     }
 
-    // Vérifier si c'est un lundi ou mardi
     const dayOfWeek = date.getDay();
-    if (dayOfWeek === 1 || dayOfWeek === 2) {
+    const businessDay = dayOfWeek === 0 ? 7 : dayOfWeek;
+    const daySettings = settings.openingHours[businessDay];
+    
+    if (!daySettings?.isOpen) {
+      console.log('❌ Jour fermé:', { date, dayOfWeek: businessDay });
       return 0;
     }
 
-    const slots = ['14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00'];
+    const slots = daySettings.slots || [];
     const slotIndex = slots.indexOf(timeSlot);
     
     if (slotIndex === -1) {
@@ -107,14 +114,16 @@ export const useBookingDates = () => {
     maxDate,
     isDayExcluded,
     getAvailableSlots: (date: Date) => {
-      // Vérifier si c'est un lundi ou mardi
       const dayOfWeek = date.getDay();
-      if (dayOfWeek === 1 || dayOfWeek === 2) {
+      const businessDay = dayOfWeek === 0 ? 7 : dayOfWeek;
+      const daySettings = settings?.openingHours?.[businessDay];
+      
+      if (!daySettings?.isOpen) {
+        console.log('❌ Jour fermé:', { date, dayOfWeek: businessDay });
         return Promise.resolve([]);
       }
       
-      // Retourner les créneaux standards pour les autres jours
-      return Promise.resolve(['14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00']);
+      return Promise.resolve(daySettings.slots || []);
     },
     getAvailableHoursForSlot,
     isTestMode

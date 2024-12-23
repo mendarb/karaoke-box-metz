@@ -1,50 +1,110 @@
-import { useBookingSettings } from "./useBookingSettings";
-import { useAvailableSlots } from "./useAvailableSlots";
-import { startOfDay, isBefore, isAfter } from "date-fns";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { addDays, startOfDay, endOfDay, isBefore, isAfter } from "date-fns";
 
 export const useBookingDates = () => {
-  const { settings, minDate, maxDate, isTestMode } = useBookingSettings();
-  const { getAvailableSlots } = useAvailableSlots();
+  const { data: settings } = useQuery({
+    queryKey: ['booking-settings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('booking_settings')
+        .select('*')
+        .eq('key', 'booking_settings')
+        .single();
+
+      if (error) {
+        console.error('Error fetching settings:', error);
+        throw error;
+      }
+
+      return data?.value;
+    },
+  });
+
+  const today = startOfDay(new Date());
+  const isTestMode = import.meta.env.VITE_STRIPE_MODE === 'test';
+  
+  const minDate = isTestMode 
+    ? today
+    : addDays(today, settings?.bookingWindow?.startDays || 1);
+    
+  const maxDate = isTestMode
+    ? addDays(today, 365)
+    : addDays(today, settings?.bookingWindow?.endDays || 30);
 
   const isDayExcluded = (date: Date) => {
-    if (!settings) {
-      console.log('❌ Paramètres non disponibles');
-      return true;
-    }
+    if (!settings) return true;
     
     const dateToCheck = startOfDay(date);
     
-    // En mode test, tous les jours sont disponibles
     if (isTestMode) {
       return false;
     }
     
-    // Vérifier si la date est dans la plage autorisée
     if (isBefore(dateToCheck, minDate) || isAfter(dateToCheck, maxDate)) {
-      console.log('❌ Date hors plage:', dateToCheck);
       return true;
     }
 
-    // Vérifier si le jour est ouvert dans les paramètres
     // JavaScript getDay() returns 0-6 (Sunday-Saturday)
-    // Convert to match the business_hours format where Monday is 1 and Sunday is 7
-    const dayOfWeek = date.getDay();
-    const businessDay = dayOfWeek === 0 ? 7 : dayOfWeek; // Convert Sunday from 0 to 7
+    // Dans les paramètres, on utilise 0-6 où 0 = dimanche
+    const dayOfWeek = dateToCheck.getDay();
+    const daySettings = settings.openingHours?.[dayOfWeek];
     
-    if (!settings.openingHours?.[businessDay]?.isOpen) {
-      console.log('❌ Jour fermé:', { date, dayOfWeek: businessDay });
+    if (!daySettings?.isOpen) {
+      console.log('❌ Jour fermé:', { date, dayOfWeek });
       return true;
     }
 
-    // Vérifier si la date est spécifiquement exclue
     if (settings.excludedDays?.includes(dateToCheck.getTime())) {
-      console.log('❌ Date exclue spécifiquement:', dateToCheck);
       return true;
     }
 
-    console.log('✅ Jour disponible:', dateToCheck);
     return false;
+  };
+
+  const getAvailableSlots = async (date: Date) => {
+    if (!settings?.openingHours) {
+      return [];
+    }
+
+    if (isTestMode) {
+      return ['14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00'];
+    }
+
+    const dayOfWeek = date.getDay();
+    const daySettings = settings.openingHours[dayOfWeek];
+
+    if (!daySettings?.isOpen) {
+      console.log('❌ Jour fermé:', { date, dayOfWeek });
+      return [];
+    }
+
+    const slots = daySettings.slots || [];
+
+    try {
+      const { data: bookings, error } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('date', date.toISOString().split('T')[0])
+        .neq('status', 'cancelled')
+        .is('deleted_at', null);
+
+      if (error) {
+        throw error;
+      }
+
+      return slots.filter(slot => {
+        const slotTime = parseInt(slot.split(':')[0]);
+        return !bookings?.some(booking => {
+          const bookingStartTime = parseInt(booking.time_slot.split(':')[0]);
+          const bookingDuration = parseInt(booking.duration);
+          return slotTime >= bookingStartTime && slotTime < (bookingStartTime + bookingDuration);
+        });
+      });
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+      return slots;
+    }
   };
 
   const getAvailableHoursForSlot = async (date: Date, timeSlot: string) => {
@@ -55,11 +115,10 @@ export const useBookingDates = () => {
     }
 
     const dayOfWeek = date.getDay();
-    const businessDay = dayOfWeek === 0 ? 7 : dayOfWeek;
-    const daySettings = settings.openingHours[businessDay];
+    const daySettings = settings.openingHours[dayOfWeek];
     
     if (!daySettings?.isOpen) {
-      console.log('❌ Jour fermé:', { date, dayOfWeek: businessDay });
+      console.log('❌ Jour fermé:', { date, dayOfWeek });
       return 0;
     }
 
@@ -85,7 +144,9 @@ export const useBookingDates = () => {
         .neq('status', 'cancelled')
         .is('deleted_at', null);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       if (!bookings?.length) {
         return maxPossibleHours;
@@ -103,7 +164,7 @@ export const useBookingDates = () => {
 
       return availableHours;
     } catch (error) {
-      console.error('❌ Erreur calcul heures disponibles:', error);
+      console.error('Error calculating available hours:', error);
       return maxPossibleHours;
     }
   };
@@ -113,18 +174,7 @@ export const useBookingDates = () => {
     minDate,
     maxDate,
     isDayExcluded,
-    getAvailableSlots: (date: Date) => {
-      const dayOfWeek = date.getDay();
-      const businessDay = dayOfWeek === 0 ? 7 : dayOfWeek;
-      const daySettings = settings?.openingHours?.[businessDay];
-      
-      if (!daySettings?.isOpen) {
-        console.log('❌ Jour fermé:', { date, dayOfWeek: businessDay });
-        return Promise.resolve([]);
-      }
-      
-      return Promise.resolve(daySettings.slots || []);
-    },
+    getAvailableSlots,
     getAvailableHoursForSlot,
     isTestMode
   };

@@ -1,47 +1,48 @@
 import { useState } from "react";
-import { addMonths, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
 import { CalendarHeader } from "./calendar/CalendarHeader";
 import { CalendarGrid } from "./calendar/CalendarGrid";
+import { addMonths, subMonths } from "date-fns";
+import { useBookingSettings } from "./hooks/useBookingSettings";
 
-interface BookingCalendarProps {
-  selectedDate: Date | undefined;
+export const BookingCalendar = ({
+  selectedDate,
+  disabledDates,
+  onSelect,
+}: {
+  selectedDate: Date;
   disabledDates: Date[];
   onSelect: (date: Date) => void;
-}
-
-export const BookingCalendar = ({ selectedDate, disabledDates, onSelect }: BookingCalendarProps) => {
+}) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const today = new Date();
-
-  const days = eachDayOfInterval({
-    start: startOfMonth(currentMonth),
-    end: endOfMonth(currentMonth),
-  });
+  const { minDate, maxDate } = useBookingSettings();
 
   const handlePreviousMonth = () => {
-    setCurrentMonth(prev => addMonths(prev, -1));
+    setCurrentMonth(subMonths(currentMonth, 1));
   };
 
   const handleNextMonth = () => {
-    setCurrentMonth(prev => addMonths(prev, 1));
+    setCurrentMonth(addMonths(currentMonth, 1));
   };
 
-  const isPreviousMonthDisabled = startOfMonth(currentMonth) <= startOfMonth(today);
+  const isPreviousMonthDisabled = minDate && subMonths(currentMonth, 1) < minDate;
+  const isNextMonthDisabled = maxDate && addMonths(currentMonth, 1) > maxDate;
 
   return (
-    <div className="p-4 bg-white rounded-xl shadow-sm">
+    <div className="space-y-4">
       <CalendarHeader
         currentMonth={currentMonth}
         onPreviousMonth={handlePreviousMonth}
         onNextMonth={handleNextMonth}
         isPreviousMonthDisabled={isPreviousMonthDisabled}
+        isNextMonthDisabled={isNextMonthDisabled}
       />
       <CalendarGrid
         month={currentMonth}
-        days={days}
         selectedDate={selectedDate}
         disabledDates={disabledDates}
         onSelect={onSelect}
+        minDate={minDate}
+        maxDate={maxDate}
       />
     </div>
   );

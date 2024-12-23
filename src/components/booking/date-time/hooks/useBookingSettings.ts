@@ -53,11 +53,11 @@ export const useBookingSettings = () => {
   
   const minDate = settings?.isTestMode 
     ? today
-    : addDays(today, settings?.bookingWindow?.startDays || 1);
+    : addDays(today, settings?.bookingWindow?.startDays || defaultSettings.bookingWindow.startDays);
     
   const maxDate = settings?.isTestMode
     ? addDays(today, 365)
-    : addDays(today, settings?.bookingWindow?.endDays || 30);
+    : addDays(today, settings?.bookingWindow?.endDays || defaultSettings.bookingWindow.endDays);
 
   console.log('📅 Limites de dates calculées:', { 
     minDate, 

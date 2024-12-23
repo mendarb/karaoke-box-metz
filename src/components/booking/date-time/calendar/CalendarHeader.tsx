@@ -9,6 +9,7 @@ interface CalendarHeaderProps {
   onPreviousMonth: (e: React.MouseEvent) => void;
   onNextMonth: (e: React.MouseEvent) => void;
   isPreviousMonthDisabled: boolean;
+  isNextMonthDisabled: boolean;
 }
 
 export const CalendarHeader = ({
@@ -16,6 +17,7 @@ export const CalendarHeader = ({
   onPreviousMonth,
   onNextMonth,
   isPreviousMonthDisabled,
+  isNextMonthDisabled,
 }: CalendarHeaderProps) => {
   return (
     <div className="flex items-center justify-between px-2 py-4">
@@ -38,7 +40,11 @@ export const CalendarHeader = ({
         type="button"
         variant="ghost"
         onClick={onNextMonth}
-        className="h-9 w-9 p-0"
+        disabled={isNextMonthDisabled}
+        className={cn(
+          "h-9 w-9 p-0",
+          isNextMonthDisabled && "opacity-50 cursor-not-allowed"
+        )}
       >
         <ChevronRight className="h-5 w-5" />
       </Button>

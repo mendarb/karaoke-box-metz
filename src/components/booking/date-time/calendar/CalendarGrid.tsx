@@ -1,4 +1,4 @@
-import { format, isSameDay, isToday } from "date-fns";
+import { format, isSameDay, isToday, isBefore, isAfter } from "date-fns";
 import { cn } from "@/lib/utils";
 
 interface CalendarGridProps {
@@ -7,15 +7,25 @@ interface CalendarGridProps {
   selectedDate: Date | undefined;
   disabledDates: Date[];
   onSelect: (date: Date) => void;
+  minDate: Date;
+  maxDate: Date;
 }
 
 export const CalendarGrid = ({ 
   days, 
   selectedDate, 
   disabledDates, 
-  onSelect 
+  onSelect,
+  minDate,
+  maxDate
 }: CalendarGridProps) => {
   const weekDays = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
+
+  const isDateDisabled = (date: Date) => {
+    return isBefore(date, minDate) || 
+           isAfter(date, maxDate) || 
+           disabledDates.some(disabledDate => isSameDay(date, disabledDate));
+  };
 
   return (
     <div className="space-y-4">
@@ -32,9 +42,7 @@ export const CalendarGrid = ({
       <div className="grid grid-cols-7 gap-1">
         {days.map((day) => {
           const isSelected = selectedDate ? isSameDay(day, selectedDate) : false;
-          const isDisabled = disabledDates.some(disabledDate => 
-            isSameDay(day, disabledDate)
-          );
+          const isDisabled = isDateDisabled(day);
           const dayToday = isToday(day);
 
           return (

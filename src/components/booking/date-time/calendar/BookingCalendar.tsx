@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { addMonths, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
+import { addMonths, startOfMonth, endOfMonth, eachDayOfInterval, isBefore, isAfter } from "date-fns";
 import { CalendarHeader } from "./CalendarHeader";
 import { CalendarGrid } from "./CalendarGrid";
 
@@ -27,15 +27,24 @@ export const BookingCalendar = ({
 
   const handlePreviousMonth = (e: React.MouseEvent) => {
     e.preventDefault();
-    setCurrentMonth(prev => addMonths(prev, -1));
+    const newMonth = addMonths(currentMonth, -1);
+    // Vérifie si le nouveau mois est après ou égal au mois minimum
+    if (!isBefore(startOfMonth(newMonth), startOfMonth(minDate))) {
+      setCurrentMonth(newMonth);
+    }
   };
 
   const handleNextMonth = (e: React.MouseEvent) => {
     e.preventDefault();
-    setCurrentMonth(prev => addMonths(prev, 1));
+    const newMonth = addMonths(currentMonth, 1);
+    // Vérifie si le nouveau mois est avant ou égal au mois maximum
+    if (!isAfter(startOfMonth(newMonth), startOfMonth(maxDate))) {
+      setCurrentMonth(newMonth);
+    }
   };
 
-  const isPreviousMonthDisabled = startOfMonth(currentMonth) <= startOfMonth(minDate);
+  const isPreviousMonthDisabled = isBefore(startOfMonth(currentMonth), startOfMonth(minDate));
+  const isNextMonthDisabled = isAfter(startOfMonth(currentMonth), startOfMonth(maxDate));
 
   return (
     <div className="p-4 bg-white rounded-xl shadow-sm">
@@ -44,6 +53,7 @@ export const BookingCalendar = ({
         onPreviousMonth={handlePreviousMonth}
         onNextMonth={handleNextMonth}
         isPreviousMonthDisabled={isPreviousMonthDisabled}
+        isNextMonthDisabled={isNextMonthDisabled}
       />
       <CalendarGrid
         month={currentMonth}
@@ -51,6 +61,8 @@ export const BookingCalendar = ({
         selectedDate={selectedDate}
         disabledDates={disabledDates}
         onSelect={onSelect}
+        minDate={minDate}
+        maxDate={maxDate}
       />
     </div>
   );

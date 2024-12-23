@@ -12,7 +12,6 @@ interface CalendarSectionProps {
 }
 
 export const CalendarSection = ({
-  form,
   selectedDate,
   minDate,
   maxDate,
@@ -23,9 +22,8 @@ export const CalendarSection = ({
     <Card className="border-none shadow-none bg-transparent">
       <CardContent className="p-0">
         <BookingCalendar
-          form={form}
           disabledDates={disabledDates}
-          onDateSelect={onDateSelect}
+          onSelect={onDateSelect}
           selectedDate={selectedDate}
           minDate={minDate}
           maxDate={maxDate}

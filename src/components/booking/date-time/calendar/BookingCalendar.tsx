@@ -5,19 +5,17 @@ import { CalendarGrid } from "./CalendarGrid";
 import { UseFormReturn } from "react-hook-form";
 
 interface BookingCalendarProps {
-  form: UseFormReturn<any>;
   selectedDate: Date | undefined;
   disabledDates: Date[];
-  onDateSelect: (date: Date) => void;
+  onSelect: (date: Date) => void;
   minDate: Date;
   maxDate: Date;
 }
 
 export const BookingCalendar = ({ 
-  form,
   selectedDate, 
   disabledDates, 
-  onDateSelect,
+  onSelect,
   minDate,
   maxDate 
 }: BookingCalendarProps) => {
@@ -52,7 +50,7 @@ export const BookingCalendar = ({
         days={days}
         selectedDate={selectedDate}
         disabledDates={disabledDates}
-        onSelect={onDateSelect}
+        onSelect={onSelect}
       />
     </div>
   );

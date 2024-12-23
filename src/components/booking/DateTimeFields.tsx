@@ -20,7 +20,6 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
   const { isDayExcluded, getAvailableSlots, getAvailableHoursForSlot } = useBookingDates();
   const { disabledDates } = useDisabledDates({ minDate, maxDate, isDayExcluded });
 
-  // Gérer le changement de date
   const handleDateSelect = async (date: Date) => {
     try {
       console.log('🗓️ Date selected:', date);
@@ -50,7 +49,13 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
     }
   };
 
-  // Gérer le changement de créneau horaire
+  useEffect(() => {
+    const timeSlot = form.watch("timeSlot");
+    if (timeSlot && selectedDate) {
+      handleTimeSlotChange(timeSlot);
+    }
+  }, [form.watch("timeSlot")]);
+
   const handleTimeSlotChange = async (timeSlot: string) => {
     if (!selectedDate || !timeSlot) {
       onAvailabilityChange(selectedDate, 0);
@@ -72,31 +77,27 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
     }
   };
 
-  // Observer les changements de créneau horaire
-  useEffect(() => {
-    const timeSlot = form.watch("timeSlot");
-    if (timeSlot) {
-      handleTimeSlotChange(timeSlot);
-    }
-  }, [form.watch("timeSlot")]);
-
   return (
-    <div className="space-y-6">
-      <BookingCalendar
-        form={form}
-        disabledDates={disabledDates}
-        onDateSelect={handleDateSelect}
-        selectedDate={selectedDate}
-        minDate={minDate}
-        maxDate={maxDate}
-      />
+    <div className="space-y-8">
+      <div className="w-full max-w-[600px] mx-auto">
+        <BookingCalendar
+          form={form}
+          disabledDates={disabledDates}
+          onDateSelect={handleDateSelect}
+          selectedDate={selectedDate}
+          minDate={minDate}
+          maxDate={maxDate}
+        />
+      </div>
 
       {selectedDate && (
-        <TimeSlots
-          form={form}
-          availableSlots={availableSlots}
-          isLoading={false}
-        />
+        <div className="mt-8">
+          <TimeSlots
+            form={form}
+            availableSlots={availableSlots}
+            isLoading={false}
+          />
+        </div>
       )}
     </div>
   );

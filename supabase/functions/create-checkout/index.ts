@@ -4,39 +4,37 @@ import Stripe from "https://esm.sh/stripe@14.21.0";
 import { corsHeaders } from "../_shared/cors.ts";
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    console.log('📥 Received checkout request');
     const { data } = await req.json();
     
-    console.log('💳 Creating checkout session with data:', {
+    console.log('🔧 Processing checkout with data:', {
       bookingId: data.bookingId,
-      userEmail: data.userEmail,
+      email: data.userEmail,
       isTestMode: data.isTestMode
     });
 
-    // Determine which Stripe key to use
-    const mode = data.isTestMode ? 'TEST' : 'LIVE';
+    // Initialize Stripe with the appropriate key based on test mode
     const stripeKey = data.isTestMode 
       ? Deno.env.get('STRIPE_TEST_SECRET_KEY')
       : Deno.env.get('STRIPE_SECRET_KEY');
 
     if (!stripeKey) {
-      console.error(`❌ Missing Stripe ${mode} mode API key`);
-      throw new Error(`Stripe ${mode} mode API key not configured`);
+      console.error('❌ Missing Stripe API key');
+      throw new Error(`${data.isTestMode ? 'Test' : 'Live'} mode Stripe API key not configured`);
     }
-
-    console.log('🔑 Using Stripe mode:', mode, {
-      isTestMode: data.isTestMode,
-      mode
-    });
 
     const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
+      httpClient: Stripe.createFetchHttpClient(),
     });
 
+    console.log('💳 Creating checkout session...');
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -46,15 +44,17 @@ serve(async (req) => {
             product_data: {
               name: data.isTestMode ? '[TEST MODE] Karaoké BOX - MB EI' : 'Karaoké BOX - MB EI',
               description: `${data.groupSize} personnes - ${data.duration}h`,
+              images: ['https://raw.githubusercontent.com/lovable-karaoke/assets/main/logo.png'],
             },
-            unit_amount: data.price * 100, // Convert to cents
+            unit_amount: Math.round(data.finalPrice * 100), // Convert to cents and ensure it's an integer
           },
           quantity: 1,
         },
       ],
       mode: 'payment',
-      success_url: `${data.successUrl}?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${data.successUrl}?session_id={CHECKOUT_SESSION_ID}&booking_id=${data.bookingId}`,
       cancel_url: data.cancelUrl,
+      customer_email: data.userEmail,
       metadata: {
         bookingId: data.bookingId,
         isTestMode: String(data.isTestMode)
@@ -63,22 +63,28 @@ serve(async (req) => {
 
     console.log('✅ Checkout session created:', {
       sessionId: session.id,
-      mode,
+      mode: data.isTestMode ? 'TEST' : 'LIVE',
       url: session.url
     });
 
     return new Response(
       JSON.stringify({ url: session.url }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 
+      }
     );
 
   } catch (error) {
-    console.error('❌ Error creating checkout session:', error);
+    console.error('❌ Error in checkout process:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: error.toString()
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400 
+        status: 500 
       }
     );
   }

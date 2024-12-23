@@ -7,6 +7,8 @@ import { BookingDetails } from "./booking-form/steps/BookingDetails";
 import { Confirmation } from "./booking-form/steps/Confirmation";
 import { BookingSteps } from "@/components/BookingSteps";
 import { useState } from "react";
+import { User2, Calendar, Users } from "lucide-react";
+import type { Step } from "@/components/BookingSteps";
 
 export const AdminBookingForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -46,25 +48,28 @@ export const AdminBookingForm = () => {
     await handleSubmit(data);
   };
 
-  const steps = [
+  const steps: Step[] = [
     {
       id: 1,
-      name: "Client",
+      title: "Client",
       description: "Sélection du client",
+      icon: <User2 className="h-5 w-5" />,
       completed: currentStep > 1,
       current: currentStep === 1,
     },
     {
       id: 2,
-      name: "Détails",
+      title: "Détails",
       description: "Date et informations",
+      icon: <Calendar className="h-5 w-5" />,
       completed: currentStep > 2,
       current: currentStep === 2,
     },
     {
       id: 3,
-      name: "Confirmation",
+      title: "Confirmation",
       description: "Validation",
+      icon: <Users className="h-5 w-5" />,
       completed: currentStep > 3,
       current: currentStep === 3,
     },

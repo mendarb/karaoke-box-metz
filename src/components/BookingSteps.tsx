@@ -1,9 +1,12 @@
 import { User2, Calendar, Users, CreditCard } from "lucide-react";
 
-interface Step {
+export interface Step {
+  id?: number;
   title: string;
-  description: string;
+  description?: string;
   icon: React.ReactNode;
+  completed?: boolean;
+  current?: boolean;
 }
 
 interface BookingStepsProps {

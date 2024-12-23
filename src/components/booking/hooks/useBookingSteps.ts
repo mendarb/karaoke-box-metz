@@ -1,32 +1,37 @@
-import { BookingStep } from "../../BookingSteps";
+import { Step } from "../../BookingSteps";
+import { User, Calendar, Users, Settings } from "lucide-react";
 
-export const useBookingSteps = (currentStep: number): BookingStep[] => {
+export const useBookingSteps = (currentStep: number): Step[] => {
   return [
     {
       id: 1,
-      name: "Informations personnelles",
+      title: "Informations personnelles",
       description: "Vos coordonnées",
+      icon: <User className="h-5 w-5" />,
       completed: currentStep > 1,
       current: currentStep === 1,
     },
     {
       id: 2,
-      name: "Date et heure",
+      title: "Date et heure",
       description: "Choisissez votre créneau",
+      icon: <Calendar className="h-5 w-5" />,
       completed: currentStep > 2,
       current: currentStep === 2,
     },
     {
       id: 3,
-      name: "Groupe et durée",
+      title: "Groupe et durée",
       description: "Taille du groupe et durée",
+      icon: <Users className="h-5 w-5" />,
       completed: currentStep > 3,
       current: currentStep === 3,
     },
     {
       id: 4,
-      name: "Finalisation",
+      title: "Finalisation",
       description: "Informations complémentaires",
+      icon: <Settings className="h-5 w-5" />,
       completed: currentStep > 4,
       current: currentStep === 4,
     },

@@ -1,70 +1,37 @@
 import { supabase } from "@/lib/supabase";
+import { createCheckoutSession } from "@/services/checkoutService";
+import { format } from "date-fns";
 
-interface CreateBookingParams {
-  userId: string;
-  date: string;
-  timeSlot: string;
-  duration: string;
-  groupSize: string;
-  price: number;
-  message?: string;
-  email: string;
-  fullName: string;
-  phone: string;
-  isTestMode: boolean;
-  promoCodeId?: string;
-}
-
-export const fetchBookings = async () => {
-  console.log('📝 Récupération des réservations');
+export const createBooking = async (data: any) => {
+  const formattedDate = format(new Date(data.date), 'yyyy-MM-dd');
   
-  const { data, error } = await supabase
-    .from('bookings')
-    .select('*')
-    .is('deleted_at', null)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('❌ Erreur lors de la récupération des réservations:', error);
-    throw error;
-  }
-
-  console.log('✅ Réservations récupérées avec succès:', {
-    count: data?.length,
-    firstBookingId: data?.[0]?.id
+  console.log('📝 Création d\'une nouvelle réservation :', {
+    userId: data.userId,
+    email: data.email,
+    date: formattedDate,
+    timeSlot: data.timeSlot,
+    duration: data.duration,
+    groupSize: data.groupSize,
+    price: data.calculatedPrice
   });
-  return data;
-};
-
-export const createBooking = async (params: CreateBookingParams) => {
-  console.log('📝 Création d\'une réservation client:', {
-    userId: params.userId,
-    email: params.email,
-    date: params.date,
-    timeSlot: params.timeSlot,
-    isTestMode: params.isTestMode
-  });
-
-  const bookingData = {
-    user_id: params.userId,
-    date: params.date,
-    time_slot: params.timeSlot,
-    duration: params.duration,
-    group_size: params.groupSize,
-    status: 'pending',
-    price: params.price,
-    message: params.message || null,
-    user_email: params.email,
-    user_name: params.fullName,
-    user_phone: params.phone,
-    payment_status: 'unpaid',
-    is_test_booking: params.isTestMode,
-    promo_code_id: params.promoCodeId,
-  };
 
   const { data: booking, error } = await supabase
     .from('bookings')
-    .insert([bookingData])
+    .insert([{
+      user_id: data.userId,
+      user_email: data.email,
+      user_name: data.fullName,
+      user_phone: data.phone,
+      date: formattedDate,
+      time_slot: data.timeSlot,
+      duration: data.duration,
+      group_size: data.groupSize,
+      price: data.calculatedPrice,
+      message: data.message,
+      status: 'pending',
+      payment_status: 'unpaid',
+      is_test_booking: data.isTestMode || false,
+    }])
     .select()
     .single();
 
@@ -73,10 +40,33 @@ export const createBooking = async (params: CreateBookingParams) => {
     throw error;
   }
 
-  console.log('✅ Réservation client créée avec succès:', {
+  console.log('✅ Réservation créée avec succès:', {
     bookingId: booking.id,
     status: booking.status,
     paymentStatus: booking.payment_status
   });
+
   return booking;
+};
+
+export const generatePaymentLink = async (booking: any, data: any) => {
+  console.log('💰 Génération du lien de paiement pour la réservation:', booking.id);
+
+  const checkoutUrl = await createCheckoutSession({
+    bookingId: booking.id,
+    userEmail: data.email,
+    date: data.date,
+    timeSlot: data.timeSlot,
+    duration: data.duration,
+    groupSize: data.groupSize,
+    price: data.calculatedPrice,
+    finalPrice: data.calculatedPrice,
+    message: data.message,
+    userName: data.fullName,
+    userPhone: data.phone,
+    isTestMode: data.isTestMode || false,
+  });
+
+  console.log('✅ Lien de paiement généré:', checkoutUrl);
+  return checkoutUrl;
 };

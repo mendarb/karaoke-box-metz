@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 import Stripe from "https://esm.sh/stripe@14.21.0";
+import { format } from "https://esm.sh/date-fns@2.30.0";
 import { corsHeaders } from "../_shared/cors.ts";
 
 serve(async (req) => {
@@ -18,6 +19,10 @@ serve(async (req) => {
       email: data.userEmail,
       isTestMode: data.isTestMode
     });
+
+    // Format the date to YYYY-MM-DD
+    const formattedDate = format(new Date(data.date), 'yyyy-MM-dd');
+    console.log('📅 Formatted date:', formattedDate);
 
     // Initialize Stripe with the appropriate key based on test mode
     const stripeKey = data.isTestMode 
@@ -46,18 +51,25 @@ serve(async (req) => {
               description: `${data.groupSize} personnes - ${data.duration}h`,
               images: ['https://raw.githubusercontent.com/lovable-karaoke/assets/main/logo.png'],
             },
-            unit_amount: Math.round(data.finalPrice * 100), // Convert to cents and ensure it's an integer
+            unit_amount: Math.round(data.finalPrice * 100), // Convert to cents
           },
           quantity: 1,
         },
       ],
       mode: 'payment',
-      success_url: `${data.successUrl}?session_id={CHECKOUT_SESSION_ID}&booking_id=${data.bookingId}`,
-      cancel_url: data.cancelUrl,
+      success_url: `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}&booking_id=${data.bookingId}`,
+      cancel_url: `${req.headers.get('origin')}`,
       customer_email: data.userEmail,
       metadata: {
         bookingId: data.bookingId,
-        isTestMode: String(data.isTestMode)
+        date: formattedDate,
+        timeSlot: data.timeSlot,
+        duration: data.duration,
+        groupSize: data.groupSize,
+        isTestMode: String(data.isTestMode),
+        userName: data.userName,
+        userPhone: data.userPhone,
+        promoCodeId: data.promoCodeId || '',
       }
     });
 

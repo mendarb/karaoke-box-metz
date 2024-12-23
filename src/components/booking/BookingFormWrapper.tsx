@@ -91,10 +91,8 @@ export const BookingFormWrapper = () => {
       isTestMode
     });
     
-    // Set test mode in form data
     form.setValue('isTestMode', isTestMode);
     
-    // Vérifier les chevauchements avant de soumettre
     const hasOverlap = await checkOverlap(data.date, data.timeSlot, duration);
     if (hasOverlap) {
       return;

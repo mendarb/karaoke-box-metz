@@ -9,18 +9,28 @@ export const useBookingForm = () => {
   const { user } = useUserState();
   const [groupSize, setGroupSize] = useState("");
   const [duration, setDuration] = useState("");
-  const [currentStep, setCurrentStep] = useState(user ? 2 : 1);
+  const [currentStep, setCurrentStep] = useState(1);
   const [calculatedPrice, setCalculatedPrice] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [availableHours, setAvailableHours] = useState(4);
-  const form = useForm();
+  
+  const form = useForm({
+    defaultValues: {
+      email: user?.email || '',
+      fullName: '',
+      phone: '',
+      date: undefined,
+      timeSlot: '',
+      groupSize: '',
+      duration: '',
+      message: ''
+    }
+  });
 
   const loadUserData = async () => {
     if (!user) return;
 
-    form.setValue('email', user.email || '');
-    
     try {
       const { data: lastBooking } = await supabase
         .from('bookings')
@@ -35,8 +45,18 @@ export const useBookingForm = () => {
         form.setValue('fullName', lastBooking.user_name);
         form.setValue('phone', lastBooking.user_phone);
       }
+
+      // Si l'utilisateur est connecté, on passe directement à l'étape 2
+      if (user) {
+        setCurrentStep(2);
+      }
     } catch (error) {
       console.error('Error loading user data:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger vos informations",
+        variant: "destructive",
+      });
     }
   };
 

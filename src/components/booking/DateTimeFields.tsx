@@ -3,7 +3,7 @@ import { UseFormReturn } from "react-hook-form";
 import { TimeSlots } from "./date-time/TimeSlots";
 import { useBookingDates } from "./date-time/hooks/useBookingDates";
 import { useDisabledDates } from "./date-time/hooks/useDisabledDates";
-import { BookingCalendar } from "./date-time/BookingCalendar";
+import { BookingCalendar } from "./date-time/calendar/BookingCalendar";
 import { toast } from "@/hooks/use-toast";
 import { useBookingSettings } from "./date-time/hooks/useBookingSettings";
 
@@ -24,6 +24,7 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
     try {
       console.log('🗓️ Date selected:', date);
       setSelectedDate(date);
+      form.setValue("date", date);
       form.setValue("timeSlot", "");
       
       const slots = await getAvailableSlots(date);

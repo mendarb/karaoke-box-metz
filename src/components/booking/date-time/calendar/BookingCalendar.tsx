@@ -2,9 +2,8 @@ import { useState } from "react";
 import { addMonths, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
 import { CalendarHeader } from "./CalendarHeader";
 import { CalendarGrid } from "./CalendarGrid";
-import { UseFormReturn } from "react-hook-form";
 
-interface BookingCalendarProps {
+export interface BookingCalendarProps {
   selectedDate: Date | undefined;
   disabledDates: Date[];
   onSelect: (date: Date) => void;
@@ -35,7 +34,7 @@ export const BookingCalendar = ({
     setCurrentMonth(prev => addMonths(prev, 1));
   };
 
-  const isPreviousMonthDisabled = startOfMonth(currentMonth) <= startOfMonth(today);
+  const isPreviousMonthDisabled = startOfMonth(currentMonth) <= startOfMonth(minDate);
 
   return (
     <div className="p-4 bg-white rounded-xl shadow-sm">

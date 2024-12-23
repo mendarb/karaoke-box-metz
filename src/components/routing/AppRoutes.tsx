@@ -10,6 +10,7 @@ import { Calendar } from "@/pages/Calendar";
 import { Settings } from "@/pages/Settings";
 import { MyBookings } from "@/pages/MyBookings";
 import Success from "@/pages/Success";
+import { Error } from "@/pages/Error";
 import { DocumentationPage } from "@/components/admin/documentation/DocumentationPage";
 
 export const AppRoutes = () => {
@@ -17,6 +18,7 @@ export const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<Index />} />
       <Route path="/success" element={<Success />} />
+      <Route path="/error" element={<Error />} />
       <Route path="/legal/terms" element={<Terms />} />
       <Route path="/legal/privacy" element={<Privacy />} />
       <Route path="/legal/cancellation" element={<Cancellation />} />

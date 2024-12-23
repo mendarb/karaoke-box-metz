@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { addDays, startOfDay, endOfDay, isBefore, isAfter } from "date-fns";
+import { addDays, startOfDay, endOfDay, isBefore, isAfter, parseISO } from "date-fns";
+import { toast } from "@/hooks/use-toast";
 
 export const useBookingDates = () => {
   const { data: settings } = useQuery({
@@ -22,37 +23,60 @@ export const useBookingDates = () => {
   });
 
   const today = startOfDay(new Date());
-  const isTestMode = import.meta.env.VITE_STRIPE_MODE === 'test';
+  const isTestMode = settings?.isTestMode || false;
   
-  const minDate = isTestMode 
-    ? today
+  // Convertir les dates de la fenêtre de réservation en objets Date
+  const bookingStartDate = settings?.bookingWindow?.startDate 
+    ? startOfDay(parseISO(settings.bookingWindow.startDate))
     : addDays(today, settings?.bookingWindow?.startDays || 1);
     
-  const maxDate = isTestMode
-    ? addDays(today, 365)
+  const bookingEndDate = settings?.bookingWindow?.endDate
+    ? endOfDay(parseISO(settings.bookingWindow.endDate))
     : addDays(today, settings?.bookingWindow?.endDays || 30);
 
+  console.log('Dates de réservation:', {
+    isTestMode,
+    bookingStartDate,
+    bookingEndDate,
+    settings: settings?.bookingWindow
+  });
+
   const isDayExcluded = (date: Date) => {
-    if (!settings) return true;
+    if (!settings) {
+      console.log('Paramètres non disponibles');
+      return true;
+    }
     
     const dateToCheck = startOfDay(date);
     
+    // En mode test, toutes les dates sont disponibles
     if (isTestMode) {
       return false;
     }
     
-    if (isBefore(dateToCheck, minDate) || isAfter(dateToCheck, maxDate)) {
+    // Vérifier si la date est dans la fenêtre de réservation
+    if (isBefore(dateToCheck, bookingStartDate)) {
+      console.log('Date trop tôt:', dateToCheck, bookingStartDate);
       return true;
     }
 
+    if (isAfter(dateToCheck, bookingEndDate)) {
+      console.log('Date trop tard:', dateToCheck, bookingEndDate);
+      return true;
+    }
+
+    // Vérifier si le jour est ouvert
     const dayOfWeek = dateToCheck.getDay().toString();
     const daySettings = settings.openingHours?.[dayOfWeek];
     
     if (!daySettings?.isOpen) {
+      console.log('Jour fermé:', dayOfWeek);
       return true;
     }
 
+    // Vérifier si la date est exclue
     if (settings.excludedDays?.includes(dateToCheck.getTime())) {
+      console.log('Date exclue:', dateToCheck);
       return true;
     }
 
@@ -61,9 +85,11 @@ export const useBookingDates = () => {
 
   const getAvailableSlots = async (date: Date) => {
     if (!settings?.openingHours) {
+      console.log('Horaires non disponibles');
       return [];
     }
 
+    // En mode test, retourner tous les créneaux possibles
     if (isTestMode) {
       return ['14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00'];
     }
@@ -72,10 +98,12 @@ export const useBookingDates = () => {
     const daySettings = settings.openingHours[dayOfWeek];
 
     if (!daySettings?.isOpen) {
+      console.log('Jour fermé:', date, dayOfWeek);
       return [];
     }
 
     const slots = daySettings.slots || [];
+    console.log('Créneaux potentiels:', slots);
 
     try {
       const { data: bookings, error } = await supabase
@@ -86,7 +114,13 @@ export const useBookingDates = () => {
         .is('deleted_at', null);
 
       if (error) {
-        throw error;
+        console.error('Erreur lors de la vérification des réservations:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de vérifier les disponibilités",
+          variant: "destructive",
+        });
+        return [];
       }
 
       return slots.filter(slot => {
@@ -98,7 +132,7 @@ export const useBookingDates = () => {
         });
       });
     } catch (error) {
-      console.error('Error fetching bookings:', error);
+      console.error('Erreur lors de la récupération des créneaux:', error);
       return slots;
     }
   };
@@ -156,15 +190,15 @@ export const useBookingDates = () => {
 
       return availableHours;
     } catch (error) {
-      console.error('Error calculating available hours:', error);
+      console.error('Erreur lors du calcul des heures disponibles:', error);
       return maxPossibleHours;
     }
   };
 
   return {
     settings,
-    minDate,
-    maxDate,
+    minDate: bookingStartDate,
+    maxDate: bookingEndDate,
     isDayExcluded,
     getAvailableSlots,
     getAvailableHoursForSlot,

@@ -30,7 +30,6 @@ export const BookingFormWrapper = () => {
 
   const steps = useBookingSteps(currentStep);
   const { isTestMode } = useBookingMode();
-  
   const { handleSubmit: submitBooking } = useBookingSubmit(
     form, 
     groupSize, 
@@ -38,7 +37,6 @@ export const BookingFormWrapper = () => {
     calculatedPrice, 
     setIsSubmitting
   );
-
   const { checkOverlap } = useBookingOverlap();
 
   const validateStep = (step: number) => {
@@ -92,7 +90,7 @@ export const BookingFormWrapper = () => {
       isTestMode
     });
     
-    form.setValue('isTestMode' as keyof BookingFormValues, isTestMode);
+    form.setValue('isTestMode', isTestMode);
     
     const hasOverlap = await checkOverlap(data.date, data.timeSlot, duration);
     if (hasOverlap) {

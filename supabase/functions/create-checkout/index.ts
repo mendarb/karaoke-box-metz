@@ -9,12 +9,12 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    console.log('📥 Received checkout request');
     const { data } = await req.json();
     
     console.log('🔧 Processing checkout with data:', {
@@ -53,6 +53,7 @@ serve(async (req) => {
         });
 
         if (!response.ok) {
+          console.error('❌ Failed to process free booking:', await response.text());
           throw new Error('Failed to process free booking');
         }
 
@@ -62,7 +63,13 @@ serve(async (req) => {
         );
       } catch (error) {
         console.error('❌ Error processing free booking:', error);
-        throw error;
+        return new Response(
+          JSON.stringify({ error: error.message }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 500
+          }
+        );
       }
     }
 

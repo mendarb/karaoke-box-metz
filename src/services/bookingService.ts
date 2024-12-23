@@ -1,6 +1,24 @@
 import { supabase } from "@/lib/supabase";
 import { createCheckoutSession } from "@/services/checkoutService";
 
+export const fetchBookings = async () => {
+  console.log('📚 Fetching bookings...');
+  
+  const { data: bookings, error } = await supabase
+    .from('bookings')
+    .select('*')
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('❌ Error fetching bookings:', error);
+    throw error;
+  }
+
+  console.log('✅ Bookings fetched successfully:', bookings);
+  return bookings;
+};
+
 export const createBooking = async (data: any, userId: string | null) => {
   console.log('📝 Création d\'une nouvelle réservation :', {
     userId,

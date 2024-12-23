@@ -9,17 +9,17 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { data } = await req.json();
+    const body = await req.json();
+    const { data } = body;
     
-    if (!data) {
-      console.error('❌ No data provided in request');
-      throw new Error('No data provided');
+    if (!data || !data.bookingId) {
+      console.error('❌ Invalid request data:', { body, data });
+      throw new Error('Invalid request data: missing bookingId');
     }
 
     console.log('🔧 Processing checkout with data:', {
@@ -63,18 +63,14 @@ serve(async (req) => {
         }
 
         return new Response(
-          JSON.stringify({ url: `${req.headers.get('origin')}/success?booking_id=${data.bookingId}` }),
+          JSON.stringify({ 
+            url: `${req.headers.get('origin')}/success?booking_id=${data.bookingId}` 
+          }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       } catch (error) {
         console.error('❌ Error processing free booking:', error);
-        return new Response(
-          JSON.stringify({ error: error.message }),
-          { 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 500
-          }
-        );
+        throw error;
       }
     }
 

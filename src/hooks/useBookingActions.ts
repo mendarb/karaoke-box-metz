@@ -32,6 +32,7 @@ export const useBookingActions = () => {
 
       console.log('Update successful:', data);
       await queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      await queryClient.invalidateQueries({ queryKey: ['admin-bookings'] });
       
       toast({
         title: "Succès",
@@ -59,7 +60,10 @@ export const useBookingActions = () => {
     try {
       const { error: deleteError } = await supabase
         .from('bookings')
-        .update({ deleted_at: new Date().toISOString() })
+        .update({ 
+          deleted_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
         .eq('id', bookingId);
 
       if (deleteError) {
@@ -69,6 +73,7 @@ export const useBookingActions = () => {
 
       console.log('Deletion successful');
       await queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      await queryClient.invalidateQueries({ queryKey: ['admin-bookings'] });
       
       toast({
         title: "Succès",

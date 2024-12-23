@@ -35,7 +35,7 @@ export const PromoCodeField = ({ onPromoValidated, form }: PromoCodeFieldProps) 
 
     setIsValidating(true);
     try {
-      console.log('Validating promo code:', promoCode);
+      console.log('🔍 Validation du code promo:', promoCode);
       const { data, error } = await supabase
         .from('promo_codes')
         .select('*')
@@ -44,7 +44,7 @@ export const PromoCodeField = ({ onPromoValidated, form }: PromoCodeFieldProps) 
         .is('deleted_at', null)
         .maybeSingle();
 
-      console.log('Promo code validation result:', { data, error });
+      console.log('📊 Résultat de la validation:', { data, error });
 
       if (error) throw error;
 
@@ -58,19 +58,9 @@ export const PromoCodeField = ({ onPromoValidated, form }: PromoCodeFieldProps) 
         return;
       }
 
-      // Vérifier les limites d'utilisation
-      if (data.max_uses && data.current_uses >= data.max_uses) {
-        onPromoValidated(false);
-        toast({
-          title: "Code promo épuisé",
-          description: "Ce code promo a atteint sa limite d'utilisation.",
-          variant: "destructive",
-        });
-        return;
-      }
+      const now = new Date();
 
       // Vérifier la période de validité
-      const now = new Date();
       if (data.start_date && new Date(data.start_date) > now) {
         onPromoValidated(false);
         toast({
@@ -91,7 +81,18 @@ export const PromoCodeField = ({ onPromoValidated, form }: PromoCodeFieldProps) 
         return;
       }
 
-      console.log('Promo code is valid:', data);
+      // Vérifier les limites d'utilisation
+      if (data.max_uses && data.current_uses >= data.max_uses) {
+        onPromoValidated(false);
+        toast({
+          title: "Code promo épuisé",
+          description: "Ce code promo a atteint sa limite d'utilisation.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log('✅ Code promo valide:', data);
       form.setValue('promoCode', data.code);
       form.setValue('promoCodeId', data.id);
       onPromoValidated(true, data);
@@ -100,7 +101,7 @@ export const PromoCodeField = ({ onPromoValidated, form }: PromoCodeFieldProps) 
         description: `Le code ${promoCode} a été appliqué avec succès.`,
       });
     } catch (error: any) {
-      console.error('Error validating promo code:', error);
+      console.error('❌ Erreur lors de la validation du code promo:', error);
       onPromoValidated(false);
       toast({
         title: "Erreur",

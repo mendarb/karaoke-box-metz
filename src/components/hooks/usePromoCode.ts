@@ -12,7 +12,7 @@ export const usePromoCode = (
 
   useEffect(() => {
     if (!isPromoValid || !promoData) {
-      console.log('No valid promo code, using original price:', calculatedPrice);
+      console.log('💰 Prix original utilisé:', calculatedPrice);
       setFinalPrice(calculatedPrice);
       form.setValue('finalPrice', calculatedPrice);
       form.setValue('discountAmount', 0);
@@ -21,7 +21,7 @@ export const usePromoCode = (
 
     const { finalPrice: newPrice, discountAmount } = calculateDiscountedPrice(calculatedPrice, promoData);
     
-    console.log('Price calculation:', {
+    console.log('💰 Calcul du prix:', {
       originalPrice: calculatedPrice,
       promoType: promoData.type,
       promoValue: promoData.value,
@@ -35,19 +35,19 @@ export const usePromoCode = (
   }, [calculatedPrice, isPromoValid, promoData, form]);
 
   const handlePromoValidated = (isValid: boolean, promoCode?: any) => {
-    console.log('Promo validation result:', { isValid, promoCode });
+    console.log('🎫 Résultat de la validation du code promo:', { isValid, promoCode });
     setIsPromoValid(isValid);
     setPromoData(promoCode);
     
     if (!isValid) {
-      console.log('Invalid promo code, resetting to original price:', calculatedPrice);
+      console.log('❌ Code promo invalide, retour au prix original:', calculatedPrice);
       setFinalPrice(calculatedPrice);
       form.setValue('finalPrice', calculatedPrice);
       form.setValue('promoCode', '');
       form.setValue('promoCodeId', null);
       form.setValue('discountAmount', 0);
     } else {
-      console.log('Valid promo code, updating form values:', promoCode);
+      console.log('✅ Code promo valide, mise à jour des valeurs:', promoCode);
       form.setValue('promoCode', promoCode.code);
       form.setValue('promoCodeId', promoCode.id);
     }

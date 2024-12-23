@@ -12,7 +12,7 @@ export const calculateDiscountedPrice = (originalPrice: number, promoCode: any):
   let finalPrice = originalPrice;
   let discountAmount = 0;
 
-  console.log('Calculating discounted price:', {
+  console.log('💰 Calcul du prix avec réduction:', {
     originalPrice,
     promoCode
   });
@@ -38,7 +38,7 @@ export const calculateDiscountedPrice = (originalPrice: number, promoCode: any):
       break;
   }
 
-  console.log('Price calculation result:', {
+  console.log('💰 Résultat du calcul:', {
     originalPrice,
     finalPrice,
     discountAmount,

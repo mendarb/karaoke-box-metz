@@ -1,10 +1,10 @@
 import { useEffect } from "react";
 import { UseFormReturn } from "react-hook-form";
-import { useDisabledDates } from "./date-time/hooks/useDisabledDates";
-import { useDateTimeSelection } from "./date-time/hooks/useDateTimeSelection";
-import { CalendarSection } from "./date-time/CalendarSection";
-import { TimeSlotsSection } from "./date-time/TimeSlotsSection";
-import { useBookingSettings } from "./date-time/hooks/useBookingSettings";
+import { useDisabledDates } from "./hooks/useDisabledDates";
+import { useDateTimeSelection } from "./hooks/useDateTimeSelection";
+import { CalendarSection } from "./CalendarSection";
+import { TimeSlotsSection } from "./TimeSlotsSection";
+import { useBookingSettings } from "./hooks/useBookingSettings";
 
 interface DateTimeFieldsProps {
   form: UseFormReturn<any>;
@@ -42,7 +42,8 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
     selectedDate,
     minDate,
     maxDate,
-    disabledDates: disabledDates.length
+    disabledDates: disabledDates.length,
+    availableSlots
   });
 
   return (

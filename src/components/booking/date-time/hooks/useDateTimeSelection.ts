@@ -19,6 +19,15 @@ export const useDateTimeSelection = (
       form.setValue("date", date);
       form.setValue("timeSlot", "");
       
+      // Vérifier si c'est un lundi ou mardi
+      const dayOfWeek = date.getDay();
+      if (dayOfWeek === 1 || dayOfWeek === 2) {
+        console.log('❌ Jour fermé (lundi ou mardi)');
+        setAvailableSlots([]);
+        onAvailabilityChange(date, 0);
+        return;
+      }
+
       const slots = await getAvailableSlots(date, settings);
       console.log('📅 Créneaux disponibles:', slots);
       

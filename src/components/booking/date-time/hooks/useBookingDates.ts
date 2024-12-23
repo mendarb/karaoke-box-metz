@@ -50,20 +50,15 @@ export const useBookingDates = () => {
       return 4;
     }
 
-    const dayOfWeek = date.getDay().toString();
-    const daySettings = settings.openingHours[dayOfWeek];
-    
-    // Si c'est lundi ou mardi, retourner 0 heures disponibles
-    if (date.getDay() === 1 || date.getDay() === 2) {
+    // Vérifier si c'est un lundi ou mardi
+    const dayOfWeek = date.getDay();
+    if (dayOfWeek === 1 || dayOfWeek === 2) {
       return 0;
     }
 
-    if (!daySettings?.slots) {
-      return 0;
-    }
-
-    const slots = daySettings.slots;
+    const slots = ['14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00'];
     const slotIndex = slots.indexOf(timeSlot);
+    
     if (slotIndex === -1) {
       return 0;
     }
@@ -111,7 +106,16 @@ export const useBookingDates = () => {
     minDate,
     maxDate,
     isDayExcluded,
-    getAvailableSlots,
+    getAvailableSlots: (date: Date) => {
+      // Vérifier si c'est un lundi ou mardi
+      const dayOfWeek = date.getDay();
+      if (dayOfWeek === 1 || dayOfWeek === 2) {
+        return Promise.resolve([]);
+      }
+      
+      // Retourner les créneaux standards pour les autres jours
+      return Promise.resolve(['14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00']);
+    },
     getAvailableHoursForSlot,
     isTestMode
   };

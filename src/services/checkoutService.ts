@@ -15,6 +15,7 @@ interface CreateCheckoutSessionParams {
   isTestMode?: boolean;
   promoCodeId?: string;
   promoCode?: string;
+  bookingId?: string;  // Added this field
 }
 
 export const createCheckoutSession = async ({
@@ -31,6 +32,7 @@ export const createCheckoutSession = async ({
   promoCodeId,
   promoCode,
   message,
+  bookingId,  // Added this parameter
 }: CreateCheckoutSessionParams) => {
   console.log('Creating checkout session for user:', userId);
 
@@ -50,6 +52,7 @@ export const createCheckoutSession = async ({
         promoCodeId,
         promoCode,
         message,
+        bookingId,  // Added this field
       },
     });
 

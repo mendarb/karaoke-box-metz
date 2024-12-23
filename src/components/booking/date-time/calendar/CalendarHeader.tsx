@@ -6,8 +6,8 @@ import { cn } from "@/lib/utils";
 
 interface CalendarHeaderProps {
   currentMonth: Date;
-  onPreviousMonth: () => void;
-  onNextMonth: () => void;
+  onPreviousMonth: (e: React.MouseEvent) => void;
+  onNextMonth: (e: React.MouseEvent) => void;
   isPreviousMonthDisabled: boolean;
 }
 
@@ -37,10 +37,7 @@ export const CalendarHeader = ({
       <Button
         type="button"
         variant="ghost"
-        onClick={(e) => {
-          e.preventDefault(); // Empêcher la propagation du formulaire
-          onNextMonth();
-        }}
+        onClick={onNextMonth}
         className="h-9 w-9 p-0"
       >
         <ChevronRight className="h-5 w-5" />

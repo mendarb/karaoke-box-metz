@@ -26,12 +26,12 @@ export const BookingCalendar = ({
   });
 
   const handlePreviousMonth = (e: React.MouseEvent) => {
-    e.preventDefault(); // Empêcher la propagation du formulaire
+    e.preventDefault();
     setCurrentMonth(prev => addMonths(prev, -1));
   };
 
   const handleNextMonth = (e: React.MouseEvent) => {
-    e.preventDefault(); // Empêcher la propagation du formulaire
+    e.preventDefault();
     setCurrentMonth(prev => addMonths(prev, 1));
   };
 

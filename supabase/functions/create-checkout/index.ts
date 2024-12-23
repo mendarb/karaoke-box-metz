@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 import Stripe from 'https://esm.sh/stripe@14.21.0';
-import { format } from "https://esm.sh/date-fns@2.30.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,24 +13,23 @@ serve(async (req) => {
   }
 
   try {
-    const body = await req.json();
-    const { data } = body;
-    
-    if (!data || !data.bookingId) {
-      console.error('❌ Invalid request data:', { body, data });
+    console.log('📝 Received request:', {
+      method: req.method,
+      headers: Object.fromEntries(req.headers.entries()),
+    });
+
+    const requestData = await req.json();
+    console.log('📦 Request data:', requestData);
+
+    if (!requestData || !requestData.bookingId) {
+      console.error('❌ Invalid request data:', requestData);
       throw new Error('Invalid request data: missing bookingId');
     }
 
-    console.log('🔧 Processing checkout with data:', {
-      bookingId: data.bookingId,
-      email: data.userEmail,
-      isTestMode: data.isTestMode,
-      finalPrice: data.finalPrice,
-      promoCodeId: data.promoCodeId
-    });
+    console.log('🔧 Processing checkout for booking:', requestData.bookingId);
 
     // Si le prix final est 0 (réservation gratuite), on traite directement comme un succès
-    if (data.finalPrice === 0) {
+    if (requestData.finalPrice === 0) {
       console.log('🆓 Processing free booking');
       
       try {
@@ -47,11 +45,11 @@ serve(async (req) => {
             data: {
               object: {
                 metadata: {
-                  bookingId: data.bookingId,
-                  isTestMode: String(data.isTestMode)
+                  bookingId: requestData.bookingId,
+                  isTestMode: String(requestData.isTestMode)
                 },
                 payment_status: 'paid',
-                customer_email: data.userEmail
+                customer_email: requestData.userEmail
               }
             }
           })
@@ -62,9 +60,10 @@ serve(async (req) => {
           throw new Error('Failed to process free booking');
         }
 
+        console.log('✅ Free booking processed successfully');
         return new Response(
           JSON.stringify({ 
-            url: `${req.headers.get('origin')}/success?booking_id=${data.bookingId}` 
+            url: `${req.headers.get('origin')}/success?booking_id=${requestData.bookingId}` 
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
@@ -74,16 +73,16 @@ serve(async (req) => {
       }
     }
 
-    const formattedDate = format(new Date(data.date), 'yyyy-MM-dd');
+    const formattedDate = requestData.date;
     console.log('📅 Formatted date:', formattedDate);
 
-    const stripeKey = data.isTestMode 
+    const stripeKey = requestData.isTestMode 
       ? Deno.env.get('STRIPE_TEST_SECRET_KEY')
       : Deno.env.get('STRIPE_SECRET_KEY');
 
     if (!stripeKey) {
       console.error('❌ Missing Stripe API key');
-      throw new Error(`${data.isTestMode ? 'Test' : 'Live'} mode Stripe API key not configured`);
+      throw new Error(`${requestData.isTestMode ? 'Test' : 'Live'} mode Stripe API key not configured`);
     }
 
     const stripe = new Stripe(stripeKey, {
@@ -99,38 +98,38 @@ serve(async (req) => {
           price_data: {
             currency: 'eur',
             product_data: {
-              name: data.isTestMode ? '[TEST MODE] Karaoké BOX - MB EI' : 'Karaoké BOX - MB EI',
-              description: `${data.groupSize} personnes - ${data.duration}h`,
+              name: requestData.isTestMode ? '[TEST MODE] Karaoké BOX - MB EI' : 'Karaoké BOX - MB EI',
+              description: `${requestData.groupSize} personnes - ${requestData.duration}h`,
               images: ['https://raw.githubusercontent.com/lovable-karaoke/assets/main/logo.png'],
             },
-            unit_amount: Math.round(data.finalPrice * 100),
+            unit_amount: Math.round(requestData.finalPrice * 100),
           },
           quantity: 1,
         },
       ],
       mode: 'payment',
-      success_url: `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}&booking_id=${data.bookingId}`,
+      success_url: `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}&booking_id=${requestData.bookingId}`,
       cancel_url: `${req.headers.get('origin')}/error?error=payment_cancelled`,
-      customer_email: data.userEmail,
+      customer_email: requestData.userEmail,
       expires_at: Math.floor(Date.now() / 1000) + (30 * 60), // Expire après 30 minutes
       metadata: {
-        bookingId: data.bookingId,
+        bookingId: requestData.bookingId,
         date: formattedDate,
-        timeSlot: data.timeSlot,
-        duration: data.duration,
-        groupSize: data.groupSize,
-        isTestMode: String(data.isTestMode),
-        userName: data.userName,
-        userPhone: data.userPhone,
-        promoCodeId: data.promoCodeId || '',
-        originalPrice: String(data.price),
-        finalPrice: String(data.finalPrice),
+        timeSlot: requestData.timeSlot,
+        duration: requestData.duration,
+        groupSize: requestData.groupSize,
+        isTestMode: String(requestData.isTestMode),
+        userName: requestData.userName,
+        userPhone: requestData.userPhone,
+        promoCodeId: requestData.promoCodeId || '',
+        originalPrice: String(requestData.price),
+        finalPrice: String(requestData.finalPrice),
       }
     });
 
     console.log('✅ Checkout session created:', {
       sessionId: session.id,
-      mode: data.isTestMode ? 'TEST' : 'LIVE',
+      mode: requestData.isTestMode ? 'TEST' : 'LIVE',
       url: session.url
     });
 

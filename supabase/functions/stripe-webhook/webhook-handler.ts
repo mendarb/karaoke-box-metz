@@ -2,11 +2,6 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from 'https://esm.sh/stripe@14.21.0';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
 export async function handleWebhook(event: any, stripe: Stripe | null, supabase: any) {
   try {
     console.log('Processing webhook event:', event.type);
@@ -16,12 +11,12 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
         const session = event.data.object;
         console.log('Checkout session completed:', session);
 
-        // Create booking
+        // Créer la réservation uniquement après confirmation du paiement
         const { data: booking, error: bookingError } = await supabase
           .from('bookings')
           .insert([{
             user_id: session.metadata.userId,
-            user_email: session.metadata.userEmail,
+            user_email: session.customer_email || session.metadata.userEmail,
             user_name: session.metadata.userName,
             user_phone: session.metadata.userPhone,
             date: session.metadata.date,
@@ -46,7 +41,7 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
 
         console.log('✅ Booking created:', booking);
 
-        // Send confirmation email
+        // Envoyer l'email de confirmation
         try {
           const response = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-booking-email`, {
             method: 'POST',
@@ -65,7 +60,6 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
           }
         } catch (emailError) {
           console.error('Error sending confirmation email:', emailError);
-          // Don't throw here, we don't want to fail the webhook just because email failed
         }
 
         console.log('Booking confirmed and email sent successfully');

@@ -1,7 +1,6 @@
 import { UseFormReturn } from "react-hook-form";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
-import { createCheckoutSession } from "@/services/checkoutService";
 
 export const useBookingSubmit = (
   form: UseFormReturn<any>,
@@ -12,7 +11,7 @@ export const useBookingSubmit = (
 ) => {
   const handleSubmit = async (data: any) => {
     try {
-      console.log('🎯 Starting booking submission process:', {
+      console.log('🎯 Starting checkout process:', {
         email: data.email,
         date: data.date,
         isTestMode: data.isTestMode
@@ -20,45 +19,46 @@ export const useBookingSubmit = (
 
       setIsSubmitting(true);
 
-      const { data: { session } } = await supabase.auth.getSession();
-      console.log('Session check:', session);
-      
-      if (!session?.user) {
-        toast({
-          title: "Erreur",
-          description: "Vous devez être connecté pour effectuer une réservation",
-          variant: "destructive",
-        });
-        return;
+      // Générer le lien de paiement directement sans créer la réservation
+      const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
+        'create-checkout',
+        {
+          body: {
+            userId: data.userId,
+            userEmail: data.email,
+            date: data.date,
+            timeSlot: data.timeSlot,
+            duration,
+            groupSize,
+            price: calculatedPrice,
+            finalPrice: form.getValues('finalPrice') || calculatedPrice,
+            message: data.message,
+            userName: data.fullName,
+            userPhone: data.phone,
+            isTestMode: form.getValues('isTestMode') || false,
+            promoCodeId: form.getValues('promoCodeId'),
+            promoCode: form.getValues('promoCode'),
+          }
+        }
+      );
+
+      if (checkoutError) {
+        throw checkoutError;
       }
 
-      // Generate checkout URL with explicit test mode parameter
-      const checkoutUrl = await createCheckoutSession({
-        userId: session.user.id,
-        userEmail: data.email,
-        date: data.date,
-        timeSlot: data.timeSlot,
-        duration,
-        groupSize,
-        price: calculatedPrice,
-        finalPrice: form.getValues('finalPrice') || calculatedPrice,
-        message: data.message,
-        userName: data.fullName,
-        userPhone: data.phone,
-        isTestMode: form.getValues('isTestMode') || false,
-        promoCodeId: form.getValues('promoCodeId'),
-        promoCode: form.getValues('promoCode'),
-      });
+      if (!checkoutData.url) {
+        throw new Error('No checkout URL returned');
+      }
 
       console.log('✅ Checkout URL generated:', {
-        url: checkoutUrl,
+        url: checkoutData.url,
         isTestMode: form.getValues('isTestMode') || false
       });
       
-      window.location.href = checkoutUrl;
+      window.location.href = checkoutData.url;
 
     } catch (error: any) {
-      console.error('❌ Error in booking submission:', error);
+      console.error('❌ Error in checkout process:', error);
       toast({
         title: "Erreur lors de la réservation",
         description: error.message || "Une erreur est survenue lors de la réservation",

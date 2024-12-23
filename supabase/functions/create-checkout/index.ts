@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 import Stripe from 'https://esm.sh/stripe@14.21.0';
-import { createBookingRecord } from "./booking-service.ts";
 import { createStripeSession } from "./stripe-service.ts";
 
 const corsHeaders = {
@@ -30,26 +29,6 @@ serve(async (req) => {
       throw new Error('No data provided');
     }
 
-    // Si le prix final est 0 (réservation gratuite), on crée directement la réservation
-    if (requestData.finalPrice === 0) {
-      const supabaseUrl = Deno.env.get('SUPABASE_URL');
-      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-      
-      if (!supabaseUrl || !supabaseKey) {
-        throw new Error('Missing Supabase credentials');
-      }
-
-      const supabase = createClient(supabaseUrl, supabaseKey);
-      const booking = await createBookingRecord(supabase, requestData, requestData.isTestMode);
-
-      return new Response(
-        JSON.stringify({ 
-          url: `${req.headers.get('origin')}/success?booking_id=${booking.id}` 
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
     const stripeKey = requestData.isTestMode 
       ? Deno.env.get('STRIPE_TEST_SECRET_KEY')
       : Deno.env.get('STRIPE_SECRET_KEY');
@@ -63,22 +42,10 @@ serve(async (req) => {
       httpClient: Stripe.createFetchHttpClient(),
     });
 
-    // Créer d'abord la réservation
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Missing Supabase credentials');
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    const booking = await createBookingRecord(supabase, requestData, requestData.isTestMode);
-
-    // Créer la session Stripe
+    // Créer la session Stripe sans créer la réservation
     const session = await createStripeSession(
       stripe,
       requestData,
-      booking,
       req.headers.get('origin') || ''
     );
 

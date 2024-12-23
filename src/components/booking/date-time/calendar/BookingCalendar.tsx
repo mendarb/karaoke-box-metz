@@ -1,69 +1,70 @@
-import { useState } from "react";
-import { addMonths, startOfMonth, endOfMonth, eachDayOfInterval, isBefore, isAfter } from "date-fns";
+import { useState, useEffect } from "react";
 import { CalendarHeader } from "./CalendarHeader";
 import { CalendarGrid } from "./CalendarGrid";
+import { Card } from "@/components/ui/card";
+import { addMonths, subMonths, startOfMonth } from "date-fns";
 
-export interface BookingCalendarProps {
-  selectedDate: Date | undefined;
-  disabledDates: Date[];
+interface BookingCalendarProps {
+  selectedDate?: Date;
   onSelect: (date: Date) => void;
+  disabledDates: Date[];
   minDate: Date;
   maxDate: Date;
 }
 
-export const BookingCalendar = ({ 
-  selectedDate, 
-  disabledDates, 
+export const BookingCalendar = ({
+  selectedDate,
   onSelect,
+  disabledDates,
   minDate,
-  maxDate 
+  maxDate,
 }: BookingCalendarProps) => {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(startOfMonth(new Date()));
+  const [days, setDays] = useState<Date[]>([]);
 
-  const days = eachDayOfInterval({
-    start: startOfMonth(currentMonth),
-    end: endOfMonth(currentMonth),
-  });
-
-  const handlePreviousMonth = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const newMonth = addMonths(currentMonth, -1);
-    // Vérifie si le nouveau mois est après ou égal au mois minimum
-    if (!isBefore(startOfMonth(newMonth), startOfMonth(minDate))) {
-      setCurrentMonth(newMonth);
+  useEffect(() => {
+    // Générer les jours du mois courant
+    const daysInMonth: Date[] = [];
+    const date = new Date(currentMonth);
+    date.setDate(1);
+    while (date.getMonth() === currentMonth.getMonth()) {
+      daysInMonth.push(new Date(date));
+      date.setDate(date.getDate() + 1);
     }
+    setDays(daysInMonth);
+  }, [currentMonth]);
+
+  const handlePreviousMonth = () => {
+    setCurrentMonth(subMonths(currentMonth, 1));
   };
 
-  const handleNextMonth = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const newMonth = addMonths(currentMonth, 1);
-    // Vérifie si le nouveau mois est avant ou égal au mois maximum
-    if (!isAfter(startOfMonth(newMonth), startOfMonth(maxDate))) {
-      setCurrentMonth(newMonth);
-    }
+  const handleNextMonth = () => {
+    setCurrentMonth(addMonths(currentMonth, 1));
   };
 
-  const isPreviousMonthDisabled = isBefore(startOfMonth(currentMonth), startOfMonth(minDate));
-  const isNextMonthDisabled = isAfter(startOfMonth(currentMonth), startOfMonth(maxDate));
+  const isPreviousMonthDisabled = currentMonth <= minDate;
+  const isNextMonthDisabled = currentMonth >= maxDate;
 
   return (
-    <div className="p-4 bg-white rounded-xl shadow-sm">
-      <CalendarHeader
-        currentMonth={currentMonth}
-        onPreviousMonth={handlePreviousMonth}
-        onNextMonth={handleNextMonth}
-        isPreviousMonthDisabled={isPreviousMonthDisabled}
-        isNextMonthDisabled={isNextMonthDisabled}
-      />
-      <CalendarGrid
-        month={currentMonth}
-        days={days}
-        selectedDate={selectedDate}
-        disabledDates={disabledDates}
-        onSelect={onSelect}
-        minDate={minDate}
-        maxDate={maxDate}
-      />
-    </div>
+    <Card className="w-full max-w-lg mx-auto">
+      <div className="p-4">
+        <CalendarHeader
+          currentMonth={currentMonth}
+          onPreviousMonth={handlePreviousMonth}
+          onNextMonth={handleNextMonth}
+          isPreviousMonthDisabled={isPreviousMonthDisabled}
+          isNextMonthDisabled={isNextMonthDisabled}
+        />
+        <CalendarGrid
+          month={currentMonth}
+          days={days}
+          selectedDate={selectedDate}
+          disabledDates={disabledDates}
+          onSelect={onSelect}
+          minDate={minDate}
+          maxDate={maxDate}
+        />
+      </div>
+    </Card>
   );
 };

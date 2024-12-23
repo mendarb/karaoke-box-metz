@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
-import Stripe from "https://esm.sh/stripe@14.21.0";
+import Stripe from 'https://esm.sh/stripe@14.21.0';
 import { format } from "https://esm.sh/date-fns@2.30.0";
 
 const corsHeaders = {
@@ -17,6 +17,11 @@ serve(async (req) => {
   try {
     const { data } = await req.json();
     
+    if (!data) {
+      console.error('❌ No data provided in request');
+      throw new Error('No data provided');
+    }
+
     console.log('🔧 Processing checkout with data:', {
       bookingId: data.bookingId,
       email: data.userEmail,

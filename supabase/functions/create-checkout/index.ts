@@ -19,7 +19,15 @@ serve(async (req) => {
     });
 
     const requestData = await req.json();
-    console.log('📦 Request data:', requestData);
+    console.log('📦 Request data:', {
+      ...requestData,
+      promoDetails: {
+        promoCode: requestData.promoCode,
+        originalPrice: requestData.price,
+        finalPrice: requestData.finalPrice,
+        discountAmount: requestData.discountAmount
+      }
+    });
 
     if (!requestData) {
       console.error('❌ No data provided in request');

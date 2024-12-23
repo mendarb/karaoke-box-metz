@@ -37,11 +37,12 @@ export const createCheckoutSession = async ({
   bookingId,
   discountAmount,
 }: CreateCheckoutSessionParams) => {
-  console.log('Creating checkout session for user:', userId, {
+  console.log('Creating checkout session:', {
     originalPrice: price,
     finalPrice,
     promoCode,
-    discountAmount
+    discountAmount,
+    isTestMode
   });
 
   try {
@@ -67,6 +68,7 @@ export const createCheckoutSession = async ({
     });
 
     if (response.error) {
+      console.error('Error creating checkout session:', response.error);
       throw new Error(response.error.message || 'Failed to create checkout session');
     }
 

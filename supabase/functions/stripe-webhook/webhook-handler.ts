@@ -1,110 +1,96 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
-import Stripe from 'https://esm.sh/stripe@14.21.0';
+import { stripe } from './stripe-config';
+import { createClient } from '@supabase/supabase-js';
+import { sendBookingConfirmationEmail } from './services/email-service';
+import { updateBookingStatus } from './services/booking-service';
 
-export const handleWebhook = async (event: any, stripe: Stripe | null, supabase: any) => {
-  console.log('🎯 Processing webhook event:', {
-    type: event.type,
-    id: event.id,
-    isTestMode: event.data?.object?.metadata?.isTestMode === 'true'
-  });
+const supabaseUrl = Deno.env.get('SUPABASE_URL') as string;
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') as string;
 
-  const session = event.data?.object;
-  const metadata = session?.metadata || {};
-  const isTestMode = metadata.isTestMode === 'true';
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-  console.log('📦 Session metadata:', {
-    metadata,
-    isTestMode,
-    mode: isTestMode ? 'test' : 'live',
-    amount: session.amount_total,
-    paymentStatus: session.payment_status
-  });
+export async function handleStripeWebhook(event: any) {
+  try {
+    console.log('Processing webhook event:', event.type);
 
-  if (event.type === 'checkout.session.completed') {
-    try {
-      console.log('💳 Processing completed checkout session:', {
-        sessionId: session.id,
-        paymentStatus: session.payment_status,
-        bookingId: metadata.bookingId
-      });
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object;
+        console.log('Checkout session completed:', session);
 
-      // Vérifier si la réservation n'est pas déjà prise
-      const { data: existingBookings, error: checkError } = await supabase
-        .from('bookings')
-        .select('*')
-        .eq('date', metadata.date)
-        .eq('time_slot', metadata.timeSlot)
-        .neq('id', metadata.bookingId)
-        .neq('status', 'cancelled')
-        .is('deleted_at', null);
-
-      if (checkError) {
-        console.error('❌ Error checking existing bookings:', checkError);
-        throw checkError;
-      }
-
-      if (existingBookings && existingBookings.length > 0) {
-        console.error('❌ Time slot already taken');
-        throw new Error('Ce créneau est déjà réservé');
-      }
-
-      // Mettre à jour la réservation
-      const { data: booking, error: updateError } = await supabase
-        .from('bookings')
-        .update({
-          payment_status: 'paid',
-          status: 'confirmed',
-          payment_intent_id: session.payment_intent,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', metadata.bookingId)
-        .select('*')
-        .single();
-
-      if (updateError) {
-        console.error('❌ Error updating booking:', updateError);
-        throw updateError;
-      }
-
-      console.log('✅ Booking updated successfully:', {
-        bookingId: booking.id,
-        status: booking.status,
-        paymentStatus: booking.payment_status,
-        isTestMode: booking.is_test_booking
-      });
-
-      // Envoyer l'email de confirmation
-      try {
-        console.log('📧 Sending confirmation email for booking:', booking.id);
-        
-        const { error: emailError } = await supabase.functions.invoke('send-booking-email', {
-          body: { 
-            booking,
-            type: 'confirmation'
-          }
-        });
-
-        if (emailError) {
-          console.error('❌ Error sending confirmation email:', emailError);
-          throw emailError;
+        // Update booking status
+        const bookingId = session.metadata.bookingId;
+        if (!bookingId) {
+          throw new Error('No booking ID found in session metadata');
         }
 
-        console.log('✅ Confirmation email sent successfully');
-      } catch (emailError) {
-        console.error('❌ Error in email sending process:', emailError);
-        // Continue même si l'envoi d'email échoue
+        // Check if booking exists and isn't already confirmed
+        const { data: booking, error: bookingError } = await supabase
+          .from('bookings')
+          .select('*')
+          .eq('id', bookingId)
+          .single();
+
+        if (bookingError || !booking) {
+          console.error('Error fetching booking:', bookingError);
+          throw new Error('Booking not found');
+        }
+
+        if (booking.status === 'confirmed') {
+          console.log('Booking already confirmed, skipping');
+          return;
+        }
+
+        // Check for overlapping bookings
+        const { data: overlappingBookings, error: overlapError } = await supabase
+          .from('bookings')
+          .select('*')
+          .eq('date', booking.date)
+          .eq('time_slot', booking.time_slot)
+          .neq('id', bookingId)
+          .eq('status', 'confirmed')
+          .is('deleted_at', null);
+
+        if (overlapError) {
+          console.error('Error checking overlapping bookings:', overlapError);
+          throw new Error('Error checking booking availability');
+        }
+
+        if (overlappingBookings && overlappingBookings.length > 0) {
+          console.error('Overlapping booking found:', overlappingBookings);
+          // Here you might want to refund the payment and notify the customer
+          const refund = await stripe.refunds.create({
+            payment_intent: session.payment_intent as string,
+          });
+          console.log('Payment refunded:', refund);
+          throw new Error('Time slot no longer available');
+        }
+
+        // Update booking status
+        await updateBookingStatus(bookingId, 'confirmed', session.payment_intent as string);
+
+        // Send confirmation email
+        await sendBookingConfirmationEmail(booking);
+
+        console.log('Booking confirmed and email sent successfully');
+        break;
       }
 
-      return { 
-        message: 'Booking payment status updated successfully', 
-        booking,
-        isTestMode 
-      };
-    } catch (error) {
-      console.error('❌ Error in webhook handler:', error);
-      throw error;
-    }
-  }
+      case 'checkout.session.expired': {
+        const session = event.data.object;
+        const bookingId = session.metadata.bookingId;
+        
+        if (bookingId) {
+          await updateBookingStatus(bookingId, 'cancelled');
+          console.log('Booking cancelled due to expired session:', bookingId);
+        }
+        break;
+      }
 
-  return { message: `Unhandled event type: ${event.type}` };
-};
+      default:
+        console.log('Unhandled event type:', event.type);
+    }
+  } catch (error) {
+    console.error('Error processing webhook:', error);
+    throw error;
+  }
+}

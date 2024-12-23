@@ -1,75 +1,39 @@
-import { Stripe } from 'https://esm.sh/stripe@14.21.0';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { createClient } from '@supabase/supabase-js';
 
-export const createBooking = async (
-  session: Stripe.Checkout.Session,
-  supabase: ReturnType<typeof createClient>
-) => {
-  console.log('🎯 Creating booking for session:', session.id);
+const supabaseUrl = Deno.env.get('SUPABASE_URL') as string;
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') as string;
 
-  const metadata = session.metadata;
-  if (!metadata) {
-    console.error('❌ No metadata in session');
-    throw new Error('No metadata in session');
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+export async function updateBookingStatus(
+  bookingId: string, 
+  status: 'confirmed' | 'cancelled', 
+  paymentIntentId?: string
+) {
+  console.log('Updating booking status:', { bookingId, status, paymentIntentId });
+
+  const updateData: any = {
+    status,
+    payment_status: status === 'confirmed' ? 'paid' : 'cancelled',
+    updated_at: new Date().toISOString(),
+  };
+
+  if (paymentIntentId) {
+    updateData.payment_intent_id = paymentIntentId;
   }
 
-  try {
-    // Vérifier si la réservation existe déjà
-    if (session.payment_intent) {
-      console.log('🔍 Checking existing booking:', session.payment_intent);
-      
-      const { data: existingBooking, error: searchError } = await supabase
-        .from('bookings')
-        .select('*')
-        .eq('payment_intent_id', session.payment_intent)
-        .maybeSingle();
+  const { data, error } = await supabase
+    .from('bookings')
+    .update(updateData)
+    .eq('id', bookingId)
+    .select()
+    .single();
 
-      if (searchError) {
-        console.error('❌ Error checking existing booking:', searchError);
-        throw searchError;
-      }
-
-      if (existingBooking) {
-        console.log('⚠️ Booking already exists:', existingBooking);
-        return existingBooking;
-      }
-    }
-
-    const bookingData = {
-      user_id: metadata.userId,
-      date: metadata.date,
-      time_slot: metadata.timeSlot,
-      duration: metadata.duration,
-      group_size: metadata.groupSize,
-      status: 'confirmed',
-      price: parseFloat(metadata.finalPrice),
-      message: metadata.message || null,
-      user_email: session.customer_email || metadata.userEmail,
-      user_name: metadata.userName,
-      user_phone: metadata.userPhone,
-      payment_status: session.amount_total === 0 ? 'paid' : session.payment_status,
-      is_test_booking: metadata.isTestMode === 'true',
-      payment_intent_id: session.payment_intent || null,
-      promo_code_id: metadata.promoCodeId || null
-    };
-
-    console.log('📝 Creating booking with data:', bookingData);
-
-    const { data: booking, error: insertError } = await supabase
-      .from('bookings')
-      .insert([bookingData])
-      .select()
-      .single();
-
-    if (insertError) {
-      console.error('❌ Error creating booking:', insertError);
-      throw insertError;
-    }
-
-    console.log('✅ Booking created successfully:', booking);
-    return booking;
-  } catch (error) {
-    console.error('❌ Error in createBooking:', error);
+  if (error) {
+    console.error('Error updating booking status:', error);
     throw error;
   }
-};
+
+  console.log('Booking status updated successfully:', data);
+  return data;
+}

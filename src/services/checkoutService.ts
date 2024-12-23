@@ -1,6 +1,6 @@
-import { supabase } from "@/lib/supabase";
+import { stripe } from "@/lib/stripe";
 
-interface CreateCheckoutParams {
+interface CreateCheckoutSessionParams {
   bookingId: string;
   userEmail: string;
   date: string;
@@ -12,38 +12,55 @@ interface CreateCheckoutParams {
   message?: string;
   userName: string;
   userPhone: string;
-  isTestMode: boolean;
-  promoCodeId?: string;
-  promoCode?: string;
+  isTestMode?: boolean;
 }
 
-export const createCheckoutSession = async (params: CreateCheckoutParams) => {
-  console.log('💳 Creating checkout session with data:', {
-    ...params,
-    isTestMode: Boolean(params.isTestMode)
-  });
+export const createCheckoutSession = async ({
+  bookingId,
+  userEmail,
+  date,
+  timeSlot,
+  duration,
+  groupSize,
+  finalPrice,
+  userName,
+  isTestMode = false,
+}: CreateCheckoutSessionParams) => {
+  console.log('Creating checkout session for booking:', bookingId);
 
-  const { data: checkoutData, error } = await supabase.functions.invoke('create-checkout', {
-    body: {
-      ...params,
-      isTestMode: Boolean(params.isTestMode)
+  try {
+    const response = await fetch('/api/create-checkout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        bookingId,
+        userEmail,
+        date,
+        timeSlot,
+        duration,
+        groupSize,
+        price: finalPrice,
+        userName,
+        isTestMode,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to create checkout session');
     }
-  });
 
-  if (error) {
-    console.error('❌ Error creating checkout:', error);
-    throw error;
+    const { url } = await response.json();
+    
+    if (!url) {
+      throw new Error('No checkout URL returned');
+    }
+
+    return url;
+  } catch (error: any) {
+    console.error('Error creating checkout session:', error);
+    throw new Error(error.message || 'Failed to create checkout session');
   }
-
-  if (!checkoutData?.url) {
-    console.error('❌ Payment URL not received');
-    throw new Error('Payment URL not received');
-  }
-
-  console.log('✅ Checkout session created successfully:', {
-    url: checkoutData.url,
-    isTestMode: Boolean(params.isTestMode)
-  });
-  
-  return checkoutData.url;
 };

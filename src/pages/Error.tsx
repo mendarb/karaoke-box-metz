@@ -1,47 +1,48 @@
-import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle } from "lucide-react";
+import { useEffect } from "react";
+import { useToast } from "@/components/ui/use-toast";
 
-const Error = () => {
+export const Error = () => {
   const [searchParams] = useSearchParams();
-  const [errorMessage, setErrorMessage] = useState<string>("Une erreur est survenue");
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const error = searchParams.get("error");
 
   useEffect(() => {
-    const error = searchParams.get("error");
     if (error) {
-      switch (error) {
-        case "payment_failed":
-          setErrorMessage("Le paiement a échoué. Veuillez réessayer.");
-          break;
-        case "session_expired":
-          setErrorMessage("La session de paiement a expiré. Veuillez réessayer.");
-          break;
-        default:
-          setErrorMessage("Une erreur est survenue lors de la réservation.");
-      }
+      toast({
+        title: "Erreur",
+        description: error,
+        variant: "destructive",
+      });
     }
-  }, [searchParams]);
+  }, [error, toast]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6">
-        <div className="text-center mb-6">
-          <div className="flex justify-center mb-4">
-            <AlertTriangle className="h-12 w-12 text-red-500" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Erreur de réservation
-          </h1>
-          <p className="text-gray-600">
-            {errorMessage}
+      <div className="max-w-md w-full space-y-8 text-center">
+        <div>
+          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+            Une erreur est survenue
+          </h2>
+          <p className="mt-2 text-sm text-gray-600">
+            {error || "Votre paiement n'a pas pu être traité"}
           </p>
         </div>
-
-        <div className="mt-6 text-center">
+        
+        <div className="space-y-4">
           <Button
-            onClick={() => window.location.href = '/'}
-            className="bg-violet-600 hover:bg-violet-700"
+            onClick={() => navigate("/booking")}
+            className="w-full"
+          >
+            Réessayer la réservation
+          </Button>
+          
+          <Button
+            variant="outline"
+            onClick={() => navigate("/")}
+            className="w-full"
           >
             Retour à l'accueil
           </Button>
@@ -50,5 +51,3 @@ const Error = () => {
     </div>
   );
 };
-
-export default Error;

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { addMonths, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
-import { CalendarHeader } from "./calendar/CalendarHeader";
-import { CalendarGrid } from "./calendar/CalendarGrid";
+import { CalendarHeader } from "./CalendarHeader";
+import { CalendarGrid } from "./CalendarGrid";
 import { UseFormReturn } from "react-hook-form";
 
 interface BookingCalendarProps {

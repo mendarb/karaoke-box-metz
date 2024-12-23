@@ -24,26 +24,9 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
     minDate,
     maxDate,
     isDayExcluded: (date) => {
-      if (!settings?.openingHours) {
-        console.log('❌ Pas de paramètres d\'horaires disponibles');
-        return true;
-      }
-      
-      const dayOfWeek = date.getDay().toString();
-      const daySettings = settings.openingHours[dayOfWeek];
-      
-      if (!daySettings?.isOpen) {
-        console.log(`❌ Jour ${dayOfWeek} fermé selon les paramètres`);
-        return true;
-      }
-
-      if (settings.excludedDays?.includes(date.getTime())) {
-        console.log('❌ Date spécifiquement exclue');
-        return true;
-      }
-
-      console.log(`✅ Jour ${dayOfWeek} ouvert selon les paramètres`);
-      return false;
+      const dayOfWeek = date.getDay();
+      // Griser uniquement les lundis (1) et mardis (2)
+      return dayOfWeek === 1 || dayOfWeek === 2;
     }
   });
 
@@ -60,7 +43,6 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
     maxDate,
     disabledDates: disabledDates.length,
     availableSlots,
-    settings: settings?.openingHours
   });
 
   return (

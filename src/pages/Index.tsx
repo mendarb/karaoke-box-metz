@@ -30,7 +30,6 @@ const Index = () => {
         return acc;
       }, {});
 
-      console.log('Site settings loaded:', settingsMap);
       return settingsMap;
     },
   });
@@ -47,7 +46,6 @@ const Index = () => {
 
   const businessHours = siteSettings?.business_hours || {};
   
-  // Fonction pour formater les horaires d'ouverture
   const formatBusinessHours = () => {
     const days = {
       monday: "Lundi",
@@ -59,12 +57,19 @@ const Index = () => {
       sunday: "Dimanche"
     };
 
-    return Object.entries(businessHours).map(([day, settings]: [string, any]) => {
-      if (settings?.isOpen) {
-        return `${days[day as keyof typeof days]}: ${settings.hours}`;
-      }
-      return `${days[day as keyof typeof days]}: Fermé`;
-    });
+    return Object.entries(businessHours)
+      .map(([day, settings]: [string, any]) => ({
+        day: days[day as keyof typeof days],
+        hours: settings?.isOpen ? settings.hours : 'Fermé'
+      }))
+      .reduce((acc: string[][], curr, idx) => {
+        if (idx % 2 === 0) {
+          acc.push([curr]);
+        } else {
+          acc[acc.length - 1].push(curr);
+        }
+        return acc;
+      }, []);
   };
 
   return (
@@ -119,6 +124,7 @@ const Index = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
+              <h3 className="text-lg font-semibold mb-4">Informations légales</h3>
               <LegalLinks />
             </div>
             <div>
@@ -131,9 +137,16 @@ const Index = () => {
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-4">Horaires</h3>
-              <div className="space-y-2 text-gray-600">
-                {formatBusinessHours().map((line, index) => (
-                  <p key={index}>{line}</p>
+              <div className="grid grid-cols-1 gap-2">
+                {formatBusinessHours().map((group, groupIdx) => (
+                  <div key={groupIdx} className="grid grid-cols-2 gap-4">
+                    {group.map((item, idx) => (
+                      <div key={idx} className="text-gray-600">
+                        <span className="font-medium">{item.day}:</span>{' '}
+                        <span>{item.hours}</span>
+                      </div>
+                    ))}
+                  </div>
                 ))}
               </div>
             </div>

@@ -1,4 +1,5 @@
 import { User2, Calendar, Users, CreditCard } from "lucide-react";
+import React from "react";
 
 export interface Step {
   id?: number;

@@ -78,7 +78,7 @@ export const BookingCalendar = ({
                 nav: "flex items-center gap-1",
                 nav_button: cn(
                   "h-9 w-9 bg-transparent p-0 text-gray-500 hover:text-gray-900 hover:bg-violet-50 rounded-full transition-colors",
-                  "opacity-50 cursor-not-allowed"
+                  "opacity-100 cursor-pointer" // Correction ici
                 ),
                 nav_button_previous: "absolute left-1",
                 nav_button_next: "absolute right-1",
@@ -91,7 +91,7 @@ export const BookingCalendar = ({
                   "first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md"
                 ),
                 day: cn(
-                  "h-10 w-10 p-0 font-normal rounded-full transition-colors",
+                  "h-10 w-10 p-0 font-normal rounded-full transition-colors cursor-pointer",
                   "hover:bg-violet-100 focus:bg-violet-100 focus:outline-none"
                 ),
                 day_range_end: "day-range-end",

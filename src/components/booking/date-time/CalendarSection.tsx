@@ -1,6 +1,6 @@
 import { UseFormReturn } from "react-hook-form";
 import { Card, CardContent } from "@/components/ui/card";
-import { BookingCalendar } from "./BookingCalendar";
+import { BookingCalendar } from "./calendar/BookingCalendar";
 
 interface CalendarSectionProps {
   form: UseFormReturn<any>;

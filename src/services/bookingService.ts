@@ -30,8 +30,12 @@ export const createBooking = async (data: any) => {
     timeSlot: data.timeSlot,
     duration: data.duration,
     groupSize: data.groupSize,
-    price: data.calculatedPrice
+    price: data.price || data.calculatedPrice // Ajout d'un fallback sur calculatedPrice
   });
+
+  if (!data.price && !data.calculatedPrice) {
+    throw new Error('Le prix est requis pour créer une réservation');
+  }
 
   const { data: booking, error } = await supabase
     .from('bookings')
@@ -44,7 +48,7 @@ export const createBooking = async (data: any) => {
       time_slot: data.timeSlot,
       duration: data.duration,
       group_size: data.groupSize,
-      price: data.calculatedPrice,
+      price: data.price || data.calculatedPrice, // Ajout d'un fallback sur calculatedPrice
       message: data.message,
       status: 'pending',
       payment_status: 'unpaid',
@@ -77,8 +81,8 @@ export const generatePaymentLink = async (booking: any, data: any) => {
     timeSlot: data.timeSlot,
     duration: data.duration,
     groupSize: data.groupSize,
-    price: data.calculatedPrice,
-    finalPrice: data.calculatedPrice,
+    price: data.price || data.calculatedPrice, // Ajout d'un fallback sur calculatedPrice
+    finalPrice: data.finalPrice || data.calculatedPrice,
     message: data.message,
     userName: data.fullName,
     userPhone: data.phone,

@@ -1,4 +1,4 @@
-import { stripe } from "@/lib/stripe";
+import { supabase } from "@/lib/supabase";
 
 interface CreateCheckoutSessionParams {
   bookingId: string;
@@ -13,6 +13,8 @@ interface CreateCheckoutSessionParams {
   userName: string;
   userPhone: string;
   isTestMode?: boolean;
+  promoCodeId?: string;
+  promoCode?: string;
 }
 
 export const createCheckoutSession = async ({
@@ -24,17 +26,16 @@ export const createCheckoutSession = async ({
   groupSize,
   finalPrice,
   userName,
+  userPhone,
   isTestMode = false,
+  promoCodeId,
+  promoCode,
 }: CreateCheckoutSessionParams) => {
   console.log('Creating checkout session for booking:', bookingId);
 
   try {
-    const response = await fetch('/api/create-checkout', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+    const response = await supabase.functions.invoke('create-checkout', {
+      body: {
         bookingId,
         userEmail,
         date,
@@ -43,16 +44,18 @@ export const createCheckoutSession = async ({
         groupSize,
         price: finalPrice,
         userName,
+        userPhone,
         isTestMode,
-      }),
+        promoCodeId,
+        promoCode,
+      },
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to create checkout session');
+    if (response.error) {
+      throw new Error(response.error.message || 'Failed to create checkout session');
     }
 
-    const { url } = await response.json();
+    const { url } = response.data;
     
     if (!url) {
       throw new Error('No checkout URL returned');

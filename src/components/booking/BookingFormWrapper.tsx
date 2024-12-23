@@ -8,6 +8,7 @@ import { BookingFormActions } from "./BookingFormActions";
 import { useBookingMode } from "./hooks/useBookingMode";
 import { useBookingOverlap } from "@/hooks/useBookingOverlap";
 import { toast } from "@/hooks/use-toast";
+import { BookingFormValues } from "./types/bookingFormTypes";
 
 export const BookingFormWrapper = () => {
   const {
@@ -41,7 +42,7 @@ export const BookingFormWrapper = () => {
   const { checkOverlap } = useBookingOverlap();
 
   const validateStep = (step: number) => {
-    const requiredFields: { [key: number]: string[] } = {
+    const requiredFields: { [key: number]: Array<keyof BookingFormValues> } = {
       1: ['email', 'fullName', 'phone'],
       2: ['date', 'timeSlot'],
       3: ['groupSize', 'duration'],
@@ -77,7 +78,7 @@ export const BookingFormWrapper = () => {
     return isValid;
   };
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: BookingFormValues) => {
     if (!validateStep(currentStep)) {
       return;
     }
@@ -91,7 +92,7 @@ export const BookingFormWrapper = () => {
       isTestMode
     });
     
-    form.setValue('isTestMode', isTestMode);
+    form.setValue('isTestMode' as keyof BookingFormValues, isTestMode);
     
     const hasOverlap = await checkOverlap(data.date, data.timeSlot, duration);
     if (hasOverlap) {

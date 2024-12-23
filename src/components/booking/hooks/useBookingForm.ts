@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
 import { useUserState } from "@/hooks/useUserState";
 import { supabase } from "@/lib/supabase";
+import { BookingFormValues } from "../types/bookingFormTypes";
 
 export const useBookingForm = () => {
   const { toast } = useToast();
@@ -15,7 +16,7 @@ export const useBookingForm = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [availableHours, setAvailableHours] = useState(4);
   
-  const form = useForm({
+  const form = useForm<BookingFormValues>({
     defaultValues: {
       email: user?.email || '',
       fullName: '',

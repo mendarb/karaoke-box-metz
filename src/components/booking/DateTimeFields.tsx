@@ -29,11 +29,23 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
         return true;
       }
       
-      const dayOfWeek = date.getDay().toString();
-      const daySettings = settings.openingHours[dayOfWeek];
+      // Convertir le jour de la semaine (0-6) en format compatible avec les paramètres
+      const dayMap: { [key: number]: string } = {
+        0: 'sunday',
+        1: 'monday',
+        2: 'tuesday',
+        3: 'wednesday',
+        4: 'thursday',
+        5: 'friday',
+        6: 'saturday'
+      };
+      
+      const dayOfWeek = date.getDay();
+      const dayKey = dayMap[dayOfWeek];
+      const daySettings = settings.business_hours?.[dayKey];
       
       if (!daySettings?.isOpen) {
-        console.log(`❌ Jour ${dayOfWeek} fermé selon les paramètres`);
+        console.log(`❌ Jour ${dayKey} fermé selon les paramètres`);
         return true;
       }
 
@@ -42,7 +54,7 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
         return true;
       }
 
-      console.log(`✅ Jour ${dayOfWeek} ouvert selon les paramètres`);
+      console.log(`✅ Jour ${dayKey} ouvert selon les paramètres`);
       return false;
     }
   });
@@ -60,7 +72,7 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
     maxDate,
     disabledDates: disabledDates.length,
     availableSlots,
-    settings: settings?.openingHours
+    settings: settings?.business_hours
   });
 
   return (

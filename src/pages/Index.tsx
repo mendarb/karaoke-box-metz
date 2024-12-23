@@ -45,10 +45,26 @@ const Index = () => {
     address: '1 rue du Karaoké, 57000 Metz'
   };
 
-  const businessHours = siteSettings?.business_hours || {
-    description: 'Du mercredi au dimanche',
-    hours: '14h00 - 22h00',
-    closed: 'Fermé le lundi et mardi'
+  const businessHours = siteSettings?.business_hours || {};
+  
+  // Fonction pour formater les horaires d'ouverture
+  const formatBusinessHours = () => {
+    const days = {
+      monday: "Lundi",
+      tuesday: "Mardi",
+      wednesday: "Mercredi",
+      thursday: "Jeudi",
+      friday: "Vendredi",
+      saturday: "Samedi",
+      sunday: "Dimanche"
+    };
+
+    return Object.entries(businessHours).map(([day, settings]: [string, any]) => {
+      if (settings?.isOpen) {
+        return `${days[day as keyof typeof days]}: ${settings.hours}`;
+      }
+      return `${days[day as keyof typeof days]}: Fermé`;
+    });
   };
 
   return (
@@ -103,7 +119,6 @@ const Index = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
-              <h3 className="text-lg font-semibold mb-4">Informations légales</h3>
               <LegalLinks />
             </div>
             <div>
@@ -117,9 +132,9 @@ const Index = () => {
             <div>
               <h3 className="text-lg font-semibold mb-4">Horaires</h3>
               <div className="space-y-2 text-gray-600">
-                <p>{businessHours.description}</p>
-                <p>{businessHours.hours}</p>
-                <p className="text-sm italic mt-2">{businessHours.closed}</p>
+                {formatBusinessHours().map((line, index) => (
+                  <p key={index}>{line}</p>
+                ))}
               </div>
             </div>
           </div>

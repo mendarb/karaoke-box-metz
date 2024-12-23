@@ -21,32 +21,32 @@ export const PersonalInfoFields = ({ form }: PersonalInfoFieldsProps) => {
 
   useEffect(() => {
     const loadUserData = async () => {
-      try {
-        if (user) {
-          form.setValue('email', user.email || '');
-          
-          // Récupérer la dernière réservation de l'utilisateur pour pré-remplir les champs
-          const { data: lastBooking } = await supabase
-            .from('bookings')
-            .select('user_name, user_phone')
-            .eq('user_id', user.id)
-            .is('deleted_at', null)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
+      if (user) {
+        form.setValue('email', user.email || '');
+        
+        const { data: lastBooking } = await supabase
+          .from('bookings')
+          .select('user_name, user_phone')
+          .eq('user_id', user.id)
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
 
-          if (lastBooking) {
-            form.setValue('fullName', lastBooking.user_name);
-            form.setValue('phone', lastBooking.user_phone);
-          }
+        if (lastBooking) {
+          form.setValue('fullName', lastBooking.user_name);
+          form.setValue('phone', lastBooking.user_phone);
         }
-      } catch (error) {
-        console.error('Error loading user data:', error);
       }
     };
 
     loadUserData();
   }, [form, user]);
+
+  // Si l'utilisateur est connecté, on ne montre pas les champs
+  if (user) {
+    return null;
+  }
 
   return (
     <div className="space-y-4 animate-fadeIn">

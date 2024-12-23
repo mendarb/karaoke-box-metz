@@ -1,8 +1,8 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useCallback } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { useDisabledDates } from "./hooks/useDisabledDates";
 import { useDateTimeSelection } from "./hooks/useDateTimeSelection";
-import { CalendarSection } from "./CalendarSection";
+import { CalendarSection } from "./calendar/CalendarSection";
 import { TimeSlotsSection } from "./TimeSlotsSection";
 import { useBookingSettings } from "./hooks/useBookingSettings";
 import { convertJsWeekDayToSettings } from "./utils/dateConversion";
@@ -22,18 +22,24 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
 
   const { minDate, maxDate, settings } = useBookingSettings();
 
-  const isDayExcludedCallback = useMemo(() => {
-    return (date: Date) => {
-      if (!settings?.openingHours) return true;
-      const settingsWeekDay = convertJsWeekDayToSettings(date.getDay());
-      const isOpen = settings.openingHours[settingsWeekDay]?.isOpen;
-      console.log('Vérification jour:', {
+  const isDayExcludedCallback = useCallback((date: Date) => {
+    if (!settings?.openingHours) {
+      console.log('❌ Pas de paramètres d\'horaires');
+      return true;
+    }
+    const settingsWeekDay = convertJsWeekDayToSettings(date.getDay());
+    const daySettings = settings.openingHours[settingsWeekDay];
+    const isOpen = daySettings?.isOpen;
+
+    if (!isOpen) {
+      console.log('❌ Jour fermé:', {
         date: date.toISOString(),
-        settingsWeekDay,
-        isOpen
+        jour: settingsWeekDay,
+        horaires: daySettings
       });
-      return !isOpen;
-    };
+    }
+
+    return !isOpen;
   }, [settings]);
 
   const { disabledDates } = useDisabledDates({ 
@@ -42,12 +48,23 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
     isDayExcluded: isDayExcludedCallback 
   });
 
+  const timeSlot = form.watch("timeSlot");
+
   useEffect(() => {
-    const timeSlot = form.watch("timeSlot");
     if (timeSlot && selectedDate) {
+      console.log('🕒 Mise à jour du créneau:', { timeSlot, selectedDate });
       handleTimeSlotChange(timeSlot);
     }
-  }, [form.watch("timeSlot"), selectedDate]);
+  }, [timeSlot, selectedDate, handleTimeSlotChange]);
+
+  console.log('📅 État DateTimeFields:', {
+    selectedDate,
+    minDate,
+    maxDate,
+    disabledDates: disabledDates.length,
+    availableSlots,
+    settings: settings?.openingHours
+  });
 
   return (
     <div className="space-y-8">

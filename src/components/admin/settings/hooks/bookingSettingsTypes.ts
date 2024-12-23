@@ -20,18 +20,21 @@ export interface BookingSettings {
 export const defaultSettings: BookingSettings = {
   isTestMode: false,
   bookingWindow: {
-    startDate: new Date(new Date().setDate(new Date().getDate() + 1)),
-    endDate: new Date(new Date().setDate(new Date().getDate() + 30)),
+    startDate: new Date(),
+    endDate: new Date(),
   },
   openingHours: {
-    1: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
-    2: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
-    3: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
-    4: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
-    5: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
-    6: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
-    0: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
+    1: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] }, // Lundi
+    2: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] }, // Mardi
+    3: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] }, // Mercredi
+    4: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] }, // Jeudi
+    5: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] }, // Vendredi
+    6: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] }, // Samedi
+    7: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] }, // Dimanche
   },
   excludedDays: [],
-  basePrice: { perHour: 30, perPerson: 5 },
+  basePrice: {
+    perHour: 30,
+    perPerson: 5,
+  },
 };

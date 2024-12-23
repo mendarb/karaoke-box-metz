@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CalendarHeader } from "./calendar/CalendarHeader";
 import { CalendarGrid } from "./calendar/CalendarGrid";
-import { addMonths, subMonths } from "date-fns";
+import { addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
 import { useBookingSettings } from "./hooks/useBookingSettings";
 
 export const BookingCalendar = ({
@@ -14,7 +14,17 @@ export const BookingCalendar = ({
   onSelect: (date: Date) => void;
 }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [days, setDays] = useState<Date[]>([]);
   const { minDate, maxDate } = useBookingSettings();
+
+  useEffect(() => {
+    // Générer les jours du mois courant
+    const monthDays = eachDayOfInterval({
+      start: startOfMonth(currentMonth),
+      end: endOfMonth(currentMonth),
+    });
+    setDays(monthDays);
+  }, [currentMonth]);
 
   const handlePreviousMonth = () => {
     setCurrentMonth(subMonths(currentMonth, 1));
@@ -38,6 +48,7 @@ export const BookingCalendar = ({
       />
       <CalendarGrid
         month={currentMonth}
+        days={days}
         selectedDate={selectedDate}
         disabledDates={disabledDates}
         onSelect={onSelect}

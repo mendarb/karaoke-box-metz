@@ -15,7 +15,8 @@ interface CreateCheckoutSessionParams {
   isTestMode?: boolean;
   promoCodeId?: string;
   promoCode?: string;
-  bookingId?: string;  // Added this field
+  bookingId?: string;
+  discountAmount?: number;
 }
 
 export const createCheckoutSession = async ({
@@ -25,6 +26,7 @@ export const createCheckoutSession = async ({
   timeSlot,
   duration,
   groupSize,
+  price,
   finalPrice,
   userName,
   userPhone,
@@ -32,9 +34,15 @@ export const createCheckoutSession = async ({
   promoCodeId,
   promoCode,
   message,
-  bookingId,  // Added this parameter
+  bookingId,
+  discountAmount,
 }: CreateCheckoutSessionParams) => {
-  console.log('Creating checkout session for user:', userId);
+  console.log('Creating checkout session for user:', userId, {
+    originalPrice: price,
+    finalPrice,
+    promoCode,
+    discountAmount
+  });
 
   try {
     const response = await supabase.functions.invoke('create-checkout', {
@@ -45,14 +53,16 @@ export const createCheckoutSession = async ({
         timeSlot,
         duration,
         groupSize,
-        price: finalPrice,
+        price,
+        finalPrice,
         userName,
         userPhone,
         isTestMode,
         promoCodeId,
         promoCode,
         message,
-        bookingId,  // Added this field
+        bookingId,
+        discountAmount,
       },
     });
 

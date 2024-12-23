@@ -46,6 +46,7 @@ export const createBooking = async (data: any, userId: string | null) => {
       status: 'pending',
       payment_status: 'unpaid',
       is_test_booking: false,
+      promo_code_id: data.promoCodeId,
     }])
     .select()
     .single();
@@ -65,7 +66,12 @@ export const createBooking = async (data: any, userId: string | null) => {
 };
 
 export const generatePaymentLink = async (booking: any, data: any) => {
-  console.log('💰 Génération du lien de paiement pour la réservation:', booking.id);
+  console.log('💰 Génération du lien de paiement pour la réservation:', booking.id, {
+    originalPrice: data.price,
+    finalPrice: data.finalPrice,
+    promoCode: data.promoCode,
+    discountAmount: data.discountAmount
+  });
 
   const checkoutUrl = await createCheckoutSession({
     bookingId: booking.id,
@@ -81,6 +87,9 @@ export const generatePaymentLink = async (booking: any, data: any) => {
     userName: data.fullName,
     userPhone: data.phone,
     isTestMode: data.isTestMode || false,
+    promoCodeId: data.promoCodeId,
+    promoCode: data.promoCode,
+    discountAmount: data.discountAmount,
   });
 
   console.log('✅ Lien de paiement généré:', checkoutUrl);

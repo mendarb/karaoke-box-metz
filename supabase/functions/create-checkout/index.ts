@@ -29,7 +29,7 @@ serve(async (req) => {
     console.log('🔧 Processing checkout for user:', requestData.userId);
 
     // Si le prix final est 0 (réservation gratuite), on crée directement la réservation
-    if (requestData.price === 0) {
+    if (requestData.finalPrice === 0) {
       console.log('🆓 Processing free booking');
       
       try {
@@ -97,7 +97,20 @@ serve(async (req) => {
       httpClient: Stripe.createFetchHttpClient(),
     });
 
-    console.log('💳 Creating checkout session...');
+    // Format price description with promo code if applicable
+    let priceDescription = `${requestData.groupSize} personnes - ${requestData.duration}h`;
+    if (requestData.promoCode && requestData.discountAmount) {
+      priceDescription += ` (-${Math.round(requestData.discountAmount)}% avec ${requestData.promoCode})`;
+    }
+
+    console.log('💳 Creating checkout session...', {
+      originalPrice: requestData.price,
+      finalPrice: requestData.finalPrice,
+      promoCode: requestData.promoCode,
+      discountAmount: requestData.discountAmount,
+      description: priceDescription
+    });
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -106,10 +119,10 @@ serve(async (req) => {
             currency: 'eur',
             product_data: {
               name: requestData.isTestMode ? '[TEST MODE] Karaoké BOX - MB EI' : 'Karaoké BOX - MB EI',
-              description: `${requestData.groupSize} personnes - ${requestData.duration}h`,
+              description: priceDescription,
               images: ['https://raw.githubusercontent.com/lovable-karaoke/assets/main/logo.png'],
             },
-            unit_amount: Math.round(requestData.price * 100),
+            unit_amount: Math.round(requestData.finalPrice * 100),
           },
           quantity: 1,
         },
@@ -129,17 +142,25 @@ serve(async (req) => {
         duration: requestData.duration,
         groupSize: requestData.groupSize,
         price: String(requestData.price),
+        finalPrice: String(requestData.finalPrice),
         message: requestData.message || '',
         isTestMode: String(requestData.isTestMode),
         promoCodeId: requestData.promoCodeId || '',
         promoCode: requestData.promoCode || '',
+        discountAmount: String(requestData.discountAmount || 0),
       }
     });
 
     console.log('✅ Checkout session created:', {
       sessionId: session.id,
       mode: requestData.isTestMode ? 'TEST' : 'LIVE',
-      url: session.url
+      url: session.url,
+      priceDetails: {
+        originalPrice: requestData.price,
+        finalPrice: requestData.finalPrice,
+        promoCode: requestData.promoCode,
+        discountAmount: requestData.discountAmount
+      }
     });
 
     return new Response(

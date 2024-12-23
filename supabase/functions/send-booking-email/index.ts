@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { format } from "https://esm.sh/date-fns@2.30.0";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
@@ -8,7 +9,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -29,18 +29,11 @@ serve(async (req) => {
       status: booking.status
     });
 
-    // Format the date and time
     const startHour = parseInt(booking.time_slot);
     const endHour = startHour + parseInt(booking.duration);
     const date = new Date(booking.date);
-    const formattedDate = date.toLocaleDateString('fr-FR', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    const formattedDate = format(date, "EEEE d MMMM yyyy", { locale: fr });
 
-    // Construct the email content
     const emailContent = `
       <!DOCTYPE html>
       <html>
@@ -86,7 +79,6 @@ serve(async (req) => {
 
     console.log('📧 Sending email to:', booking.user_email);
 
-    // Send the email using Resend
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {

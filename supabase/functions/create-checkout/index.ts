@@ -5,7 +5,6 @@ import { format } from "https://esm.sh/date-fns@2.30.0";
 import { corsHeaders } from "../_shared/cors.ts";
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -20,11 +19,9 @@ serve(async (req) => {
       isTestMode: data.isTestMode
     });
 
-    // Format the date to YYYY-MM-DD
     const formattedDate = format(new Date(data.date), 'yyyy-MM-dd');
     console.log('📅 Formatted date:', formattedDate);
 
-    // Initialize Stripe with the appropriate key based on test mode
     const stripeKey = data.isTestMode 
       ? Deno.env.get('STRIPE_TEST_SECRET_KEY')
       : Deno.env.get('STRIPE_SECRET_KEY');
@@ -51,15 +48,16 @@ serve(async (req) => {
               description: `${data.groupSize} personnes - ${data.duration}h`,
               images: ['https://raw.githubusercontent.com/lovable-karaoke/assets/main/logo.png'],
             },
-            unit_amount: Math.round(data.finalPrice * 100), // Convert to cents
+            unit_amount: Math.round(data.finalPrice * 100),
           },
           quantity: 1,
         },
       ],
       mode: 'payment',
       success_url: `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}&booking_id=${data.bookingId}`,
-      cancel_url: `${req.headers.get('origin')}`,
+      cancel_url: `${req.headers.get('origin')}/error?error=payment_cancelled`,
       customer_email: data.userEmail,
+      expires_at: Math.floor(Date.now() / 1000) + (30 * 60), // Expire après 30 minutes
       metadata: {
         bookingId: data.bookingId,
         date: formattedDate,
@@ -70,6 +68,8 @@ serve(async (req) => {
         userName: data.userName,
         userPhone: data.userPhone,
         promoCodeId: data.promoCodeId || '',
+        originalPrice: String(data.price),
+        finalPrice: String(data.finalPrice),
       }
     });
 

@@ -28,7 +28,27 @@ export const handleWebhook = async (event: any, stripe: Stripe | null, supabase:
         bookingId: metadata.bookingId
       });
 
-      // Mark the booking as paid and confirmed
+      // Vérifier si la réservation n'est pas déjà prise
+      const { data: existingBookings, error: checkError } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('date', metadata.date)
+        .eq('time_slot', metadata.timeSlot)
+        .neq('id', metadata.bookingId)
+        .neq('status', 'cancelled')
+        .is('deleted_at', null);
+
+      if (checkError) {
+        console.error('❌ Error checking existing bookings:', checkError);
+        throw checkError;
+      }
+
+      if (existingBookings && existingBookings.length > 0) {
+        console.error('❌ Time slot already taken');
+        throw new Error('Ce créneau est déjà réservé');
+      }
+
+      // Mettre à jour la réservation
       const { data: booking, error: updateError } = await supabase
         .from('bookings')
         .update({
@@ -53,7 +73,7 @@ export const handleWebhook = async (event: any, stripe: Stripe | null, supabase:
         isTestMode: booking.is_test_booking
       });
 
-      // Send confirmation email
+      // Envoyer l'email de confirmation
       try {
         console.log('📧 Sending confirmation email for booking:', booking.id);
         
@@ -72,7 +92,7 @@ export const handleWebhook = async (event: any, stripe: Stripe | null, supabase:
         console.log('✅ Confirmation email sent successfully');
       } catch (emailError) {
         console.error('❌ Error in email sending process:', emailError);
-        // Continue even if email fails
+        // Continue même si l'envoi d'email échoue
       }
 
       return { 

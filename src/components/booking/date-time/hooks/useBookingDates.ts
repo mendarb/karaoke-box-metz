@@ -33,7 +33,8 @@ export const useBookingDates = () => {
     : addDays(today, settings?.bookingWindow?.endDays || 30);
 
   const convertJsWeekDayToSettings = (jsWeekDay: number): number => {
-    // Convertir de JS (0 = dimanche) vers notre format (0 = lundi)
+    // JavaScript: 0 (dimanche) - 6 (samedi)
+    // Notre format: 0 (lundi) - 6 (dimanche)
     return jsWeekDay === 0 ? 6 : jsWeekDay - 1;
   };
 
@@ -50,12 +51,16 @@ export const useBookingDates = () => {
       return true;
     }
 
-    // Convertir le jour de la semaine JS en notre format
     const settingsWeekDay = convertJsWeekDayToSettings(dateToCheck.getDay());
     const daySettings = settings.openingHours?.[settingsWeekDay];
     
     if (!daySettings?.isOpen) {
-      console.log('❌ Jour fermé:', { date, settingsWeekDay });
+      console.log('❌ Jour fermé:', { 
+        date: dateToCheck.toISOString(), 
+        jsWeekDay: dateToCheck.getDay(),
+        settingsWeekDay,
+        isOpen: daySettings?.isOpen 
+      });
       return true;
     }
 
@@ -79,7 +84,12 @@ export const useBookingDates = () => {
     const daySettings = settings.openingHours[settingsWeekDay];
 
     if (!daySettings?.isOpen) {
-      console.log('❌ Jour fermé:', { date, settingsWeekDay });
+      console.log('❌ Jour fermé:', { 
+        date: date.toISOString(), 
+        jsWeekDay: date.getDay(),
+        settingsWeekDay,
+        isOpen: daySettings?.isOpen 
+      });
       return [];
     }
 
@@ -122,7 +132,12 @@ export const useBookingDates = () => {
     const daySettings = settings.openingHours[settingsWeekDay];
     
     if (!daySettings?.isOpen) {
-      console.log('❌ Jour fermé:', { date, settingsWeekDay });
+      console.log('❌ Jour fermé:', { 
+        date: date.toISOString(), 
+        jsWeekDay: date.getDay(),
+        settingsWeekDay,
+        isOpen: daySettings?.isOpen 
+      });
       return 0;
     }
 

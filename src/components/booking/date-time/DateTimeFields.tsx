@@ -4,6 +4,7 @@ import { useDisabledDates } from "./hooks/useDisabledDates";
 import { useDateTimeSelection } from "./hooks/useDateTimeSelection";
 import { CalendarSection } from "./CalendarSection";
 import { TimeSlotsSection } from "./TimeSlotsSection";
+import { useBookingSettings } from "./hooks/useBookingSettings";
 
 interface DateTimeFieldsProps {
   form: UseFormReturn<any>;
@@ -14,14 +15,16 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
   const {
     selectedDate,
     availableSlots,
-    minDate,
-    maxDate,
-    isDayExcluded,
     handleDateSelect,
     handleTimeSlotChange
   } = useDateTimeSelection(form, onAvailabilityChange);
 
-  const { disabledDates } = useDisabledDates({ minDate, maxDate, isDayExcluded });
+  const { minDate, maxDate, settings } = useBookingSettings();
+  const { disabledDates } = useDisabledDates({ minDate, maxDate, isDayExcluded: (date) => {
+    if (!settings?.openingHours) return true;
+    const dayOfWeek = date.getDay().toString();
+    return !settings.openingHours[dayOfWeek]?.isOpen;
+  }});
 
   useEffect(() => {
     const timeSlot = form.watch("timeSlot");
@@ -29,6 +32,13 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
       handleTimeSlotChange(timeSlot);
     }
   }, [form.watch("timeSlot")]);
+
+  console.log('DateTimeFields render:', {
+    selectedDate,
+    minDate,
+    maxDate,
+    disabledDates: disabledDates.length
+  });
 
   return (
     <div className="space-y-8">

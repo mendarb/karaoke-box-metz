@@ -22,8 +22,17 @@ export const CalendarGrid = ({
   const weekDays = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
   const isDateDisabled = (date: Date) => {
-    return isBefore(date, minDate) || 
-           isAfter(date, maxDate) || 
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const minStartOfDay = new Date(minDate);
+    minStartOfDay.setHours(0, 0, 0, 0);
+    
+    const maxStartOfDay = new Date(maxDate);
+    maxStartOfDay.setHours(0, 0, 0, 0);
+
+    return isBefore(startOfDay, minStartOfDay) || 
+           isAfter(startOfDay, maxStartOfDay) || 
            disabledDates.some(disabledDate => isSameDay(date, disabledDate));
   };
 

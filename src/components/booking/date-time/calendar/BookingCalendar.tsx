@@ -14,6 +14,7 @@ interface BookingCalendarProps {
 }
 
 export const BookingCalendar = ({ 
+  form,
   selectedDate, 
   disabledDates, 
   onDateSelect,

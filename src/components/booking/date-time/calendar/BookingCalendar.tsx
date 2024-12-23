@@ -19,18 +19,19 @@ export const BookingCalendar = ({
   maxDate 
 }: BookingCalendarProps) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const today = new Date();
 
   const days = eachDayOfInterval({
     start: startOfMonth(currentMonth),
     end: endOfMonth(currentMonth),
   });
 
-  const handlePreviousMonth = () => {
+  const handlePreviousMonth = (e: React.MouseEvent) => {
+    e.preventDefault(); // Empêcher la propagation du formulaire
     setCurrentMonth(prev => addMonths(prev, -1));
   };
 
-  const handleNextMonth = () => {
+  const handleNextMonth = (e: React.MouseEvent) => {
+    e.preventDefault(); // Empêcher la propagation du formulaire
     setCurrentMonth(prev => addMonths(prev, 1));
   };
 

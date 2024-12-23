@@ -20,6 +20,7 @@ export const CalendarHeader = ({
   return (
     <div className="flex items-center justify-between px-2 py-4">
       <Button
+        type="button"
         variant="ghost"
         onClick={onPreviousMonth}
         disabled={isPreviousMonthDisabled}
@@ -34,8 +35,12 @@ export const CalendarHeader = ({
         {format(currentMonth, 'MMMM yyyy', { locale: fr })}
       </div>
       <Button
+        type="button"
         variant="ghost"
-        onClick={onNextMonth}
+        onClick={(e) => {
+          e.preventDefault(); // Empêcher la propagation du formulaire
+          onNextMonth();
+        }}
         className="h-9 w-9 p-0"
       >
         <ChevronRight className="h-5 w-5" />

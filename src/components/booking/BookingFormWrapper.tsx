@@ -41,25 +41,29 @@ export const BookingFormWrapper = () => {
   const { checkOverlap } = useBookingOverlap();
 
   const validateStep = (step: number) => {
-    const requiredFields = {
+    const requiredFields: { [key: number]: string[] } = {
       1: ['email', 'fullName', 'phone'],
       2: ['date', 'timeSlot'],
       3: ['groupSize', 'duration'],
       4: []
-    }[step];
+    };
 
-    if (!requiredFields) return true;
+    const fields = requiredFields[step];
+    if (!fields) return true;
 
-    const isValid = requiredFields.every(field => {
+    let isValid = true;
+    const errors: string[] = [];
+
+    fields.forEach(field => {
       const value = form.getValues(field);
       if (!value) {
         form.setError(field, {
           type: 'required',
           message: 'Ce champ est requis'
         });
-        return false;
+        isValid = false;
+        errors.push(field);
       }
-      return true;
     });
 
     if (!isValid) {

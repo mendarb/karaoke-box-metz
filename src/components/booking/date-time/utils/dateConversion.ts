@@ -19,7 +19,6 @@ export const convertJsWeekDayToSettings = (jsWeekDay: number): number => {
   // JavaScript: 0 (dimanche) - 6 (samedi)
   // Notre format: 1 (lundi) - 7 (dimanche)
   const settingsWeekDay = jsWeekDay === 0 ? 7 : jsWeekDay;
-  console.log('📅 Conversion jour:', { jsWeekDay, settingsWeekDay });
   return settingsWeekDay;
 };
 
@@ -42,18 +41,10 @@ export const isDayExcluded = (
     return true;
   }
 
-  const jsWeekDay = dateToCheck.getDay();
-  const settingsWeekDay = convertJsWeekDayToSettings(jsWeekDay);
-  
+  const settingsWeekDay = convertJsWeekDayToSettings(dateToCheck.getDay());
   const daySettings = settings.openingHours?.[settingsWeekDay];
   
   if (!daySettings?.isOpen) {
-    console.log('❌ Jour fermé:', { 
-      date: dateToCheck.toISOString(), 
-      jsWeekDay,
-      settingsWeekDay,
-      isOpen: daySettings?.isOpen
-    });
     return true;
   }
 

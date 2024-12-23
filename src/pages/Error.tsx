@@ -13,7 +13,7 @@ export const Error = () => {
     if (error) {
       toast({
         title: "Erreur",
-        description: error,
+        description: error.replace(/_/g, ' '),
         variant: "destructive",
       });
     }
@@ -27,13 +27,13 @@ export const Error = () => {
             Une erreur est survenue
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            {error || "Votre paiement n'a pas pu être traité"}
+            {error?.replace(/_/g, ' ') || "Votre paiement n'a pas pu être traité"}
           </p>
         </div>
         
         <div className="space-y-4">
           <Button
-            onClick={() => navigate("/booking")}
+            onClick={() => navigate("/")}
             className="w-full"
           >
             Réessayer la réservation

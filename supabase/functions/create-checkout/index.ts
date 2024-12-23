@@ -119,6 +119,42 @@ serve(async (req) => {
       description: priceDescription
     });
 
+    // Créer d'abord la réservation
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Missing Supabase credentials');
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const { data: booking, error: bookingError } = await supabase
+      .from('bookings')
+      .insert([{
+        user_id: requestData.userId,
+        user_email: requestData.userEmail,
+        user_name: requestData.userName,
+        user_phone: requestData.userPhone,
+        date: requestData.date,
+        time_slot: requestData.timeSlot,
+        duration: requestData.duration,
+        group_size: requestData.groupSize,
+        price: requestData.price,
+        message: requestData.message,
+        status: 'pending',
+        payment_status: 'unpaid',
+        is_test_booking: requestData.isTestMode,
+        promo_code_id: requestData.promoCodeId,
+      }])
+      .select()
+      .single();
+
+    if (bookingError) {
+      console.error('❌ Error creating booking:', bookingError);
+      throw bookingError;
+    }
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -141,6 +177,7 @@ serve(async (req) => {
       customer_email: requestData.userEmail,
       expires_at: Math.floor(Date.now() / 1000) + (30 * 60), // Expire après 30 minutes
       metadata: {
+        bookingId: booking.id,
         userId: requestData.userId,
         userEmail: requestData.userEmail,
         userName: requestData.userName,

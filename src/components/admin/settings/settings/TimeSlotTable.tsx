@@ -6,13 +6,13 @@ import { UseFormReturn } from "react-hook-form";
 import { FormField, FormItem } from "@/components/ui/form";
 
 const DAYS = [
-  { id: 1, name: "Lundi" },
-  { id: 2, name: "Mardi" },
-  { id: 3, name: "Mercredi" },
-  { id: 4, name: "Jeudi" },
-  { id: 5, name: "Vendredi" },
-  { id: 6, name: "Samedi" },
-  { id: 0, name: "Dimanche" },
+  { id: 0, name: "Lundi" },
+  { id: 1, name: "Mardi" },
+  { id: 2, name: "Mercredi" },
+  { id: 3, name: "Jeudi" },
+  { id: 4, name: "Vendredi" },
+  { id: 5, name: "Samedi" },
+  { id: 6, name: "Dimanche" },
 ];
 
 const DEFAULT_SLOTS = ["17:00", "18:00", "19:00", "20:00", "21:00"];

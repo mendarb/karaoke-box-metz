@@ -32,6 +32,11 @@ export const useBookingDates = () => {
     ? addDays(today, 365)
     : addDays(today, settings?.bookingWindow?.endDays || 30);
 
+  const convertJsWeekDayToSettings = (jsWeekDay: number): number => {
+    // Convertir de JS (0 = dimanche) vers notre format (0 = lundi)
+    return jsWeekDay === 0 ? 6 : jsWeekDay - 1;
+  };
+
   const isDayExcluded = (date: Date) => {
     if (!settings) return true;
     
@@ -45,13 +50,12 @@ export const useBookingDates = () => {
       return true;
     }
 
-    // JavaScript getDay() returns 0-6 (Sunday-Saturday)
-    // Dans les paramètres, on utilise 0-6 où 0 = dimanche
-    const dayOfWeek = dateToCheck.getDay();
-    const daySettings = settings.openingHours?.[dayOfWeek];
+    // Convertir le jour de la semaine JS en notre format
+    const settingsWeekDay = convertJsWeekDayToSettings(dateToCheck.getDay());
+    const daySettings = settings.openingHours?.[settingsWeekDay];
     
     if (!daySettings?.isOpen) {
-      console.log('❌ Jour fermé:', { date, dayOfWeek });
+      console.log('❌ Jour fermé:', { date, settingsWeekDay });
       return true;
     }
 
@@ -71,11 +75,11 @@ export const useBookingDates = () => {
       return ['14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00'];
     }
 
-    const dayOfWeek = date.getDay();
-    const daySettings = settings.openingHours[dayOfWeek];
+    const settingsWeekDay = convertJsWeekDayToSettings(date.getDay());
+    const daySettings = settings.openingHours[settingsWeekDay];
 
     if (!daySettings?.isOpen) {
-      console.log('❌ Jour fermé:', { date, dayOfWeek });
+      console.log('❌ Jour fermé:', { date, settingsWeekDay });
       return [];
     }
 
@@ -114,11 +118,11 @@ export const useBookingDates = () => {
       return 4;
     }
 
-    const dayOfWeek = date.getDay();
-    const daySettings = settings.openingHours[dayOfWeek];
+    const settingsWeekDay = convertJsWeekDayToSettings(date.getDay());
+    const daySettings = settings.openingHours[settingsWeekDay];
     
     if (!daySettings?.isOpen) {
-      console.log('❌ Jour fermé:', { date, dayOfWeek });
+      console.log('❌ Jour fermé:', { date, settingsWeekDay });
       return 0;
     }
 

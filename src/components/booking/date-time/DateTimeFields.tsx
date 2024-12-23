@@ -12,7 +12,6 @@ interface DateTimeFieldsProps {
 
 export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
-  const [bookedSlots, setBookedSlots] = useState<{ [key: string]: number }>({});
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   
   const { minDate, maxDate, isDayExcluded, getAvailableSlots, getAvailableHoursForSlot } = useBookingDates();
@@ -62,7 +61,7 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
         <TimeSlots
           form={form}
           availableSlots={availableSlots}
-          bookedSlots={bookedSlots}
+          isLoading={false}
         />
       )}
     </div>

@@ -1,7 +1,7 @@
 import { supabase } from "@/lib/supabase";
 
 interface CreateCheckoutSessionParams {
-  bookingId: string;
+  userId: string;
   userEmail: string;
   date: string;
   timeSlot: string;
@@ -18,7 +18,7 @@ interface CreateCheckoutSessionParams {
 }
 
 export const createCheckoutSession = async ({
-  bookingId,
+  userId,
   userEmail,
   date,
   timeSlot,
@@ -30,13 +30,14 @@ export const createCheckoutSession = async ({
   isTestMode = false,
   promoCodeId,
   promoCode,
+  message,
 }: CreateCheckoutSessionParams) => {
-  console.log('Creating checkout session for booking:', bookingId);
+  console.log('Creating checkout session for user:', userId);
 
   try {
     const response = await supabase.functions.invoke('create-checkout', {
       body: {
-        bookingId,
+        userId,
         userEmail,
         date,
         timeSlot,
@@ -48,6 +49,7 @@ export const createCheckoutSession = async ({
         isTestMode,
         promoCodeId,
         promoCode,
+        message,
       },
     });
 

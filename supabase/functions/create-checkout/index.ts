@@ -21,49 +21,59 @@ serve(async (req) => {
     const requestData = await req.json();
     console.log('📦 Request data:', requestData);
 
-    if (!requestData || !requestData.bookingId) {
-      console.error('❌ Invalid request data:', requestData);
-      throw new Error('Invalid request data: missing bookingId');
+    if (!requestData) {
+      console.error('❌ No data provided in request');
+      throw new Error('No data provided');
     }
 
-    console.log('🔧 Processing checkout for booking:', requestData.bookingId);
+    console.log('🔧 Processing checkout for user:', requestData.userId);
 
-    // Si le prix final est 0 (réservation gratuite), on traite directement comme un succès
-    if (requestData.finalPrice === 0) {
+    // Si le prix final est 0 (réservation gratuite), on crée directement la réservation
+    if (requestData.price === 0) {
       console.log('🆓 Processing free booking');
       
       try {
-        const response = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/stripe-webhook`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
-            'stripe-signature': 'free-booking'
-          },
-          body: JSON.stringify({
-            type: 'checkout.session.completed',
-            data: {
-              object: {
-                metadata: {
-                  bookingId: requestData.bookingId,
-                  isTestMode: String(requestData.isTestMode)
-                },
-                payment_status: 'paid',
-                customer_email: requestData.userEmail
-              }
-            }
-          })
-        });
-
-        if (!response.ok) {
-          console.error('❌ Failed to process free booking:', await response.text());
-          throw new Error('Failed to process free booking');
+        const supabaseUrl = Deno.env.get('SUPABASE_URL');
+        const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+        
+        if (!supabaseUrl || !supabaseKey) {
+          throw new Error('Missing Supabase credentials');
         }
 
-        console.log('✅ Free booking processed successfully');
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        // Créer la réservation pour une réservation gratuite
+        const { data: booking, error: bookingError } = await supabase
+          .from('bookings')
+          .insert([{
+            user_id: requestData.userId,
+            user_email: requestData.userEmail,
+            user_name: requestData.userName,
+            user_phone: requestData.userPhone,
+            date: requestData.date,
+            time_slot: requestData.timeSlot,
+            duration: requestData.duration,
+            group_size: requestData.groupSize,
+            price: requestData.price,
+            message: requestData.message,
+            status: 'confirmed',
+            payment_status: 'paid',
+            is_test_booking: requestData.isTestMode,
+            promo_code_id: requestData.promoCodeId,
+          }])
+          .select()
+          .single();
+
+        if (bookingError) {
+          console.error('❌ Error creating free booking:', bookingError);
+          throw bookingError;
+        }
+
+        console.log('✅ Free booking created:', booking);
+
         return new Response(
           JSON.stringify({ 
-            url: `${req.headers.get('origin')}/success?booking_id=${requestData.bookingId}` 
+            url: `${req.headers.get('origin')}/success?booking_id=${booking.id}` 
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
@@ -72,9 +82,6 @@ serve(async (req) => {
         throw error;
       }
     }
-
-    const formattedDate = requestData.date;
-    console.log('📅 Formatted date:', formattedDate);
 
     const stripeKey = requestData.isTestMode 
       ? Deno.env.get('STRIPE_TEST_SECRET_KEY')
@@ -102,28 +109,30 @@ serve(async (req) => {
               description: `${requestData.groupSize} personnes - ${requestData.duration}h`,
               images: ['https://raw.githubusercontent.com/lovable-karaoke/assets/main/logo.png'],
             },
-            unit_amount: Math.round(requestData.finalPrice * 100),
+            unit_amount: Math.round(requestData.price * 100),
           },
           quantity: 1,
         },
       ],
       mode: 'payment',
-      success_url: `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}&booking_id=${requestData.bookingId}`,
+      success_url: `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get('origin')}/error?error=payment_cancelled`,
       customer_email: requestData.userEmail,
       expires_at: Math.floor(Date.now() / 1000) + (30 * 60), // Expire après 30 minutes
       metadata: {
-        bookingId: requestData.bookingId,
-        date: formattedDate,
+        userId: requestData.userId,
+        userEmail: requestData.userEmail,
+        userName: requestData.userName,
+        userPhone: requestData.userPhone,
+        date: requestData.date,
         timeSlot: requestData.timeSlot,
         duration: requestData.duration,
         groupSize: requestData.groupSize,
+        price: String(requestData.price),
+        message: requestData.message || '',
         isTestMode: String(requestData.isTestMode),
-        userName: requestData.userName,
-        userPhone: requestData.userPhone,
         promoCodeId: requestData.promoCodeId || '',
-        originalPrice: String(requestData.price),
-        finalPrice: String(requestData.finalPrice),
+        promoCode: requestData.promoCode || '',
       }
     });
 

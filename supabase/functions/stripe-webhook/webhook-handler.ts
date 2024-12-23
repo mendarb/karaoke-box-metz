@@ -16,70 +16,35 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
         const session = event.data.object;
         console.log('Checkout session completed:', session);
 
-        // Update booking status
-        const bookingId = session.metadata.bookingId;
-        if (!bookingId) {
-          throw new Error('No booking ID found in session metadata');
-        }
-
-        // Check if booking exists and isn't already confirmed
+        // Create booking
         const { data: booking, error: bookingError } = await supabase
           .from('bookings')
-          .select('*')
-          .eq('id', bookingId)
-          .single();
-
-        if (bookingError || !booking) {
-          console.error('Error fetching booking:', bookingError);
-          throw new Error('Booking not found');
-        }
-
-        if (booking.status === 'confirmed') {
-          console.log('Booking already confirmed, skipping');
-          return;
-        }
-
-        // Check for overlapping bookings
-        const { data: overlappingBookings, error: overlapError } = await supabase
-          .from('bookings')
-          .select('*')
-          .eq('date', booking.date)
-          .eq('time_slot', booking.time_slot)
-          .neq('id', bookingId)
-          .eq('status', 'confirmed')
-          .is('deleted_at', null);
-
-        if (overlapError) {
-          console.error('Error checking overlapping bookings:', overlapError);
-          throw new Error('Error checking booking availability');
-        }
-
-        if (overlappingBookings && overlappingBookings.length > 0) {
-          console.error('Overlapping booking found:', overlappingBookings);
-          if (stripe && session.payment_intent) {
-            const refund = await stripe.refunds.create({
-              payment_intent: session.payment_intent as string,
-            });
-            console.log('Payment refunded:', refund);
-          }
-          throw new Error('Time slot no longer available');
-        }
-
-        // Update booking status
-        const { error: updateError } = await supabase
-          .from('bookings')
-          .update({
+          .insert([{
+            user_id: session.metadata.userId,
+            user_email: session.metadata.userEmail,
+            user_name: session.metadata.userName,
+            user_phone: session.metadata.userPhone,
+            date: session.metadata.date,
+            time_slot: session.metadata.timeSlot,
+            duration: session.metadata.duration,
+            group_size: session.metadata.groupSize,
+            price: parseFloat(session.metadata.price),
+            message: session.metadata.message,
             status: 'confirmed',
             payment_status: 'paid',
+            is_test_booking: session.metadata.isTestMode === 'true',
             payment_intent_id: session.payment_intent,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', bookingId);
+            promo_code_id: session.metadata.promoCodeId || null,
+          }])
+          .select()
+          .single();
 
-        if (updateError) {
-          console.error('Error updating booking:', updateError);
-          throw updateError;
+        if (bookingError) {
+          console.error('Error creating booking:', bookingError);
+          throw bookingError;
         }
+
+        console.log('✅ Booking created:', booking);
 
         // Send confirmation email
         try {
@@ -108,25 +73,7 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
       }
 
       case 'checkout.session.expired': {
-        const session = event.data.object;
-        const bookingId = session.metadata.bookingId;
-        
-        if (bookingId) {
-          const { error: updateError } = await supabase
-            .from('bookings')
-            .update({
-              status: 'cancelled',
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', bookingId);
-
-          if (updateError) {
-            console.error('Error updating expired booking:', updateError);
-            throw updateError;
-          }
-          
-          console.log('Booking cancelled due to expired session:', bookingId);
-        }
+        console.log('Checkout session expired:', event.data.object);
         break;
       }
 

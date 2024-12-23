@@ -1,7 +1,6 @@
 import { UseFormReturn } from "react-hook-form";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
-import { createBooking } from "@/services/bookingService";
 import { createCheckoutSession } from "@/services/checkoutService";
 
 export const useBookingSubmit = (
@@ -33,27 +32,9 @@ export const useBookingSubmit = (
         return;
       }
 
-      // Create booking
-      const booking = await createBooking({
-        userId: session.user.id,
-        date: data.date,
-        timeSlot: data.timeSlot,
-        duration,
-        groupSize,
-        price: calculatedPrice,
-        message: data.message,
-        email: data.email,
-        fullName: data.fullName,
-        phone: data.phone,
-        isTestMode: form.getValues('isTestMode') || false,
-        promoCodeId: form.getValues('promoCodeId'),
-      });
-
-      console.log('✅ Booking created:', booking);
-
       // Generate checkout URL with explicit test mode parameter
       const checkoutUrl = await createCheckoutSession({
-        bookingId: booking.id,
+        userId: session.user.id,
         userEmail: data.email,
         date: data.date,
         timeSlot: data.timeSlot,

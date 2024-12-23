@@ -4,15 +4,17 @@ import { CalendarGrid } from "./calendar/CalendarGrid";
 import { addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
 import { useBookingSettings } from "./hooks/useBookingSettings";
 
+interface BookingCalendarProps {
+  selectedDate?: Date;
+  disabledDates: Date[];
+  onSelect: (date: Date) => void;
+}
+
 export const BookingCalendar = ({
   selectedDate,
   disabledDates,
   onSelect,
-}: {
-  selectedDate: Date;
-  disabledDates: Date[];
-  onSelect: (date: Date) => void;
-}) => {
+}: BookingCalendarProps) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [days, setDays] = useState<Date[]>([]);
   const { minDate, maxDate } = useBookingSettings();

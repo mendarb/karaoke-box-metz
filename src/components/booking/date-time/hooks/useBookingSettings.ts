@@ -5,6 +5,10 @@ import { toast } from "@/components/ui/use-toast";
 
 const defaultSettings = {
   isTestMode: false,
+  bookingWindow: {
+    startDays: 1,
+    endDays: 30
+  },
   openingHours: {
     1: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
     2: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
@@ -14,11 +18,7 @@ const defaultSettings = {
     6: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
     0: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] },
   },
-  excludedDays: [],
-  bookingWindow: {
-    startDays: 1,
-    endDays: 30
-  }
+  excludedDays: []
 };
 
 export const useBookingSettings = () => {
@@ -34,6 +34,11 @@ export const useBookingSettings = () => {
 
       if (error) {
         console.error('❌ Erreur lors du chargement des paramètres:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les paramètres de réservation",
+          variant: "destructive",
+        });
         return defaultSettings;
       }
 
@@ -51,6 +56,7 @@ export const useBookingSettings = () => {
 
   const today = startOfDay(new Date());
   
+  // Utiliser les paramètres de la fenêtre de réservation depuis les settings
   const minDate = settings?.isTestMode 
     ? today
     : addDays(today, settings?.bookingWindow?.startDays || defaultSettings.bookingWindow.startDays);

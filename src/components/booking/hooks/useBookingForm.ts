@@ -16,7 +16,6 @@ export const useBookingForm = () => {
   const [availableHours, setAvailableHours] = useState(4);
   const form = useForm();
 
-  // Pre-fill user data if logged in
   const loadUserData = async () => {
     if (user) {
       form.setValue('email', user.email || '');
@@ -37,7 +36,6 @@ export const useBookingForm = () => {
     }
   };
 
-  // Load user data on mount
   useEffect(() => {
     loadUserData();
   }, [user]);

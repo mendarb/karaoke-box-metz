@@ -4,10 +4,12 @@ import { BookingSuccessDetails } from "@/components/booking/BookingSuccessDetail
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, AlertTriangle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Success = () => {
   const { bookingDetails, loading } = useBookingSuccess();
   const [showPaymentWarning, setShowPaymentWarning] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (bookingDetails && bookingDetails.payment_status === 'unpaid') {
@@ -35,7 +37,7 @@ const Success = () => {
             Nous n'avons pas pu trouver les détails de votre réservation.
           </p>
           <Button
-            onClick={() => window.location.href = '/'}
+            onClick={() => navigate('/')}
             className="bg-violet-600 hover:bg-violet-700"
           >
             Retour à l'accueil
@@ -70,7 +72,7 @@ const Success = () => {
 
         <div className="mt-6 text-center">
           <Button
-            onClick={() => window.location.href = '/'}
+            onClick={() => navigate('/')}
             className="bg-violet-600 hover:bg-violet-700"
           >
             Retour à l'accueil

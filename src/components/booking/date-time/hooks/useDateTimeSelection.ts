@@ -28,7 +28,7 @@ export const useDateTimeSelection = (
         return;
       }
 
-      const slots = await getAvailableSlots(date, settings);
+      const slots = await getAvailableSlots(date);
       console.log('📅 Créneaux disponibles:', slots);
       
       if (slots.length === 0) {

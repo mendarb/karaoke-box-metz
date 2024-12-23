@@ -11,6 +11,11 @@ import { Calendar, Music2, Users } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 
+interface BusinessHour {
+  day: string;
+  hours: string;
+}
+
 const Index = () => {
   const isMobile = useIsMobile();
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -46,7 +51,7 @@ const Index = () => {
 
   const businessHours = siteSettings?.business_hours || {};
   
-  const formatBusinessHours = () => {
+  const formatBusinessHours = (): BusinessHour[][] => {
     const days = {
       monday: "Lundi",
       tuesday: "Mardi",
@@ -58,11 +63,11 @@ const Index = () => {
     };
 
     return Object.entries(businessHours)
-      .map(([day, settings]: [string, any]) => ({
+      .map(([day, settings]: [string, any]): BusinessHour => ({
         day: days[day as keyof typeof days],
         hours: settings?.isOpen ? settings.hours : 'Fermé'
       }))
-      .reduce((acc: string[][], curr, idx) => {
+      .reduce((acc: BusinessHour[][], curr, idx) => {
         if (idx % 2 === 0) {
           acc.push([curr]);
         } else {

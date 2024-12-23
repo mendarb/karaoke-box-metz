@@ -5,40 +5,39 @@ import { fr } from "date-fns/locale";
 
 interface CalendarHeaderProps {
   currentMonth: Date;
-  onMonthChange: (month: Date) => void;
+  onPreviousMonth: () => void;
+  onNextMonth: () => void;
+  isPreviousMonthDisabled: boolean;
 }
 
-export const CalendarHeader = ({ currentMonth, onMonthChange }: CalendarHeaderProps) => {
-  const previousMonth = () => {
-    const firstDayNextMonth = new Date(currentMonth);
-    firstDayNextMonth.setMonth(firstDayNextMonth.getMonth() - 1);
-    onMonthChange(firstDayNextMonth);
-  };
-
-  const nextMonth = () => {
-    const firstDayNextMonth = new Date(currentMonth);
-    firstDayNextMonth.setMonth(firstDayNextMonth.getMonth() + 1);
-    onMonthChange(firstDayNextMonth);
-  };
-
+export const CalendarHeader = ({
+  currentMonth,
+  onPreviousMonth,
+  onNextMonth,
+  isPreviousMonthDisabled,
+}: CalendarHeaderProps) => {
   return (
-    <div className="flex justify-center pt-1 relative items-center gap-1">
+    <div className="flex items-center justify-between px-2 py-4">
       <Button
         variant="ghost"
-        className="h-9 w-9 p-0 absolute left-1 hover:bg-violet-50 text-gray-500 hover:text-gray-900"
-        onClick={previousMonth}
+        onClick={onPreviousMonth}
+        disabled={isPreviousMonthDisabled}
+        className={cn(
+          "h-9 w-9 p-0",
+          isPreviousMonthDisabled && "opacity-50 cursor-not-allowed"
+        )}
       >
-        <ChevronLeft className="h-4 w-4" />
+        <ChevronLeft className="h-5 w-5" />
       </Button>
-      <div className="text-lg font-medium text-gray-900">
+      <div className="text-lg font-semibold text-gray-900">
         {format(currentMonth, 'MMMM yyyy', { locale: fr })}
       </div>
       <Button
         variant="ghost"
-        className="h-9 w-9 p-0 absolute right-1 hover:bg-violet-50 text-gray-500 hover:text-gray-900"
-        onClick={nextMonth}
+        onClick={onNextMonth}
+        className="h-9 w-9 p-0"
       >
-        <ChevronRight className="h-4 w-4" />
+        <ChevronRight className="h-5 w-5" />
       </Button>
     </div>
   );

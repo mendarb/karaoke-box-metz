@@ -1,37 +1,35 @@
+import { format, isSameDay, isToday } from "date-fns";
 import { cn } from "@/lib/utils";
-import { ButtonProps } from "@/components/ui/button";
 
-interface CalendarDayProps extends ButtonProps {
+interface CalendarDayProps {
   day: Date;
-  isSelected: boolean;
-  isToday: boolean;
-  isDisabled: boolean;
-  isOutside: boolean;
+  selectedDate: Date | undefined;
+  disabledDates: Date[];
+  onSelect: (date: Date) => void;
 }
 
-export const CalendarDay = ({
-  day,
-  isSelected,
-  isToday,
-  isDisabled,
-  isOutside,
-  ...props
-}: CalendarDayProps) => {
+export const CalendarDay = ({ day, selectedDate, disabledDates, onSelect }: CalendarDayProps) => {
+  const isSelected = selectedDate ? isSameDay(day, selectedDate) : false;
+  const isDisabled = disabledDates.some(disabledDate => isSameDay(day, disabledDate));
+  const dayToday = isToday(day);
+
   return (
     <button
       type="button"
-      {...props}
+      onClick={() => !isDisabled && onSelect(day)}
+      disabled={isDisabled}
       className={cn(
-        "h-10 w-10 p-0 font-normal rounded-full transition-colors relative",
-        "hover:bg-violet-100 focus:bg-violet-100 focus:outline-none",
-        isSelected && "bg-violet-600 text-white hover:bg-violet-700 hover:text-white focus:bg-violet-700 focus:text-white font-medium",
-        isToday && !isSelected && "bg-violet-100 text-violet-900",
-        isDisabled && "text-gray-400 opacity-50 hover:bg-transparent cursor-not-allowed",
-        isOutside && "text-gray-400 opacity-50",
-        props.className
+        "h-10 w-full rounded-lg text-sm font-medium transition-colors",
+        "hover:bg-violet-100 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2",
+        {
+          "bg-violet-600 text-white hover:bg-violet-700": isSelected,
+          "text-gray-900": !isSelected && !isDisabled,
+          "text-gray-400 cursor-not-allowed hover:bg-transparent": isDisabled,
+          "ring-2 ring-violet-200": dayToday && !isSelected,
+        }
       )}
     >
-      {day.getDate()}
+      {format(day, "d")}
     </button>
   );
 };

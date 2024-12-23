@@ -5,19 +5,20 @@ import { TimeSlots } from "./TimeSlots";
 interface TimeSlotsSectionProps {
   form: UseFormReturn<any>;
   availableSlots: string[];
-  isLoading?: boolean;
+  isLoading: boolean;
 }
 
 export const TimeSlotsSection = ({
   form,
   availableSlots,
-  isLoading = false
+  isLoading
 }: TimeSlotsSectionProps) => {
   return (
-    <Card className="border-none shadow-none bg-transparent">
-      <CardContent className="p-0">
+    <Card>
+      <CardContent className="p-4">
         <TimeSlots
-          form={form}
+          value={form.watch("timeSlot")}
+          onChange={(value) => form.setValue("timeSlot", value)}
           availableSlots={availableSlots}
           isLoading={isLoading}
         />

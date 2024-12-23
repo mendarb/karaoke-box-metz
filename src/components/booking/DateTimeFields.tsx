@@ -20,9 +20,9 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
   } = useDateTimeSelection(form, onAvailabilityChange);
 
   const { minDate, maxDate, settings } = useBookingSettings();
-  const { disabledDates } = useDisabledDates({ 
-    minDate, 
-    maxDate, 
+  const { disabledDates } = useDisabledDates({
+    minDate,
+    maxDate,
     isDayExcluded: (date) => {
       if (!settings?.openingHours) return true;
       const dayOfWeek = date.getDay();

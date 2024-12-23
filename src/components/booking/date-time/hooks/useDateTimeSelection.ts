@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { useBookingDates } from "./useBookingDates";
-import { toast } from "@/components/ui/use-toast";
 
 export const useDateTimeSelection = (
   form: UseFormReturn<any>,
@@ -9,7 +8,7 @@ export const useDateTimeSelection = (
 ) => {
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
-  const { settings, getAvailableSlots, getAvailableHoursForSlot } = useBookingDates();
+  const { getAvailableSlots, getAvailableHoursForSlot } = useBookingDates();
 
   const handleDateSelect = async (date: Date) => {
     try {
@@ -18,35 +17,14 @@ export const useDateTimeSelection = (
       form.setValue("date", date);
       form.setValue("timeSlot", "");
       
-      // Vérifier si c'est un lundi ou mardi
-      const dayOfWeek = date.getDay();
-      if (dayOfWeek === 1 || dayOfWeek === 2) {
-        console.log('❌ Jour fermé (lundi ou mardi)');
-        setAvailableSlots([]);
-        onAvailabilityChange(date, 0);
-        return;
-      }
-
       const slots = await getAvailableSlots(date);
       console.log('📅 Créneaux disponibles:', slots);
-      
-      if (slots.length === 0) {
-        toast({
-          title: "Aucun créneau disponible",
-          description: "Il n'y a pas de créneaux disponibles pour cette date",
-          variant: "destructive",
-        });
-      }
       
       setAvailableSlots(slots);
       onAvailabilityChange(date, 0);
     } catch (error) {
       console.error('❌ Erreur récupération créneaux:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de récupérer les créneaux disponibles",
-        variant: "destructive",
-      });
+      setAvailableSlots([]);
     }
   };
 
@@ -62,11 +40,6 @@ export const useDateTimeSelection = (
       onAvailabilityChange(selectedDate, availableHours);
     } catch (error) {
       console.error('❌ Erreur calcul heures disponibles:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de calculer les heures disponibles",
-        variant: "destructive",
-      });
       onAvailabilityChange(selectedDate, 0);
     }
   };

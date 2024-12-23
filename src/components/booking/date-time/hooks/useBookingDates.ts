@@ -1,6 +1,7 @@
 import { useBookingSettings } from "./useBookingSettings";
 import { useAvailableSlots } from "./useAvailableSlots";
 import { startOfDay, isBefore, isAfter } from "date-fns";
+import { supabase } from "@/lib/supabase";
 
 export const useBookingDates = () => {
   const { settings, minDate, maxDate, isTestMode } = useBookingSettings();
@@ -32,13 +33,6 @@ export const useBookingDates = () => {
       return true;
     }
 
-    // Vérifier les paramètres d'ouverture du jour
-    const daySettings = settings.openingHours?.[dayOfWeek.toString()];
-    if (!daySettings?.isOpen) {
-      console.log('❌ Jour fermé selon paramètres:', dayOfWeek);
-      return true;
-    }
-
     // Vérifier si la date est spécifiquement exclue
     if (settings.excludedDays?.includes(dateToCheck.getTime())) {
       console.log('❌ Date exclue spécifiquement:', dateToCheck);
@@ -56,8 +50,15 @@ export const useBookingDates = () => {
       return 4;
     }
 
-    const daySettings = settings.openingHours[date.getDay().toString()];
-    if (!daySettings?.isOpen || !daySettings.slots) {
+    const dayOfWeek = date.getDay().toString();
+    const daySettings = settings.openingHours[dayOfWeek];
+    
+    // Si c'est lundi ou mardi, retourner 0 heures disponibles
+    if (date.getDay() === 1 || date.getDay() === 2) {
+      return 0;
+    }
+
+    if (!daySettings?.slots) {
       return 0;
     }
 

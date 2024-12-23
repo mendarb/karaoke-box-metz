@@ -2,7 +2,11 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { format } from "https://esm.sh/date-fns@2.30.0";
-import { corsHeaders } from "../_shared/cors.ts";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -16,8 +20,51 @@ serve(async (req) => {
     console.log('🔧 Processing checkout with data:', {
       bookingId: data.bookingId,
       email: data.userEmail,
-      isTestMode: data.isTestMode
+      isTestMode: data.isTestMode,
+      finalPrice: data.finalPrice,
+      promoCodeId: data.promoCodeId
     });
+
+    // Si le prix final est 0 (réservation gratuite), on traite directement comme un succès
+    if (data.finalPrice === 0) {
+      console.log('🆓 Processing free booking');
+      
+      try {
+        const response = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/stripe-webhook`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+            'stripe-signature': 'free-booking'
+          },
+          body: JSON.stringify({
+            type: 'checkout.session.completed',
+            data: {
+              object: {
+                metadata: {
+                  bookingId: data.bookingId,
+                  isTestMode: String(data.isTestMode)
+                },
+                payment_status: 'paid',
+                customer_email: data.userEmail
+              }
+            }
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to process free booking');
+        }
+
+        return new Response(
+          JSON.stringify({ url: `${req.headers.get('origin')}/success?booking_id=${data.bookingId}` }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } catch (error) {
+        console.error('❌ Error processing free booking:', error);
+        throw error;
+      }
+    }
 
     const formattedDate = format(new Date(data.date), 'yyyy-MM-dd');
     console.log('📅 Formatted date:', formattedDate);

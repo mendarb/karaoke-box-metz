@@ -1,10 +1,10 @@
-import { UseFormReturn } from "react-hook-form";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect, useState } from "react";
+import { useFormContext } from "react-hook-form";
 import { TimeSlots } from "./TimeSlots";
-import { Clock } from "lucide-react";
+import { useBookingOverlap } from "@/hooks/useBookingOverlap";
 
 interface TimeSlotsSectionProps {
-  form: UseFormReturn<any>;
+  form: any;
   availableSlots: string[];
   isLoading: boolean;
 }
@@ -12,27 +12,40 @@ interface TimeSlotsSectionProps {
 export const TimeSlotsSection = ({
   form,
   availableSlots,
-  isLoading
+  isLoading,
 }: TimeSlotsSectionProps) => {
+  const [disabledSlots, setDisabledSlots] = useState<string[]>([]);
+  const { checkOverlap } = useBookingOverlap();
+  const { watch } = useFormContext();
+  const selectedDate = watch("date");
+  const duration = watch("duration");
+
+  useEffect(() => {
+    const checkSlots = async () => {
+      if (!selectedDate || !duration) return;
+
+      const disabledTimeSlots = [];
+      for (const slot of availableSlots) {
+        const isOverlapping = await checkOverlap(selectedDate, slot, duration);
+        if (isOverlapping) {
+          disabledTimeSlots.push(slot);
+        }
+      }
+      setDisabledSlots(disabledTimeSlots);
+    };
+
+    checkSlots();
+  }, [selectedDate, duration, availableSlots, checkOverlap]);
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <Clock className="h-5 w-5 text-violet-500" />
-          Créneaux disponibles
-        </CardTitle>
-        <CardDescription>
-          Sélectionnez l'heure qui vous convient le mieux
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <TimeSlots
-          value={form.watch("timeSlot")}
-          onChange={(value) => form.setValue("timeSlot", value)}
-          availableSlots={availableSlots}
-          isLoading={isLoading}
-        />
-      </CardContent>
-    </Card>
+    <div className="space-y-4">
+      <h3 className="font-medium">Choisissez votre horaire</h3>
+      <TimeSlots
+        form={form}
+        availableSlots={availableSlots}
+        disabledSlots={disabledSlots}
+        isLoading={isLoading}
+      />
+    </div>
   );
 };

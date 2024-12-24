@@ -27,10 +27,9 @@ export const useBookingOverlap = () => {
         throw error;
       }
 
-      const hasOverlap = existingBookings.some(booking => {
+      const hasOverlap = existingBookings?.some(booking => {
         const bookingStart = parseInt(booking.time_slot);
         const bookingEnd = bookingStart + parseInt(booking.duration);
-        
         return (
           (startHour >= bookingStart && startHour < bookingEnd) ||
           (endHour > bookingStart && endHour <= bookingEnd) ||
@@ -40,22 +39,16 @@ export const useBookingOverlap = () => {
 
       if (hasOverlap) {
         toast({
-          title: "Créneau non disponible",
+          title: "Créneau indisponible",
           description: "Ce créneau est déjà réservé. Veuillez en choisir un autre.",
           variant: "destructive",
         });
-        return true;
       }
 
-      return false;
+      return hasOverlap;
     } catch (error) {
       console.error('Error in checkOverlap:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de vérifier la disponibilité du créneau",
-        variant: "destructive",
-      });
-      return true;
+      return false;
     }
   };
 

@@ -35,14 +35,28 @@ export const BookingHistory = () => {
     );
   }
 
+  // Group bookings by date
+  const groupedBookings = bookings.reduce((groups: any, booking: any) => {
+    const date = booking.date;
+    if (!groups[date]) {
+      groups[date] = [];
+    }
+    groups[date].push(booking);
+    return groups;
+  }, {});
+
   return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold mb-4">Mes réservations</h2>
-      <div className="grid gap-4">
-        {bookings.map((booking) => (
-          <BookingCard key={booking.id} booking={booking} />
-        ))}
-      </div>
+    <div className="space-y-8">
+      <h2 className="text-2xl font-bold">Mes réservations</h2>
+      {Object.entries(groupedBookings).map(([date, dateBookings]: [string, any]) => (
+        <div key={date} className="space-y-4">
+          <div className="grid gap-4">
+            {dateBookings.map((booking: any) => (
+              <BookingCard key={booking.id} booking={booking} />
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 };

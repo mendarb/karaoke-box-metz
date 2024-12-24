@@ -18,10 +18,7 @@ export const BookingCard = ({ booking }: BookingCardProps) => {
 
   const handleDownloadInvoice = async () => {
     try {
-      console.log('Downloading invoice for booking:', booking);
-      
       if (!booking.payment_intent_id) {
-        console.error('No payment_intent_id available');
         throw new Error('Identifiant de paiement non disponible');
       }
 
@@ -32,8 +29,6 @@ export const BookingCard = ({ booking }: BookingCardProps) => {
           isTestMode: booking.is_test_booking
         }
       });
-
-      console.log('Invoice response:', { data, error });
 
       if (error) throw error;
       if (!data?.url) throw new Error('URL de facture non disponible');
@@ -50,22 +45,14 @@ export const BookingCard = ({ booking }: BookingCardProps) => {
   };
 
   return (
-    <Card className="p-6">
-      <div className="flex flex-col space-y-6">
-        <div className="flex items-start justify-between">
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2 text-gray-600">
-              <Calendar className="h-4 w-4" />
-              <span className="font-medium capitalize">
-                {format(new Date(booking.date), 'EEEE d MMMM yyyy', { locale: fr })}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-gray-600">
-              <Clock className="h-4 w-4" />
-              <span>
-                {`${booking.time_slot}:00 - ${endHour}:00`}
-              </span>
-            </div>
+    <Card className="overflow-hidden">
+      <div className="border-b border-gray-100 bg-gray-50/50 p-4">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-violet-500" />
+            <span className="font-medium capitalize">
+              {format(new Date(booking.date), 'EEEE d MMMM yyyy', { locale: fr })}
+            </span>
           </div>
           <BookingStatusBadge 
             status={booking.status} 
@@ -73,17 +60,23 @@ export const BookingCard = ({ booking }: BookingCardProps) => {
             isTestBooking={booking.is_test_booking}
           />
         </div>
+        <div className="flex items-center gap-2 text-gray-600">
+          <Clock className="h-4 w-4 text-violet-500" />
+          <span>{startHour}:00 - {endHour}:00</span>
+        </div>
+      </div>
 
-        <div className="grid grid-cols-2 gap-4 border-t border-b border-gray-100 py-4">
+      <div className="p-4 space-y-4">
+        <div className="grid grid-cols-2 gap-4">
           <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-gray-500" />
+            <Users className="h-4 w-4 text-violet-500" />
             <div>
               <p className="text-sm text-gray-500">Personnes</p>
               <p className="font-medium">{booking.group_size}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Euro className="h-4 w-4 text-gray-500" />
+            <Euro className="h-4 w-4 text-violet-500" />
             <div>
               <p className="text-sm text-gray-500">Prix</p>
               <p className="font-medium">{booking.price}€</p>

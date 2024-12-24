@@ -24,7 +24,7 @@ export const convertJsWeekDayToSettings = (jsWeekDay: number): string => {
     jsWeekDay, 
     settingsWeekDay,
     jsDay: ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'][jsWeekDay],
-    settingsDay: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'][settingsWeekDay === 7 ? 6 : settingsWeekDay - 1]
+    settingsDay: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'][settingsWeekDay - 1]
   });
   
   return String(settingsWeekDay);
@@ -38,14 +38,24 @@ export const isDayExcluded = (
   isTestMode: boolean
 ): boolean => {
   console.log('🔍 Vérification jour:', date.toISOString());
-  console.log('📊 Settings:', settings);
   
   if (!settings?.openingHours) {
     console.log('❌ Pas de paramètres d\'horaires');
-    return true; // Par défaut, tous les jours sont fermés si pas de paramètres
+    return true;
   }
   
   const dateToCheck = startOfDay(date);
+  const jsWeekDay = dateToCheck.getDay();
+  const settingsWeekDay = convertJsWeekDayToSettings(jsWeekDay);
+  const daySettings = settings.openingHours[settingsWeekDay];
+  
+  console.log('📅 Vérification paramètres jour:', {
+    date: date.toISOString(),
+    jsWeekDay,
+    settingsWeekDay,
+    daySettings,
+    isOpen: daySettings?.isOpen
+  });
   
   // En mode test, aucun jour n'est exclu
   if (isTestMode) {
@@ -59,19 +69,6 @@ export const isDayExcluded = (
     return true;
   }
 
-  // Convertir le jour de la semaine au format des settings
-  const jsWeekDay = dateToCheck.getDay();
-  const settingsWeekDay = convertJsWeekDayToSettings(jsWeekDay);
-  const daySettings = settings.openingHours[settingsWeekDay];
-  
-  console.log('📅 Vérification paramètres jour:', {
-    date: date.toISOString(),
-    jsWeekDay,
-    settingsWeekDay,
-    daySettings,
-    isOpen: daySettings?.isOpen
-  });
-  
   // Si le jour n'est pas configuré ou explicitement fermé, il est exclu
   if (!daySettings || !daySettings.isOpen) {
     console.log('❌ Jour non configuré ou fermé:', {

@@ -26,12 +26,15 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
     minDate, 
     maxDate, 
     isDayExcluded: (date: Date) => {
-      if (!settings?.openingHours) return true;
+      if (!settings?.openingHours) {
+        console.log('❌ Pas de paramètres disponibles');
+        return true;
+      }
       
       const settingsWeekDay = convertJsWeekDayToSettings(date.getDay());
       const daySettings = settings.openingHours[settingsWeekDay];
       
-      console.log('Vérification jour:', {
+      console.log('📅 Vérification jour:', {
         date: date.toISOString(),
         settingsWeekDay,
         daySettings,

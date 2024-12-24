@@ -2,14 +2,15 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useBookingEmail } from "./useBookingEmail";
+import { Booking } from "@/integrations/supabase/types/booking";
 
 export const useBookingSuccess = () => {
   const [searchParams] = useSearchParams();
-  const [booking, setBooking] = useState<any>(null);
+  const [booking, setBooking] = useState<Booking | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [emailSent, setEmailSent] = useState(false);
-  const { sendBookingEmail } = useBookingEmail();
+  const { sendEmail } = useBookingEmail();
 
   useEffect(() => {
     const sessionId = searchParams.get("session_id");
@@ -19,7 +20,6 @@ export const useBookingSuccess = () => {
       try {
         console.log("🔍 Retrieving details for session:", sessionId);
         
-        // Rechercher d'abord par payment_intent_id
         const { data: bookingData, error: bookingError } = await supabase
           .from("bookings")
           .select("*")
@@ -29,7 +29,6 @@ export const useBookingSuccess = () => {
         if (bookingError || !bookingData) {
           console.warn("⚠️ No booking found with payment_intent_id, searching recent pending bookings...");
           
-          // Si non trouvé, rechercher parmi les réservations récentes en attente
           const { data: recentBookings, error: recentError } = await supabase
             .from("bookings")
             .select("*")
@@ -44,7 +43,6 @@ export const useBookingSuccess = () => {
 
           setBooking(recentBookings);
           
-          // Mettre à jour le statut
           const { error: updateError } = await supabase
             .from("bookings")
             .update({ 
@@ -60,10 +58,9 @@ export const useBookingSuccess = () => {
           setBooking(bookingData);
         }
 
-        // Envoyer l'email une seule fois
-        if (!emailSent) {
-          console.log("📧 Sending confirmation email for booking:", booking?.id);
-          await sendBookingEmail(booking?.id);
+        if (!emailSent && booking) {
+          console.log("📧 Sending confirmation email for booking:", booking.id);
+          await sendEmail(booking);
           setEmailSent(true);
         }
 
@@ -76,7 +73,7 @@ export const useBookingSuccess = () => {
     };
 
     getBookingDetails();
-  }, [searchParams, emailSent, sendBookingEmail]);
+  }, [searchParams, emailSent, sendEmail, booking]);
 
   return { booking, isLoading, error };
 };

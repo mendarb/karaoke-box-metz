@@ -1,10 +1,10 @@
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { BookingDetails } from "@/hooks/useBookingSuccess";
 import { Card } from "@/components/ui/card";
+import { Booking } from "@/integrations/supabase/types/booking";
 
 interface BookingSuccessDetailsProps {
-  bookingDetails: BookingDetails;
+  bookingDetails: Booking;
 }
 
 export const BookingSuccessDetails = ({ bookingDetails }: BookingSuccessDetailsProps) => {

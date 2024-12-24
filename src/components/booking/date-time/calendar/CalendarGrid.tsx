@@ -51,15 +51,16 @@ export const CalendarGrid = ({
       </div>
       <div className="grid grid-cols-7 gap-1">
         {days.map((day) => {
-          const isSelected = selectedDate ? isSameDay(day, selectedDate) : false;
-          const isDisabled = isDateDisabled(day);
-          const dayToday = isToday(day);
+          const normalizedDay = startOfDay(day);
+          const isSelected = selectedDate ? isSameDay(normalizedDay, selectedDate) : false;
+          const isDisabled = isDateDisabled(normalizedDay);
+          const dayToday = isToday(normalizedDay);
 
           return (
             <button
-              key={day.toString()}
+              key={normalizedDay.toString()}
               type="button"
-              onClick={() => !isDisabled && onSelect(startOfDay(day))}
+              onClick={() => !isDisabled && onSelect(normalizedDay)}
               disabled={isDisabled}
               className={cn(
                 "h-10 w-full rounded-lg text-sm font-medium transition-colors",
@@ -72,7 +73,7 @@ export const CalendarGrid = ({
                 }
               )}
             >
-              {format(day, "d")}
+              {format(normalizedDay, "d")}
             </button>
           );
         })}

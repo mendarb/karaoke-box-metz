@@ -7,11 +7,15 @@ export const getBookingDateConfig = (settings: any): BookingDateConfig => {
   
   const minDate = isTestMode 
     ? today
-    : addDays(today, settings?.bookingWindow?.startDays || 1);
+    : settings?.bookingWindow?.startDate 
+      ? startOfDay(new Date(settings.bookingWindow.startDate))
+      : addDays(today, 1);
     
   const maxDate = isTestMode
     ? addDays(today, 365)
-    : addDays(today, settings?.bookingWindow?.endDays || 30);
+    : settings?.bookingWindow?.endDate
+      ? startOfDay(new Date(settings.bookingWindow.endDate))
+      : addDays(today, 30);
 
   return {
     settings,
@@ -41,7 +45,9 @@ export const isDayExcluded = (date: Date, config: BookingDateConfig): boolean =>
     return true;
   }
 
-  if (config.settings.excludedDays?.includes(dateToCheck.getTime())) {
+  if (config.settings.excludedDays?.some(excludedDay => 
+    startOfDay(new Date(excludedDay)).getTime() === dateToCheck.getTime()
+  )) {
     return true;
   }
 

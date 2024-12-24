@@ -1,4 +1,4 @@
-import { startOfDay } from "date-fns";
+import { startOfDay, addDays } from "date-fns";
 import { BookingSettings } from "@/components/admin/settings/types/bookingSettings";
 
 export const convertJsWeekDayToSettings = (date: Date): string => {
@@ -31,4 +31,28 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
   }
 
   return false;
+};
+
+export const getDateRange = (
+  settings: BookingSettings | null | undefined,
+  isTestMode: boolean
+): { minDate: Date; maxDate: Date } => {
+  const today = startOfDay(new Date());
+  
+  // En mode test, on permet les réservations à partir d'aujourd'hui jusqu'à un an
+  if (isTestMode) {
+    return {
+      minDate: today,
+      maxDate: addDays(today, 365)
+    };
+  }
+
+  // En mode production, on utilise les paramètres de la fenêtre de réservation
+  const startDays = settings?.bookingWindow?.startDays || 1;
+  const endDays = settings?.bookingWindow?.endDays || 30;
+
+  return {
+    minDate: addDays(today, startDays),
+    maxDate: addDays(today, endDays)
+  };
 };

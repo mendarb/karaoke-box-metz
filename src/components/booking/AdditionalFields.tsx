@@ -47,6 +47,9 @@ export const AdditionalFields = ({
         isPromoValid={isPromoValid}
         promoCode={promoData?.code}
         finalPrice={finalPrice}
+        date={form.getValues("date")}
+        timeSlot={form.getValues("timeSlot")}
+        message={form.getValues("message")}
       />
 
       <FormField

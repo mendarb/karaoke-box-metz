@@ -17,41 +17,32 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
         console.log('Checkout session completed:', {
           sessionId: session.id,
           metadata: session.metadata,
-          customerEmail: session.customer_email
+          customerEmail: session.customer_email,
+          paymentStatus: session.payment_status
         });
 
-        // Créer la réservation uniquement après confirmation du paiement
+        // Mettre à jour la réservation existante
         const { data: booking, error: bookingError } = await supabase
           .from('bookings')
-          .insert([{
-            user_id: session.metadata.userId || null,
-            user_email: session.customer_email || session.metadata.userEmail,
-            user_name: session.metadata.userName,
-            user_phone: session.metadata.userPhone,
-            date: session.metadata.date,
-            time_slot: session.metadata.timeSlot,
-            duration: session.metadata.duration,
-            group_size: session.metadata.groupSize,
-            price: parseFloat(session.metadata.finalPrice),
-            message: session.metadata.message || '',
+          .update({
             status: 'confirmed',
             payment_status: 'paid',
-            is_test_booking: session.metadata.isTestMode === 'true',
             payment_intent_id: session.payment_intent,
-            promo_code_id: session.metadata.promoCodeId || null,
-            cabin: session.metadata.cabin || 'metz'
-          }])
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', session.metadata.bookingId)
           .select()
           .single();
 
         if (bookingError) {
-          console.error('Error creating booking:', bookingError);
+          console.error('Error updating booking:', bookingError);
           throw bookingError;
         }
 
-        console.log('✅ Booking created:', {
+        console.log('✅ Booking updated:', {
           bookingId: booking.id,
-          paymentIntentId: session.payment_intent
+          status: booking.status,
+          paymentStatus: booking.payment_status
         });
 
         // Envoyer l'email de confirmation
@@ -81,7 +72,54 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
       }
 
       case 'checkout.session.expired': {
-        console.log('Checkout session expired:', event.data.object);
+        const session = event.data.object;
+        console.log('Checkout session expired:', {
+          sessionId: session.id,
+          metadata: session.metadata
+        });
+
+        // Mettre à jour la réservation comme expirée
+        const { error: updateError } = await supabase
+          .from('bookings')
+          .update({
+            status: 'cancelled',
+            payment_status: 'expired',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', session.metadata.bookingId);
+
+        if (updateError) {
+          console.error('Error updating expired booking:', updateError);
+          throw updateError;
+        }
+
+        console.log('✅ Booking marked as expired');
+        break;
+      }
+
+      case 'payment_intent.payment_failed': {
+        const paymentIntent = event.data.object;
+        console.log('Payment failed:', {
+          paymentIntentId: paymentIntent.id,
+          metadata: paymentIntent.metadata
+        });
+
+        // Mettre à jour la réservation comme échouée
+        const { error: updateError } = await supabase
+          .from('bookings')
+          .update({
+            status: 'cancelled',
+            payment_status: 'failed',
+            updated_at: new Date().toISOString()
+          })
+          .eq('payment_intent_id', paymentIntent.id);
+
+        if (updateError) {
+          console.error('Error updating failed booking:', updateError);
+          throw updateError;
+        }
+
+        console.log('✅ Booking marked as failed');
         break;
       }
 

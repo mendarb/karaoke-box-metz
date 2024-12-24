@@ -2,22 +2,45 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/lib/supabase";
 
 export const Error = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const error = searchParams.get("error");
+  const paymentIntentId = searchParams.get("payment_intent");
 
   useEffect(() => {
+    const updateFailedBooking = async () => {
+      if (paymentIntentId) {
+        const { error: updateError } = await supabase
+          .from('bookings')
+          .update({
+            status: 'cancelled',
+            payment_status: 'failed',
+            updated_at: new Date().toISOString()
+          })
+          .eq('payment_intent_id', paymentIntentId);
+
+        if (updateError) {
+          console.error('Error updating failed booking:', updateError);
+        }
+      }
+    };
+
+    if (paymentIntentId) {
+      updateFailedBooking();
+    }
+
     if (error) {
       toast({
-        title: "Erreur",
+        title: "Erreur de paiement",
         description: error.replace(/_/g, ' '),
         variant: "destructive",
       });
     }
-  }, [error, toast]);
+  }, [error, paymentIntentId, toast]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">

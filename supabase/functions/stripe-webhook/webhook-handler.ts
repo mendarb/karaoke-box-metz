@@ -21,7 +21,7 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
           paymentStatus: session.payment_status
         });
 
-        // Mettre à jour la réservation existante
+        // Mettre à jour la réservation comme confirmée
         const { data: booking, error: bookingError } = await supabase
           .from('bookings')
           .update({
@@ -39,7 +39,7 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
           throw bookingError;
         }
 
-        console.log('✅ Booking updated:', {
+        console.log('✅ Booking confirmed:', {
           bookingId: booking.id,
           status: booking.status,
           paymentStatus: booking.payment_status
@@ -78,22 +78,23 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
           metadata: session.metadata
         });
 
-        // Mettre à jour la réservation comme expirée
-        const { error: updateError } = await supabase
+        // Soft delete de la réservation expirée
+        const { error: deleteError } = await supabase
           .from('bookings')
           .update({
             status: 'cancelled',
             payment_status: 'expired',
+            deleted_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           })
           .eq('id', session.metadata.bookingId);
 
-        if (updateError) {
-          console.error('Error updating expired booking:', updateError);
-          throw updateError;
+        if (deleteError) {
+          console.error('Error deleting expired booking:', deleteError);
+          throw deleteError;
         }
 
-        console.log('✅ Booking marked as expired');
+        console.log('✅ Expired booking deleted');
         break;
       }
 
@@ -104,22 +105,23 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
           metadata: paymentIntent.metadata
         });
 
-        // Mettre à jour la réservation comme échouée
-        const { error: updateError } = await supabase
+        // Soft delete de la réservation échouée
+        const { error: deleteError } = await supabase
           .from('bookings')
           .update({
             status: 'cancelled',
             payment_status: 'failed',
+            deleted_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           })
           .eq('payment_intent_id', paymentIntent.id);
 
-        if (updateError) {
-          console.error('Error updating failed booking:', updateError);
-          throw updateError;
+        if (deleteError) {
+          console.error('Error deleting failed booking:', deleteError);
+          throw deleteError;
         }
 
-        console.log('✅ Booking marked as failed');
+        console.log('✅ Failed booking deleted');
         break;
       }
 

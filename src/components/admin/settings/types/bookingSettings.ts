@@ -5,8 +5,7 @@ export interface BookingSettings {
     endDate: Date;
   };
   openingHours: {
-    // 0 = Dimanche, 1 = Lundi, etc.
-    [key: string]: {
+    [key: number]: {  // Changé de string à number pour correspondre à getDay()
       isOpen: boolean;
       slots: string[];
     };
@@ -25,13 +24,13 @@ export const defaultSettings: BookingSettings = {
     endDate: new Date(),
   },
   openingHours: {
-    "0": { isOpen: true, slots: ["15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"] }, // Dimanche
-    "1": { isOpen: true, slots: ["15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"] }, // Lundi
-    "2": { isOpen: true, slots: ["15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"] }, // Mardi
-    "3": { isOpen: true, slots: ["15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"] }, // Mercredi
-    "4": { isOpen: true, slots: ["15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"] }, // Jeudi
-    "5": { isOpen: true, slots: ["15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"] }, // Vendredi
-    "6": { isOpen: true, slots: ["15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"] }, // Samedi
+    0: { isOpen: true, slots: ["15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"] }, // Dimanche
+    1: { isOpen: true, slots: ["15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"] }, // Lundi
+    2: { isOpen: true, slots: ["15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"] }, // Mardi
+    3: { isOpen: true, slots: ["15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"] }, // Mercredi
+    4: { isOpen: true, slots: ["15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"] }, // Jeudi
+    5: { isOpen: true, slots: ["15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"] }, // Vendredi
+    6: { isOpen: true, slots: ["15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"] }, // Samedi
   },
   excludedDays: [],
   basePrice: {

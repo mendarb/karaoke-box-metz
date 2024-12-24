@@ -19,6 +19,7 @@ function Calendar({
   return (
     <DayPicker
       locale={fr}
+      weekStartsOn={1}
       showOutsideDays={showOutsideDays}
       className={cn("p-3", className)}
       classNames={{

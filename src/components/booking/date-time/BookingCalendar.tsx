@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { CalendarHeader } from "./CalendarHeader";
-import { CalendarGrid } from "./CalendarGrid";
+import { CalendarHeader } from "./calendar/CalendarHeader";
+import { CalendarGrid } from "./calendar/CalendarGrid";
 import { Card } from "@/components/ui/card";
 import { addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
 import { fr } from "date-fns/locale";

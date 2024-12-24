@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useBookingEmail } from "./useBookingEmail";
+import { Booking } from "@/integrations/supabase/types/booking";
 
 export interface BookingDetails {
   id: string;
@@ -12,6 +13,12 @@ export interface BookingDetails {
   price: number;
   payment_status: string;
   is_test_booking?: boolean;
+  user_id?: string;
+  status?: string;
+  message?: string;
+  user_email?: string;
+  user_name?: string;
+  user_phone?: string;
 }
 
 export const useBookingSuccess = () => {
@@ -74,7 +81,20 @@ export const useBookingSuccess = () => {
         // Envoyer l'email une seule fois
         if (!emailSent && booking) {
           console.log("📧 Sending confirmation email for booking:", booking?.id);
-          await sendEmail(booking);
+          await sendEmail({
+            ...booking,
+            user_id: booking.user_id || '',
+            status: booking.status || 'confirmed',
+            message: booking.message || '',
+            user_email: booking.user_email || '',
+            user_name: booking.user_name || '',
+            user_phone: booking.user_phone || '',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            deleted_at: null,
+            payment_intent_id: sessionId,
+            cabin: 'metz'
+          } as Booking);
           setEmailSent(true);
         }
 

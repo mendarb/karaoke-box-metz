@@ -10,7 +10,7 @@ export interface BookingSettings {
       slots: string[];
     };
   };
-  excludedDays: number[];
+  excludedDays: Date[];
   basePrice: {
     perHour: number;
     perPerson: number;

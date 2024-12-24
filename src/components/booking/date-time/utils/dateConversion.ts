@@ -1,4 +1,4 @@
-import { startOfDay, addDays } from "date-fns";
+import { startOfDay, isEqual } from "date-fns";
 import { BookingSettings } from "@/components/admin/settings/types/bookingSettings";
 
 export const convertJsWeekDayToSettings = (date: Date): string => {
@@ -12,6 +12,23 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
   if (!settings?.openingHours) return true;
 
   const normalizedDate = startOfDay(date);
+  
+  // Vérifier si le jour est dans la fenêtre de réservation
+  if (settings.bookingWindow) {
+    const startDate = startOfDay(new Date(settings.bookingWindow.startDate));
+    const endDate = startOfDay(new Date(settings.bookingWindow.endDate));
+    
+    if (normalizedDate < startDate || normalizedDate > endDate) {
+      console.log('❌ Jour hors fenêtre de réservation:', {
+        date: normalizedDate,
+        startDate,
+        endDate
+      });
+      return true;
+    }
+  }
+
+  // Vérifier si le jour est ouvert selon les horaires
   const settingsWeekDay = convertJsWeekDayToSettings(normalizedDate);
   const daySettings = settings.openingHours[settingsWeekDay];
 
@@ -25,34 +42,12 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
   }
 
   // Vérifier si le jour est exclu manuellement
-  if (settings.excludedDays?.includes(normalizedDate.getTime())) {
+  if (settings.excludedDays?.some(excludedDay => 
+    isEqual(startOfDay(new Date(excludedDay)), normalizedDate)
+  )) {
     console.log('❌ Jour exclu manuellement:', normalizedDate.toISOString());
     return true;
   }
 
   return false;
-};
-
-export const getDateRange = (
-  settings: BookingSettings | null | undefined,
-  isTestMode: boolean
-): { minDate: Date; maxDate: Date } => {
-  const today = startOfDay(new Date());
-  
-  // En mode test, on permet les réservations à partir d'aujourd'hui jusqu'à un an
-  if (isTestMode) {
-    return {
-      minDate: today,
-      maxDate: addDays(today, 365)
-    };
-  }
-
-  // En mode production, on utilise les paramètres de la fenêtre de réservation
-  const startDays = settings?.bookingWindow?.startDays || 1;
-  const endDays = settings?.bookingWindow?.endDays || 30;
-
-  return {
-    minDate: addDays(today, startDays),
-    maxDate: addDays(today, endDays)
-  };
 };

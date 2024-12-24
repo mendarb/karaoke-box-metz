@@ -5,6 +5,7 @@ export interface BookingSettings {
     endDate: Date;
   };
   openingHours: {
+    // 0 = Dimanche, 1 = Lundi, etc.
     [key: string]: {
       isOpen: boolean;
       slots: string[];

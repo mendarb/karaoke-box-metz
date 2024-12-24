@@ -14,13 +14,13 @@ interface TimeSlotTableProps {
 export const TimeSlotTable = ({ form }: TimeSlotTableProps) => {
   const [newSlot, setNewSlot] = useState("");
   const days = [
+    { id: "0", name: "Dimanche" },
     { id: "1", name: "Lundi" },
     { id: "2", name: "Mardi" },
     { id: "3", name: "Mercredi" },
     { id: "4", name: "Jeudi" },
     { id: "5", name: "Vendredi" },
     { id: "6", name: "Samedi" },
-    { id: "0", name: "Dimanche" },
   ];
 
   const validateTimeSlot = (slot: string): boolean => {
@@ -41,7 +41,6 @@ export const TimeSlotTable = ({ form }: TimeSlotTableProps) => {
 
     const currentSlots = form.watch(`openingHours.${dayId}.slots`) || [];
     
-    // Vérifier si le créneau existe déjà
     if (currentSlots.includes(newSlot)) {
       toast({
         title: "Créneau existant",
@@ -51,7 +50,6 @@ export const TimeSlotTable = ({ form }: TimeSlotTableProps) => {
       return;
     }
 
-    // Ajouter et trier les créneaux
     const sortedSlots = [...currentSlots, newSlot].sort((a, b) => {
       const timeA = a.split(':').map(Number);
       const timeB = b.split(':').map(Number);

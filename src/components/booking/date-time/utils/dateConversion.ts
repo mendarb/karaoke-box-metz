@@ -24,7 +24,7 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
     }
   }
 
-  // Utiliser directement le jour de la semaine JavaScript (0-6)
+  // Utiliser directement le jour JavaScript (0-6)
   const dayOfWeek = normalizedDate.getDay().toString();
   const daySettings = settings.openingHours[dayOfWeek];
 

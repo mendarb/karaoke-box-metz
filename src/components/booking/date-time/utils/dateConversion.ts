@@ -1,4 +1,5 @@
 import { addDays, startOfDay, isBefore, isAfter, parseISO } from "date-fns";
+import { utcToZonedTime } from "date-fns-tz";
 import { BookingSettings } from "@/components/admin/settings/types/bookingSettings";
 
 export const convertJsWeekDayToSettings = (jsWeekDay: number): string => {
@@ -49,12 +50,15 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
     return true;
   }
 
-  // Créer une nouvelle date à minuit heure locale
-  const localDate = new Date(date);
-  localDate.setHours(0, 0, 0, 0);
+  // Convertir la date UTC en date locale
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const localDate = typeof date === 'string' ? utcToZonedTime(parseISO(date), timezone) : utcToZonedTime(date, timezone);
   
-  // Obtenir le jour de la semaine de la date locale
-  const dayOfWeek = localDate.getDay();
+  // S'assurer que nous sommes au début du jour
+  const dayStart = startOfDay(localDate);
+  
+  // Obtenir le jour de la semaine en local
+  const dayOfWeek = dayStart.getDay();
   const settingsWeekDay = convertJsWeekDayToSettings(dayOfWeek);
   const daySettings = settings.openingHours[settingsWeekDay];
 

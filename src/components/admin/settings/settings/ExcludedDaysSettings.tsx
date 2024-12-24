@@ -6,6 +6,7 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { Calendar } from "@/components/ui/calendar";
+import { fr } from "date-fns/locale";
 
 interface ExcludedDaysSettingsProps {
   form: UseFormReturn<any>;
@@ -31,6 +32,7 @@ export const ExcludedDaysSettings = ({ form, defaultValue }: ExcludedDaysSetting
                   field.onChange(dates ? dates.map(date => date.getTime()) : []);
                 }}
                 className="rounded-md border"
+                locale={fr}
               />
             </FormControl>
           </FormItem>

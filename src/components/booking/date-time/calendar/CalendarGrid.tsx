@@ -1,4 +1,4 @@
-import { format, isToday, isSameDay, isWithinInterval, startOfWeek, addDays } from "date-fns";
+import { format, isToday, isSameDay, isWithinInterval } from "date-fns";
 import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
@@ -20,7 +20,6 @@ export const CalendarGrid = ({
   minDate,
   maxDate
 }: CalendarGridProps) => {
-  // Utiliser fr comme locale pour avoir lundi comme premier jour de la semaine
   const weekDays = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
   const isDateDisabled = (date: Date) => {
@@ -47,8 +46,8 @@ export const CalendarGrid = ({
           const isSelected = selectedDate ? isSameDay(day, selectedDate) : false;
           const dayToday = isToday(day);
 
-          // Calculer le jour de la semaine (1-7, où 1 est lundi)
-          const dayOfWeek = format(day, 'i');
+          // Utiliser la locale fr pour obtenir le bon numéro de jour (1-7, où 1 est lundi)
+          const dayOfWeek = parseInt(format(day, 'i', { locale: fr }));
           
           return (
             <div

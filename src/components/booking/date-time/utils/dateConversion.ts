@@ -5,7 +5,13 @@ export const convertJsWeekDayToSettings = (date: Date): string => {
   // JavaScript: 0 (dimanche) - 6 (samedi)
   // Notre format: 1 (lundi) - 7 (dimanche)
   const jsWeekDay = date.getDay();
-  return String(jsWeekDay === 0 ? 7 : jsWeekDay);
+  const settingsWeekDay = jsWeekDay === 0 ? 7 : jsWeekDay;
+  console.log('📅 Conversion jour:', {
+    date: date.toISOString(),
+    jsWeekDay,
+    settingsWeekDay
+  });
+  return String(settingsWeekDay);
 };
 
 export const isDayExcluded = (date: Date, settings: BookingSettings | null | undefined): boolean => {
@@ -35,6 +41,13 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
   const settingsWeekDay = convertJsWeekDayToSettings(normalizedDate);
   const daySettings = settings.openingHours[settingsWeekDay];
 
+  console.log('🔍 Vérification jour:', {
+    date: normalizedDate.toISOString(),
+    settingsWeekDay,
+    isOpen: daySettings?.isOpen,
+    slots: daySettings?.slots?.length
+  });
+
   if (!daySettings?.isOpen || !daySettings.slots.length) {
     console.log('❌ Jour fermé ou sans créneaux:', {
       date: normalizedDate.toISOString(),
@@ -53,5 +66,6 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
     return true;
   }
 
+  console.log('✅ Jour disponible:', normalizedDate.toISOString());
   return false;
 };

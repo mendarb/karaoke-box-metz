@@ -15,11 +15,18 @@ export const useDisabledDates = ({ minDate, maxDate }: UseDisabledDatesProps) =>
   const calculateDisabledDates = useCallback(() => {
     if (!settings) return;
 
+    console.log('🔄 Calcul des dates désactivées...', {
+      minDate: minDate.toISOString(),
+      maxDate: maxDate.toISOString(),
+      settings
+    });
+
     const dates = eachDayOfInterval({ 
       start: startOfDay(minDate), 
       end: startOfDay(maxDate) 
     }).filter(date => isDayExcluded(date, settings));
 
+    console.log('📅 Dates désactivées:', dates.map(d => d.toISOString()));
     setDisabledDates(dates);
   }, [minDate, maxDate, settings]);
 

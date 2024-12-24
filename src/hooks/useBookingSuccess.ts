@@ -19,7 +19,7 @@ export interface BookingDetails {
 }
 
 const MAX_RETRIES = 5;
-const RETRY_DELAY = 2000; // 2 secondes
+const RETRY_DELAY = 2000;
 
 export const useBookingSuccess = () => {
   const [bookingDetails, setBookingDetails] = useState<BookingDetails | null>(null);
@@ -32,14 +32,14 @@ export const useBookingSuccess = () => {
     const fetchBookingDetails = async (retryCount = 0) => {
       try {
         if (!sessionId) {
-          console.log('Pas de session_id trouvé dans l\'URL');
+          console.log('No session_id found in URL');
           setLoading(false);
           return;
         }
 
-        console.log('🔍 Récupération des détails pour la session:', sessionId);
+        console.log('🔍 Retrieving details for session:', sessionId);
 
-        // D'abord, récupérer le payment_intent_id via la session Stripe
+        // First, get the payment_intent_id via Stripe session
         const { data: stripeData, error: stripeError } = await supabase.functions.invoke(
           'get-payment-intent',
           {
@@ -48,13 +48,13 @@ export const useBookingSuccess = () => {
         );
 
         if (stripeError || !stripeData?.paymentIntentId) {
-          console.error('❌ Erreur lors de la récupération du payment_intent:', stripeError);
-          throw new Error(stripeError?.message || 'Impossible de récupérer les détails du paiement');
+          console.error('❌ Error retrieving payment_intent:', stripeError);
+          throw new Error(stripeError?.message || 'Unable to retrieve payment details');
         }
 
-        console.log('✅ Payment Intent ID récupéré:', stripeData.paymentIntentId);
+        console.log('✅ Payment Intent ID retrieved:', stripeData.paymentIntentId);
 
-        // Ensuite, récupérer la réservation avec le payment_intent_id
+        // Then, get the booking with the payment_intent_id
         const { data: bookings, error: bookingError } = await supabase
           .from('bookings')
           .select('*')
@@ -62,47 +62,45 @@ export const useBookingSuccess = () => {
           .maybeSingle();
 
         if (bookingError) {
-          console.error('❌ Erreur lors de la récupération de la réservation:', bookingError);
+          console.error('❌ Error retrieving booking:', bookingError);
           throw bookingError;
         }
 
         if (!bookings) {
-          console.log('❌ Aucune réservation trouvée pour ce payment_intent_id');
+          console.log('❌ No booking found for this payment_intent_id');
           
-          // Si on n'a pas atteint le nombre maximum de tentatives, on réessaie
           if (retryCount < MAX_RETRIES) {
-            console.log(`⏳ Nouvelle tentative dans ${RETRY_DELAY/1000}s (${retryCount + 1}/${MAX_RETRIES})`);
+            console.log(`⏳ Retrying in ${RETRY_DELAY/1000}s (${retryCount + 1}/${MAX_RETRIES})`);
             setTimeout(() => fetchBookingDetails(retryCount + 1), RETRY_DELAY);
             return;
           }
           
           toast({
-            title: "Erreur",
-            description: "Impossible de trouver votre réservation. L'équipe technique a été notifiée.",
+            title: "Error",
+            description: "Unable to find your booking. The technical team has been notified.",
             variant: "destructive",
           });
           setLoading(false);
           return;
         }
 
-        console.log('✅ Réservation trouvée:', bookings);
+        console.log('✅ Booking found:', bookings);
         setBookingDetails(bookings);
-          
-        // Envoyer l'email de confirmation si le paiement est confirmé
+        
         if (bookings.payment_status === 'paid') {
-          console.log('📧 Envoi de l\'email de confirmation pour la réservation:', bookings.id);
+          console.log('📧 Sending confirmation email for booking:', bookings.id);
           try {
             await sendEmail(bookings);
-            console.log('✅ Email de confirmation envoyé avec succès');
+            console.log('✅ Confirmation email sent successfully');
             toast({
-              title: "Confirmation envoyée",
-              description: "Un email de confirmation vous a été envoyé.",
+              title: "Confirmation sent",
+              description: "A confirmation email has been sent to you.",
             });
           } catch (emailError) {
-            console.error('❌ Erreur lors de l\'envoi de l\'email de confirmation:', emailError);
+            console.error('❌ Error sending confirmation email:', emailError);
             toast({
               title: "Note",
-              description: "La réservation est confirmée mais l'email n'a pas pu être envoyé",
+              description: "The booking is confirmed but the email could not be sent",
               variant: "default",
             });
           }
@@ -110,18 +108,17 @@ export const useBookingSuccess = () => {
         
         setLoading(false);
       } catch (error: any) {
-        console.error('❌ Erreur dans fetchBookingDetails:', error);
+        console.error('❌ Error in fetchBookingDetails:', error);
         
-        // Si on n'a pas atteint le nombre maximum de tentatives, on réessaie
         if (retryCount < MAX_RETRIES) {
-          console.log(`⏳ Nouvelle tentative dans ${RETRY_DELAY/1000}s (${retryCount + 1}/${MAX_RETRIES})`);
+          console.log(`⏳ Retrying in ${RETRY_DELAY/1000}s (${retryCount + 1}/${MAX_RETRIES})`);
           setTimeout(() => fetchBookingDetails(retryCount + 1), RETRY_DELAY);
           return;
         }
         
         toast({
-          title: "Erreur",
-          description: "Une erreur est survenue lors de la récupération de votre réservation",
+          title: "Error",
+          description: "An error occurred while retrieving your booking",
           variant: "destructive",
         });
         setLoading(false);

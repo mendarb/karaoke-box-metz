@@ -18,13 +18,16 @@ export const getAvailableSlots = async (
     return getTestModeSlots();
   }
 
+  // Ajuster la date pour la timezone locale
+  const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+  
   // Utiliser directement le jour JavaScript (0-6)
-  const dayOfWeek = date.getDay().toString();
+  const dayOfWeek = localDate.getDay().toString();
   const daySettings = settings.openingHours[dayOfWeek];
 
   if (!daySettings?.isOpen) {
     console.log('❌ Jour fermé:', {
-      date: date.toISOString(),
+      date: localDate.toISOString(),
       dayOfWeek,
       isOpen: daySettings?.isOpen
     });
@@ -37,7 +40,7 @@ export const getAvailableSlots = async (
     const { data: bookings, error } = await supabase
       .from('bookings')
       .select('*')
-      .eq('date', date.toISOString().split('T')[0])
+      .eq('date', localDate.toISOString().split('T')[0])
       .neq('status', 'cancelled')
       .is('deleted_at', null);
 

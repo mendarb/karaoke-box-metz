@@ -7,14 +7,17 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
     return true;
   }
 
+  // Ajuster la date pour la timezone locale
+  const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+  
   // Utiliser getDay() pour obtenir l'index du jour (0-6, 0 = Dimanche)
-  const dayOfWeek = date.getDay();
+  const dayOfWeek = localDate.getDay();
   const daySettings = settings.openingHours[dayOfWeek];
 
   const dayNames = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
   
   console.log('📅 Vérification jour:', {
-    date: date.toISOString(),
+    date: localDate.toISOString(),
     jour: dayNames[dayOfWeek],
     indexJour: dayOfWeek,
     estOuvert: daySettings?.isOpen,
@@ -25,7 +28,7 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
   // Si le jour n'est pas ouvert ou n'a pas de créneaux, il est désactivé
   if (!daySettings?.isOpen || !daySettings.slots?.length) {
     console.log('❌ Jour fermé:', {
-      date: date.toISOString(),
+      date: localDate.toISOString(),
       jour: dayNames[dayOfWeek],
       estOuvert: daySettings?.isOpen,
       creneaux: daySettings?.slots?.length
@@ -35,11 +38,11 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
 
   // Vérifier si le jour est exclu manuellement
   const isExcluded = settings.excludedDays?.some(excludedDay => 
-    isEqual(startOfDay(new Date(excludedDay)), startOfDay(date))
+    isEqual(startOfDay(new Date(excludedDay)), startOfDay(localDate))
   );
 
   if (isExcluded) {
-    console.log('❌ Jour exclu manuellement:', date.toISOString());
+    console.log('❌ Jour exclu manuellement:', localDate.toISOString());
   }
 
   return isExcluded || false;

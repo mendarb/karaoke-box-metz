@@ -20,27 +20,22 @@ export const TimeSlots = ({
 
   return (
     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-      {availableSlots.map((slot) => {
-        const hour = parseInt(slot);
-        const formattedSlot = `${hour}:00`;
-
-        return (
-          <Button
-            key={slot}
-            type="button"
-            variant={selectedTimeSlot === slot ? "default" : "outline"}
-            className={cn(
-              "w-full flex items-center gap-2 transition-all",
-              selectedTimeSlot === slot && "bg-violet-600 hover:bg-violet-700"
-            )}
-            disabled={isLoading}
-            onClick={() => form.setValue("timeSlot", slot)}
-          >
-            <Clock className="h-4 w-4" />
-            {formattedSlot}
-          </Button>
-        );
-      })}
+      {availableSlots.map((slot) => (
+        <Button
+          key={slot}
+          type="button"
+          variant={selectedTimeSlot === slot ? "default" : "outline"}
+          className={cn(
+            "w-full flex items-center gap-2 transition-all",
+            selectedTimeSlot === slot && "bg-violet-600 hover:bg-violet-700"
+          )}
+          disabled={isLoading}
+          onClick={() => form.setValue("timeSlot", slot)}
+        >
+          <Clock className="h-4 w-4" />
+          {slot}
+        </Button>
+      ))}
     </div>
   );
 };

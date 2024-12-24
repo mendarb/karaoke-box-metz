@@ -27,7 +27,7 @@ export const TimeSlotsSection = ({
       
       setIsLoading(true);
       try {
-        const slots = await getAvailableSlots(selectedDate, settings);
+        const slots = await getAvailableSlots(selectedDate);
         setAvailableSlots(slots);
         onAvailabilityChange(slots.length > 0);
       } catch (error) {

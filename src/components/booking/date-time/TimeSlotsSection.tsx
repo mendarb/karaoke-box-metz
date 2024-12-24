@@ -23,7 +23,11 @@ export const TimeSlotsSection = ({
 
   useEffect(() => {
     const loadSlots = async () => {
-      if (!selectedDate || !settings) return;
+      if (!selectedDate || !settings) {
+        setAvailableSlots([]);
+        setIsLoading(false);
+        return;
+      }
       
       setIsLoading(true);
       try {

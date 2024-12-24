@@ -41,7 +41,7 @@ export const BookingCalendar = ({
 
   // Vérifier si le mois précédent contient des dates valides
   const previousMonth = subMonths(currentMonth, 1);
-  const isPreviousMonthDisabled = endOfMonth(previousMonth) < startOfDay(minDate);
+  const isPreviousMonthDisabled = startOfMonth(previousMonth) < startOfDay(minDate);
   
   // Vérifier si le mois suivant contient des dates valides
   const nextMonth = addMonths(currentMonth, 1);

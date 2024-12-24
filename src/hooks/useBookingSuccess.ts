@@ -54,20 +54,33 @@ export const useBookingSuccess = () => {
 
         console.log('✅ Payment Intent ID retrieved:', stripeData.paymentIntentId);
 
-        // Then, get the booking with the payment_intent_id
-        const { data: bookings, error: bookingError } = await supabase
+        // Rechercher d'abord par payment_intent_id
+        let { data: bookings, error: bookingError } = await supabase
           .from('bookings')
           .select('*')
           .eq('payment_intent_id', stripeData.paymentIntentId)
           .maybeSingle();
 
-        if (bookingError) {
-          console.error('❌ Error retrieving booking:', bookingError);
-          throw bookingError;
+        // Si aucune réservation n'est trouvée, chercher les réservations récentes en attente
+        if (!bookings) {
+          console.log('⚠️ No booking found with payment_intent_id, searching recent pending bookings...');
+          const { data: pendingBookings, error: pendingError } = await supabase
+            .from('bookings')
+            .select('*')
+            .eq('payment_status', 'awaiting_payment')
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+          if (pendingError) {
+            console.error('❌ Error retrieving pending bookings:', pendingError);
+            throw pendingError;
+          }
+
+          bookings = pendingBookings?.[0] || null;
         }
 
         if (!bookings) {
-          console.log('❌ No booking found for this payment_intent_id');
+          console.log('❌ No booking found');
           
           if (retryCount < MAX_RETRIES) {
             console.log(`⏳ Retrying in ${RETRY_DELAY/1000}s (${retryCount + 1}/${MAX_RETRIES})`);
@@ -87,6 +100,24 @@ export const useBookingSuccess = () => {
         console.log('✅ Booking found:', bookings);
         setBookingDetails(bookings);
         
+        // Mettre à jour le statut de la réservation si nécessaire
+        if (bookings.payment_status !== 'paid') {
+          const { error: updateError } = await supabase
+            .from('bookings')
+            .update({
+              payment_status: 'paid',
+              status: 'confirmed',
+              payment_intent_id: stripeData.paymentIntentId
+            })
+            .eq('id', bookings.id);
+
+          if (updateError) {
+            console.error('❌ Error updating booking status:', updateError);
+          } else {
+            console.log('✅ Booking status updated to paid');
+          }
+        }
+
         if (bookings.payment_status === 'paid') {
           console.log('📧 Sending confirmation email for booking:', bookings.id);
           try {

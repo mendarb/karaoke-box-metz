@@ -2,7 +2,7 @@ import { supabase } from "@/lib/supabase";
 import { createCheckoutSession } from "@/services/checkoutService";
 
 export const createBooking = async (data: any, userId: string | null) => {
-  console.log('📝 Création d\'une nouvelle réservation :', {
+  console.log('📝 Creating new booking:', {
     userId,
     email: data.email,
     date: data.date,
@@ -30,7 +30,7 @@ export const createBooking = async (data: any, userId: string | null) => {
       price: data.calculatedPrice,
       message: data.message,
       status: 'pending',
-      payment_status: 'unpaid',
+      payment_status: 'awaiting_payment',
       is_test_booking: data.isTestMode,
       promo_code_id: data.promoCodeId,
     }])
@@ -38,11 +38,11 @@ export const createBooking = async (data: any, userId: string | null) => {
     .single();
 
   if (error) {
-    console.error('❌ Erreur lors de la création de la réservation:', error);
+    console.error('❌ Error creating booking:', error);
     throw error;
   }
 
-  console.log('✅ Réservation créée avec succès:', {
+  console.log('✅ Booking created successfully:', {
     bookingId: booking.id,
     status: booking.status,
     paymentStatus: booking.payment_status,
@@ -59,7 +59,7 @@ export const createBooking = async (data: any, userId: string | null) => {
 };
 
 export const generatePaymentLink = async (booking: any, data: any) => {
-  console.log('💰 Génération du lien de paiement pour la réservation:', booking.id, {
+  console.log('💰 Generating payment link for booking:', booking.id, {
     originalPrice: data.calculatedPrice,
     finalPrice: data.finalPrice,
     promoCode: data.promoCode,
@@ -86,7 +86,7 @@ export const generatePaymentLink = async (booking: any, data: any) => {
     discountAmount: data.discountAmount,
   });
 
-  console.log('✅ Lien de paiement généré:', {
+  console.log('✅ Payment link generated:', {
     url: checkoutUrl,
     isTestMode: data.isTestMode
   });

@@ -23,7 +23,6 @@ export const useBookingSubmit = (
       const { data: booking, error: bookingError } = await supabase
         .from('bookings')
         .insert([{
-          user_id: data.userId,
           user_email: data.email,
           user_name: data.fullName,
           user_phone: data.phone,
@@ -42,6 +41,7 @@ export const useBookingSubmit = (
         .single();
 
       if (bookingError) {
+        console.error('❌ Error creating booking:', bookingError);
         throw bookingError;
       }
 
@@ -53,7 +53,6 @@ export const useBookingSubmit = (
         {
           body: {
             bookingId: booking.id,
-            userId: data.userId,
             userEmail: data.email,
             date: data.date,
             timeSlot: data.timeSlot,
@@ -72,6 +71,7 @@ export const useBookingSubmit = (
       );
 
       if (checkoutError) {
+        console.error('❌ Error generating checkout URL:', checkoutError);
         throw checkoutError;
       }
 

@@ -63,40 +63,85 @@ export const useBookingSuccess = () => {
           .maybeSingle();
 
         if (!booking) {
-          if (retryCount < MAX_RETRIES) {
-            console.log(`Retry attempt ${retryCount + 1} of ${MAX_RETRIES}`);
-            setRetryCount(prev => prev + 1);
-            retryTimeout = setTimeout(fetchBookingDetails, RETRY_DELAY);
-            return;
+          console.log('⚠️ No booking found with payment_intent_id, searching recent pending bookings...');
+          
+          // Rechercher parmi les réservations récentes en attente
+          const { data: pendingBooking, error: pendingError } = await supabase
+            .from('bookings')
+            .select('*')
+            .eq('payment_status', 'awaiting_payment')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (pendingError || !pendingBooking) {
+            if (retryCount < MAX_RETRIES) {
+              console.log(`Retry attempt ${retryCount + 1} of ${MAX_RETRIES}`);
+              setRetryCount(prev => prev + 1);
+              retryTimeout = setTimeout(fetchBookingDetails, RETRY_DELAY);
+              return;
+            }
+            throw new Error('Booking not found');
           }
-          console.log('Aucune réservation trouvée après le délai');
-          setLoading(false);
-          toast({
-            title: "Réservation non trouvée",
-            description: "Votre paiement a été accepté mais nous n'avons pas pu retrouver votre réservation. Notre équipe va vous contacter rapidement.",
-            variant: "destructive",
-          });
-          return;
-        }
 
-        if (isSubscribed) {
-          setBookingDetails(booking);
+          // Mettre à jour la réservation avec le payment_intent_id
+          const { data: updatedBooking, error: updateError } = await supabase
+            .from('bookings')
+            .update({
+              payment_intent_id: stripeData.paymentIntentId,
+              payment_status: 'paid',
+              status: 'confirmed',
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', pendingBooking.id)
+            .select()
+            .single();
 
-          if (booking.status === 'confirmed' && !emailSent) {
-            try {
-              await sendEmail(booking);
-              setEmailSent(true);
-              toast({
-                title: "Confirmation envoyée",
-                description: "Un email de confirmation vous a été envoyé.",
-              });
-            } catch (emailError) {
-              console.error('Error sending confirmation email:', emailError);
-              toast({
-                title: "Note",
-                description: "La réservation est confirmée mais l'email n'a pas pu être envoyé",
-                variant: "default",
-              });
+          if (updateError) {
+            throw updateError;
+          }
+
+          console.log('✅ Booking status updated to paid');
+          
+          if (isSubscribed) {
+            setBookingDetails(updatedBooking);
+            
+            if (!emailSent) {
+              try {
+                console.log('📧 Sending confirmation email for booking:', updatedBooking.id);
+                await sendEmail(updatedBooking);
+                setEmailSent(true);
+                console.log('✅ Confirmation email sent successfully');
+              } catch (emailError) {
+                console.error('Error sending confirmation email:', emailError);
+                toast({
+                  title: "Note",
+                  description: "La réservation est confirmée mais l'email n'a pas pu être envoyé",
+                  variant: "default",
+                });
+              }
+            }
+          }
+        } else {
+          console.log('✅ Booking found:', booking);
+          
+          if (isSubscribed) {
+            setBookingDetails(booking);
+            
+            if (booking.status === 'confirmed' && !emailSent) {
+              try {
+                console.log('📧 Sending confirmation email for booking:', booking.id);
+                await sendEmail(booking);
+                setEmailSent(true);
+                console.log('✅ Confirmation email sent successfully');
+              } catch (emailError) {
+                console.error('Error sending confirmation email:', emailError);
+                toast({
+                  title: "Note",
+                  description: "La réservation est confirmée mais l'email n'a pas pu être envoyé",
+                  variant: "default",
+                });
+              }
             }
           }
         }

@@ -19,7 +19,7 @@ export const useBookingOverlap = () => {
         .from('bookings')
         .select('*')
         .eq('date', formattedDate)
-        .eq('payment_status', 'paid')
+        .neq('status', 'cancelled')
         .is('deleted_at', null);
 
       if (error) {
@@ -27,14 +27,31 @@ export const useBookingOverlap = () => {
         throw error;
       }
 
+      // Vérifier tous les créneaux qui se chevauchent
       const hasOverlap = existingBookings?.some(booking => {
         const bookingStart = parseInt(booking.time_slot);
         const bookingEnd = bookingStart + parseInt(booking.duration);
-        return (
+
+        // Vérifier si les plages horaires se chevauchent
+        const overlap = (
           (startHour >= bookingStart && startHour < bookingEnd) ||
           (endHour > bookingStart && endHour <= bookingEnd) ||
           (startHour <= bookingStart && endHour >= bookingEnd)
         );
+
+        if (overlap) {
+          console.log('Chevauchement détecté:', {
+            newBooking: { date: formattedDate, start: startHour, end: endHour },
+            existingBooking: { 
+              id: booking.id, 
+              date: booking.date, 
+              start: bookingStart, 
+              end: bookingEnd 
+            }
+          });
+        }
+
+        return overlap;
       });
 
       if (hasOverlap) {
@@ -48,7 +65,12 @@ export const useBookingOverlap = () => {
       return hasOverlap;
     } catch (error) {
       console.error('Error in checkOverlap:', error);
-      return false;
+      toast({
+        title: "Erreur",
+        description: "Impossible de vérifier la disponibilité du créneau",
+        variant: "destructive",
+      });
+      return true; // En cas d'erreur, on considère qu'il y a un chevauchement par sécurité
     }
   };
 

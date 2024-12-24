@@ -23,6 +23,40 @@ export const useBookingSubmit = (
 
       setIsSubmitting(true);
 
+      // Vérifier une dernière fois la disponibilité du créneau
+      const { data: existingBookings, error: checkError } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('date', data.date)
+        .neq('status', 'cancelled')
+        .is('deleted_at', null);
+
+      if (checkError) {
+        throw checkError;
+      }
+
+      const startHour = parseInt(data.timeSlot);
+      const endHour = startHour + parseInt(duration);
+
+      const hasOverlap = existingBookings?.some(booking => {
+        const bookingStart = parseInt(booking.time_slot);
+        const bookingEnd = bookingStart + parseInt(booking.duration);
+        return (
+          (startHour >= bookingStart && startHour < bookingEnd) ||
+          (endHour > bookingStart && endHour <= bookingEnd) ||
+          (startHour <= bookingStart && endHour >= bookingEnd)
+        );
+      });
+
+      if (hasOverlap) {
+        toast({
+          title: "Créneau indisponible",
+          description: "Ce créneau vient d'être réservé. Veuillez en choisir un autre.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Récupérer la session utilisateur si elle existe
       const { data: { session } } = await supabase.auth.getSession();
       const userId = session?.user?.id;

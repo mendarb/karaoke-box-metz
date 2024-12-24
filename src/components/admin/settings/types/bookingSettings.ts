@@ -25,8 +25,8 @@ export const defaultSettings: BookingSettings = {
   },
   openingHours: {
     0: { isOpen: true, slots: ["15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"] }, // Dimanche
-    1: { isOpen: false, slots: ["15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"] }, // Lundi
-    2: { isOpen: false, slots: ["15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"] }, // Mardi
+    1: { isOpen: false, slots: [] }, // Lundi - Fermé
+    2: { isOpen: false, slots: [] }, // Mardi - Fermé
     3: { isOpen: true, slots: ["15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"] }, // Mercredi
     4: { isOpen: true, slots: ["15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"] }, // Jeudi
     5: { isOpen: true, slots: ["15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00"] }, // Vendredi

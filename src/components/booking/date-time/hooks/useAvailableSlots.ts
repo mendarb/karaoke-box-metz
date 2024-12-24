@@ -1,61 +1,36 @@
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { toast } from "@/components/ui/use-toast";
-import { BookingSettings } from "@/components/admin/settings/types/bookingSettings";
+import { format } from "date-fns";
 
-export const useAvailableSlots = () => {
-  const getAvailableSlots = async (date: Date, settings: BookingSettings | null) => {
-    console.log('🔍 Récupération des créneaux pour:', date);
-    
-    if (!settings?.openingHours) {
-      console.log('❌ Pas de paramètres d\'horaires');
-      return [];
-    }
+export const useAvailableSlots = (selectedDate: Date | undefined) => {
+  return useQuery({
+    queryKey: ['available-slots', selectedDate?.toISOString()],
+    queryFn: async () => {
+      if (!selectedDate) return [];
 
-    // En mode test, retourner tous les créneaux
-    if (settings.isTestMode) {
-      return ['14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00'];
-    }
+      // Formater la date au format YYYY-MM-DD pour Supabase
+      const formattedDate = format(selectedDate, 'yyyy-MM-dd');
 
-    const dayOfWeek = date.getDay().toString();
-    const daySettings = settings.openingHours[dayOfWeek];
+      console.log('🔍 Vérification des créneaux pour:', {
+        date: formattedDate,
+        originalDate: selectedDate
+      });
 
-    if (!daySettings?.isOpen) {
-      console.log('❌ Jour fermé:', { date, dayOfWeek });
-      return [];
-    }
-
-    const slots = daySettings.slots || [];
-    console.log('📋 Créneaux potentiels:', slots);
-
-    try {
       const { data: bookings, error } = await supabase
         .from('bookings')
         .select('*')
-        .eq('date', date.toISOString().split('T')[0])
+        .eq('date', formattedDate)
         .neq('status', 'cancelled')
         .is('deleted_at', null);
 
       if (error) {
-        console.error('❌ Erreur vérification réservations:', error);
-        return slots;
+        console.error('❌ Erreur lors de la récupération des réservations:', error);
+        throw error;
       }
 
-      const availableSlots = slots.filter(slot => {
-        const slotTime = parseInt(slot.split(':')[0]);
-        return !bookings?.some(booking => {
-          const bookingStartTime = parseInt(booking.time_slot.split(':')[0]);
-          const bookingDuration = parseInt(booking.duration);
-          return slotTime >= bookingStartTime && slotTime < (bookingStartTime + bookingDuration);
-        });
-      });
-
-      console.log('✅ Créneaux disponibles:', availableSlots);
-      return availableSlots;
-    } catch (error) {
-      console.error('❌ Erreur récupération créneaux:', error);
-      return slots;
-    }
-  };
-
-  return { getAvailableSlots };
+      console.log('✅ Réservations trouvées:', bookings?.length || 0);
+      return bookings || [];
+    },
+    enabled: !!selectedDate,
+  });
 };

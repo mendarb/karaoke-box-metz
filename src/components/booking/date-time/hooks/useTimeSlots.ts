@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { toast } from "@/hooks/use-toast";
+import { format } from "date-fns";
 import type { BookingSettings } from "@/components/admin/settings/types/bookingSettings";
 
 export const useTimeSlots = () => {
@@ -21,10 +22,13 @@ export const useTimeSlots = () => {
     console.log('Potential slots for day:', slots);
 
     try {
+      // Formater la date au format YYYY-MM-DD pour Supabase
+      const formattedDate = format(date, 'yyyy-MM-dd');
+
       const { data: bookings, error } = await supabase
         .from('bookings')
         .select('*')
-        .eq('date', date.toISOString().split('T')[0])
+        .eq('date', formattedDate)
         .neq('status', 'cancelled')
         .is('deleted_at', null);
 
@@ -103,10 +107,13 @@ export const useTimeSlots = () => {
     const maxPossibleHours = Math.min(4, remainingSlots + 1);
 
     try {
+      // Formater la date au format YYYY-MM-DD pour Supabase
+      const formattedDate = format(date, 'yyyy-MM-dd');
+
       const { data: bookings, error } = await supabase
         .from('bookings')
         .select('*')
-        .eq('date', date.toISOString().split('T')[0])
+        .eq('date', formattedDate)
         .neq('status', 'cancelled')
         .is('deleted_at', null);
 

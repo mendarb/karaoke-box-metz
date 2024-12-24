@@ -20,7 +20,7 @@ export const convertJsWeekDayToSettings = (jsWeekDay: number): string => {
   // Notre format: 1 (lundi) - 7 (dimanche)
   const settingsWeekDay = jsWeekDay === 0 ? 7 : jsWeekDay;
   
-  console.log('Conversion jour:', { 
+  console.log('🔄 Conversion jour:', { 
     jsWeekDay, 
     settingsWeekDay,
     jsDay: ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'][jsWeekDay],
@@ -37,6 +37,9 @@ export const isDayExcluded = (
   maxDate: Date,
   isTestMode: boolean
 ): boolean => {
+  console.log('🔍 Vérification jour:', date.toISOString());
+  console.log('📊 Settings:', settings);
+  
   if (!settings?.openingHours) {
     console.log('❌ Pas de paramètres d\'horaires');
     return true; // Par défaut, tous les jours sont fermés si pas de paramètres
@@ -46,12 +49,13 @@ export const isDayExcluded = (
   
   // En mode test, aucun jour n'est exclu
   if (isTestMode) {
+    console.log('🧪 Mode test actif - jour autorisé');
     return false;
   }
   
   // Vérifier si la date est dans la plage autorisée
   if (dateToCheck < minDate || dateToCheck > maxDate) {
-    console.log('Date hors plage:', date);
+    console.log('📅 Date hors plage:', { date, minDate, maxDate });
     return true;
   }
 
@@ -60,9 +64,17 @@ export const isDayExcluded = (
   const settingsWeekDay = convertJsWeekDayToSettings(jsWeekDay);
   const daySettings = settings.openingHours[settingsWeekDay];
   
+  console.log('📅 Vérification paramètres jour:', {
+    date: date.toISOString(),
+    jsWeekDay,
+    settingsWeekDay,
+    daySettings,
+    isOpen: daySettings?.isOpen
+  });
+  
   // Si le jour n'est pas configuré ou explicitement fermé, il est exclu
   if (!daySettings || !daySettings.isOpen) {
-    console.log('Jour non configuré ou fermé:', {
+    console.log('❌ Jour non configuré ou fermé:', {
       date: date.toISOString(),
       jsWeekDay,
       settingsWeekDay,
@@ -71,5 +83,6 @@ export const isDayExcluded = (
     return true;
   }
 
+  console.log('✅ Jour disponible');
   return false;
 };

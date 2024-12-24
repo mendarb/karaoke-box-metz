@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { startOfDay, addDays, isSameDay } from "date-fns";
+import { startOfDay, addDays } from "date-fns";
 import { useBookingSettings } from "./useBookingSettings";
 
 interface UseDisabledDatesProps {
@@ -13,6 +13,9 @@ export const useDisabledDates = ({ minDate, maxDate, isDayExcluded }: UseDisable
   const { settings } = useBookingSettings();
 
   const calculateDisabledDates = useCallback(() => {
+    console.log('🔄 Calcul des jours désactivés...');
+    console.log('📊 Settings disponibles:', settings);
+    
     if (!settings) {
       console.log('❌ Pas de paramètres disponibles, tous les jours sont désactivés');
       // Si pas de paramètres, désactiver tous les jours
@@ -32,14 +35,14 @@ export const useDisabledDates = ({ minDate, maxDate, isDayExcluded }: UseDisable
     while (currentDate <= maxDate) {
       if (isDayExcluded(currentDate)) {
         // Vérifier qu'on n'ajoute pas de doublons
-        if (!dates.some(date => isSameDay(date, currentDate))) {
+        if (!dates.some(date => date.getTime() === currentDate.getTime())) {
           dates.push(new Date(currentDate));
         }
       }
       currentDate = addDays(currentDate, 1);
     }
 
-    console.log('Jours désactivés calculés:', dates.map(d => d.toISOString()));
+    console.log('📅 Jours désactivés:', dates.map(d => d.toISOString()));
     setDisabledDates(dates);
   }, [minDate, maxDate, isDayExcluded, settings]);
 

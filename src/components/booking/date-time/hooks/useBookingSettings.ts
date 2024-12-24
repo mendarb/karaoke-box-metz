@@ -34,6 +34,8 @@ export const useBookingSettings = () => {
     ? new Date(settings.bookingWindow.endDate)
     : addDays(startOfDay(new Date()), 30);
 
+  console.log('📅 Plage de dates:', { minDate, maxDate, isTestMode });
+
   return {
     settings,
     isLoading,

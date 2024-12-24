@@ -34,6 +34,8 @@ export const useBookingSuccess = () => {
           return;
         }
 
+        console.log('🔍 Récupération des détails pour la session:', sessionId);
+
         // D'abord, récupérer le payment_intent_id via la session Stripe
         const { data: stripeData, error: stripeError } = await supabase.functions.invoke(
           'get-payment-intent',
@@ -43,36 +45,42 @@ export const useBookingSuccess = () => {
         );
 
         if (stripeError || !stripeData?.paymentIntentId) {
-          console.error('Erreur lors de la récupération du payment_intent:', stripeError);
+          console.error('❌ Erreur lors de la récupération du payment_intent:', stripeError);
+          toast({
+            title: "Erreur",
+            description: "Impossible de récupérer les détails du paiement",
+            variant: "destructive",
+          });
           setLoading(false);
           return;
         }
 
-        console.log('Payment Intent ID récupéré:', stripeData.paymentIntentId);
+        console.log('✅ Payment Intent ID récupéré:', stripeData.paymentIntentId);
 
-        const { data: bookings, error } = await supabase
+        // Ensuite, récupérer la réservation avec le payment_intent_id
+        const { data: bookings, error: bookingError } = await supabase
           .from('bookings')
           .select('*')
           .eq('payment_intent_id', stripeData.paymentIntentId)
           .maybeSingle();
 
-        if (error) {
-          console.error('Erreur lors de la récupération de la réservation:', error);
+        if (bookingError) {
+          console.error('❌ Erreur lors de la récupération de la réservation:', bookingError);
           toast({
             title: "Erreur",
             description: "Impossible de récupérer les détails de votre réservation",
             variant: "destructive",
           });
-          throw error;
+          throw bookingError;
         }
 
         if (!bookings) {
-          console.log('Aucune réservation trouvée pour ce payment_intent_id');
+          console.log('❌ Aucune réservation trouvée pour ce payment_intent_id');
           setLoading(false);
           return;
         }
 
-        console.log('Réservation trouvée:', bookings);
+        console.log('✅ Réservation trouvée:', bookings);
         setBookingDetails(bookings);
           
         // Envoyer l'email de confirmation si le paiement est confirmé
@@ -83,10 +91,20 @@ export const useBookingSuccess = () => {
             console.log('✅ Email de confirmation envoyé avec succès');
           } catch (emailError) {
             console.error('❌ Erreur lors de l\'envoi de l\'email de confirmation:', emailError);
+            toast({
+              title: "Note",
+              description: "La réservation est confirmée mais l'email n'a pas pu être envoyé",
+              variant: "default",
+            });
           }
         }
       } catch (error) {
-        console.error('Erreur dans fetchBookingDetails:', error);
+        console.error('❌ Erreur dans fetchBookingDetails:', error);
+        toast({
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la récupération de votre réservation",
+          variant: "destructive",
+        });
       } finally {
         setLoading(false);
       }

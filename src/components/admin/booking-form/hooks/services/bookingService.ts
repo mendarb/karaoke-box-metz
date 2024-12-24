@@ -26,7 +26,7 @@ export const createBooking = async (data: any, userId: string | null) => {
       price: data.calculatedPrice,
       message: data.message,
       status: 'pending',
-      payment_status: 'unpaid',
+      payment_status: 'awaiting_payment',
       is_test_booking: data.isTestMode || false,
     }])
     .select()
@@ -48,20 +48,6 @@ export const createBooking = async (data: any, userId: string | null) => {
 
 export const generatePaymentLink = async (booking: any, data: any) => {
   console.log('💰 Génération du lien de paiement pour la réservation:', booking.id);
-
-  // Mettre à jour la réservation avec le statut "awaiting_payment"
-  const { error: updateError } = await supabase
-    .from('bookings')
-    .update({ 
-      status: 'pending',
-      payment_status: 'awaiting_payment'
-    })
-    .eq('id', booking.id);
-
-  if (updateError) {
-    console.error('❌ Erreur lors de la mise à jour du statut de la réservation:', updateError);
-    throw updateError;
-  }
 
   const checkoutUrl = await createCheckoutSession({
     bookingId: booking.id,

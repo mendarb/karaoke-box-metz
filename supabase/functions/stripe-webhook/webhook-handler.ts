@@ -19,10 +19,11 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
           metadata: session.metadata,
           customerEmail: session.customer_email,
           paymentStatus: session.payment_status,
+          paymentIntentId: session.payment_intent,
           bookingId: session.metadata.bookingId
         });
 
-        // Mettre à jour la réservation comme confirmée
+        // Mettre à jour la réservation avec le payment_intent_id et le statut
         const { data: booking, error: bookingError } = await supabase
           .from('bookings')
           .update({
@@ -43,7 +44,8 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
         console.log('✅ Booking confirmed:', {
           bookingId: booking.id,
           status: booking.status,
-          paymentStatus: booking.payment_status
+          paymentStatus: booking.payment_status,
+          paymentIntentId: booking.payment_intent_id
         });
 
         // Envoyer l'email de confirmation

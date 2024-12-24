@@ -39,7 +39,7 @@ export const isDayExcluded = (
 ): boolean => {
   if (!settings?.openingHours) {
     console.log('❌ Pas de paramètres d\'horaires');
-    return false; // Par défaut, autoriser tous les jours si pas de paramètres
+    return true; // Par défaut, tous les jours sont fermés si pas de paramètres
   }
   
   const dateToCheck = startOfDay(date);
@@ -60,27 +60,16 @@ export const isDayExcluded = (
   const settingsWeekDay = convertJsWeekDayToSettings(jsWeekDay);
   const daySettings = settings.openingHours[settingsWeekDay];
   
-  // Si le jour n'est pas configuré, on le considère comme ouvert par défaut
-  if (!daySettings) {
-    console.log('Jour non configuré, considéré comme ouvert:', {
-      date: date.toISOString(),
-      jsWeekDay,
-      settingsWeekDay
-    });
-    return false;
-  }
-
-  // Le jour est exclu uniquement s'il est explicitement marqué comme fermé
-  const isExcluded = daySettings.isOpen === false;
-  
-  if (isExcluded) {
-    console.log('Jour explicitement fermé:', {
+  // Si le jour n'est pas configuré ou explicitement fermé, il est exclu
+  if (!daySettings || !daySettings.isOpen) {
+    console.log('Jour non configuré ou fermé:', {
       date: date.toISOString(),
       jsWeekDay,
       settingsWeekDay,
       daySettings
     });
+    return true;
   }
 
-  return isExcluded;
+  return false;
 };

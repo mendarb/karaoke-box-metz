@@ -14,8 +14,15 @@ export const useDisabledDates = ({ minDate, maxDate, isDayExcluded }: UseDisable
 
   const calculateDisabledDates = useCallback(() => {
     if (!settings) {
-      console.log('Pas de paramètres disponibles, aucun jour désactivé');
-      setDisabledDates([]);
+      console.log('❌ Pas de paramètres disponibles, tous les jours sont désactivés');
+      // Si pas de paramètres, désactiver tous les jours
+      const dates: Date[] = [];
+      let currentDate = startOfDay(minDate);
+      while (currentDate <= maxDate) {
+        dates.push(new Date(currentDate));
+        currentDate = addDays(currentDate, 1);
+      }
+      setDisabledDates(dates);
       return;
     }
 

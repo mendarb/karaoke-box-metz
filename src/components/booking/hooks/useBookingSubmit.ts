@@ -34,8 +34,8 @@ export const useBookingSubmit = (
           message: data.message,
           status: 'pending',
           payment_status: 'awaiting_payment',
-          is_test_booking: form.getValues('isTestMode') || false,
-          promo_code_id: form.getValues('promoCodeId'),
+          is_test_booking: data.isTestMode || false,
+          promo_code_id: data.promoCodeId,
         }])
         .select()
         .single();
@@ -47,7 +47,7 @@ export const useBookingSubmit = (
 
       console.log('✅ Booking created:', booking);
 
-      // Générer le lien de paiement
+      // Générer le lien de paiement avec l'ID de la réservation
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
         'create-checkout',
         {
@@ -63,9 +63,9 @@ export const useBookingSubmit = (
             message: data.message,
             userName: data.fullName,
             userPhone: data.phone,
-            isTestMode: form.getValues('isTestMode') || false,
-            promoCodeId: form.getValues('promoCodeId'),
-            promoCode: form.getValues('promoCode'),
+            isTestMode: data.isTestMode || false,
+            promoCodeId: data.promoCodeId,
+            promoCode: data.promoCode,
           }
         }
       );
@@ -81,7 +81,8 @@ export const useBookingSubmit = (
 
       console.log('✅ Checkout URL generated:', {
         url: checkoutData.url,
-        isTestMode: form.getValues('isTestMode') || false
+        bookingId: booking.id,
+        isTestMode: data.isTestMode || false
       });
       
       window.location.href = checkoutData.url;

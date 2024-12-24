@@ -16,6 +16,7 @@ serve(async (req) => {
   try {
     const requestData = await req.json();
     console.log('📦 Request data:', {
+      bookingId: requestData.bookingId,
       ...requestData,
       promoDetails: {
         promoCode: requestData.promoCode,
@@ -25,8 +26,8 @@ serve(async (req) => {
       }
     });
 
-    if (!requestData) {
-      throw new Error('No data provided');
+    if (!requestData || !requestData.bookingId) {
+      throw new Error('No booking ID provided');
     }
 
     const stripeKey = requestData.isTestMode 
@@ -42,23 +43,39 @@ serve(async (req) => {
       httpClient: Stripe.createFetchHttpClient(),
     });
 
-    // Créer la session Stripe sans créer la réservation
+    // Créer la session Stripe
     const session = await createStripeSession(
       stripe,
       requestData,
       req.headers.get('origin') || ''
     );
 
+    // Mettre à jour la réservation avec le payment_intent_id
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Missing Supabase credentials');
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    const { error: updateError } = await supabase
+      .from('bookings')
+      .update({ payment_intent_id: session.payment_intent as string })
+      .eq('id', requestData.bookingId);
+
+    if (updateError) {
+      console.error('❌ Error updating booking with payment_intent_id:', updateError);
+      throw updateError;
+    }
+
     console.log('✅ Checkout session created:', {
       sessionId: session.id,
       mode: requestData.isTestMode ? 'TEST' : 'LIVE',
       url: session.url,
-      priceDetails: {
-        originalPrice: requestData.price,
-        finalPrice: requestData.finalPrice,
-        promoCode: requestData.promoCode,
-        discountAmount: requestData.discountAmount
-      }
+      bookingId: requestData.bookingId,
+      paymentIntentId: session.payment_intent
     });
 
     return new Response(

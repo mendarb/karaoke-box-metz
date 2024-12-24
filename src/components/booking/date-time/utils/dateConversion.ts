@@ -1,4 +1,4 @@
-import { startOfDay, addDays } from "date-fns";
+import { addDays, startOfDay } from "date-fns";
 import { BookingSettings } from "@/components/admin/settings/types/bookingSettings";
 
 export const getDateRange = (settings: BookingSettings | null | undefined, isTestMode: boolean) => {

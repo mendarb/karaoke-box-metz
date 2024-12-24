@@ -1,18 +1,24 @@
 import { supabase } from "@/lib/supabase";
 import { useToast } from "./use-toast";
+import { format } from "date-fns";
 
 export const useBookingOverlap = () => {
   const { toast } = useToast();
 
-  const checkOverlap = async (date: string, timeSlot: string, duration: string) => {
+  const checkOverlap = async (date: Date | string, timeSlot: string, duration: string) => {
     try {
       const startHour = parseInt(timeSlot);
       const endHour = startHour + parseInt(duration);
 
+      // Convert Date object to YYYY-MM-DD format if needed
+      const formattedDate = date instanceof Date 
+        ? format(date, 'yyyy-MM-dd')
+        : date;
+
       const { data: existingBookings, error } = await supabase
         .from('bookings')
         .select('*')
-        .eq('date', date)
+        .eq('date', formattedDate)
         .eq('payment_status', 'paid')
         .is('deleted_at', null);
 

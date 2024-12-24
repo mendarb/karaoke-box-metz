@@ -18,7 +18,7 @@ export interface BookingDetails {
   is_test_booking?: boolean;
 }
 
-const MAX_RETRIES = 5;
+const MAX_RETRIES = 3;
 const RETRY_DELAY = 2000;
 
 export const useBookingSuccess = () => {
@@ -28,10 +28,10 @@ export const useBookingSuccess = () => {
   const sessionId = searchParams.get('session_id');
   const { sendEmail } = useBookingEmail();
   const [emailSent, setEmailSent] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     let isSubscribed = true;
-    let retryCount = 0;
     let retryTimeout: NodeJS.Timeout;
 
     const fetchBookingDetails = async () => {
@@ -43,6 +43,7 @@ export const useBookingSuccess = () => {
 
         console.log('🔍 Retrieving details for session:', sessionId);
 
+        // Récupérer le payment_intent_id depuis la session Stripe
         const { data: stripeData, error: stripeError } = await supabase.functions.invoke(
           'get-payment-intent',
           {
@@ -55,7 +56,7 @@ export const useBookingSuccess = () => {
         }
 
         // Rechercher la réservation par payment_intent_id
-        let { data: booking, error: bookingError } = await supabase
+        const { data: booking, error: bookingError } = await supabase
           .from('bookings')
           .select('*')
           .eq('payment_intent_id', stripeData.paymentIntentId)
@@ -63,17 +64,24 @@ export const useBookingSuccess = () => {
 
         if (!booking) {
           if (retryCount < MAX_RETRIES) {
-            retryCount++;
+            console.log(`Retry attempt ${retryCount + 1} of ${MAX_RETRIES}`);
+            setRetryCount(prev => prev + 1);
             retryTimeout = setTimeout(fetchBookingDetails, RETRY_DELAY);
             return;
           }
-          throw new Error('Booking not found');
+          console.log('Aucune réservation trouvée après le délai');
+          setLoading(false);
+          toast({
+            title: "Réservation non trouvée",
+            description: "Votre paiement a été accepté mais nous n'avons pas pu retrouver votre réservation. Notre équipe va vous contacter rapidement.",
+            variant: "destructive",
+          });
+          return;
         }
 
         if (isSubscribed) {
           setBookingDetails(booking);
 
-          // Envoyer l'email seulement si le statut est confirmé et que l'email n'a pas déjà été envoyé
           if (booking.status === 'confirmed' && !emailSent) {
             try {
               await sendEmail(booking);
@@ -96,8 +104,8 @@ export const useBookingSuccess = () => {
         setLoading(false);
       } catch (error: any) {
         console.error('Error in fetchBookingDetails:', error);
-        if (retryCount < MAX_RETRIES && !emailSent) {
-          retryCount++;
+        if (retryCount < MAX_RETRIES) {
+          setRetryCount(prev => prev + 1);
           retryTimeout = setTimeout(fetchBookingDetails, RETRY_DELAY);
           return;
         }
@@ -119,7 +127,7 @@ export const useBookingSuccess = () => {
       isSubscribed = false;
       clearTimeout(retryTimeout);
     };
-  }, [sessionId, sendEmail, emailSent]);
+  }, [sessionId, sendEmail, emailSent, retryCount]);
 
   return { bookingDetails, loading };
 };

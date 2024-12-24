@@ -21,13 +21,17 @@ export const useDisabledDates = ({ minDate, maxDate }: UseDisabledDatesProps) =>
       settings
     });
 
+    // Générer toutes les dates dans l'intervalle
     const dates = eachDayOfInterval({ 
       start: startOfDay(minDate), 
       end: startOfDay(maxDate) 
-    }).filter(date => isDayExcluded(date, settings));
+    });
 
-    console.log('📅 Dates désactivées:', dates.map(d => d.toISOString()));
-    setDisabledDates(dates);
+    // Filtrer les dates désactivées
+    const disabledDates = dates.filter(date => isDayExcluded(date, settings));
+
+    console.log('📅 Dates désactivées:', disabledDates.map(d => d.toISOString()));
+    setDisabledDates(disabledDates);
   }, [minDate, maxDate, settings]);
 
   useEffect(() => {

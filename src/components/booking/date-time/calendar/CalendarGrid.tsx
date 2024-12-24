@@ -28,10 +28,12 @@ export const CalendarGrid = ({
     const normalizedMinDate = startOfDay(minDate);
     const normalizedMaxDate = startOfDay(maxDate);
 
+    // Vérifier si la date est dans la plage autorisée
     if (isBefore(normalizedDate, normalizedMinDate) || isAfter(normalizedDate, normalizedMaxDate)) {
       return true;
     }
 
+    // Vérifier si la date est dans les dates désactivées
     return disabledDates.some(disabledDate => 
       isSameDay(normalizedDate, startOfDay(disabledDate))
     );

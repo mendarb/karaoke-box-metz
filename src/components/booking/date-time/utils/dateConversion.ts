@@ -32,7 +32,7 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
     return true;
   }
 
-  // Vérifier les horaires d'ouverture
+  // Vérifier les horaires d'ouverture - Utiliser le jour de la semaine (0-6)
   const dayOfWeek = normalizedDate.getDay().toString();
   const daySettings = settings.openingHours[dayOfWeek];
 
@@ -48,6 +48,7 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
 
   console.log('✅ Jour disponible:', {
     date: normalizedDate.toISOString(),
+    dayOfWeek,
     slots: daySettings.slots
   });
   return false;

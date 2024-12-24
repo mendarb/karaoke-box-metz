@@ -5,7 +5,6 @@ import { useDateTimeSelection } from "./hooks/useDateTimeSelection";
 import { CalendarSection } from "./calendar/CalendarSection";
 import { TimeSlotsSection } from "./TimeSlotsSection";
 import { useBookingSettings } from "./hooks/useBookingSettings";
-import { convertJsWeekDayToSettings } from "./utils/dateConversion";
 
 interface DateTimeFieldsProps {
   form: UseFormReturn<any>;
@@ -21,29 +20,7 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
   } = useDateTimeSelection(form, onAvailabilityChange);
 
   const { minDate, maxDate, settings } = useBookingSettings();
-
-  const { disabledDates } = useDisabledDates({ 
-    minDate, 
-    maxDate, 
-    isDayExcluded: (date: Date) => {
-      if (!settings?.openingHours) {
-        console.log('❌ Pas de paramètres disponibles');
-        return true;
-      }
-      
-      const settingsWeekDay = convertJsWeekDayToSettings(date.getDay());
-      const daySettings = settings.openingHours[settingsWeekDay];
-      
-      console.log('📅 Vérification jour:', {
-        date: date.toISOString(),
-        settingsWeekDay,
-        daySettings,
-        isOpen: daySettings?.isOpen
-      });
-      
-      return !daySettings?.isOpen;
-    }
-  });
+  const { disabledDates } = useDisabledDates({ minDate, maxDate });
 
   useEffect(() => {
     const timeSlot = form.watch("timeSlot");

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { CalendarHeader } from "./CalendarHeader";
 import { CalendarGrid } from "./CalendarGrid";
 import { Card } from "@/components/ui/card";
-import { addMonths, subMonths, startOfMonth, endOfMonth, startOfDay } from "date-fns";
+import { addMonths, subMonths, startOfMonth, endOfMonth, startOfDay, eachDayOfInterval } from "date-fns";
 
 interface BookingCalendarProps {
   selectedDate?: Date;
@@ -23,14 +23,12 @@ export const BookingCalendar = ({
   const [days, setDays] = useState<Date[]>([]);
 
   useEffect(() => {
-    const daysInMonth: Date[] = [];
-    const date = new Date(currentMonth);
-    date.setDate(1);
-    while (date.getMonth() === currentMonth.getMonth()) {
-      daysInMonth.push(startOfDay(new Date(date)));
-      date.setDate(date.getDate() + 1);
-    }
-    setDays(daysInMonth);
+    const monthDays = eachDayOfInterval({
+      start: startOfMonth(currentMonth),
+      end: endOfMonth(currentMonth)
+    }).map(date => startOfDay(date));
+    
+    setDays(monthDays);
   }, [currentMonth]);
 
   const handlePreviousMonth = () => {
@@ -41,12 +39,8 @@ export const BookingCalendar = ({
     setCurrentMonth(addMonths(currentMonth, 1));
   };
 
-  const normalizedCurrentMonth = startOfDay(currentMonth);
-  const normalizedMinDate = startOfDay(minDate);
-  const normalizedMaxDate = startOfDay(maxDate);
-
-  const isPreviousMonthDisabled = normalizedCurrentMonth <= normalizedMinDate;
-  const isNextMonthDisabled = normalizedCurrentMonth >= normalizedMaxDate;
+  const isPreviousMonthDisabled = startOfDay(subMonths(currentMonth, 1)) < startOfDay(minDate);
+  const isNextMonthDisabled = startOfDay(addMonths(currentMonth, 1)) > startOfDay(maxDate);
 
   return (
     <Card className="w-full max-w-lg mx-auto">

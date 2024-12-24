@@ -26,9 +26,15 @@ export const CalendarGrid = ({
     const normalizedMinDate = startOfDay(minDate);
     const normalizedMaxDate = startOfDay(maxDate);
 
-    return isBefore(normalizedDate, normalizedMinDate) || 
-           isAfter(normalizedDate, normalizedMaxDate) || 
-           disabledDates.some(disabledDate => isSameDay(normalizedDate, disabledDate));
+    // Vérifier si la date est dans la plage autorisée
+    if (isBefore(normalizedDate, normalizedMinDate) || isAfter(normalizedDate, normalizedMaxDate)) {
+      return true;
+    }
+
+    // Vérifier si la date est dans les dates désactivées
+    return disabledDates.some(disabledDate => 
+      isSameDay(normalizedDate, startOfDay(disabledDate))
+    );
   };
 
   return (
@@ -53,7 +59,7 @@ export const CalendarGrid = ({
             <button
               key={day.toString()}
               type="button"
-              onClick={() => !isDisabled && onSelect(day)}
+              onClick={() => !isDisabled && onSelect(startOfDay(day))}
               disabled={isDisabled}
               className={cn(
                 "h-10 w-full rounded-lg text-sm font-medium transition-colors",

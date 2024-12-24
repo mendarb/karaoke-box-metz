@@ -9,6 +9,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { useEffect } from "react";
 
 interface TestModeSwitchProps {
   form: UseFormReturn<any>;
@@ -16,6 +17,10 @@ interface TestModeSwitchProps {
 
 export const TestModeSwitch = ({ form }: TestModeSwitchProps) => {
   const isTestMode = form.watch("isTestMode");
+
+  useEffect(() => {
+    console.log('🔧 Test mode switch state:', isTestMode);
+  }, [isTestMode]);
 
   return (
     <div className="space-y-4">
@@ -33,7 +38,10 @@ export const TestModeSwitch = ({ form }: TestModeSwitchProps) => {
             <FormControl>
               <Switch
                 checked={field.value}
-                onCheckedChange={field.onChange}
+                onCheckedChange={(checked) => {
+                  console.log('🔧 Switching test mode to:', checked);
+                  field.onChange(checked);
+                }}
               />
             </FormControl>
           </FormItem>

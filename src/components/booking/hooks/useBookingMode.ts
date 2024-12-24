@@ -1,22 +1,26 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
 
 export const useBookingMode = () => {
-  const [isTestMode, setIsTestMode] = useState(false);
+  const { data: settings } = useQuery({
+    queryKey: ['booking-settings'],
+    queryFn: async () => {
+      console.log('🔧 Fetching booking settings for test mode...');
+      const { data, error } = await supabase
+        .from('booking_settings')
+        .select('*')
+        .eq('key', 'booking_settings')
+        .single();
 
-  useEffect(() => {
-    // Vérifier si nous sommes en mode test
-    const checkTestMode = () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const testMode = urlParams.get('test') === 'true';
-      setIsTestMode(testMode);
-      
-      console.log('🔧 Booking mode initialized:', {
-        isTestMode: testMode
-      });
-    };
+      if (error) {
+        console.error('Error fetching settings:', error);
+        throw error;
+      }
 
-    checkTestMode();
-  }, []);
+      console.log('🔧 Test mode from settings:', data?.value?.isTestMode);
+      return data?.value;
+    },
+  });
 
-  return { isTestMode };
+  return { isTestMode: settings?.isTestMode || false };
 };

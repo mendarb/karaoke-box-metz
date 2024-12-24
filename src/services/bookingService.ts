@@ -12,7 +12,8 @@ export const createBooking = async (data: any, userId: string | null) => {
     price: data.calculatedPrice,
     finalPrice: data.finalPrice,
     promoCode: data.promoCode,
-    discountAmount: data.discountAmount
+    discountAmount: data.discountAmount,
+    isTestMode: data.isTestMode
   });
 
   const { data: booking, error } = await supabase
@@ -30,7 +31,7 @@ export const createBooking = async (data: any, userId: string | null) => {
       message: data.message,
       status: 'pending',
       payment_status: 'unpaid',
-      is_test_booking: data.isTestMode || false,
+      is_test_booking: data.isTestMode,
       promo_code_id: data.promoCodeId,
     }])
     .select()
@@ -45,6 +46,7 @@ export const createBooking = async (data: any, userId: string | null) => {
     bookingId: booking.id,
     status: booking.status,
     paymentStatus: booking.payment_status,
+    isTestMode: data.isTestMode,
     promoDetails: {
       promoCode: data.promoCode,
       originalPrice: data.calculatedPrice,
@@ -61,7 +63,8 @@ export const generatePaymentLink = async (booking: any, data: any) => {
     originalPrice: data.calculatedPrice,
     finalPrice: data.finalPrice,
     promoCode: data.promoCode,
-    discountAmount: data.discountAmount
+    discountAmount: data.discountAmount,
+    isTestMode: data.isTestMode
   });
 
   const checkoutUrl = await createCheckoutSession({
@@ -77,13 +80,16 @@ export const generatePaymentLink = async (booking: any, data: any) => {
     message: data.message,
     userName: data.fullName,
     userPhone: data.phone,
-    isTestMode: data.isTestMode || false,
+    isTestMode: data.isTestMode,
     promoCodeId: data.promoCodeId,
     promoCode: data.promoCode,
     discountAmount: data.discountAmount,
   });
 
-  console.log('✅ Lien de paiement généré:', checkoutUrl);
+  console.log('✅ Lien de paiement généré:', {
+    url: checkoutUrl,
+    isTestMode: data.isTestMode
+  });
   return checkoutUrl;
 };
 

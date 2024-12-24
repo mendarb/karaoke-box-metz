@@ -13,6 +13,12 @@ export const useDisabledDates = ({ minDate, maxDate, isDayExcluded }: UseDisable
   const { settings } = useBookingSettings();
 
   const calculateDisabledDates = useCallback(() => {
+    if (!settings) {
+      console.log('Pas de paramètres disponibles, aucun jour désactivé');
+      setDisabledDates([]);
+      return;
+    }
+
     const dates: Date[] = [];
     let currentDate = startOfDay(minDate);
     
@@ -26,14 +32,13 @@ export const useDisabledDates = ({ minDate, maxDate, isDayExcluded }: UseDisable
       currentDate = addDays(currentDate, 1);
     }
 
+    console.log('Jours désactivés calculés:', dates.map(d => d.toISOString()));
     setDisabledDates(dates);
-  }, [minDate, maxDate, isDayExcluded]);
+  }, [minDate, maxDate, isDayExcluded, settings]);
 
   useEffect(() => {
-    if (settings) {
-      calculateDisabledDates();
-    }
-  }, [settings, calculateDisabledDates]);
+    calculateDisabledDates();
+  }, [calculateDisabledDates]);
 
   return { disabledDates };
 };

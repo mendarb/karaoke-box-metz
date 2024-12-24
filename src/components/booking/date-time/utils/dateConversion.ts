@@ -18,16 +18,15 @@ export const getDateRange = (settings: BookingSettings | null | undefined, isTes
 export const convertJsWeekDayToSettings = (jsWeekDay: number): string => {
   // JavaScript: 0 (dimanche) - 6 (samedi)
   // Notre format: 1 (lundi) - 7 (dimanche)
-  let settingsWeekDay = jsWeekDay + 1;
-  if (jsWeekDay === 0) {
-    settingsWeekDay = 7;
-  }
+  const settingsWeekDay = jsWeekDay === 0 ? 7 : jsWeekDay;
+  
   console.log('Conversion jour:', { 
     jsWeekDay, 
     settingsWeekDay,
     jsDay: ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'][jsWeekDay],
-    settingsDay: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'][settingsWeekDay - 1]
+    settingsDay: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'][settingsWeekDay === 7 ? 6 : settingsWeekDay - 1]
   });
+  
   return String(settingsWeekDay);
 };
 
@@ -38,7 +37,10 @@ export const isDayExcluded = (
   maxDate: Date,
   isTestMode: boolean
 ): boolean => {
-  if (!settings) return true;
+  if (!settings?.openingHours) {
+    console.log('❌ Pas de paramètres d\'horaires');
+    return false; // Par défaut, autoriser tous les jours si pas de paramètres
+  }
   
   const dateToCheck = startOfDay(date);
   
@@ -56,27 +58,29 @@ export const isDayExcluded = (
   // Convertir le jour de la semaine au format des settings
   const jsWeekDay = dateToCheck.getDay();
   const settingsWeekDay = convertJsWeekDayToSettings(jsWeekDay);
-  const daySettings = settings.openingHours?.[settingsWeekDay];
+  const daySettings = settings.openingHours[settingsWeekDay];
   
-  // Vérifier si le jour est ouvert
-  if (!daySettings?.isOpen) {
-    console.log('Jour fermé:', {
+  // Si le jour n'est pas configuré, on le considère comme ouvert par défaut
+  if (!daySettings) {
+    console.log('Jour non configuré, considéré comme ouvert:', {
+      date: date.toISOString(),
+      jsWeekDay,
+      settingsWeekDay
+    });
+    return false;
+  }
+
+  // Le jour est exclu uniquement s'il est explicitement marqué comme fermé
+  const isExcluded = daySettings.isOpen === false;
+  
+  if (isExcluded) {
+    console.log('Jour explicitement fermé:', {
       date: date.toISOString(),
       jsWeekDay,
       settingsWeekDay,
-      jsDay: ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'][jsWeekDay],
-      settingsDay: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'][Number(settingsWeekDay) - 1],
-      isOpen: daySettings?.isOpen,
-      openingHours: settings.openingHours
+      daySettings
     });
-    return true;
   }
 
-  // Vérifier si le jour est dans la liste des jours exclus
-  if (settings.excludedDays?.includes(dateToCheck.getTime())) {
-    console.log('Jour exclu:', date);
-    return true;
-  }
-
-  return false;
+  return isExcluded;
 };

@@ -24,27 +24,6 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
     }
   }
 
-  // Utiliser directement le jour JavaScript (0-6)
-  const dayOfWeek = normalizedDate.getDay().toString();
-  const daySettings = settings.openingHours[dayOfWeek];
-
-  console.log('🔍 Vérification jour:', {
-    date: normalizedDate.toISOString(),
-    dayOfWeek,
-    isOpen: daySettings?.isOpen,
-    slots: daySettings?.slots?.length
-  });
-
-  if (!daySettings?.isOpen || !daySettings.slots.length) {
-    console.log('❌ Jour fermé ou sans créneaux:', {
-      date: normalizedDate.toISOString(),
-      dayOfWeek,
-      isOpen: daySettings?.isOpen,
-      slots: daySettings?.slots
-    });
-    return true;
-  }
-
   // Vérifier si le jour est exclu manuellement
   if (settings.excludedDays?.some(excludedDay => 
     isEqual(startOfDay(new Date(excludedDay)), normalizedDate)
@@ -53,6 +32,23 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
     return true;
   }
 
-  console.log('✅ Jour disponible:', normalizedDate.toISOString());
+  // Vérifier les horaires d'ouverture
+  const dayOfWeek = normalizedDate.getDay().toString();
+  const daySettings = settings.openingHours[dayOfWeek];
+
+  if (!daySettings?.isOpen || !daySettings.slots?.length) {
+    console.log('❌ Jour fermé ou sans créneaux:', {
+      date: normalizedDate.toISOString(),
+      dayOfWeek,
+      isOpen: daySettings?.isOpen,
+      slots: daySettings?.slots?.length
+    });
+    return true;
+  }
+
+  console.log('✅ Jour disponible:', {
+    date: normalizedDate.toISOString(),
+    slots: daySettings.slots
+  });
   return false;
 };

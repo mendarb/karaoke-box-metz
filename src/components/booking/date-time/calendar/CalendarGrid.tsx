@@ -1,7 +1,7 @@
 import { format, isSameDay, isToday, isBefore, isAfter, startOfDay } from "date-fns";
 import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { Calendar, Clock } from "lucide-react";
+import { Calendar, Clock, X } from "lucide-react";
 
 interface CalendarGridProps {
   month: Date;
@@ -81,6 +81,11 @@ export const CalendarGrid = ({
               {hasAvailability && !isSelected && (
                 <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2">
                   <Clock className="h-3 w-3 text-violet-500" />
+                </div>
+              )}
+              {isDisabled && (
+                <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2">
+                  <X className="h-3 w-3 text-gray-400" />
                 </div>
               )}
             </button>

@@ -66,7 +66,21 @@ export function AuthForm({ onClose, isLogin, onToggleMode }: AuthFormProps) {
           return
         }
 
-        const { error } = await supabase.auth.signUp({
+        // Vérifier d'abord si l'utilisateur existe
+        const { data: { user: existingUser } } = await supabase.auth.getUser()
+        
+        if (existingUser) {
+          toast({
+            title: "Compte existant",
+            description: "Un compte existe déjà avec cet email. Veuillez vous connecter.",
+            variant: "destructive",
+          })
+          onToggleMode() // Basculer vers le formulaire de connexion
+          setIsLoading(false)
+          return
+        }
+
+        const { error, data } = await supabase.auth.signUp({
           email: email.trim(),
           password: password.trim(),
           options: {
@@ -79,19 +93,36 @@ export function AuthForm({ onClose, isLogin, onToggleMode }: AuthFormProps) {
         })
 
         if (error) {
-          toast({
-            title: "Erreur",
-            description: error.message,
-            variant: "destructive",
-          })
+          console.error("Signup error:", error)
+          if (error.message.includes("User already registered")) {
+            toast({
+              title: "Compte existant",
+              description: "Un compte existe déjà avec cet email. Veuillez vous connecter.",
+            })
+            onToggleMode() // Basculer vers le formulaire de connexion
+          } else {
+            toast({
+              title: "Erreur",
+              description: error.message,
+              variant: "destructive",
+            })
+          }
           setIsLoading(false)
           return
         }
 
-        toast({
-          title: "Inscription réussie",
-          description: "Vérifiez votre email pour confirmer votre compte",
-        })
+        // Vérifier si l'email a besoin d'être confirmé
+        if (data?.user?.identities?.length === 0) {
+          toast({
+            title: "Compte créé avec succès",
+            description: "Un email de confirmation vous a été envoyé. Veuillez vérifier votre boîte de réception.",
+          })
+        } else {
+          toast({
+            title: "Inscription réussie",
+            description: "Votre compte a été créé avec succès",
+          })
+        }
         onClose()
       }
     } catch (error: any) {

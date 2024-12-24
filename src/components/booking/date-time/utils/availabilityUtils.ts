@@ -1,6 +1,5 @@
 import { supabase } from "@/lib/supabase";
 import { BookingSettings } from "@/components/admin/settings/types/bookingSettings";
-import { convertJsWeekDayToSettings } from "./dateConversion";
 
 export const getAvailableHoursForSlot = async (
   date: Date,
@@ -13,13 +12,14 @@ export const getAvailableHoursForSlot = async (
     return 4;
   }
 
-  const settingsWeekDay = convertJsWeekDayToSettings(date);
-  const daySettings = settings.openingHours[settingsWeekDay];
+  // Utiliser directement le jour JavaScript (0-6)
+  const dayOfWeek = date.getDay().toString();
+  const daySettings = settings.openingHours[dayOfWeek];
 
   if (!daySettings?.isOpen) {
     console.log('❌ Jour fermé:', {
       date: date.toISOString(),
-      settingsWeekDay,
+      dayOfWeek,
       isOpen: daySettings?.isOpen
     });
     return 0;

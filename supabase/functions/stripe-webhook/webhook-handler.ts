@@ -24,51 +24,32 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
           bookingId: session.metadata.bookingId
         });
 
-        // First, update the booking with the payment_intent_id
+        // Mettre à jour la réservation avec le payment_intent_id
         const { data: bookingUpdate, error: updateError } = await supabase
           .from('bookings')
           .update({
-            payment_intent_id: session.payment_intent
-          })
-          .eq('id', session.metadata.bookingId)
-          .select()
-          .single();
-
-        if (updateError) {
-          console.error('Error updating booking with payment_intent:', updateError);
-          throw updateError;
-        }
-
-        console.log('✅ Updated booking with payment_intent:', {
-          bookingId: bookingUpdate.id,
-          paymentIntentId: bookingUpdate.payment_intent_id
-        });
-
-        // Then update the status
-        const { data: booking, error: bookingError } = await supabase
-          .from('bookings')
-          .update({
-            status: 'confirmed',
+            payment_intent_id: session.payment_intent,
             payment_status: 'paid',
+            status: 'confirmed',
             updated_at: new Date().toISOString()
           })
           .eq('id', session.metadata.bookingId)
           .select()
           .single();
 
-        if (bookingError) {
-          console.error('Error updating booking status:', bookingError);
-          throw bookingError;
+        if (updateError) {
+          console.error('Error updating booking:', updateError);
+          throw updateError;
         }
 
-        console.log('✅ Booking confirmed:', {
-          bookingId: booking.id,
-          status: booking.status,
-          paymentStatus: booking.payment_status,
-          paymentIntentId: booking.payment_intent_id
+        console.log('✅ Booking updated:', {
+          bookingId: bookingUpdate.id,
+          status: bookingUpdate.status,
+          paymentStatus: bookingUpdate.payment_status,
+          paymentIntentId: bookingUpdate.payment_intent_id
         });
 
-        // Send confirmation email
+        // Envoyer l'email de confirmation
         try {
           const response = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-booking-email`, {
             method: 'POST',
@@ -77,7 +58,7 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
               'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
             },
             body: JSON.stringify({
-              booking,
+              booking: bookingUpdate,
               type: 'confirmation'
             })
           });

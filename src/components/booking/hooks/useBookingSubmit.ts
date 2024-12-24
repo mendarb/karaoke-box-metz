@@ -11,7 +11,7 @@ export const useBookingSubmit = (
 ) => {
   const handleSubmit = async (data: any) => {
     try {
-      console.log('🎯 Starting checkout process:', {
+      console.log('🎯 Starting booking process:', {
         email: data.email,
         date: data.date,
         isTestMode: data.isTestMode
@@ -19,11 +19,40 @@ export const useBookingSubmit = (
 
       setIsSubmitting(true);
 
-      // Générer le lien de paiement directement sans créer la réservation
+      // Créer d'abord la réservation
+      const { data: booking, error: bookingError } = await supabase
+        .from('bookings')
+        .insert([{
+          user_id: data.userId,
+          user_email: data.email,
+          user_name: data.fullName,
+          user_phone: data.phone,
+          date: data.date,
+          time_slot: data.timeSlot,
+          duration,
+          group_size: groupSize,
+          price: calculatedPrice,
+          message: data.message,
+          status: 'pending',
+          payment_status: 'awaiting_payment',
+          is_test_booking: form.getValues('isTestMode') || false,
+          promo_code_id: form.getValues('promoCodeId'),
+        }])
+        .select()
+        .single();
+
+      if (bookingError) {
+        throw bookingError;
+      }
+
+      console.log('✅ Booking created:', booking);
+
+      // Générer le lien de paiement
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
         'create-checkout',
         {
           body: {
+            bookingId: booking.id,
             userId: data.userId,
             userEmail: data.email,
             date: data.date,
@@ -58,7 +87,7 @@ export const useBookingSubmit = (
       window.location.href = checkoutData.url;
 
     } catch (error: any) {
-      console.error('❌ Error in checkout process:', error);
+      console.error('❌ Error in booking process:', error);
       toast({
         title: "Erreur lors de la réservation",
         description: error.message || "Une erreur est survenue lors de la réservation",

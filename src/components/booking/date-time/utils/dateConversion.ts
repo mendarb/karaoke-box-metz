@@ -1,23 +1,6 @@
 import { startOfDay, isEqual } from "date-fns";
 import { BookingSettings } from "@/components/admin/settings/types/bookingSettings";
 
-export const convertJsWeekDayToSettings = (date: Date): string => {
-  // JavaScript: 0 (dimanche) - 6 (samedi)
-  // Notre format: 1 (lundi) - 7 (dimanche)
-  const jsWeekDay = date.getDay();
-  // Nouvelle formule de conversion
-  const settingsWeekDay = jsWeekDay === 0 ? 7 : jsWeekDay;
-  
-  console.log('📅 Conversion jour:', {
-    date: date.toISOString(),
-    jsWeekDay,
-    settingsWeekDay,
-    dayName: ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'][jsWeekDay]
-  });
-  
-  return String(settingsWeekDay);
-};
-
 export const isDayExcluded = (date: Date, settings: BookingSettings | null | undefined): boolean => {
   if (!settings?.openingHours) {
     console.log('❌ Pas de paramètres d\'horaires');
@@ -41,21 +24,21 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
     }
   }
 
-  const settingsWeekDay = convertJsWeekDayToSettings(normalizedDate);
-  const daySettings = settings.openingHours[settingsWeekDay];
+  // Utiliser directement le jour de la semaine JavaScript (0-6)
+  const dayOfWeek = normalizedDate.getDay().toString();
+  const daySettings = settings.openingHours[dayOfWeek];
 
   console.log('🔍 Vérification jour:', {
     date: normalizedDate.toISOString(),
-    settingsWeekDay,
+    dayOfWeek,
     isOpen: daySettings?.isOpen,
-    slots: daySettings?.slots?.length,
-    openingHours: settings.openingHours
+    slots: daySettings?.slots?.length
   });
 
   if (!daySettings?.isOpen || !daySettings.slots.length) {
     console.log('❌ Jour fermé ou sans créneaux:', {
       date: normalizedDate.toISOString(),
-      settingsWeekDay,
+      dayOfWeek,
       isOpen: daySettings?.isOpen,
       slots: daySettings?.slots
     });

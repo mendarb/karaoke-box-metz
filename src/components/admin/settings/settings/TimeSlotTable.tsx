@@ -20,7 +20,7 @@ export const TimeSlotTable = ({ form }: TimeSlotTableProps) => {
     { id: "4", name: "Jeudi" },
     { id: "5", name: "Vendredi" },
     { id: "6", name: "Samedi" },
-    { id: "7", name: "Dimanche" },
+    { id: "0", name: "Dimanche" },
   ];
 
   const validateTimeSlot = (slot: string): boolean => {

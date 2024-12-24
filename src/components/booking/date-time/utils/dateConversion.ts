@@ -1,4 +1,4 @@
-import { addDays, startOfDay } from "date-fns";
+import { addDays, startOfDay, isBefore, isAfter, parseISO } from "date-fns";
 import { BookingSettings } from "@/components/admin/settings/types/bookingSettings";
 
 export const convertJsWeekDayToSettings = (jsWeekDay: number): string => {
@@ -49,18 +49,18 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
     return true;
   }
 
-  // Convertir la date UTC en date locale
-  const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+  // S'assurer que la date est au début du jour en heure locale
+  const localDate = startOfDay(date);
   
-  // Obtenir le jour de la semaine en heure locale
-  const localDay = localDate.getDay();
-  const settingsWeekDay = convertJsWeekDayToSettings(localDay);
+  // Obtenir le jour de la semaine
+  const dayOfWeek = localDate.getDay();
+  const settingsWeekDay = convertJsWeekDayToSettings(dayOfWeek);
   const daySettings = settings.openingHours[settingsWeekDay];
 
   console.log('📅 Vérification jour:', {
-    utcDate: date.toISOString(),
+    date: date.toISOString(),
     localDate: localDate.toLocaleString(),
-    localDay,
+    dayOfWeek,
     settingsWeekDay,
     daySettings,
     isOpen: daySettings?.isOpen

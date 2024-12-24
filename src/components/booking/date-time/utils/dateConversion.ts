@@ -3,15 +3,27 @@ export const convertJsWeekDayToSettings = (jsWeekDay: number): string => {
   // Notre format: 1 (lundi) - 7 (dimanche)
   const settingsWeekDay = jsWeekDay === 0 ? 7 : jsWeekDay;
   
-  const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
   console.log('🔄 Conversion jour:', { 
     jsWeekDay, 
     settingsWeekDay,
-    jsDay: days[jsWeekDay],
-    settingsDay: days[jsWeekDay]
+    jsDay: getDayName(jsWeekDay),
+    settingsDay: getDayName(jsWeekDay)
   });
   
   return String(settingsWeekDay);
+};
+
+const getDayName = (jsWeekDay: number): string => {
+  const days = {
+    0: 'Dimanche',
+    1: 'Lundi',
+    2: 'Mardi',
+    3: 'Mercredi',
+    4: 'Jeudi',
+    5: 'Vendredi',
+    6: 'Samedi'
+  };
+  return days[jsWeekDay as keyof typeof days];
 };
 
 export const getDateRange = (settings: any, isTestMode: boolean) => {
@@ -38,16 +50,24 @@ export const isDayExcluded = (date: Date, settings: any): boolean => {
   const settingsWeekDay = convertJsWeekDayToSettings(date.getDay());
   const daySettings = settings.openingHours[settingsWeekDay];
 
+  console.log('📅 Vérification disponibilité:', {
+    date: date.toISOString(),
+    jsWeekDay: date.getDay(),
+    settingsWeekDay,
+    daySettings,
+    isOpen: daySettings?.isOpen,
+    openingHours: settings.openingHours
+  });
+
   if (!daySettings?.isOpen) {
-    console.log('❌ Jour fermé:', { 
-      date: date.toISOString(), 
-      jsWeekDay: date.getDay(),
-      settingsWeekDay,
+    console.log('❌ Jour fermé ou pas de créneaux:', {
+      date: date.toISOString(),
       isOpen: daySettings?.isOpen,
-      openingHours: settings.openingHours
+      slots: daySettings?.slots
     });
     return true;
   }
 
+  console.log('✅ Jour disponible:', date.toISOString());
   return false;
 };

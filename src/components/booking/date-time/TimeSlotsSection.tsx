@@ -3,9 +3,10 @@ import { TimeSlots } from "./TimeSlots";
 import { useBookingSettings } from "./hooks/useBookingSettings";
 import { useAvailableSlots } from "./hooks/useAvailableSlots";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { UseFormReturn } from "react-hook-form";
 
 interface TimeSlotsSectionProps {
-  form: any;
+  form: UseFormReturn<any>;
   selectedDate: Date | undefined;
   onAvailabilityChange: (hasAvailableSlots: boolean) => void;
 }

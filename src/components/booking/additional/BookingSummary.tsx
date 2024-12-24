@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { Calendar, Clock, Users, Euro } from "lucide-react";
 
 interface BookingSummaryProps {
   groupSize: string;
@@ -31,16 +32,25 @@ export const BookingSummary = ({
       <div className="text-sm text-violet-700 space-y-2">
         {date && timeSlot && (
           <>
-            <p className="font-medium">
-              {format(new Date(date), 'EEEE d MMMM yyyy', { locale: fr })}
-            </p>
-            <p>
-              Horaire : {timeSlot}:00 - {endHour}:00
-            </p>
+            <div className="flex items-center space-x-2">
+              <Calendar className="h-4 w-4" />
+              <p className="font-medium">
+                {format(new Date(date), 'EEEE d MMMM yyyy', { locale: fr })}
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Clock className="h-4 w-4" />
+              <p>
+                Horaire : {timeSlot}:00 - {endHour}:00
+              </p>
+            </div>
           </>
         )}
         <div className="pt-2">
-          <p>Nombre de personnes : {groupSize}</p>
+          <div className="flex items-center space-x-2">
+            <Users className="h-4 w-4" />
+            <p>Nombre de personnes : {groupSize}</p>
+          </div>
           <p>Durée : {duration} heure{parseInt(duration) > 1 ? 's' : ''}</p>
         </div>
         <div className="pt-2">
@@ -51,7 +61,10 @@ export const BookingSummary = ({
               <p className="text-green-600 font-medium">Code promo {promoCode} appliqué</p>
             </>
           ) : (
-            <p className="font-semibold">Prix total : {calculatedPrice}€</p>
+            <div className="flex items-center space-x-2">
+              <Euro className="h-4 w-4" />
+              <p className="font-semibold">Prix total : {calculatedPrice}€</p>
+            </div>
           )}
         </div>
       </div>

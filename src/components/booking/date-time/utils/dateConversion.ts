@@ -28,3 +28,26 @@ export const getDateRange = (settings: any, isTestMode: boolean) => {
 
   return { minDate, maxDate };
 };
+
+export const isDayExcluded = (date: Date, settings: any): boolean => {
+  if (!settings?.openingHours) {
+    console.log('❌ Pas de paramètres d\'horaires');
+    return true;
+  }
+
+  const settingsWeekDay = convertJsWeekDayToSettings(date.getDay());
+  const daySettings = settings.openingHours[settingsWeekDay];
+
+  if (!daySettings?.isOpen) {
+    console.log('❌ Jour fermé:', { 
+      date: date.toISOString(), 
+      jsWeekDay: date.getDay(),
+      settingsWeekDay,
+      isOpen: daySettings?.isOpen,
+      openingHours: settings.openingHours
+    });
+    return true;
+  }
+
+  return false;
+};

@@ -29,7 +29,7 @@ export const useBookingDates = () => {
     settings,
     minDate,
     maxDate,
-    isDayExcluded: (date: Date) => isDayExcluded(date, settings, minDate, maxDate, isTestMode),
+    isDayExcluded: (date: Date) => isDayExcluded(date, settings),
     getAvailableSlots: (date: Date) => getAvailableSlots(date, settings),
     getAvailableHoursForSlot: (date: Date, timeSlot: string) => 
       getAvailableHoursForSlot(date, timeSlot, settings),

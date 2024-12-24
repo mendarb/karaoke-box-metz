@@ -7,6 +7,7 @@ export const createStripeSession = async (
   origin: string
 ) => {
   console.log('💳 Creating payment session:', {
+    bookingId: data.bookingId,
     originalPrice: data.price,
     finalPrice: data.finalPrice,
     promoCode: data.promoCode
@@ -22,6 +23,7 @@ export const createStripeSession = async (
   }
 
   const metadata = {
+    bookingId: data.bookingId,
     userId: data.userId || '',
     userEmail: data.userEmail,
     userName: data.userName,
@@ -39,7 +41,9 @@ export const createStripeSession = async (
     discountAmount: String(data.discountAmount || 0),
   };
 
-  return stripe.checkout.sessions.create({
+  console.log('📦 Creating Stripe session with metadata:', metadata);
+
+  const session = await stripe.checkout.sessions.create({
     payment_method_types: ['card'],
     line_items: [
       {
@@ -62,4 +66,12 @@ export const createStripeSession = async (
     metadata,
     expires_at: Math.floor(Date.now() / 1000) + (30 * 60), // 30 minutes
   });
+
+  console.log('✅ Stripe session created:', {
+    sessionId: session.id,
+    bookingId: data.bookingId,
+    metadata: session.metadata
+  });
+
+  return session;
 };

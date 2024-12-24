@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { TimeSlots } from "./TimeSlots";
 import { useBookingSettings } from "./hooks/useBookingSettings";
 import { useAvailableSlots } from "./hooks/useAvailableSlots";
@@ -16,16 +16,33 @@ export const TimeSlotsSection = ({
   selectedDate,
   onAvailabilityChange,
 }: TimeSlotsSectionProps) => {
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { settings, isLoading: isLoadingSettings } = useBookingSettings();
-  const { availableSlots, isLoading: isLoadingSlots } = useAvailableSlots(selectedDate, settings);
+  const { getAvailableSlots } = useAvailableSlots();
 
   useEffect(() => {
-    if (!isLoadingSlots) {
-      onAvailabilityChange(availableSlots.length > 0);
-    }
-  }, [availableSlots, isLoadingSlots, onAvailabilityChange]);
+    const loadSlots = async () => {
+      if (!selectedDate || !settings) return;
+      
+      setIsLoading(true);
+      try {
+        const slots = await getAvailableSlots(selectedDate, settings);
+        setAvailableSlots(slots);
+        onAvailabilityChange(slots.length > 0);
+      } catch (error) {
+        console.error('Error loading slots:', error);
+        setAvailableSlots([]);
+        onAvailabilityChange(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  if (isLoadingSettings || isLoadingSlots) {
+    loadSlots();
+  }, [selectedDate, settings, getAvailableSlots, onAvailabilityChange]);
+
+  if (isLoadingSettings || isLoading) {
     return (
       <div className="flex justify-center py-8">
         <LoadingSpinner />
@@ -54,7 +71,7 @@ export const TimeSlotsSection = ({
       form={form}
       availableSlots={availableSlots}
       selectedDate={selectedDate}
-      isLoading={isLoadingSlots}
+      isLoading={isLoading}
     />
   );
 };

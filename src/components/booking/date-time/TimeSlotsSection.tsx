@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { TimeSlots } from "./TimeSlots";
 import { useBookingOverlap } from "@/hooks/useBookingOverlap";
+import { supabase } from "@/lib/supabase";
 
 interface TimeSlotsSectionProps {
   form: any;
@@ -15,27 +16,46 @@ export const TimeSlotsSection = ({
   isLoading,
 }: TimeSlotsSectionProps) => {
   const [disabledSlots, setDisabledSlots] = useState<string[]>([]);
-  const { checkOverlap } = useBookingOverlap();
   const { watch } = useFormContext();
   const selectedDate = watch("date");
-  const duration = watch("duration");
 
   useEffect(() => {
-    const checkSlots = async () => {
-      if (!selectedDate || !duration) return;
+    const checkBookedSlots = async () => {
+      if (!selectedDate) return;
 
-      const disabledTimeSlots = [];
-      for (const slot of availableSlots) {
-        const isOverlapping = await checkOverlap(selectedDate, slot, duration);
-        if (isOverlapping) {
-          disabledTimeSlots.push(slot);
+      try {
+        const { data: bookings, error } = await supabase
+          .from('bookings')
+          .select('*')
+          .eq('date', selectedDate)
+          .neq('status', 'cancelled')
+          .is('deleted_at', null);
+
+        if (error) {
+          console.error('Error checking booked slots:', error);
+          return;
         }
+
+        const bookedSlots = new Set<string>();
+
+        bookings?.forEach(booking => {
+          const startHour = parseInt(booking.time_slot);
+          const duration = parseInt(booking.duration);
+          
+          // Marquer tous les créneaux couverts par cette réservation comme indisponibles
+          for (let hour = startHour; hour < startHour + duration; hour++) {
+            bookedSlots.add(`${hour}:00`);
+          }
+        });
+
+        setDisabledSlots(Array.from(bookedSlots));
+      } catch (error) {
+        console.error('Error checking booked slots:', error);
       }
-      setDisabledSlots(disabledTimeSlots);
     };
 
-    checkSlots();
-  }, [selectedDate, duration, availableSlots, checkOverlap]);
+    checkBookedSlots();
+  }, [selectedDate]);
 
   return (
     <div className="space-y-4">

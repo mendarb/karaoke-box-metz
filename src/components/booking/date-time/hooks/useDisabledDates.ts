@@ -30,7 +30,10 @@ export const useDisabledDates = ({ minDate, maxDate }: UseDisabledDatesProps) =>
     // Filtrer les dates désactivées
     const disabledDates = dates.filter(date => isDayExcluded(date, settings));
 
-    console.log('📅 Dates désactivées:', disabledDates.map(d => d.toISOString()));
+    console.log('📅 Dates désactivées:', {
+      total: disabledDates.length,
+      dates: disabledDates.map(d => d.toISOString())
+    });
     setDisabledDates(disabledDates);
   }, [minDate, maxDate, settings]);
 

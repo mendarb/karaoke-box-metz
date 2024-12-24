@@ -39,8 +39,17 @@ export const BookingCalendar = ({
     setCurrentMonth(addMonths(currentMonth, 1));
   };
 
-  const isPreviousMonthDisabled = startOfDay(subMonths(currentMonth, 1)) < startOfDay(minDate);
-  const isNextMonthDisabled = startOfDay(addMonths(currentMonth, 1)) > startOfDay(maxDate);
+  // On vérifie si le MOIS ENTIER est avant la date minimum ou après la date maximum
+  const isPreviousMonthDisabled = endOfMonth(subMonths(currentMonth, 1)) < startOfDay(minDate);
+  const isNextMonthDisabled = startOfMonth(addMonths(currentMonth, 1)) > startOfDay(maxDate);
+
+  console.log('Calendar state:', {
+    currentMonth,
+    isPreviousMonthDisabled,
+    isNextMonthDisabled,
+    minDate: minDate.toISOString(),
+    maxDate: maxDate.toISOString()
+  });
 
   return (
     <Card className="w-full max-w-lg mx-auto">

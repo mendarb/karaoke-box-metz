@@ -16,9 +16,9 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
     
     if (normalizedDate < startDate || normalizedDate > endDate) {
       console.log('❌ Jour hors fenêtre de réservation:', {
-        date: normalizedDate,
-        startDate,
-        endDate
+        date: normalizedDate.toISOString(),
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString()
       });
       return true;
     }
@@ -32,7 +32,7 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
     return true;
   }
 
-  // Vérifier les horaires d'ouverture - Utiliser le jour de la semaine (0-6)
+  // Vérifier les horaires d'ouverture en utilisant l'index JavaScript du jour (0-6, 0 = Dimanche)
   const dayOfWeek = normalizedDate.getDay().toString();
   const daySettings = settings.openingHours[dayOfWeek];
 

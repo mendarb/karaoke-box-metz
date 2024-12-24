@@ -59,9 +59,10 @@ export function useAuthHandlers() {
           description: "Veuillez remplir tous les champs obligatoires",
           variant: "destructive",
         })
-        return false
+        return { success: false, shouldSwitchToLogin: false }
       }
 
+      // Vérifier d'abord si l'utilisateur existe
       const { data: { user: existingUser } } = await supabase.auth.getUser()
       
       if (existingUser) {
@@ -73,6 +74,7 @@ export function useAuthHandlers() {
         return { success: false, shouldSwitchToLogin: true }
       }
 
+      // Inscription avec les métadonnées utilisateur
       const { error, data } = await supabase.auth.signUp({
         email: email.trim(),
         password: password.trim(),
@@ -103,6 +105,7 @@ export function useAuthHandlers() {
         }
       }
 
+      // Vérifier si l'email nécessite une confirmation
       if (data?.user?.identities?.length === 0) {
         toast({
           title: "Compte créé avec succès",

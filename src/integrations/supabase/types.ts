@@ -259,11 +259,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      validate_schedule_format: {
+        Args: {
+          schedule: Json
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       booking_status: "pending" | "confirmed" | "cancelled" | "archived"
       promo_code_type: "percentage" | "fixed_amount" | "free"
+      weekday:
+        | "monday"
+        | "tuesday"
+        | "wednesday"
+        | "thursday"
+        | "friday"
+        | "saturday"
+        | "sunday"
     }
     CompositeTypes: {
       [_ in never]: never

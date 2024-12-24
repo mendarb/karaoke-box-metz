@@ -1,5 +1,7 @@
 import { format, isSameDay, isToday, isBefore, isAfter, startOfDay } from "date-fns";
+import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { Calendar, Clock } from "lucide-react";
 
 interface CalendarGridProps {
   month: Date;
@@ -26,12 +28,10 @@ export const CalendarGrid = ({
     const normalizedMinDate = startOfDay(minDate);
     const normalizedMaxDate = startOfDay(maxDate);
 
-    // Vérifier si la date est dans la plage autorisée
     if (isBefore(normalizedDate, normalizedMinDate) || isAfter(normalizedDate, normalizedMaxDate)) {
       return true;
     }
 
-    // Vérifier si la date est dans les dates désactivées
     return disabledDates.some(disabledDate => 
       isSameDay(normalizedDate, startOfDay(disabledDate))
     );
@@ -55,6 +55,7 @@ export const CalendarGrid = ({
           const isSelected = selectedDate ? isSameDay(normalizedDay, selectedDate) : false;
           const isDisabled = isDateDisabled(normalizedDay);
           const dayToday = isToday(normalizedDay);
+          const hasAvailability = !isDisabled;
 
           return (
             <button
@@ -63,17 +64,25 @@ export const CalendarGrid = ({
               onClick={() => !isDisabled && onSelect(normalizedDay)}
               disabled={isDisabled}
               className={cn(
-                "h-10 w-full rounded-lg text-sm font-medium transition-colors",
-                "hover:bg-violet-100 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2",
+                "relative h-12 w-full rounded-lg text-sm font-medium transition-all",
+                "hover:bg-violet-50 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2",
+                "disabled:cursor-not-allowed disabled:opacity-50",
                 {
                   "bg-violet-600 text-white hover:bg-violet-700": isSelected,
-                  "text-gray-900": !isSelected && !isDisabled,
-                  "text-gray-400 cursor-not-allowed hover:bg-transparent": isDisabled,
+                  "bg-white border border-gray-200": !isSelected && !isDisabled,
+                  "bg-gray-50 border border-gray-200": isDisabled,
                   "ring-2 ring-violet-200": dayToday && !isSelected,
                 }
               )}
             >
-              {format(normalizedDay, "d")}
+              <span className="block text-center">
+                {format(normalizedDay, "d")}
+              </span>
+              {hasAvailability && !isSelected && (
+                <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2">
+                  <Clock className="h-3 w-3 text-violet-500" />
+                </div>
+              )}
             </button>
           );
         })}

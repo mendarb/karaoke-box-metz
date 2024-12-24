@@ -7,33 +7,14 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
     return true;
   }
 
-  const normalizedDate = startOfDay(date);
-  
-  // Vérifier si le jour est dans la fenêtre de réservation
-  if (settings.bookingWindow) {
-    const startDate = startOfDay(new Date(settings.bookingWindow.startDate));
-    const endDate = startOfDay(new Date(settings.bookingWindow.endDate));
-    
-    if (normalizedDate < startDate || normalizedDate > endDate) {
-      return true;
-    }
-  }
-
-  // Vérifier si le jour est exclu manuellement
-  if (settings.excludedDays?.some(excludedDay => 
-    isEqual(startOfDay(new Date(excludedDay)), normalizedDate)
-  )) {
-    return true;
-  }
-
-  // Vérifier les horaires d'ouverture
-  const dayOfWeek = normalizedDate.getDay(); // 0 = Dimanche, 1 = Lundi, etc.
+  // Important: Utiliser getUTCDay() au lieu de getDay() pour éviter les problèmes de timezone
+  const dayOfWeek = date.getUTCDay();
   const daySettings = settings.openingHours[dayOfWeek];
 
   const dayNames = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
   
   console.log('📅 Vérification jour:', {
-    date: normalizedDate.toISOString(),
+    date: date.toISOString(),
     jour: dayNames[dayOfWeek],
     indexJour: dayOfWeek,
     estOuvert: daySettings?.isOpen,
@@ -44,11 +25,18 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
   // Si le jour n'est pas ouvert ou n'a pas de créneaux, il est désactivé
   if (!daySettings?.isOpen || !daySettings.slots?.length) {
     console.log('❌ Jour fermé:', {
-      date: normalizedDate.toISOString(),
+      date: date.toISOString(),
       jour: dayNames[dayOfWeek],
       estOuvert: daySettings?.isOpen,
       creneaux: daySettings?.slots?.length
     });
+    return true;
+  }
+
+  // Vérifier si le jour est exclu manuellement
+  if (settings.excludedDays?.some(excludedDay => 
+    isEqual(startOfDay(new Date(excludedDay)), startOfDay(date))
+  )) {
     return true;
   }
 

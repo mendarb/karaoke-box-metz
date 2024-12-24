@@ -21,12 +21,20 @@ export const useAdminBookingSubmit = (form: UseFormReturn<any>) => {
 
       // Trouver ou créer l'utilisateur
       const userId = await findOrCreateUser(data.email, data.fullName, data.phone);
+      console.log('✅ Utilisateur trouvé/créé:', userId);
 
       // Créer la réservation
       const booking = await createBooking(data, userId);
+      console.log('✅ Réservation créée:', booking.id);
 
-      // Générer le lien de paiement
-      const checkoutUrl = await generatePaymentLink(booking, data);
+      // Générer le lien de paiement avec l'ID de la réservation
+      const checkoutUrl = await generatePaymentLink({
+        ...booking,
+        ...data,
+        bookingId: booking.id,
+        userId: userId
+      });
+      
       setPaymentLink(checkoutUrl);
 
       console.log('✅ Processus de réservation admin terminé avec succès');

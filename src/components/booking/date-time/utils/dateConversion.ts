@@ -49,16 +49,18 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
     return true;
   }
 
-  // Normaliser la date à minuit en heure locale
-  const localDate = new Date(date);
-  localDate.setHours(0, 0, 0, 0);
-
-  // Obtenir le jour de la semaine en tenant compte du fuseau horaire local
-  const settingsWeekDay = convertJsWeekDayToSettings(localDate.getDay());
+  // Convertir la date UTC en date locale
+  const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+  
+  // Obtenir le jour de la semaine en heure locale
+  const localDay = localDate.getDay();
+  const settingsWeekDay = convertJsWeekDayToSettings(localDay);
   const daySettings = settings.openingHours[settingsWeekDay];
 
   console.log('📅 Vérification jour:', {
-    date: date.toISOString(),
+    utcDate: date.toISOString(),
+    localDate: localDate.toLocaleString(),
+    localDay,
     settingsWeekDay,
     daySettings,
     isOpen: daySettings?.isOpen

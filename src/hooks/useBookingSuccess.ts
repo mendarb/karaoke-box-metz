@@ -18,6 +18,9 @@ export interface BookingDetails {
   is_test_booking?: boolean;
 }
 
+const MAX_RETRIES = 5;
+const RETRY_DELAY = 2000; // 2 secondes
+
 export const useBookingSuccess = () => {
   const [bookingDetails, setBookingDetails] = useState<BookingDetails | null>(null);
   const [loading, setLoading] = useState(true);
@@ -26,7 +29,7 @@ export const useBookingSuccess = () => {
   const { sendEmail } = useBookingEmail();
 
   useEffect(() => {
-    const fetchBookingDetails = async () => {
+    const fetchBookingDetails = async (retryCount = 0) => {
       try {
         if (!sessionId) {
           console.log('Pas de session_id trouvé dans l\'URL');
@@ -46,13 +49,7 @@ export const useBookingSuccess = () => {
 
         if (stripeError || !stripeData?.paymentIntentId) {
           console.error('❌ Erreur lors de la récupération du payment_intent:', stripeError);
-          toast({
-            title: "Erreur",
-            description: "Impossible de récupérer les détails du paiement",
-            variant: "destructive",
-          });
-          setLoading(false);
-          return;
+          throw new Error(stripeError?.message || 'Impossible de récupérer les détails du paiement');
         }
 
         console.log('✅ Payment Intent ID récupéré:', stripeData.paymentIntentId);
@@ -66,16 +63,24 @@ export const useBookingSuccess = () => {
 
         if (bookingError) {
           console.error('❌ Erreur lors de la récupération de la réservation:', bookingError);
-          toast({
-            title: "Erreur",
-            description: "Impossible de récupérer les détails de votre réservation",
-            variant: "destructive",
-          });
           throw bookingError;
         }
 
         if (!bookings) {
           console.log('❌ Aucune réservation trouvée pour ce payment_intent_id');
+          
+          // Si on n'a pas atteint le nombre maximum de tentatives, on réessaie
+          if (retryCount < MAX_RETRIES) {
+            console.log(`⏳ Nouvelle tentative dans ${RETRY_DELAY/1000}s (${retryCount + 1}/${MAX_RETRIES})`);
+            setTimeout(() => fetchBookingDetails(retryCount + 1), RETRY_DELAY);
+            return;
+          }
+          
+          toast({
+            title: "Erreur",
+            description: "Impossible de trouver votre réservation. L'équipe technique a été notifiée.",
+            variant: "destructive",
+          });
           setLoading(false);
           return;
         }
@@ -89,6 +94,10 @@ export const useBookingSuccess = () => {
           try {
             await sendEmail(bookings);
             console.log('✅ Email de confirmation envoyé avec succès');
+            toast({
+              title: "Confirmation envoyée",
+              description: "Un email de confirmation vous a été envoyé.",
+            });
           } catch (emailError) {
             console.error('❌ Erreur lors de l\'envoi de l\'email de confirmation:', emailError);
             toast({
@@ -98,14 +107,23 @@ export const useBookingSuccess = () => {
             });
           }
         }
-      } catch (error) {
+        
+        setLoading(false);
+      } catch (error: any) {
         console.error('❌ Erreur dans fetchBookingDetails:', error);
+        
+        // Si on n'a pas atteint le nombre maximum de tentatives, on réessaie
+        if (retryCount < MAX_RETRIES) {
+          console.log(`⏳ Nouvelle tentative dans ${RETRY_DELAY/1000}s (${retryCount + 1}/${MAX_RETRIES})`);
+          setTimeout(() => fetchBookingDetails(retryCount + 1), RETRY_DELAY);
+          return;
+        }
+        
         toast({
           title: "Erreur",
           description: "Une erreur est survenue lors de la récupération de votre réservation",
           variant: "destructive",
         });
-      } finally {
         setLoading(false);
       }
     };

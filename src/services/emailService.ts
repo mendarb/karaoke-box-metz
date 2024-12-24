@@ -2,7 +2,7 @@ import { supabase } from "@/lib/supabase";
 
 export const sendBookingEmail = async (booking: any) => {
   try {
-    console.log('📧 Envoi d\'email pour la réservation:', {
+    console.log('📧 Sending booking email:', {
       bookingId: booking.id,
       status: booking.status,
       userEmail: booking.user_email,
@@ -18,15 +18,14 @@ export const sendBookingEmail = async (booking: any) => {
     });
 
     if (error) {
-      console.error('❌ Erreur lors de l\'envoi de l\'email:', error);
+      console.error('❌ Error sending email:', error);
       throw error;
     }
 
-    console.log('✅ Email envoyé avec succès:', data);
+    console.log('✅ Email sent successfully:', data);
     return { success: true };
   } catch (error) {
-    console.error('❌ Erreur lors de l\'envoi de l\'email:', error);
-    // On ne relance pas l'erreur pour ne pas bloquer le processus
-    return { success: false, error };
+    console.error('❌ Error in sendBookingEmail:', error);
+    throw error;
   }
 };

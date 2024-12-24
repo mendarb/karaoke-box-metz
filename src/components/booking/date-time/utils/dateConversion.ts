@@ -49,10 +49,11 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
     return true;
   }
 
-  // S'assurer que la date est au début du jour en heure locale
-  const localDate = startOfDay(date);
+  // Créer une nouvelle date à minuit heure locale
+  const localDate = new Date(date);
+  localDate.setHours(0, 0, 0, 0);
   
-  // Obtenir le jour de la semaine
+  // Obtenir le jour de la semaine de la date locale
   const dayOfWeek = localDate.getDay();
   const settingsWeekDay = convertJsWeekDayToSettings(dayOfWeek);
   const daySettings = settings.openingHours[settingsWeekDay];

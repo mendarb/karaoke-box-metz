@@ -25,6 +25,8 @@ export const Confirmation = ({
   const startHour = parseInt(formData.timeSlot);
   const endHour = startHour + parseInt(formData.duration);
 
+  const formatHour = (hour: number) => `${hour.toString().padStart(2, '0')}:00`;
+
   return (
     <div className="space-y-6">
       <Button 
@@ -47,7 +49,7 @@ export const Confirmation = ({
             <div className="flex items-center text-sm">
               <Clock className="mr-2 h-4 w-4 text-violet-500" />
               <span>
-                {formData.timeSlot}:00 - {endHour}:00 ({formData.duration}h)
+                {formatHour(startHour)} - {formatHour(endHour)} ({formData.duration}h)
               </span>
             </div>
           </div>

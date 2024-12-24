@@ -14,6 +14,10 @@ export const useBookingSubmit = (
       console.log('🎯 Starting booking process:', {
         email: data.email,
         date: data.date,
+        timeSlot: data.timeSlot,
+        duration,
+        groupSize,
+        price: calculatedPrice,
         isTestMode: data.isTestMode
       });
 
@@ -27,7 +31,7 @@ export const useBookingSubmit = (
           user_name: data.fullName,
           user_phone: data.phone,
           date: data.date,
-          time_slot: data.timeSlot,
+          time_slot: `${data.timeSlot.toString().padStart(2, '0')}:00`,
           duration,
           group_size: groupSize,
           price: calculatedPrice,
@@ -55,11 +59,11 @@ export const useBookingSubmit = (
             bookingId: booking.id,
             userEmail: data.email,
             date: data.date,
-            timeSlot: data.timeSlot,
+            timeSlot: `${data.timeSlot.toString().padStart(2, '0')}:00`,
             duration,
             groupSize,
             price: calculatedPrice,
-            finalPrice: form.getValues('finalPrice') || calculatedPrice,
+            finalPrice: calculatedPrice,
             message: data.message,
             userName: data.fullName,
             userPhone: data.phone,

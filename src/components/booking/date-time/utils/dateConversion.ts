@@ -7,8 +7,8 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
     return true;
   }
 
-  // Important: Utiliser getUTCDay() au lieu de getDay() pour éviter les problèmes de timezone
-  const dayOfWeek = date.getUTCDay();
+  // Important: Utiliser getDay() directement sur la date locale
+  const dayOfWeek = date.getDay();
   const daySettings = settings.openingHours[dayOfWeek];
 
   const dayNames = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];

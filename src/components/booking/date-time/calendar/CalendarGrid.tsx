@@ -39,13 +39,6 @@ export const CalendarGrid = ({
     );
   };
 
-  console.log('Grid render:', {
-    days: days.length,
-    disabledDates: disabledDates.length,
-    minDate: minDate.toISOString(),
-    maxDate: maxDate.toISOString()
-  });
-
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-7 gap-1">
@@ -59,7 +52,7 @@ export const CalendarGrid = ({
         ))}
       </div>
       <div className="grid grid-cols-7 gap-1">
-        {days.map((day) => {
+        {days.map((day, index) => {
           const normalizedDay = startOfDay(day);
           const isSelected = selectedDate ? isSameDay(normalizedDay, selectedDate) : false;
           const isDisabled = isDateDisabled(normalizedDay);

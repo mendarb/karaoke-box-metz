@@ -15,11 +15,10 @@ export const getDateRange = (settings: BookingSettings | null | undefined, isTes
   return { minDate, maxDate };
 };
 
-export const convertJsWeekDayToSettings = (jsWeekDay: number): number => {
+export const convertJsWeekDayToSettings = (jsWeekDay: number): string => {
   // JavaScript: 0 (dimanche) - 6 (samedi)
   // Notre format: 1 (lundi) - 7 (dimanche)
-  const settingsWeekDay = jsWeekDay === 0 ? 7 : jsWeekDay;
-  return settingsWeekDay;
+  return jsWeekDay === 0 ? '7' : String(jsWeekDay);
 };
 
 export const isDayExcluded = (
@@ -33,22 +32,30 @@ export const isDayExcluded = (
   
   const dateToCheck = startOfDay(date);
   
+  // En mode test, aucun jour n'est exclu
   if (isTestMode) {
     return false;
   }
   
+  // Vérifier si la date est dans la plage autorisée
   if (dateToCheck < minDate || dateToCheck > maxDate) {
+    console.log('Date hors plage:', date);
     return true;
   }
 
+  // Convertir le jour de la semaine au format des settings
   const settingsWeekDay = convertJsWeekDayToSettings(dateToCheck.getDay());
   const daySettings = settings.openingHours?.[settingsWeekDay];
   
+  // Vérifier si le jour est ouvert
   if (!daySettings?.isOpen) {
+    console.log('Jour fermé:', date, 'jour:', settingsWeekDay);
     return true;
   }
 
+  // Vérifier si le jour est dans la liste des jours exclus
   if (settings.excludedDays?.includes(dateToCheck.getTime())) {
+    console.log('Jour exclu:', date);
     return true;
   }
 

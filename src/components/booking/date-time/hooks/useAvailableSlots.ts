@@ -1,17 +1,18 @@
-import { useCallback } from "react";
 import { supabase } from "@/lib/supabase";
-import { useBookingSettings } from "./useBookingSettings";
+import { toast } from "@/components/ui/use-toast";
+import { BookingSettings } from "@/components/admin/settings/types/bookingSettings";
 
 export const useAvailableSlots = () => {
-  const { settings, isTestMode } = useBookingSettings();
-
-  const getAvailableSlots = useCallback(async (date: Date): Promise<string[]> => {
+  const getAvailableSlots = async (date: Date, settings: BookingSettings | null) => {
+    console.log('🔍 Récupération des créneaux pour:', date);
+    
     if (!settings?.openingHours) {
       console.log('❌ Pas de paramètres d\'horaires');
       return [];
     }
 
-    if (isTestMode) {
+    // En mode test, retourner tous les créneaux
+    if (settings.isTestMode) {
       return ['14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00'];
     }
 
@@ -19,15 +20,12 @@ export const useAvailableSlots = () => {
     const daySettings = settings.openingHours[dayOfWeek];
 
     if (!daySettings?.isOpen) {
-      console.log('❌ Jour fermé:', {
-        date: date.toISOString(),
-        dayOfWeek,
-        isOpen: daySettings?.isOpen
-      });
+      console.log('❌ Jour fermé:', { date, dayOfWeek });
       return [];
     }
 
     const slots = daySettings.slots || [];
+    console.log('📋 Créneaux potentiels:', slots);
 
     try {
       const { data: bookings, error } = await supabase
@@ -38,11 +36,11 @@ export const useAvailableSlots = () => {
         .is('deleted_at', null);
 
       if (error) {
-        console.error('Erreur lors de la récupération des réservations:', error);
+        console.error('❌ Erreur vérification réservations:', error);
         return slots;
       }
 
-      return slots.filter(slot => {
+      const availableSlots = slots.filter(slot => {
         const slotTime = parseInt(slot.split(':')[0]);
         return !bookings?.some(booking => {
           const bookingStartTime = parseInt(booking.time_slot.split(':')[0]);
@@ -50,11 +48,14 @@ export const useAvailableSlots = () => {
           return slotTime >= bookingStartTime && slotTime < (bookingStartTime + bookingDuration);
         });
       });
+
+      console.log('✅ Créneaux disponibles:', availableSlots);
+      return availableSlots;
     } catch (error) {
       console.error('❌ Erreur récupération créneaux:', error);
       return slots;
     }
-  }, [settings, isTestMode]);
+  };
 
   return { getAvailableSlots };
 };

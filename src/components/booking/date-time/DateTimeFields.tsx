@@ -14,6 +14,7 @@ interface DateTimeFieldsProps {
 export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsProps) => {
   const {
     selectedDate,
+    availableSlots,
     handleDateSelect,
     handleTimeSlotChange
   } = useDateTimeSelection(form, onAvailabilityChange);
@@ -27,6 +28,15 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
       handleTimeSlotChange(timeSlot);
     }
   }, [form.watch("timeSlot"), selectedDate, handleTimeSlotChange]);
+
+  console.log('DateTimeFields render:', {
+    selectedDate,
+    minDate,
+    maxDate,
+    disabledDates: disabledDates.length,
+    availableSlots,
+    settings
+  });
 
   return (
     <div className="space-y-8">
@@ -42,12 +52,8 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
       {selectedDate && (
         <TimeSlotsSection
           form={form}
-          selectedDate={selectedDate}
-          onAvailabilityChange={(hasSlots) => {
-            if (!hasSlots) {
-              onAvailabilityChange(selectedDate, 0);
-            }
-          }}
+          availableSlots={availableSlots}
+          isLoading={false}
         />
       )}
     </div>

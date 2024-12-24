@@ -2,16 +2,14 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useBookingEmail } from "./useBookingEmail";
-import { Booking } from "@/integrations/supabase/types/booking";
-import { toast } from "./use-toast";
 
 export const useBookingSuccess = () => {
   const [searchParams] = useSearchParams();
-  const [booking, setBooking] = useState<Booking | null>(null);
+  const [booking, setBooking] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [emailSent, setEmailSent] = useState(false);
-  const { sendEmail } = useBookingEmail();
+  const { sendBookingEmail } = useBookingEmail();
 
   useEffect(() => {
     const sessionId = searchParams.get("session_id");
@@ -21,114 +19,64 @@ export const useBookingSuccess = () => {
       try {
         console.log("🔍 Retrieving details for session:", sessionId);
         
-        // First attempt: look for booking with payment_intent_id
+        // Rechercher d'abord par payment_intent_id
         const { data: bookingData, error: bookingError } = await supabase
           .from("bookings")
-          .select()
+          .select("*")
           .eq("payment_intent_id", sessionId)
-          .maybeSingle();
+          .single();
 
-        if (bookingError) {
-          console.error('Error fetching booking:', bookingError);
-          throw bookingError;
-        }
-
-        if (!bookingData) {
+        if (bookingError || !bookingData) {
           console.warn("⚠️ No booking found with payment_intent_id, searching recent pending bookings...");
           
-          // Second attempt: get most recent pending booking
+          // Si non trouvé, rechercher parmi les réservations récentes en attente
           const { data: recentBookings, error: recentError } = await supabase
             .from("bookings")
-            .select()
+            .select("*")
             .eq("status", "pending")
             .order("created_at", { ascending: false })
             .limit(1)
-            .maybeSingle();
+            .single();
 
-          if (recentError) {
-            console.error('Error fetching recent bookings:', recentError);
-            throw recentError;
+          if (recentError || !recentBookings) {
+            throw new Error("Booking not found");
           }
 
-          if (!recentBookings) {
-            throw new Error("No pending booking found");
-          }
-
-          // Update the booking with session info
-          const { data: updatedBooking, error: updateError } = await supabase
+          setBooking(recentBookings);
+          
+          // Mettre à jour le statut
+          const { error: updateError } = await supabase
             .from("bookings")
             .update({ 
               status: "confirmed",
               payment_status: "paid",
-              payment_intent_id: sessionId,
-              updated_at: new Date().toISOString()
+              payment_intent_id: sessionId 
             })
-            .eq("id", recentBookings.id)
-            .select()
-            .single();
+            .eq("id", recentBookings.id);
 
-          if (updateError) {
-            console.error('Error updating booking:', updateError);
-            throw updateError;
-          }
-
-          setBooking(updatedBooking);
+          if (updateError) throw updateError;
           console.log("✅ Booking status updated to paid");
-
-          if (!emailSent) {
-            try {
-              await sendEmail(updatedBooking);
-              setEmailSent(true);
-              toast({
-                title: "Réservation confirmée",
-                description: "Un email de confirmation vous a été envoyé",
-              });
-            } catch (emailError) {
-              console.error('Error sending confirmation email:', emailError);
-              toast({
-                title: "Email non envoyé",
-                description: "La réservation est confirmée mais l'email n'a pas pu être envoyé",
-                variant: "destructive",
-              });
-            }
-          }
         } else {
           setBooking(bookingData);
-          
-          if (!emailSent) {
-            try {
-              await sendEmail(bookingData);
-              setEmailSent(true);
-              toast({
-                title: "Réservation confirmée",
-                description: "Un email de confirmation vous a été envoyé",
-              });
-            } catch (emailError) {
-              console.error('Error sending confirmation email:', emailError);
-              toast({
-                title: "Email non envoyé",
-                description: "La réservation est confirmée mais l'email n'a pas pu être envoyé",
-                variant: "destructive",
-              });
-            }
-          }
+        }
+
+        // Envoyer l'email une seule fois
+        if (!emailSent) {
+          console.log("📧 Sending confirmation email for booking:", booking?.id);
+          await sendBookingEmail(booking?.id);
+          setEmailSent(true);
         }
 
       } catch (error: any) {
         console.error("Error retrieving booking:", error);
         setError(error.message);
-        toast({
-          title: "Erreur",
-          description: "Une erreur est survenue lors de la récupération de votre réservation",
-          variant: "destructive",
-        });
       } finally {
         setIsLoading(false);
       }
     };
 
     getBookingDetails();
-  }, [searchParams, emailSent, sendEmail]);
+  }, [searchParams, emailSent, sendBookingEmail]);
 
   return { booking, isLoading, error };
 };

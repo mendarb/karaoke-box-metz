@@ -28,14 +28,17 @@ export const useBookingSuccess = () => {
   const sessionId = searchParams.get('session_id');
   const { sendEmail } = useBookingEmail();
   const [emailSent, setEmailSent] = useState(false);
+  const [processingComplete, setProcessingComplete] = useState(false);
 
   useEffect(() => {
     let isSubscribed = true;
+    let retryCount = 0;
+    let processingTimeout: NodeJS.Timeout;
 
-    const fetchBookingDetails = async (retryCount = 0) => {
+    const fetchBookingDetails = async () => {
       try {
-        if (!sessionId) {
-          console.log('No session_id found in URL');
+        if (!sessionId || processingComplete) {
+          console.log('No session_id found in URL or processing already complete');
           setLoading(false);
           return;
         }
@@ -63,7 +66,6 @@ export const useBookingSuccess = () => {
           .eq('payment_intent_id', stripeData.paymentIntentId)
           .maybeSingle();
 
-        // Si aucune réservation n'est trouvée, chercher les réservations récentes en attente
         if (!bookings) {
           console.log('⚠️ No booking found with payment_intent_id, searching recent pending bookings...');
           const { data: pendingBookings, error: pendingError } = await supabase
@@ -82,26 +84,19 @@ export const useBookingSuccess = () => {
         }
 
         if (!bookings) {
-          console.log('❌ No booking found');
-          
           if (retryCount < MAX_RETRIES) {
             console.log(`⏳ Retrying in ${RETRY_DELAY/1000}s (${retryCount + 1}/${MAX_RETRIES})`);
-            setTimeout(() => {
-              if (isSubscribed) {
-                fetchBookingDetails(retryCount + 1);
-              }
-            }, RETRY_DELAY);
+            retryCount++;
+            processingTimeout = setTimeout(fetchBookingDetails, RETRY_DELAY);
             return;
           }
           
           toast({
-            title: "Error",
-            description: "Unable to find your booking. The technical team has been notified.",
+            title: "Erreur",
+            description: "Impossible de trouver votre réservation. L'équipe technique a été notifiée.",
             variant: "destructive",
           });
-          if (isSubscribed) {
-            setLoading(false);
-          }
+          setLoading(false);
           return;
         }
 
@@ -111,7 +106,7 @@ export const useBookingSuccess = () => {
           setBookingDetails(bookings);
         }
         
-        // Mettre à jour le statut de la réservation si nécessaire
+        // Ne mettre à jour le statut que si nécessaire
         if (bookings.payment_status !== 'paid') {
           const { error: updateError } = await supabase
             .from('bookings')
@@ -129,7 +124,7 @@ export const useBookingSuccess = () => {
           }
         }
 
-        // N'envoyer l'email qu'une seule fois et seulement si le composant est toujours monté
+        // N'envoyer l'email qu'une seule fois
         if (bookings.payment_status === 'paid' && !emailSent && isSubscribed) {
           console.log('📧 Sending confirmation email for booking:', bookings.id);
           try {
@@ -154,27 +149,26 @@ export const useBookingSuccess = () => {
         
         if (isSubscribed) {
           setLoading(false);
+          setProcessingComplete(true);
         }
       } catch (error: any) {
         console.error('❌ Error in fetchBookingDetails:', error);
         
-        if (retryCount < MAX_RETRIES && isSubscribed) {
+        if (retryCount < MAX_RETRIES && isSubscribed && !processingComplete) {
           console.log(`⏳ Retrying in ${RETRY_DELAY/1000}s (${retryCount + 1}/${MAX_RETRIES})`);
-          setTimeout(() => {
-            if (isSubscribed) {
-              fetchBookingDetails(retryCount + 1);
-            }
-          }, RETRY_DELAY);
+          retryCount++;
+          processingTimeout = setTimeout(fetchBookingDetails, RETRY_DELAY);
           return;
         }
         
         toast({
-          title: "Error",
-          description: "An error occurred while retrieving your booking",
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la récupération de votre réservation",
           variant: "destructive",
         });
         if (isSubscribed) {
           setLoading(false);
+          setProcessingComplete(true);
         }
       }
     };
@@ -183,6 +177,7 @@ export const useBookingSuccess = () => {
 
     return () => {
       isSubscribed = false;
+      clearTimeout(processingTimeout);
     };
   }, [sessionId, sendEmail, emailSent]);
 

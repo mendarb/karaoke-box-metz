@@ -21,6 +21,12 @@ serve(async (req) => {
     }
 
     const { booking, type = 'confirmation' } = await req.json();
+    
+    // Vérification des données requises
+    if (!booking || !booking.user_email || !booking.date || !booking.time_slot) {
+      throw new Error('Missing required booking data');
+    }
+
     console.log('📧 Processing email request:', { 
       bookingId: booking.id, 
       type,
@@ -80,35 +86,44 @@ serve(async (req) => {
 
     console.log('📧 Sending email to:', booking.user_email);
 
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'Karaoke Box Metz <onboarding@resend.dev>',
-        to: booking.user_email,
-        subject: `Réservation ${type === 'confirmation' ? 'confirmée' : 'en attente'} - Karaoke Box Metz`,
-        html: emailContent,
-      }),
-    });
+    try {
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: 'Karaoke Box Metz <onboarding@resend.dev>',
+          to: booking.user_email,
+          subject: `Réservation ${type === 'confirmation' ? 'confirmée' : 'en attente'} - Karaoke Box Metz`,
+          html: emailContent,
+        }),
+      });
 
-    if (!response.ok) {
-      const error = await response.json();
-      console.error('❌ Failed to send email:', error);
-      throw new Error('Failed to send email');
+      if (!response.ok) {
+        const error = await response.json();
+        console.error('❌ Failed to send email:', error);
+        throw new Error('Failed to send email');
+      }
+
+      console.log('✅ Email sent successfully');
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+
+    } catch (error) {
+      console.error('❌ Error sending email:', error);
+      throw error;
     }
-
-    console.log('✅ Email sent successfully');
-    return new Response(JSON.stringify({ success: true }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
 
   } catch (error) {
     console.error('❌ Error processing email request:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: error.toString()
+      }),
       { 
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

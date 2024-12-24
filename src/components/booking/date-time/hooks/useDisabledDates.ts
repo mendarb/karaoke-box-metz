@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { startOfDay, eachDayOfInterval } from "date-fns";
+import { eachDayOfInterval } from "date-fns";
 import { useBookingSettings } from "./useBookingSettings";
 import { isDayExcluded } from "../utils/dateConversion";
 
@@ -17,8 +17,8 @@ export const useDisabledDates = ({ minDate, maxDate }: UseDisabledDatesProps) =>
     console.log('📊 Settings disponibles:', settings);
     
     const dates = eachDayOfInterval({ 
-      start: startOfDay(minDate), 
-      end: startOfDay(maxDate) 
+      start: minDate, 
+      end: maxDate 
     }).filter(date => 
       isDayExcluded(date, settings, minDate, maxDate, isTestMode)
     );

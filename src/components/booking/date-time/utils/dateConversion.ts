@@ -19,6 +19,15 @@ export const convertJsWeekDayToSettings = (jsWeekDay: number): string => {
   // JavaScript: 0 (dimanche) - 6 (samedi)
   // Notre format: 1 (lundi) - 7 (dimanche)
   const settingsWeekDay = jsWeekDay === 0 ? 7 : jsWeekDay;
+  
+  const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+  console.log('🔄 Conversion jour:', { 
+    jsWeekDay, 
+    settingsWeekDay,
+    jsDay: days[jsWeekDay],
+    settingsDay: days[jsWeekDay]
+  });
+  
   return String(settingsWeekDay);
 };
 
@@ -34,9 +43,9 @@ export const isDayExcluded = (
     return true;
   }
   
-  // Utiliser startOfDay pour éviter les problèmes de décalage horaire
-  const dateToCheck = startOfDay(date);
-  const jsWeekDay = date.getDay();
+  // Normaliser la date à minuit UTC
+  const dateToCheck = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const jsWeekDay = dateToCheck.getUTCDay();
   const settingsWeekDay = convertJsWeekDayToSettings(jsWeekDay);
   const daySettings = settings.openingHours[settingsWeekDay];
   
@@ -55,10 +64,15 @@ export const isDayExcluded = (
   }
   
   // Vérifier si la date est dans la plage autorisée
-  const minDateStart = startOfDay(minDate);
-  const maxDateStart = startOfDay(maxDate);
+  const minDateStart = new Date(Date.UTC(minDate.getFullYear(), minDate.getMonth(), minDate.getDate()));
+  const maxDateStart = new Date(Date.UTC(maxDate.getFullYear(), maxDate.getMonth(), maxDate.getDate()));
+  
   if (dateToCheck < minDateStart || dateToCheck > maxDateStart) {
-    console.log('📅 Date hors plage:', { date: dateToCheck, minDate: minDateStart, maxDate: maxDateStart });
+    console.log('📅 Date hors plage:', { 
+      date: dateToCheck.toISOString(), 
+      minDate: minDateStart.toISOString(), 
+      maxDate: maxDateStart.toISOString() 
+    });
     return true;
   }
 

@@ -19,7 +19,8 @@ export const useBookingOverlap = () => {
         .from('bookings')
         .select('*')
         .eq('date', formattedDate)
-        .neq('status', 'cancelled')
+        .in('status', ['pending', 'confirmed'])
+        .neq('payment_status', 'expired')
         .is('deleted_at', null);
 
       if (error) {
@@ -31,17 +32,31 @@ export const useBookingOverlap = () => {
         const bookingStart = parseInt(booking.time_slot);
         const bookingEnd = bookingStart + parseInt(booking.duration);
 
-        return (
+        const overlap = (
           (startTime >= bookingStart && startTime < bookingEnd) ||
           (endTime > bookingStart && endTime <= bookingEnd) ||
           (startTime <= bookingStart && endTime >= bookingEnd)
         );
+
+        if (overlap) {
+          console.log('Overlap detected:', {
+            newBooking: { date: formattedDate, start: startTime, end: endTime },
+            existingBooking: { 
+              id: booking.id,
+              date: booking.date,
+              start: bookingStart,
+              end: bookingEnd,
+              status: booking.status
+            }
+          });
+        }
+        return overlap;
       });
 
       if (hasOverlap) {
         toast({
           title: "Créneau non disponible",
-          description: "Ce créneau chevauche une réservation existante",
+          description: "Ce créneau est déjà réservé. Veuillez choisir un autre horaire.",
           variant: "destructive",
         });
         return true;

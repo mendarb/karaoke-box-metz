@@ -6,6 +6,7 @@ import { BookingStatusBadge } from "../../admin/BookingStatusBadge";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
 import { Badge } from "@/components/ui/badge";
+import { Clock, Users, Euro, CalendarDays } from "lucide-react";
 
 interface BookingCardProps {
   booking: any;
@@ -50,15 +51,21 @@ export const BookingCard = ({ booking }: BookingCardProps) => {
   };
 
   return (
-    <Card className="p-6">
-      <div className="flex justify-between items-start mb-4">
-        <div>
-          <h3 className="text-lg font-semibold">
-            {format(new Date(booking.date), 'EEEE d MMMM yyyy', { locale: fr })}
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            {`${booking.time_slot}:00 - ${endHour}:00`}
-          </p>
+    <Card className="p-6 space-y-6">
+      <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <CalendarDays className="h-4 w-4" />
+            <span className="font-medium">
+              {format(new Date(booking.date), 'EEEE d MMMM yyyy', { locale: fr })}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Clock className="h-4 w-4" />
+            <span>
+              {`${booking.time_slot}:00 - ${endHour}:00`}
+            </span>
+          </div>
         </div>
         <BookingStatusBadge 
           status={booking.status} 
@@ -67,29 +74,25 @@ export const BookingCard = ({ booking }: BookingCardProps) => {
         />
       </div>
       
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div>
-          <p className="text-sm text-gray-600">Personnes</p>
-          <p className="font-medium">{booking.group_size}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="flex items-center gap-2">
+          <Users className="h-4 w-4 text-muted-foreground" />
+          <div>
+            <p className="text-sm text-muted-foreground">Personnes</p>
+            <p className="font-medium">{booking.group_size}</p>
+          </div>
         </div>
-        <div>
-          <p className="text-sm text-gray-600">Durée</p>
-          <p className="font-medium">{booking.duration}h</p>
-        </div>
-        <div>
-          <p className="text-sm text-gray-600">Prix</p>
-          <p className="font-medium">{booking.price}€</p>
-        </div>
-        <div>
-          <p className="text-sm text-gray-600">Paiement</p>
-          <p className="font-medium">
-            {booking.payment_status === 'paid' ? 'Payé' : 'En attente'}
-          </p>
+        <div className="flex items-center gap-2">
+          <Euro className="h-4 w-4 text-muted-foreground" />
+          <div>
+            <p className="text-sm text-muted-foreground">Prix</p>
+            <p className="font-medium">{booking.price}€</p>
+          </div>
         </div>
       </div>
 
       {booking.is_test_booking && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-4">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
           <p className="text-sm text-yellow-800">
             Ceci est une réservation de test. Aucun paiement réel n'a été effectué.
           </p>

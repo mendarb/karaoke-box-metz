@@ -30,6 +30,8 @@ export const useBookingSuccess = () => {
   const [emailSent, setEmailSent] = useState(false);
 
   useEffect(() => {
+    let isSubscribed = true;
+
     const fetchBookingDetails = async (retryCount = 0) => {
       try {
         if (!sessionId) {
@@ -84,7 +86,11 @@ export const useBookingSuccess = () => {
           
           if (retryCount < MAX_RETRIES) {
             console.log(`⏳ Retrying in ${RETRY_DELAY/1000}s (${retryCount + 1}/${MAX_RETRIES})`);
-            setTimeout(() => fetchBookingDetails(retryCount + 1), RETRY_DELAY);
+            setTimeout(() => {
+              if (isSubscribed) {
+                fetchBookingDetails(retryCount + 1);
+              }
+            }, RETRY_DELAY);
             return;
           }
           
@@ -93,12 +99,17 @@ export const useBookingSuccess = () => {
             description: "Unable to find your booking. The technical team has been notified.",
             variant: "destructive",
           });
-          setLoading(false);
+          if (isSubscribed) {
+            setLoading(false);
+          }
           return;
         }
 
         console.log('✅ Booking found:', bookings);
-        setBookingDetails(bookings);
+        
+        if (isSubscribed) {
+          setBookingDetails(bookings);
+        }
         
         // Mettre à jour le statut de la réservation si nécessaire
         if (bookings.payment_status !== 'paid') {
@@ -118,34 +129,42 @@ export const useBookingSuccess = () => {
           }
         }
 
-        // N'envoyer l'email qu'une seule fois
-        if (bookings.payment_status === 'paid' && !emailSent) {
+        // N'envoyer l'email qu'une seule fois et seulement si le composant est toujours monté
+        if (bookings.payment_status === 'paid' && !emailSent && isSubscribed) {
           console.log('📧 Sending confirmation email for booking:', bookings.id);
           try {
             await sendEmail(bookings);
-            setEmailSent(true);
+            if (isSubscribed) {
+              setEmailSent(true);
+            }
             console.log('✅ Confirmation email sent successfully');
             toast({
-              title: "Confirmation sent",
-              description: "A confirmation email has been sent to you.",
+              title: "Confirmation envoyée",
+              description: "Un email de confirmation vous a été envoyé.",
             });
           } catch (emailError) {
             console.error('❌ Error sending confirmation email:', emailError);
             toast({
               title: "Note",
-              description: "The booking is confirmed but the email could not be sent",
+              description: "La réservation est confirmée mais l'email n'a pas pu être envoyé",
               variant: "default",
             });
           }
         }
         
-        setLoading(false);
+        if (isSubscribed) {
+          setLoading(false);
+        }
       } catch (error: any) {
         console.error('❌ Error in fetchBookingDetails:', error);
         
-        if (retryCount < MAX_RETRIES) {
+        if (retryCount < MAX_RETRIES && isSubscribed) {
           console.log(`⏳ Retrying in ${RETRY_DELAY/1000}s (${retryCount + 1}/${MAX_RETRIES})`);
-          setTimeout(() => fetchBookingDetails(retryCount + 1), RETRY_DELAY);
+          setTimeout(() => {
+            if (isSubscribed) {
+              fetchBookingDetails(retryCount + 1);
+            }
+          }, RETRY_DELAY);
           return;
         }
         
@@ -154,11 +173,17 @@ export const useBookingSuccess = () => {
           description: "An error occurred while retrieving your booking",
           variant: "destructive",
         });
-        setLoading(false);
+        if (isSubscribed) {
+          setLoading(false);
+        }
       }
     };
 
     fetchBookingDetails();
+
+    return () => {
+      isSubscribed = false;
+    };
   }, [sessionId, sendEmail, emailSent]);
 
   return { bookingDetails, loading };

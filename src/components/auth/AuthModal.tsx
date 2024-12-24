@@ -19,14 +19,14 @@ export function AuthModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>
+      <DialogContent className="sm:max-w-[400px] p-6">
+        <DialogHeader className="space-y-3">
+          <DialogTitle className="text-xl">
             {isLogin ? "Connexion" : "Créer un compte"}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-sm text-gray-600">
             {isLogin 
-              ? "Connectez-vous à votre compte"
+              ? "Connectez-vous à votre compte pour réserver"
               : "Créez un compte pour réserver votre box"
             }
           </DialogDescription>

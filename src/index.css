@@ -23,7 +23,7 @@
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 250 87% 75%;
-    --radius: 1rem;
+    --radius: 0.75rem;
   }
 }
 
@@ -32,7 +32,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground antialiased min-h-screen;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply tracking-tight font-bold;
@@ -57,16 +57,16 @@
 
 /* Glassmorphism effects */
 .glass {
-  @apply bg-white/70 backdrop-blur-sm border border-white/20;
+  @apply bg-white/80 backdrop-blur-sm border border-white/20;
 }
 
 .glass-hover {
-  @apply hover:bg-white/80 transition-all duration-300;
+  @apply hover:bg-white/90 transition-all duration-300;
 }
 
 /* Card styles */
 .card-hover {
-  @apply transition-all duration-300 hover:shadow-lg hover:scale-[1.01];
+  @apply transition-all duration-300 hover:shadow-md hover:scale-[1.01];
 }
 
 /* Container styles */
@@ -76,18 +76,18 @@
 
 /* Form styles */
 .form-container {
-  @apply space-y-6;
+  @apply space-y-4;
 }
 
 .form-section {
-  @apply space-y-4;
+  @apply space-y-3;
 }
 
 /* Button styles */
 .btn-primary {
-  @apply bg-violet-600 text-white hover:bg-violet-700 transition-colors;
+  @apply bg-violet-500 text-white hover:bg-violet-600 transition-colors;
 }
 
 .btn-secondary {
-  @apply bg-gray-100 text-gray-900 hover:bg-gray-200 transition-colors;
+  @apply bg-gray-50 text-gray-800 hover:bg-gray-100 transition-colors;
 }

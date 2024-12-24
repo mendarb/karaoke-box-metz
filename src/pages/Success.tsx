@@ -1,27 +1,27 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useBookingSuccess } from "@/hooks/useBookingSuccess";
 import { BookingSuccessDetails } from "@/components/booking/BookingSuccessDetails";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, AlertTriangle } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Success = () => {
-  const { bookingDetails, loading } = useBookingSuccess();
+  const { booking, isLoading, error } = useBookingSuccess();
   const navigate = useNavigate();
 
   useEffect(() => {
     // Ajouter un délai pour laisser le temps au webhook de traiter la réservation
     const timer = setTimeout(() => {
-      if (!loading && !bookingDetails) {
+      if (!isLoading && !booking) {
         console.log('Aucune réservation trouvée après le délai');
       }
     }, 5000);
 
     return () => clearTimeout(timer);
-  }, [loading, bookingDetails]);
+  }, [isLoading, booking]);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
         <LoadingSpinner className="w-12 h-12 text-violet-600" />
@@ -35,7 +35,7 @@ const Success = () => {
     );
   }
 
-  if (!bookingDetails) {
+  if (!booking) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
@@ -79,7 +79,7 @@ const Success = () => {
           </p>
         </div>
 
-        <BookingSuccessDetails bookingDetails={bookingDetails} />
+        <BookingSuccessDetails bookingDetails={booking} />
 
         <div className="mt-8 text-center">
           <Button

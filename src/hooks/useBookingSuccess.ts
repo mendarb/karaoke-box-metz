@@ -3,13 +3,24 @@ import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useBookingEmail } from "./useBookingEmail";
 
+export interface BookingDetails {
+  id: string;
+  date: string;
+  time_slot: string;
+  duration: string;
+  group_size: string;
+  price: number;
+  payment_status: string;
+  is_test_booking?: boolean;
+}
+
 export const useBookingSuccess = () => {
   const [searchParams] = useSearchParams();
-  const [booking, setBooking] = useState<any>(null);
+  const [booking, setBooking] = useState<BookingDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [emailSent, setEmailSent] = useState(false);
-  const { sendBookingEmail } = useBookingEmail();
+  const { sendEmail } = useBookingEmail();
 
   useEffect(() => {
     const sessionId = searchParams.get("session_id");
@@ -61,9 +72,9 @@ export const useBookingSuccess = () => {
         }
 
         // Envoyer l'email une seule fois
-        if (!emailSent) {
+        if (!emailSent && booking) {
           console.log("📧 Sending confirmation email for booking:", booking?.id);
-          await sendBookingEmail(booking?.id);
+          await sendEmail(booking);
           setEmailSent(true);
         }
 
@@ -76,7 +87,7 @@ export const useBookingSuccess = () => {
     };
 
     getBookingDetails();
-  }, [searchParams, emailSent, sendBookingEmail]);
+  }, [searchParams, emailSent, sendEmail, booking]);
 
   return { booking, isLoading, error };
 };

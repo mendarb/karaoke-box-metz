@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { useDisabledDates } from "./hooks/useDisabledDates";
 import { useDateTimeSelection } from "./hooks/useDateTimeSelection";
@@ -22,26 +22,41 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
 
   const { minDate, maxDate, settings } = useBookingSettings();
 
-  const isDayExcludedCallback = useMemo(() => (date: Date) => {
-    if (!settings?.openingHours) return true;
-    const settingsWeekDay = convertJsWeekDayToSettings(date.getDay());
-    const daySettings = settings.openingHours[settingsWeekDay];
-    return !daySettings?.isOpen;
-  }, [settings]);
-
   const { disabledDates } = useDisabledDates({ 
     minDate, 
     maxDate, 
-    isDayExcluded: isDayExcludedCallback 
+    isDayExcluded: (date: Date) => {
+      if (!settings?.openingHours) return true;
+      
+      const settingsWeekDay = convertJsWeekDayToSettings(date.getDay());
+      const daySettings = settings.openingHours[settingsWeekDay];
+      
+      console.log('Vérification jour:', {
+        date: date.toISOString(),
+        settingsWeekDay,
+        daySettings,
+        isOpen: daySettings?.isOpen
+      });
+      
+      return !daySettings?.isOpen;
+    }
   });
 
-  const timeSlot = form.watch("timeSlot");
-
   useEffect(() => {
+    const timeSlot = form.watch("timeSlot");
     if (timeSlot && selectedDate) {
       handleTimeSlotChange(timeSlot);
     }
-  }, [timeSlot, selectedDate, handleTimeSlotChange]);
+  }, [form.watch("timeSlot"), selectedDate, handleTimeSlotChange]);
+
+  console.log('DateTimeFields render:', {
+    selectedDate,
+    minDate,
+    maxDate,
+    disabledDates: disabledDates.length,
+    availableSlots,
+    settings
+  });
 
   return (
     <div className="space-y-8">

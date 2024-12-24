@@ -2,7 +2,6 @@ import { UseFormReturn } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Clock } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface TimeSlotsProps {
   form: UseFormReturn<any>;
@@ -25,7 +24,7 @@ export const TimeSlots = ({
         const hour = parseInt(slot);
         const formattedSlot = `${hour}:00`;
 
-        const slotButton = (
+        return (
           <Button
             key={slot}
             type="button"
@@ -41,8 +40,6 @@ export const TimeSlots = ({
             {formattedSlot}
           </Button>
         );
-
-        return slotButton;
       })}
     </div>
   );

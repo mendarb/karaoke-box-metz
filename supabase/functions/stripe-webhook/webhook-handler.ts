@@ -18,7 +18,8 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
           sessionId: session.id,
           metadata: session.metadata,
           customerEmail: session.customer_email,
-          paymentStatus: session.payment_status
+          paymentStatus: session.payment_status,
+          bookingId: session.metadata.bookingId
         });
 
         // Mettre à jour la réservation comme confirmée
@@ -75,53 +76,26 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
         const session = event.data.object;
         console.log('Checkout session expired:', {
           sessionId: session.id,
-          metadata: session.metadata
+          metadata: session.metadata,
+          bookingId: session.metadata.bookingId
         });
 
-        // Soft delete de la réservation expirée
-        const { error: deleteError } = await supabase
+        // Mettre à jour la réservation comme expirée
+        const { error: updateError } = await supabase
           .from('bookings')
           .update({
             status: 'cancelled',
             payment_status: 'expired',
-            deleted_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           })
           .eq('id', session.metadata.bookingId);
 
-        if (deleteError) {
-          console.error('Error deleting expired booking:', deleteError);
-          throw deleteError;
+        if (updateError) {
+          console.error('Error updating expired booking:', updateError);
+          throw updateError;
         }
 
-        console.log('✅ Expired booking deleted');
-        break;
-      }
-
-      case 'payment_intent.payment_failed': {
-        const paymentIntent = event.data.object;
-        console.log('Payment failed:', {
-          paymentIntentId: paymentIntent.id,
-          metadata: paymentIntent.metadata
-        });
-
-        // Soft delete de la réservation échouée
-        const { error: deleteError } = await supabase
-          .from('bookings')
-          .update({
-            status: 'cancelled',
-            payment_status: 'failed',
-            deleted_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
-          .eq('payment_intent_id', paymentIntent.id);
-
-        if (deleteError) {
-          console.error('Error deleting failed booking:', deleteError);
-          throw deleteError;
-        }
-
-        console.log('✅ Failed booking deleted');
+        console.log('✅ Booking marked as expired');
         break;
       }
 

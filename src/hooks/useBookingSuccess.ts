@@ -34,12 +34,26 @@ export const useBookingSuccess = () => {
           return;
         }
 
-        console.log('Recherche de la réservation avec le payment_intent_id:', sessionId);
+        // D'abord, récupérer le payment_intent_id via la session Stripe
+        const { data: stripeData, error: stripeError } = await supabase.functions.invoke(
+          'get-payment-intent',
+          {
+            body: { sessionId }
+          }
+        );
+
+        if (stripeError || !stripeData?.paymentIntentId) {
+          console.error('Erreur lors de la récupération du payment_intent:', stripeError);
+          setLoading(false);
+          return;
+        }
+
+        console.log('Payment Intent ID récupéré:', stripeData.paymentIntentId);
 
         const { data: bookings, error } = await supabase
           .from('bookings')
           .select('*')
-          .eq('payment_intent_id', sessionId)
+          .eq('payment_intent_id', stripeData.paymentIntentId)
           .maybeSingle();
 
         if (error) {

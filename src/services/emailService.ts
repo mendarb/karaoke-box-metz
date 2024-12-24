@@ -6,7 +6,8 @@ export const sendBookingEmail = async (booking: Booking) => {
     console.log('📧 Envoi d\'email pour la réservation:', {
       bookingId: booking.id,
       status: booking.status,
-      userEmail: booking.user_email
+      userEmail: booking.user_email,
+      isTestBooking: booking.is_test_booking
     });
 
     const { error } = await supabase.functions.invoke('send-booking-email', {
@@ -25,6 +26,7 @@ export const sendBookingEmail = async (booking: Booking) => {
     return { success: true };
   } catch (error) {
     console.error('❌ Erreur lors de l\'envoi de l\'email:', error);
-    throw error;
+    // On ne relance pas l'erreur pour ne pas bloquer le processus
+    return { success: false, error };
   }
 };

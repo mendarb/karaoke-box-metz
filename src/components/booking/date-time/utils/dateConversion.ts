@@ -15,8 +15,8 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
   
   // Vérifier si le jour est dans la fenêtre de réservation
   if (settings.bookingWindow) {
-    const startDate = startOfDay(new Date(settings.bookingWindow.startDate));
-    const endDate = startOfDay(new Date(settings.bookingWindow.endDate));
+    const startDate = startOfDay(settings.bookingWindow.startDate);
+    const endDate = startOfDay(settings.bookingWindow.endDate);
     
     if (normalizedDate < startDate || normalizedDate > endDate) {
       console.log('❌ Jour hors fenêtre de réservation:', {
@@ -43,7 +43,7 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
 
   // Vérifier si le jour est exclu manuellement
   if (settings.excludedDays?.some(excludedDay => 
-    isEqual(startOfDay(new Date(excludedDay)), normalizedDate)
+    isEqual(startOfDay(excludedDay), normalizedDate)
   )) {
     console.log('❌ Jour exclu manuellement:', normalizedDate.toISOString());
     return true;

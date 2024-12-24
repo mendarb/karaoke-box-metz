@@ -1,8 +1,8 @@
 export interface BookingSettings {
   isTestMode: boolean;
   bookingWindow: {
-    startDays: number;
-    endDays: number;
+    startDate: Date;
+    endDate: Date;
   };
   openingHours: {
     [key: string]: {
@@ -10,7 +10,7 @@ export interface BookingSettings {
       slots: string[];
     };
   };
-  excludedDays: number[];
+  excludedDays: Date[];
   basePrice: {
     perHour: number;
     perPerson: number;
@@ -19,7 +19,10 @@ export interface BookingSettings {
 
 export const defaultSettings: BookingSettings = {
   isTestMode: false,
-  bookingWindow: { startDays: 1, endDays: 30 },
+  bookingWindow: {
+    startDate: new Date(),
+    endDate: new Date(),
+  },
   openingHours: {
     1: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] }, // Lundi
     2: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] }, // Mardi
@@ -30,5 +33,8 @@ export const defaultSettings: BookingSettings = {
     7: { isOpen: true, slots: ["17:00", "18:00", "19:00", "20:00", "21:00"] }, // Dimanche
   },
   excludedDays: [],
-  basePrice: { perHour: 30, perPerson: 5 },
+  basePrice: {
+    perHour: 30,
+    perPerson: 5,
+  },
 };

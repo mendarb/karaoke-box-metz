@@ -1,6 +1,5 @@
 import { Calendar } from "@/components/ui/calendar";
 import { fr } from "date-fns/locale";
-import { Card } from "@/components/ui/card";
 
 interface BookingCalendarProps {
   selectedDate?: Date;
@@ -18,24 +17,22 @@ export const BookingCalendar = ({
   maxDate,
 }: BookingCalendarProps) => {
   return (
-    <Card className="w-full max-w-lg mx-auto">
-      <div className="p-4">
-        <Calendar
-          mode="single"
-          selected={selectedDate}
-          onSelect={(date) => date && onSelect(date)}
-          disabled={(date) =>
-            date < minDate ||
-            date > maxDate ||
-            disabledDates.some(
-              (disabledDate) =>
-                disabledDate.toDateString() === date.toDateString()
-            )
-          }
-          locale={fr}
-          className="rounded-md border"
-        />
-      </div>
-    </Card>
+    <div className="w-full max-w-lg mx-auto bg-white">
+      <Calendar
+        mode="single"
+        selected={selectedDate}
+        onSelect={(date) => date && onSelect(date)}
+        disabled={(date) =>
+          date < minDate ||
+          date > maxDate ||
+          disabledDates.some(
+            (disabledDate) =>
+              disabledDate.toDateString() === date.toDateString()
+          )
+        }
+        locale={fr}
+        className="rounded-lg border-none shadow-none"
+      />
+    </div>
   );
 };

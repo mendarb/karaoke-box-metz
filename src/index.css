@@ -23,7 +23,7 @@
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 250 87% 75%;
-    --radius: 0.75rem;
+    --radius: 0.5rem;
   }
 }
 
@@ -57,16 +57,16 @@
 
 /* Glassmorphism effects */
 .glass {
-  @apply bg-white/80 backdrop-blur-sm border border-white/20;
+  @apply bg-white shadow-sm border border-gray-100;
 }
 
 .glass-hover {
-  @apply hover:bg-white/90 transition-all duration-300;
+  @apply hover:bg-gray-50 transition-all duration-300;
 }
 
 /* Card styles */
 .card-hover {
-  @apply transition-all duration-300 hover:shadow-md hover:scale-[1.01];
+  @apply transition-all duration-300 hover:shadow-md hover:translate-y-[-2px];
 }
 
 /* Container styles */

@@ -16,7 +16,7 @@ export const MobileNav = ({ user, isAdmin, onSignOut, onShowAuth }: MobileNavPro
           <Home className="h-5 w-5 text-gray-600" />
           <span className="text-xs mt-1 text-gray-600">Accueil</span>
         </Link>
-        {user && (
+        {user ? (
           <>
             <Link to="/my-bookings" className="flex flex-col items-center">
               <Calendar className="h-5 w-5 text-gray-600" />
@@ -32,16 +32,14 @@ export const MobileNav = ({ user, isAdmin, onSignOut, onShowAuth }: MobileNavPro
                 <span className="text-xs mt-1 text-gray-600">Admin</span>
               </Link>
             )}
+            <button
+              onClick={onSignOut}
+              className="flex flex-col items-center"
+            >
+              <UserIcon className="h-5 w-5 text-gray-600" />
+              <span className="text-xs mt-1 text-gray-600">Déconnexion</span>
+            </button>
           </>
-        )}
-        {user ? (
-          <button
-            onClick={onSignOut}
-            className="flex flex-col items-center"
-          >
-            <UserIcon className="h-5 w-5 text-gray-600" />
-            <span className="text-xs mt-1 text-gray-600">Déconnexion</span>
-          </button>
         ) : (
           <button
             onClick={onShowAuth}

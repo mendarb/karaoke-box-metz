@@ -1,7 +1,6 @@
-import { format, isSameDay, isToday, isBefore, isAfter, startOfDay } from "date-fns";
+import { format, isToday, isSameDay, isWithinInterval, startOfWeek, addDays } from "date-fns";
 import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { CalendarDay } from "./CalendarDay";
 
 interface CalendarGridProps {
   month: Date;
@@ -21,22 +20,15 @@ export const CalendarGrid = ({
   minDate,
   maxDate
 }: CalendarGridProps) => {
+  // Utiliser fr comme locale pour avoir lundi comme premier jour de la semaine
   const weekDays = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
   const isDateDisabled = (date: Date) => {
-    const normalizedDate = startOfDay(date);
-    const normalizedMinDate = startOfDay(minDate);
-    const normalizedMaxDate = startOfDay(maxDate);
-
-    // Vérifier si la date est dans la plage autorisée
-    if (isBefore(normalizedDate, normalizedMinDate) || isAfter(normalizedDate, normalizedMaxDate)) {
-      return true;
-    }
-
-    // Vérifier si la date est dans les dates désactivées
-    return disabledDates.some(disabledDate => 
-      isSameDay(normalizedDate, startOfDay(disabledDate))
+    const isOutsideInterval = !isWithinInterval(date, { start: minDate, end: maxDate });
+    const isDisabledDate = disabledDates.some(disabledDate => 
+      isSameDay(date, disabledDate)
     );
+    return isOutsideInterval || isDisabledDate;
   };
 
   return (
@@ -52,22 +44,37 @@ export const CalendarGrid = ({
         ))}
         {days.map((day, dayIdx) => {
           const isDisabled = isDateDisabled(day);
+          const isSelected = selectedDate ? isSameDay(day, selectedDate) : false;
+          const dayToday = isToday(day);
 
+          // Calculer le jour de la semaine (1-7, où 1 est lundi)
+          const dayOfWeek = format(day, 'i');
+          
           return (
             <div
               key={day.toString()}
               className={cn(
                 "p-0.5",
-                dayIdx === 0 && `col-start-${format(day, 'i')}`
+                dayIdx === 0 && `col-start-${dayOfWeek}`
               )}
             >
-              <CalendarDay
-                day={day}
-                selectedDate={selectedDate}
-                disabledDates={disabledDates}
-                onSelect={onSelect}
-                isDisabled={isDisabled}
-              />
+              <button
+                type="button"
+                onClick={() => !isDisabled && onSelect(day)}
+                disabled={isDisabled}
+                className={cn(
+                  "w-full h-9 rounded-lg text-sm font-medium transition-colors relative",
+                  "hover:bg-violet-100 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2",
+                  {
+                    "bg-violet-600 text-white hover:bg-violet-700": isSelected,
+                    "text-gray-900": !isSelected && !isDisabled,
+                    "text-gray-400 cursor-not-allowed hover:bg-transparent": isDisabled,
+                    "ring-2 ring-violet-200": dayToday && !isSelected,
+                  }
+                )}
+              >
+                {format(day, 'd')}
+              </button>
             </div>
           );
         })}

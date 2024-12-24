@@ -24,9 +24,8 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
     minDate,
     maxDate,
     isDayExcluded: (date) => {
-      const dayOfWeek = date.getDay();
-      // Griser uniquement les lundis (1) et mardis (2)
-      return dayOfWeek === 1 || dayOfWeek === 2;
+      // Ne désactiver aucun jour par défaut
+      return false;
     }
   });
 

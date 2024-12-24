@@ -24,9 +24,13 @@ const Success = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-        <LoadingSpinner />
-        <p className="mt-4 text-gray-600">Chargement de votre réservation...</p>
-        <p className="text-sm text-gray-500 mt-2">Veuillez patienter pendant que nous confirmons votre paiement</p>
+        <LoadingSpinner className="w-12 h-12 text-violet-600" />
+        <h2 className="mt-4 text-xl font-semibold text-gray-900">
+          Confirmation en cours...
+        </h2>
+        <p className="mt-2 text-gray-600 text-center max-w-md">
+          Nous finalisons votre réservation. Merci de patienter quelques instants.
+        </p>
       </div>
     );
   }
@@ -34,18 +38,24 @@ const Success = () => {
   if (!bookingDetails) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
-          <AlertTriangle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
+          <div className="flex justify-center mb-4">
+            <CheckCircle2 className="h-16 w-16 text-green-500" />
+          </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Réservation en cours de traitement
+            Paiement accepté !
           </h1>
-          <p className="text-gray-600 mb-8">
+          <p className="text-gray-600 mb-6">
             Votre paiement a été accepté et votre réservation est en cours de traitement. 
             Vous recevrez un email de confirmation dans quelques instants.
           </p>
+          <p className="text-sm text-gray-500 mb-8">
+            Si vous ne recevez pas d'email dans les prochaines minutes, 
+            n'hésitez pas à nous contacter.
+          </p>
           <Button
             onClick={() => navigate('/')}
-            className="bg-violet-600 hover:bg-violet-700"
+            className="bg-violet-600 hover:bg-violet-700 w-full"
           >
             Retour à l'accueil
           </Button>
@@ -56,25 +66,25 @@ const Success = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6">
+      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
         <div className="text-center mb-6">
           <div className="flex justify-center mb-4">
-            <CheckCircle2 className="h-12 w-12 text-green-500" />
+            <CheckCircle2 className="h-16 w-16 text-green-500" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">
-            Réservation confirmée
+            Réservation confirmée !
           </h1>
           <p className="text-gray-600 mt-2">
-            Merci pour votre réservation ! Vous recevrez bientôt un email de confirmation.
+            Merci pour votre réservation ! Un email de confirmation vous a été envoyé.
           </p>
         </div>
 
         <BookingSuccessDetails bookingDetails={bookingDetails} />
 
-        <div className="mt-6 text-center">
+        <div className="mt-8 text-center">
           <Button
             onClick={() => navigate('/')}
-            className="bg-violet-600 hover:bg-violet-700"
+            className="bg-violet-600 hover:bg-violet-700 w-full"
           >
             Retour à l'accueil
           </Button>

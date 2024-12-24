@@ -32,7 +32,7 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
             time_slot: session.metadata.timeSlot,
             duration: session.metadata.duration,
             group_size: session.metadata.groupSize,
-            price: parseFloat(session.metadata.price),
+            price: parseFloat(session.metadata.finalPrice),
             message: session.metadata.message || '',
             status: 'confirmed',
             payment_status: 'paid',

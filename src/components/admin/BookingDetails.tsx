@@ -1,4 +1,4 @@
-import { Calendar, Clock, Users, Euro } from "lucide-react";
+import { Calendar, Clock, Users, Euro, Mail, Phone, MessageSquare } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -11,6 +11,7 @@ interface BookingDetailsProps {
   userName: string;
   userEmail: string;
   userPhone: string;
+  message?: string;
 }
 
 export const BookingDetails = ({
@@ -22,41 +23,63 @@ export const BookingDetails = ({
   userName,
   userEmail,
   userPhone,
+  message,
 }: BookingDetailsProps) => {
-  const startHour = timeSlot;
-  const endHour = parseInt(timeSlot) + parseInt(duration);
+  const startHour = parseInt(timeSlot);
+  const endHour = startHour + parseInt(duration);
 
   return (
-    <>
-      <div className="space-y-1">
+    <div className="space-y-6 p-4 bg-gray-50 rounded-lg">
+      <div className="space-y-2">
         <div className="flex items-center text-sm">
-          <Calendar className="mr-2 h-4 w-4" />
-          {format(new Date(date), "d MMMM yyyy", { locale: fr })}
+          <Calendar className="mr-2 h-4 w-4 text-violet-500" />
+          <span className="font-medium">
+            {format(new Date(date), "EEEE d MMMM yyyy", { locale: fr })}
+          </span>
         </div>
-        <div className="flex items-center text-sm text-gray-500">
-          <Clock className="mr-2 h-4 w-4" />
-          {startHour}:00 - {endHour}:00
-        </div>
-      </div>
-      <div className="space-y-1">
-        <div className="font-medium">{userName}</div>
-        <div className="text-sm text-gray-500">{userEmail}</div>
-        <div className="text-sm text-gray-500">{userPhone}</div>
-      </div>
-      <div className="space-y-1">
         <div className="flex items-center text-sm">
-          <Users className="mr-2 h-4 w-4" />
-          {groupSize} personnes
-        </div>
-        <div className="flex items-center text-sm text-gray-500">
-          <Clock className="mr-2 h-4 w-4" />
-          {duration}h
+          <Clock className="mr-2 h-4 w-4 text-violet-500" />
+          <span>
+            {startHour}:00 - {endHour}:00 ({duration}h)
+          </span>
         </div>
       </div>
-      <div className="flex items-center">
-        <Euro className="mr-1 h-4 w-4" />
-        {price}€
+
+      <div className="space-y-2">
+        <div className="flex items-center text-sm">
+          <Users className="mr-2 h-4 w-4 text-violet-500" />
+          <span>{groupSize} personnes</span>
+        </div>
+        <div className="flex items-center text-sm">
+          <Euro className="mr-2 h-4 w-4 text-violet-500" />
+          <span>{price}€</span>
+        </div>
       </div>
-    </>
+
+      <div className="space-y-2">
+        <h3 className="font-medium text-sm text-gray-700">Informations de contact</h3>
+        <div className="flex items-center text-sm">
+          <span className="font-medium">{userName}</span>
+        </div>
+        <div className="flex items-center text-sm">
+          <Mail className="mr-2 h-4 w-4 text-violet-500" />
+          <span>{userEmail}</span>
+        </div>
+        <div className="flex items-center text-sm">
+          <Phone className="mr-2 h-4 w-4 text-violet-500" />
+          <span>{userPhone}</span>
+        </div>
+      </div>
+
+      {message && (
+        <div className="space-y-2">
+          <h3 className="font-medium text-sm text-gray-700">Message</h3>
+          <div className="flex items-start text-sm">
+            <MessageSquare className="mr-2 h-4 w-4 text-violet-500 mt-0.5" />
+            <span className="text-gray-600">{message}</span>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };

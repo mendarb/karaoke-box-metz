@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { PaymentLinkDisplay } from "../PaymentLinkDisplay";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { Calendar, Clock, Users, Euro, Mail, Phone, MessageSquare } from "lucide-react";
 
 interface ConfirmationProps {
   form: UseFormReturn<any>;
@@ -21,6 +22,8 @@ export const Confirmation = ({
 }: ConfirmationProps) => {
   const formData = form.getValues();
   const date = formData.date ? format(new Date(formData.date), "EEEE d MMMM yyyy", { locale: fr }) : "";
+  const startHour = parseInt(formData.timeSlot);
+  const endHour = startHour + parseInt(formData.duration);
 
   return (
     <div className="space-y-6">
@@ -32,20 +35,57 @@ export const Confirmation = ({
         ← Modifier la réservation
       </Button>
 
-      <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
-        <h3 className="font-medium">Récapitulatif de la réservation</h3>
+      <div className="space-y-6 bg-gray-50 p-6 rounded-lg">
+        <h3 className="font-medium text-lg">Récapitulatif de la réservation</h3>
         
-        <div className="space-y-2">
-          <p><strong>Client :</strong> {formData.fullName}</p>
-          <p><strong>Email :</strong> {formData.email}</p>
-          <p><strong>Téléphone :</strong> {formData.phone}</p>
-          <p><strong>Date :</strong> {date}</p>
-          <p><strong>Heure :</strong> {formData.timeSlot}h</p>
-          <p><strong>Durée :</strong> {formData.duration}h</p>
-          <p><strong>Nombre de personnes :</strong> {formData.groupSize}</p>
-          <p><strong>Prix :</strong> {formData.calculatedPrice}€</p>
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <div className="flex items-center text-sm">
+              <Calendar className="mr-2 h-4 w-4 text-violet-500" />
+              <span className="font-medium">{date}</span>
+            </div>
+            <div className="flex items-center text-sm">
+              <Clock className="mr-2 h-4 w-4 text-violet-500" />
+              <span>
+                {formData.timeSlot}:00 - {endHour}:00 ({formData.duration}h)
+              </span>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center text-sm">
+              <Users className="mr-2 h-4 w-4 text-violet-500" />
+              <span>{formData.groupSize} personnes</span>
+            </div>
+            <div className="flex items-center text-sm">
+              <Euro className="mr-2 h-4 w-4 text-violet-500" />
+              <span>{formData.calculatedPrice}€</span>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <h4 className="font-medium text-sm text-gray-700">Informations de contact</h4>
+            <div className="flex items-center text-sm">
+              <span className="font-medium">{formData.fullName}</span>
+            </div>
+            <div className="flex items-center text-sm">
+              <Mail className="mr-2 h-4 w-4 text-violet-500" />
+              <span>{formData.email}</span>
+            </div>
+            <div className="flex items-center text-sm">
+              <Phone className="mr-2 h-4 w-4 text-violet-500" />
+              <span>{formData.phone}</span>
+            </div>
+          </div>
+
           {formData.message && (
-            <p><strong>Message :</strong> {formData.message}</p>
+            <div className="space-y-2">
+              <h4 className="font-medium text-sm text-gray-700">Message</h4>
+              <div className="flex items-start text-sm">
+                <MessageSquare className="mr-2 h-4 w-4 text-violet-500 mt-0.5" />
+                <span className="text-gray-600">{formData.message}</span>
+              </div>
+            </div>
           )}
         </div>
       </div>

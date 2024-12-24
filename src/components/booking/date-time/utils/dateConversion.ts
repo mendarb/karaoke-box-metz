@@ -33,13 +33,15 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
   }
 
   // Vérifier les horaires d'ouverture
-  const dayOfWeek = normalizedDate.getDay().toString();
-  const daySettings = settings.openingHours[dayOfWeek];
+  // getDay() retourne: 0 (Dimanche) à 6 (Samedi)
+  const dayOfWeek = normalizedDate.getDay();
+  const daySettings = settings.openingHours[dayOfWeek.toString()];
 
   if (!daySettings?.isOpen || !daySettings.slots?.length) {
     console.log('❌ Jour fermé ou sans créneaux:', {
       date: normalizedDate.toISOString(),
       dayOfWeek,
+      dayName: ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'][dayOfWeek],
       isOpen: daySettings?.isOpen,
       slots: daySettings?.slots?.length,
       openingHours: settings.openingHours
@@ -50,6 +52,7 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
   console.log('✅ Jour disponible:', {
     date: normalizedDate.toISOString(),
     dayOfWeek,
+    dayName: ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'][dayOfWeek],
     slots: daySettings.slots
   });
   return false;

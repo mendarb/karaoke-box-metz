@@ -26,7 +26,7 @@ export const BookingCalendar = ({
     const monthDays = eachDayOfInterval({
       start: startOfMonth(currentMonth),
       end: endOfMonth(currentMonth)
-    }).map(date => startOfDay(date));
+    });
     
     setDays(monthDays);
   }, [currentMonth]);
@@ -39,22 +39,21 @@ export const BookingCalendar = ({
     setCurrentMonth(addMonths(currentMonth, 1));
   };
 
-  // Vérifier si le mois précédent contient des dates valides
-  const previousMonth = subMonths(currentMonth, 1);
-  const isPreviousMonthDisabled = startOfMonth(previousMonth) < startOfMonth(minDate);
+  // Vérifier si le mois précédent est avant la date minimum
+  const isPreviousMonthDisabled = subMonths(currentMonth, 1) < minDate;
   
-  // Vérifier si le mois suivant contient des dates valides
-  const nextMonth = addMonths(currentMonth, 1);
-  const isNextMonthDisabled = startOfMonth(nextMonth) > startOfMonth(maxDate);
+  // Vérifier si le mois suivant est après la date maximum
+  const isNextMonthDisabled = addMonths(currentMonth, 1) > maxDate;
 
   console.log('Calendar state:', {
     currentMonth: currentMonth.toISOString(),
-    previousMonth: previousMonth.toISOString(),
-    nextMonth: nextMonth.toISOString(),
+    previousMonth: subMonths(currentMonth, 1).toISOString(),
+    nextMonth: addMonths(currentMonth, 1).toISOString(),
     isPreviousMonthDisabled,
     isNextMonthDisabled,
     minDate: minDate.toISOString(),
-    maxDate: maxDate.toISOString()
+    maxDate: maxDate.toISOString(),
+    disabledDatesCount: disabledDates.length
   });
 
   return (

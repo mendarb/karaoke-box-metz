@@ -5,29 +5,7 @@ import { BookingSettings } from "@/components/admin/settings/types/bookingSettin
 export const convertJsWeekDayToSettings = (jsWeekDay: number): string => {
   // JavaScript: 0 (dimanche) - 6 (samedi)
   // Notre format: 1 (lundi) - 7 (dimanche)
-  const settingsWeekDay = jsWeekDay === 0 ? 7 : jsWeekDay;
-  
-  console.log('🔄 Conversion jour:', { 
-    jsWeekDay, 
-    settingsWeekDay,
-    jsDay: getDayName(jsWeekDay),
-    settingsDay: getDayName(jsWeekDay)
-  });
-  
-  return String(settingsWeekDay);
-};
-
-const getDayName = (jsWeekDay: number): string => {
-  const days = {
-    0: 'Dimanche',
-    1: 'Lundi',
-    2: 'Mardi',
-    3: 'Mercredi',
-    4: 'Jeudi',
-    5: 'Vendredi',
-    6: 'Samedi'
-  };
-  return days[jsWeekDay as keyof typeof days];
+  return String(jsWeekDay === 0 ? 7 : jsWeekDay);
 };
 
 export const getDateRange = (settings: any, isTestMode: boolean) => {
@@ -46,7 +24,6 @@ export const getDateRange = (settings: any, isTestMode: boolean) => {
 
 export const isDayExcluded = (date: Date, settings: BookingSettings | null | undefined): boolean => {
   if (!settings?.openingHours) {
-    console.log('❌ Pas de paramètres d\'horaires');
     return true;
   }
 
@@ -54,14 +31,6 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
   const dayOfWeek = normalizedDate.getDay();
   const settingsWeekDay = convertJsWeekDayToSettings(dayOfWeek);
   const daySettings = settings.openingHours[settingsWeekDay];
-
-  console.log('📅 Vérification jour:', {
-    date: normalizedDate.toISOString(),
-    dayOfWeek,
-    settingsWeekDay,
-    daySettings,
-    isOpen: daySettings?.isOpen
-  });
 
   return !daySettings?.isOpen;
 };

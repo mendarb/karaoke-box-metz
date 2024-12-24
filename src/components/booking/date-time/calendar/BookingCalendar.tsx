@@ -23,12 +23,11 @@ export const BookingCalendar = ({
   const [days, setDays] = useState<Date[]>([]);
 
   useEffect(() => {
-    // Générer les jours du mois courant
     const daysInMonth: Date[] = [];
     const date = new Date(currentMonth);
     date.setDate(1);
     while (date.getMonth() === currentMonth.getMonth()) {
-      daysInMonth.push(new Date(date));
+      daysInMonth.push(startOfDay(new Date(date)));
       date.setDate(date.getDate() + 1);
     }
     setDays(daysInMonth);

@@ -1,7 +1,19 @@
-export const LoadingSpinner = () => {
+import { cn } from "@/lib/utils";
+
+interface LoadingSpinnerProps {
+  className?: string;
+}
+
+export const LoadingSpinner = ({ className }: LoadingSpinnerProps) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-violet-50 flex items-center justify-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+    <div
+      className={cn(
+        "inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-current border-r-transparent motion-reduce:animate-[spin_1.5s_linear_infinite]",
+        className
+      )}
+      role="status"
+    >
+      <span className="sr-only">Loading...</span>
     </div>
   );
 };

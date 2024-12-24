@@ -50,26 +50,18 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
     return true;
   }
 
-  // Normaliser la date en début de journée
   const normalizedDate = startOfDay(date);
-  
-  // Obtenir le jour de la semaine
   const dayOfWeek = normalizedDate.getDay();
   const settingsWeekDay = convertJsWeekDayToSettings(dayOfWeek);
   const daySettings = settings.openingHours[settingsWeekDay];
 
   console.log('📅 Vérification jour:', {
-    date: date.toISOString(),
-    normalizedDate: normalizedDate.toISOString(),
+    date: normalizedDate.toISOString(),
     dayOfWeek,
     settingsWeekDay,
     daySettings,
     isOpen: daySettings?.isOpen
   });
 
-  if (!daySettings?.isOpen) {
-    return true;
-  }
-
-  return false;
+  return !daySettings?.isOpen;
 };

@@ -28,7 +28,7 @@ export const CalendarGrid = ({
 
     return isBefore(normalizedDate, normalizedMinDate) || 
            isAfter(normalizedDate, normalizedMaxDate) || 
-           disabledDates.some(disabledDate => isSameDay(date, disabledDate));
+           disabledDates.some(disabledDate => isSameDay(normalizedDate, disabledDate));
   };
 
   return (

@@ -52,7 +52,7 @@ export const CalendarGrid = ({
         ))}
       </div>
       <div className="grid grid-cols-7 gap-1">
-        {days.map((day, index) => {
+        {days.map((day, dayIndex) => {
           const normalizedDay = startOfDay(day);
           const isSelected = selectedDate ? isSameDay(normalizedDay, selectedDate) : false;
           const isDisabled = isDateDisabled(normalizedDay);

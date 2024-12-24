@@ -7,7 +7,7 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
     return true;
   }
 
-  // Important: Utiliser getDay() directement sur la date locale
+  // Utiliser getDay() pour obtenir l'index du jour (0-6, 0 = Dimanche)
   const dayOfWeek = date.getDay();
   const daySettings = settings.openingHours[dayOfWeek];
 
@@ -34,11 +34,13 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
   }
 
   // Vérifier si le jour est exclu manuellement
-  if (settings.excludedDays?.some(excludedDay => 
+  const isExcluded = settings.excludedDays?.some(excludedDay => 
     isEqual(startOfDay(new Date(excludedDay)), startOfDay(date))
-  )) {
-    return true;
+  );
+
+  if (isExcluded) {
+    console.log('❌ Jour exclu manuellement:', date.toISOString());
   }
 
-  return false;
+  return isExcluded || false;
 };

@@ -50,20 +50,17 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
     return true;
   }
 
-  // Obtenir le fuseau horaire local
-  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  // Normaliser la date en début de journée
+  const normalizedDate = startOfDay(date);
   
-  // Convertir la date en date locale
-  const localDate = new Date(date.toLocaleString('en-US', { timeZone: timezone }));
-  
-  // Obtenir le jour de la semaine en local
-  const dayOfWeek = localDate.getDay();
+  // Obtenir le jour de la semaine
+  const dayOfWeek = normalizedDate.getDay();
   const settingsWeekDay = convertJsWeekDayToSettings(dayOfWeek);
   const daySettings = settings.openingHours[settingsWeekDay];
 
   console.log('📅 Vérification jour:', {
     date: date.toISOString(),
-    localDate: localDate.toLocaleString(),
+    normalizedDate: normalizedDate.toISOString(),
     dayOfWeek,
     settingsWeekDay,
     daySettings,

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { CalendarHeader } from "./CalendarHeader";
 import { CalendarGrid } from "./CalendarGrid";
 import { Card } from "@/components/ui/card";
-import { addMonths, subMonths, startOfMonth } from "date-fns";
+import { addMonths, subMonths, startOfMonth, endOfMonth, startOfDay } from "date-fns";
 
 interface BookingCalendarProps {
   selectedDate?: Date;
@@ -42,8 +42,12 @@ export const BookingCalendar = ({
     setCurrentMonth(addMonths(currentMonth, 1));
   };
 
-  const isPreviousMonthDisabled = currentMonth <= minDate;
-  const isNextMonthDisabled = currentMonth >= maxDate;
+  const normalizedCurrentMonth = startOfDay(currentMonth);
+  const normalizedMinDate = startOfDay(minDate);
+  const normalizedMaxDate = startOfDay(maxDate);
+
+  const isPreviousMonthDisabled = normalizedCurrentMonth <= normalizedMinDate;
+  const isNextMonthDisabled = normalizedCurrentMonth >= normalizedMaxDate;
 
   return (
     <Card className="w-full max-w-lg mx-auto">

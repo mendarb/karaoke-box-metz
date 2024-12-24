@@ -1,4 +1,4 @@
-import { format, isSameDay, isToday, isBefore, isAfter } from "date-fns";
+import { format, isSameDay, isToday, isBefore, isAfter, startOfDay } from "date-fns";
 import { cn } from "@/lib/utils";
 
 interface CalendarGridProps {
@@ -22,17 +22,12 @@ export const CalendarGrid = ({
   const weekDays = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
   const isDateDisabled = (date: Date) => {
-    const startOfDay = new Date(date);
-    startOfDay.setHours(0, 0, 0, 0);
-    
-    const minStartOfDay = new Date(minDate);
-    minStartOfDay.setHours(0, 0, 0, 0);
-    
-    const maxStartOfDay = new Date(maxDate);
-    maxStartOfDay.setHours(0, 0, 0, 0);
+    const normalizedDate = startOfDay(date);
+    const normalizedMinDate = startOfDay(minDate);
+    const normalizedMaxDate = startOfDay(maxDate);
 
-    return isBefore(startOfDay, minStartOfDay) || 
-           isAfter(startOfDay, maxStartOfDay) || 
+    return isBefore(normalizedDate, normalizedMinDate) || 
+           isAfter(normalizedDate, normalizedMaxDate) || 
            disabledDates.some(disabledDate => isSameDay(date, disabledDate));
   };
 

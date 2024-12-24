@@ -1,3 +1,6 @@
+import { addDays, startOfDay } from "date-fns";
+import { BookingSettings } from "@/components/admin/settings/types/bookingSettings";
+
 export const convertJsWeekDayToSettings = (jsWeekDay: number): string => {
   // JavaScript: 0 (dimanche) - 6 (samedi)
   // Notre format: 1 (lundi) - 7 (dimanche)
@@ -27,47 +30,43 @@ const getDayName = (jsWeekDay: number): string => {
 };
 
 export const getDateRange = (settings: any, isTestMode: boolean) => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const today = startOfDay(new Date());
   
   const minDate = isTestMode 
     ? today
-    : new Date(today.setDate(today.getDate() + (settings?.bookingWindow?.startDays || 1)));
+    : addDays(today, settings?.bookingWindow?.startDays || 1);
     
   const maxDate = isTestMode
-    ? new Date(today.setFullYear(today.getFullYear() + 1))
-    : new Date(today.setDate(today.getDate() + (settings?.bookingWindow?.endDays || 30)));
+    ? addDays(today, 365)
+    : addDays(today, settings?.bookingWindow?.endDays || 30);
 
   return { minDate, maxDate };
 };
 
-export const isDayExcluded = (date: Date, settings: any): boolean => {
+export const isDayExcluded = (date: Date, settings: BookingSettings | null | undefined): boolean => {
   if (!settings?.openingHours) {
     console.log('❌ Pas de paramètres d\'horaires');
     return true;
   }
 
-  const settingsWeekDay = convertJsWeekDayToSettings(date.getDay());
+  // Normaliser la date à minuit en heure locale
+  const localDate = new Date(date);
+  localDate.setHours(0, 0, 0, 0);
+
+  // Obtenir le jour de la semaine en tenant compte du fuseau horaire local
+  const settingsWeekDay = convertJsWeekDayToSettings(localDate.getDay());
   const daySettings = settings.openingHours[settingsWeekDay];
 
-  console.log('📅 Vérification disponibilité:', {
+  console.log('📅 Vérification jour:', {
     date: date.toISOString(),
-    jsWeekDay: date.getDay(),
     settingsWeekDay,
     daySettings,
-    isOpen: daySettings?.isOpen,
-    openingHours: settings.openingHours
+    isOpen: daySettings?.isOpen
   });
 
   if (!daySettings?.isOpen) {
-    console.log('❌ Jour fermé ou pas de créneaux:', {
-      date: date.toISOString(),
-      isOpen: daySettings?.isOpen,
-      slots: daySettings?.slots
-    });
     return true;
   }
 
-  console.log('✅ Jour disponible:', date.toISOString());
   return false;
 };

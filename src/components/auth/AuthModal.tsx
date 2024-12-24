@@ -31,31 +31,35 @@ export function AuthModal({
 
     try {
       if (isLogin) {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { error } = await supabase.auth.signInWithPassword({
           email: email.trim(),
           password: password.trim(),
         })
 
         if (error) {
           console.error("Auth error:", error)
-          toast({
-            title: "Erreur de connexion",
-            description: error.message === "Invalid login credentials" 
-              ? "Email ou mot de passe incorrect"
-              : error.message,
-            variant: "destructive",
-          })
+          if (error.message === "Invalid login credentials") {
+            toast({
+              title: "Erreur de connexion",
+              description: "Email ou mot de passe incorrect",
+              variant: "destructive",
+            })
+          } else {
+            toast({
+              title: "Erreur de connexion",
+              description: error.message,
+              variant: "destructive",
+            })
+          }
+          setIsLoading(false)
           return
         }
 
-        if (data.user) {
-          console.log("Connexion réussie pour:", data.user.email)
-          toast({
-            title: "Connexion réussie",
-            description: "Vous êtes maintenant connecté",
-          })
-          onClose()
-        }
+        toast({
+          title: "Connexion réussie",
+          description: "Vous êtes maintenant connecté",
+        })
+        onClose()
       } else {
         const { error } = await supabase.auth.signUp({
           email: email.trim(),
@@ -71,6 +75,7 @@ export function AuthModal({
             description: error.message,
             variant: "destructive",
           })
+          setIsLoading(false)
           return
         }
 

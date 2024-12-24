@@ -12,23 +12,32 @@ export const createBooking = async (data: any, userId: string | null) => {
     price: data.calculatedPrice
   });
 
+  // Get the current session to verify authentication status
+  const { data: { session } } = await supabase.auth.getSession();
+  const authenticatedUserId = session?.user?.id;
+
+  // Only set user_id if we have an authenticated user
+  const bookingData = {
+    user_id: authenticatedUserId || null, // Only set if user is authenticated
+    user_email: data.email,
+    user_name: data.fullName,
+    user_phone: data.phone,
+    date: data.date,
+    time_slot: data.timeSlot,
+    duration: data.duration,
+    group_size: data.groupSize,
+    price: data.calculatedPrice,
+    message: data.message,
+    status: 'pending',
+    payment_status: 'awaiting_payment',
+    is_test_booking: data.isTestMode || false,
+  };
+
+  console.log('Creating booking with data:', bookingData);
+
   const { data: booking, error } = await supabase
     .from('bookings')
-    .insert([{
-      user_id: userId,
-      user_email: data.email,
-      user_name: data.fullName,
-      user_phone: data.phone,
-      date: data.date,
-      time_slot: data.timeSlot,
-      duration: data.duration,
-      group_size: data.groupSize,
-      price: data.calculatedPrice,
-      message: data.message,
-      status: 'pending',
-      payment_status: 'awaiting_payment',
-      is_test_booking: data.isTestMode || false,
-    }])
+    .insert([bookingData])
     .select()
     .single();
 
@@ -40,7 +49,8 @@ export const createBooking = async (data: any, userId: string | null) => {
   console.log('✅ Réservation créée avec succès:', {
     bookingId: booking.id,
     status: booking.status,
-    paymentStatus: booking.payment_status
+    paymentStatus: booking.payment_status,
+    userId: booking.user_id
   });
 
   return booking;

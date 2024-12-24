@@ -93,7 +93,8 @@ export const useBookingSuccess = () => {
             updated_at: new Date().toISOString(),
             deleted_at: null,
             payment_intent_id: sessionId,
-            cabin: 'metz'
+            cabin: 'metz',
+            is_test_booking: booking.is_test_booking || false
           } as Booking);
           setEmailSent(true);
         }

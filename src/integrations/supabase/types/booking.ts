@@ -16,4 +16,8 @@ export interface Booking {
   payment_status: string;
   created_at: string;
   updated_at: string | null;
+  deleted_at: string | null;
+  is_test_booking: boolean;
+  payment_intent_id: string | null;
+  cabin: string;
 }

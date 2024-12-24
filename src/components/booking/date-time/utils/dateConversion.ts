@@ -1,5 +1,5 @@
 import { addDays, startOfDay, isBefore, isAfter, parseISO } from "date-fns";
-import { utcToZonedTime } from "date-fns-tz";
+import { toZonedTime } from "date-fns-tz";
 import { BookingSettings } from "@/components/admin/settings/types/bookingSettings";
 
 export const convertJsWeekDayToSettings = (jsWeekDay: number): string => {
@@ -52,7 +52,7 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
 
   // Convertir la date UTC en date locale
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const localDate = typeof date === 'string' ? utcToZonedTime(parseISO(date), timezone) : utcToZonedTime(date, timezone);
+  const localDate = typeof date === 'string' ? toZonedTime(parseISO(date), timezone) : toZonedTime(date, timezone);
   
   // S'assurer que nous sommes au début du jour
   const dayStart = startOfDay(localDate);

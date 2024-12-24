@@ -1,6 +1,7 @@
 import { UseFormReturn } from "react-hook-form";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
+import { format } from "date-fns";
 
 export const useBookingSubmit = (
   form: UseFormReturn<any>,
@@ -23,11 +24,14 @@ export const useBookingSubmit = (
 
       setIsSubmitting(true);
 
+      // Formater la date au format ISO (YYYY-MM-DD)
+      const formattedDate = format(new Date(data.date), 'yyyy-MM-dd');
+
       // Vérifier une dernière fois la disponibilité du créneau
       const { data: existingBookings, error: checkError } = await supabase
         .from('bookings')
         .select('*')
-        .eq('date', data.date)
+        .eq('date', formattedDate)
         .neq('status', 'cancelled')
         .is('deleted_at', null);
 
@@ -61,10 +65,6 @@ export const useBookingSubmit = (
       const { data: { session } } = await supabase.auth.getSession();
       const userId = session?.user?.id;
 
-      // Adjust the date to prevent timezone issues
-      const bookingDate = new Date(data.date);
-      const isoDate = bookingDate.toISOString().split('T')[0];
-
       // Créer d'abord la réservation
       const { data: booking, error: bookingError } = await supabase
         .from('bookings')
@@ -73,7 +73,7 @@ export const useBookingSubmit = (
           user_email: data.email,
           user_name: data.fullName,
           user_phone: data.phone,
-          date: isoDate,
+          date: formattedDate,
           time_slot: `${data.timeSlot.toString().padStart(2, '0')}:00`,
           duration,
           group_size: groupSize,
@@ -102,7 +102,7 @@ export const useBookingSubmit = (
             bookingId: booking.id,
             userId: userId,
             userEmail: data.email,
-            date: isoDate,
+            date: formattedDate,
             timeSlot: `${data.timeSlot.toString().padStart(2, '0')}:00`,
             duration,
             groupSize,

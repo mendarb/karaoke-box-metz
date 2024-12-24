@@ -14,6 +14,8 @@ interface AuthFormProps {
 export function AuthForm({ onClose, isLogin, onToggleMode }: AuthFormProps) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [fullName, setFullName] = useState("")
+  const [phone, setPhone] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
 
@@ -53,10 +55,25 @@ export function AuthForm({ onClose, isLogin, onToggleMode }: AuthFormProps) {
         })
         onClose()
       } else {
+        // Validation pour l'inscription
+        if (!fullName || !phone) {
+          toast({
+            title: "Erreur",
+            description: "Veuillez remplir tous les champs obligatoires",
+            variant: "destructive",
+          })
+          setIsLoading(false)
+          return
+        }
+
         const { error } = await supabase.auth.signUp({
           email: email.trim(),
           password: password.trim(),
           options: {
+            data: {
+              full_name: fullName,
+              phone: phone,
+            },
             emailRedirectTo: `${window.location.origin}/account`,
           },
         })
@@ -91,8 +108,20 @@ export function AuthForm({ onClose, isLogin, onToggleMode }: AuthFormProps) {
 
   return (
     <form onSubmit={handleAuth} className="space-y-4 pt-4">
+      {!isLogin && (
+        <div className="space-y-2">
+          <Label htmlFor="fullName">Nom complet *</Label>
+          <Input
+            id="fullName"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            required={!isLogin}
+            placeholder="Jean Dupont"
+          />
+        </div>
+      )}
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">Email *</Label>
         <Input
           id="email"
           type="email"
@@ -103,7 +132,7 @@ export function AuthForm({ onClose, isLogin, onToggleMode }: AuthFormProps) {
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="password">Mot de passe</Label>
+        <Label htmlFor="password">Mot de passe *</Label>
         <Input
           id="password"
           type="password"
@@ -114,6 +143,19 @@ export function AuthForm({ onClose, isLogin, onToggleMode }: AuthFormProps) {
           minLength={6}
         />
       </div>
+      {!isLogin && (
+        <div className="space-y-2">
+          <Label htmlFor="phone">Téléphone *</Label>
+          <Input
+            id="phone"
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            required={!isLogin}
+            placeholder="06 12 34 56 78"
+          />
+        </div>
+      )}
       <Button type="submit" className="w-full" disabled={isLoading}>
         {isLoading ? "Chargement..." : isLogin ? "Se connecter" : "S'inscrire"}
       </Button>

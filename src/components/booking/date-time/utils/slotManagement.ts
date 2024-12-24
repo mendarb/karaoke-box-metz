@@ -15,13 +15,12 @@ export const getAvailableSlots = async (
     return ['14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00'];
   }
 
-  const settingsWeekDay = convertJsWeekDayToSettings(date.getDay());
+  const settingsWeekDay = convertJsWeekDayToSettings(date);
   const daySettings = settings.openingHours[settingsWeekDay];
 
   if (!daySettings?.isOpen) {
     console.log('❌ Jour fermé:', { 
       date: date.toISOString(), 
-      jsWeekDay: date.getDay(),
       settingsWeekDay,
       isOpen: daySettings?.isOpen,
       openingHours: settings.openingHours
@@ -66,13 +65,12 @@ export const getAvailableHoursForSlot = async (
     return 4;
   }
 
-  const settingsWeekDay = convertJsWeekDayToSettings(date.getDay());
+  const settingsWeekDay = convertJsWeekDayToSettings(date);
   const daySettings = settings.openingHours[settingsWeekDay];
   
   if (!daySettings?.isOpen) {
     console.log('❌ Jour fermé:', { 
       date: date.toISOString(), 
-      jsWeekDay: date.getDay(),
       settingsWeekDay,
       isOpen: daySettings?.isOpen,
       openingHours: settings.openingHours

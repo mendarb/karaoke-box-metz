@@ -18,7 +18,7 @@ export const TimeSlotsSection = ({
 }: TimeSlotsSectionProps) => {
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { settings, isLoading: isLoadingSettings } = useBookingSettings();
+  const { settings } = useBookingSettings();
   const { getAvailableSlots } = useAvailableSlots();
 
   useEffect(() => {
@@ -42,7 +42,7 @@ export const TimeSlotsSection = ({
     loadSlots();
   }, [selectedDate, settings, getAvailableSlots, onAvailabilityChange]);
 
-  if (isLoadingSettings || isLoading) {
+  if (isLoading) {
     return (
       <div className="flex justify-center py-8">
         <LoadingSpinner />

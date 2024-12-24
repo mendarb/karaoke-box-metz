@@ -15,7 +15,6 @@ export const useAvailableSlots = () => {
       return ['14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00'];
     }
 
-    // Utiliser directement le jour JavaScript (0-6)
     const dayOfWeek = date.getDay().toString();
     const daySettings = settings.openingHours[dayOfWeek];
 
@@ -38,7 +37,10 @@ export const useAvailableSlots = () => {
         .neq('status', 'cancelled')
         .is('deleted_at', null);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erreur lors de la récupération des réservations:', error);
+        return slots;
+      }
 
       return slots.filter(slot => {
         const slotTime = parseInt(slot.split(':')[0]);

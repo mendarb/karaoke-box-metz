@@ -50,15 +50,14 @@ export const isDayExcluded = (date: Date, settings: BookingSettings | null | und
     return true;
   }
 
-  // Convertir la date UTC en date locale
+  // Obtenir le fuseau horaire local
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const localDate = typeof date === 'string' ? toZonedTime(parseISO(date), timezone) : toZonedTime(date, timezone);
   
-  // S'assurer que nous sommes au début du jour
-  const dayStart = startOfDay(localDate);
+  // Convertir la date en date locale
+  const localDate = new Date(date.toLocaleString('en-US', { timeZone: timezone }));
   
   // Obtenir le jour de la semaine en local
-  const dayOfWeek = dayStart.getDay();
+  const dayOfWeek = localDate.getDay();
   const settingsWeekDay = convertJsWeekDayToSettings(dayOfWeek);
   const daySettings = settings.openingHours[settingsWeekDay];
 

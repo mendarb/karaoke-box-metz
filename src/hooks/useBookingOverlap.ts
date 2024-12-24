@@ -1,26 +1,19 @@
 import { supabase } from "@/lib/supabase";
-import { format } from "date-fns";
-import { toast } from "./use-toast";
+import { useToast } from "./use-toast";
 
 export const useBookingOverlap = () => {
-  const checkOverlap = async (date: Date | undefined, timeSlot: string, duration: string) => {
-    if (!date || !timeSlot || !duration) {
-      return false;
-    }
+  const { toast } = useToast();
 
+  const checkOverlap = async (date: string, timeSlot: string, duration: string) => {
     try {
-      const formattedDate = format(date, 'yyyy-MM-dd');
-      
-      // Convertir les heures en nombres pour la comparaison
-      const startTime = parseInt(timeSlot);
-      const endTime = startTime + parseInt(duration);
+      const startHour = parseInt(timeSlot);
+      const endHour = startHour + parseInt(duration);
 
       const { data: existingBookings, error } = await supabase
         .from('bookings')
         .select('*')
-        .eq('date', formattedDate)
-        .in('status', ['pending', 'confirmed'])
-        .neq('payment_status', 'expired')
+        .eq('date', date)
+        .eq('payment_status', 'paid')
         .is('deleted_at', null);
 
       if (error) {
@@ -28,35 +21,21 @@ export const useBookingOverlap = () => {
         throw error;
       }
 
-      const hasOverlap = existingBookings?.some(booking => {
+      const hasOverlap = existingBookings.some(booking => {
         const bookingStart = parseInt(booking.time_slot);
         const bookingEnd = bookingStart + parseInt(booking.duration);
-
-        const overlap = (
-          (startTime >= bookingStart && startTime < bookingEnd) ||
-          (endTime > bookingStart && endTime <= bookingEnd) ||
-          (startTime <= bookingStart && endTime >= bookingEnd)
+        
+        return (
+          (startHour >= bookingStart && startHour < bookingEnd) ||
+          (endHour > bookingStart && endHour <= bookingEnd) ||
+          (startHour <= bookingStart && endHour >= bookingEnd)
         );
-
-        if (overlap) {
-          console.log('Overlap detected:', {
-            newBooking: { date: formattedDate, start: startTime, end: endTime },
-            existingBooking: { 
-              id: booking.id,
-              date: booking.date,
-              start: bookingStart,
-              end: bookingEnd,
-              status: booking.status
-            }
-          });
-        }
-        return overlap;
       });
 
       if (hasOverlap) {
         toast({
           title: "Créneau non disponible",
-          description: "Ce créneau est déjà réservé. Veuillez choisir un autre horaire.",
+          description: "Ce créneau est déjà réservé. Veuillez en choisir un autre.",
           variant: "destructive",
         });
         return true;
@@ -64,10 +43,10 @@ export const useBookingOverlap = () => {
 
       return false;
     } catch (error) {
-      console.error('Error checking overlap:', error);
+      console.error('Error in checkOverlap:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de vérifier la disponibilité",
+        description: "Impossible de vérifier la disponibilité du créneau",
         variant: "destructive",
       });
       return true;

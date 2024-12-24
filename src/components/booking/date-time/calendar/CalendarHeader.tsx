@@ -1,13 +1,13 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface CalendarHeaderProps {
   currentMonth: Date;
-  onPreviousMonth: (e: React.MouseEvent) => void;
-  onNextMonth: (e: React.MouseEvent) => void;
+  onPreviousMonth: () => void;
+  onNextMonth: () => void;
   isPreviousMonthDisabled: boolean;
   isNextMonthDisabled: boolean;
 }
@@ -33,7 +33,7 @@ export const CalendarHeader = ({
       >
         <ChevronLeft className="h-5 w-5" />
       </Button>
-      <div className="text-lg font-semibold text-gray-900">
+      <div className="text-lg font-semibold text-gray-900 capitalize">
         {format(currentMonth, 'MMMM yyyy', { locale: fr })}
       </div>
       <Button

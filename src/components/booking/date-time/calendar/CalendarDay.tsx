@@ -6,11 +6,16 @@ interface CalendarDayProps {
   selectedDate: Date | undefined;
   disabledDates: Date[];
   onSelect: (date: Date) => void;
+  isDisabled: boolean;
 }
 
-export const CalendarDay = ({ day, selectedDate, disabledDates, onSelect }: CalendarDayProps) => {
+export const CalendarDay = ({ 
+  day, 
+  selectedDate, 
+  onSelect,
+  isDisabled 
+}: CalendarDayProps) => {
   const isSelected = selectedDate ? isSameDay(day, selectedDate) : false;
-  const isDisabled = disabledDates.some(disabledDate => isSameDay(day, disabledDate));
   const dayToday = isToday(day);
 
   return (
@@ -19,7 +24,7 @@ export const CalendarDay = ({ day, selectedDate, disabledDates, onSelect }: Cale
       onClick={() => !isDisabled && onSelect(day)}
       disabled={isDisabled}
       className={cn(
-        "h-10 w-full rounded-lg text-sm font-medium transition-colors",
+        "h-10 w-full rounded-lg text-sm font-medium transition-colors relative",
         "hover:bg-violet-100 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2",
         {
           "bg-violet-600 text-white hover:bg-violet-700": isSelected,
@@ -29,7 +34,9 @@ export const CalendarDay = ({ day, selectedDate, disabledDates, onSelect }: Cale
         }
       )}
     >
-      {format(day, "d")}
+      <span className="absolute inset-0 flex items-center justify-center">
+        {format(day, "d")}
+      </span>
     </button>
   );
 };

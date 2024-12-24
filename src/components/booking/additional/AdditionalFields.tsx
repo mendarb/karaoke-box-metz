@@ -7,7 +7,6 @@ import { BookingSummary } from "./BookingSummary";
 import { PromoCodeField } from "./PromoCodeField";
 import { AccountCreation } from "./AccountCreation";
 import { usePromoCode } from "../../hooks/usePromoCode";
-import { BookingFormLegal } from "../BookingFormLegal";
 
 interface AdditionalFieldsProps {
   form: UseFormReturn<any>;
@@ -74,8 +73,6 @@ export const AdditionalFields = ({
         onPromoValidated={handlePromoValidated}
         form={form}
       />
-
-      <BookingFormLegal form={form} />
 
       <AccountCreation 
         isAuthenticated={isAuthenticated}

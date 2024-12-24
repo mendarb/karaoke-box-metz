@@ -1,8 +1,8 @@
 import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Locale } from "date-fns";
 
 interface CalendarHeaderProps {
   currentMonth: Date;
@@ -10,7 +10,6 @@ interface CalendarHeaderProps {
   onNextMonth: () => void;
   isPreviousMonthDisabled: boolean;
   isNextMonthDisabled: boolean;
-  locale: Locale;
 }
 
 export const CalendarHeader = ({
@@ -18,8 +17,7 @@ export const CalendarHeader = ({
   onPreviousMonth,
   onNextMonth,
   isPreviousMonthDisabled,
-  isNextMonthDisabled,
-  locale
+  isNextMonthDisabled
 }: CalendarHeaderProps) => {
   return (
     <div className="flex items-center justify-between px-2 py-4">
@@ -36,7 +34,7 @@ export const CalendarHeader = ({
         <ChevronLeft className="h-5 w-5" />
       </Button>
       <div className="text-lg font-semibold text-gray-900 capitalize">
-        {format(currentMonth, 'MMMM yyyy', { locale })}
+        {format(currentMonth, 'MMMM yyyy', { locale: fr })}
       </div>
       <Button
         type="button"

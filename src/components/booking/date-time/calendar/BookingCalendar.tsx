@@ -3,7 +3,6 @@ import { CalendarHeader } from "./CalendarHeader";
 import { CalendarGrid } from "./CalendarGrid";
 import { Card } from "@/components/ui/card";
 import { addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
-import { fr } from "date-fns/locale";
 
 interface BookingCalendarProps {
   selectedDate?: Date;
@@ -51,7 +50,6 @@ export const BookingCalendar = ({
           onNextMonth={handleNextMonth}
           isPreviousMonthDisabled={isPreviousMonthDisabled}
           isNextMonthDisabled={isNextMonthDisabled}
-          locale={fr}
         />
         <CalendarGrid
           month={currentMonth}

@@ -40,21 +40,26 @@ export const TimeSlotTable = ({ form }: TimeSlotTableProps) => {
     if (!newSlot || !validateTimeSlot(newSlot)) return;
 
     const currentSlots = form.watch(`openingHours.${dayId}.slots`) || [];
-    if (!currentSlots.includes(newSlot)) {
-      const sortedSlots = [...currentSlots, newSlot].sort((a, b) => {
-        const timeA = a.split(':').map(Number);
-        const timeB = b.split(':').map(Number);
-        return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1]);
-      });
-      form.setValue(`openingHours.${dayId}.slots`, sortedSlots);
-      console.log(`✅ Créneau ajouté pour ${dayId}:`, sortedSlots);
-    } else {
+    
+    // Vérifier si le créneau existe déjà
+    if (currentSlots.includes(newSlot)) {
       toast({
         title: "Créneau existant",
         description: "Ce créneau existe déjà pour ce jour",
         variant: "destructive",
       });
+      return;
     }
+
+    // Ajouter et trier les créneaux
+    const sortedSlots = [...currentSlots, newSlot].sort((a, b) => {
+      const timeA = a.split(':').map(Number);
+      const timeB = b.split(':').map(Number);
+      return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1]);
+    });
+
+    form.setValue(`openingHours.${dayId}.slots`, sortedSlots);
+    console.log(`✅ Créneau ajouté pour ${dayId}:`, sortedSlots);
   };
 
   const handleRemoveSlot = (dayId: string, slot: string) => {
@@ -67,6 +72,16 @@ export const TimeSlotTable = ({ form }: TimeSlotTableProps) => {
   const handleDayToggle = (dayId: string, isOpen: boolean) => {
     form.setValue(`openingHours.${dayId}.isOpen`, isOpen);
     console.log(`🔄 Jour ${dayId} ${isOpen ? 'ouvert' : 'fermé'}`);
+  };
+
+  const getDefaultSlots = () => {
+    return ['15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00'];
+  };
+
+  const handleResetDay = (dayId: string) => {
+    form.setValue(`openingHours.${dayId}.slots`, getDefaultSlots());
+    form.setValue(`openingHours.${dayId}.isOpen`, true);
+    console.log(`🔄 Réinitialisation des créneaux pour ${dayId}`);
   };
 
   return (
@@ -86,6 +101,7 @@ export const TimeSlotTable = ({ form }: TimeSlotTableProps) => {
             <TableHead className="w-32">Jour</TableHead>
             <TableHead className="w-24">Ouvert</TableHead>
             <TableHead>Créneaux</TableHead>
+            <TableHead className="w-24">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -129,6 +145,16 @@ export const TimeSlotTable = ({ form }: TimeSlotTableProps) => {
                     </Button>
                   )}
                 </div>
+              </TableCell>
+              <TableCell>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleResetDay(day.id)}
+                >
+                  Réinitialiser
+                </Button>
               </TableCell>
             </TableRow>
           ))}

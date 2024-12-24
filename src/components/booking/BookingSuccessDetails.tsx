@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Booking } from "@/integrations/supabase/types/booking";
 
 interface BookingSuccessDetailsProps {
-  bookingDetails: Booking;
+  bookingDetails: Booking & { is_test_booking?: boolean };
 }
 
 export const BookingSuccessDetails = ({ bookingDetails }: BookingSuccessDetailsProps) => {

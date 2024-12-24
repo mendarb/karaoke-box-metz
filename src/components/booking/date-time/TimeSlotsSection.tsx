@@ -1,71 +1,59 @@
-import { useEffect, useState } from "react";
-import { useFormContext } from "react-hook-form";
+import { useEffect } from "react";
 import { TimeSlots } from "./TimeSlots";
-import { useBookingOverlap } from "@/hooks/useBookingOverlap";
-import { supabase } from "@/lib/supabase";
+import { useBookingSettings } from "./hooks/useBookingSettings";
+import { useAvailableSlots } from "./hooks/useAvailableSlots";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 interface TimeSlotsSectionProps {
   form: any;
-  availableSlots: string[];
-  isLoading: boolean;
+  selectedDate: Date | undefined;
+  onAvailabilityChange: (hasAvailableSlots: boolean) => void;
 }
 
 export const TimeSlotsSection = ({
   form,
-  availableSlots,
-  isLoading,
+  selectedDate,
+  onAvailabilityChange,
 }: TimeSlotsSectionProps) => {
-  const [disabledSlots, setDisabledSlots] = useState<string[]>([]);
-  const { watch } = useFormContext();
-  const selectedDate = watch("date");
+  const { settings, isLoading: isLoadingSettings } = useBookingSettings();
+  const { availableSlots, isLoading: isLoadingSlots } = useAvailableSlots(selectedDate, settings);
 
   useEffect(() => {
-    const checkBookedSlots = async () => {
-      if (!selectedDate) return;
+    if (!isLoadingSlots) {
+      onAvailabilityChange(availableSlots.length > 0);
+    }
+  }, [availableSlots, isLoadingSlots, onAvailabilityChange]);
 
-      try {
-        const { data: bookings, error } = await supabase
-          .from('bookings')
-          .select('*')
-          .eq('date', selectedDate)
-          .neq('status', 'cancelled')
-          .is('deleted_at', null);
+  if (isLoadingSettings || isLoadingSlots) {
+    return (
+      <div className="flex justify-center py-8">
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
-        if (error) {
-          console.error('Error checking booked slots:', error);
-          return;
-        }
+  if (!selectedDate) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        Veuillez sélectionner une date
+      </div>
+    );
+  }
 
-        const bookedSlots = new Set<string>();
-
-        bookings?.forEach(booking => {
-          const startHour = parseInt(booking.time_slot);
-          const duration = parseInt(booking.duration);
-          
-          // Marquer tous les créneaux couverts par cette réservation comme indisponibles
-          for (let hour = startHour; hour < startHour + duration; hour++) {
-            bookedSlots.add(`${hour}:00`);
-          }
-        });
-
-        setDisabledSlots(Array.from(bookedSlots));
-      } catch (error) {
-        console.error('Error checking booked slots:', error);
-      }
-    };
-
-    checkBookedSlots();
-  }, [selectedDate]);
+  if (availableSlots.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        Aucun créneau disponible pour cette date
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-4">
-      <h3 className="font-medium">Choisissez votre horaire</h3>
-      <TimeSlots
-        form={form}
-        availableSlots={availableSlots}
-        disabledSlots={disabledSlots}
-        isLoading={isLoading}
-      />
-    </div>
+    <TimeSlots
+      form={form}
+      availableSlots={availableSlots}
+      selectedDate={selectedDate}
+      isLoading={isLoadingSlots}
+    />
   );
 };

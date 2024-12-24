@@ -27,6 +27,7 @@ export const useBookingSuccess = () => {
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('session_id');
   const { sendEmail } = useBookingEmail();
+  const [emailSent, setEmailSent] = useState(false);
 
   useEffect(() => {
     const fetchBookingDetails = async (retryCount = 0) => {
@@ -39,7 +40,6 @@ export const useBookingSuccess = () => {
 
         console.log('🔍 Retrieving details for session:', sessionId);
 
-        // First, get the payment_intent_id via Stripe session
         const { data: stripeData, error: stripeError } = await supabase.functions.invoke(
           'get-payment-intent',
           {
@@ -118,10 +118,12 @@ export const useBookingSuccess = () => {
           }
         }
 
-        if (bookings.payment_status === 'paid') {
+        // N'envoyer l'email qu'une seule fois
+        if (bookings.payment_status === 'paid' && !emailSent) {
           console.log('📧 Sending confirmation email for booking:', bookings.id);
           try {
             await sendEmail(bookings);
+            setEmailSent(true);
             console.log('✅ Confirmation email sent successfully');
             toast({
               title: "Confirmation sent",
@@ -157,7 +159,7 @@ export const useBookingSuccess = () => {
     };
 
     fetchBookingDetails();
-  }, [sessionId, sendEmail]);
+  }, [sessionId, sendEmail, emailSent]);
 
   return { bookingDetails, loading };
 };

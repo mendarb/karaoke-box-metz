@@ -23,10 +23,15 @@ export const useBookingSubmit = (
 
       setIsSubmitting(true);
 
+      // Récupérer la session utilisateur si elle existe
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+
       // Créer d'abord la réservation
       const { data: booking, error: bookingError } = await supabase
         .from('bookings')
         .insert([{
+          user_id: userId,
           user_email: data.email,
           user_name: data.fullName,
           user_phone: data.phone,
@@ -57,6 +62,7 @@ export const useBookingSubmit = (
         {
           body: {
             bookingId: booking.id,
+            userId: userId,
             userEmail: data.email,
             date: data.date,
             timeSlot: `${data.timeSlot.toString().padStart(2, '0')}:00`,

@@ -31,7 +31,7 @@ export const useBookingSuccess = () => {
 
   useEffect(() => {
     const sessionId = searchParams.get("session_id");
-    if (!sessionId) return;
+    if (!sessionId || emailSent) return;
 
     const getBookingDetails = async () => {
       try {

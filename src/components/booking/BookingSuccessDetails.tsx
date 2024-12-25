@@ -10,6 +10,7 @@ interface BookingSuccessDetailsProps {
 export const BookingSuccessDetails = ({ bookingDetails }: BookingSuccessDetailsProps) => {
   const startHour = parseInt(bookingDetails.time_slot);
   const endHour = startHour + parseInt(bookingDetails.duration);
+  const formatHour = (hour: number) => `${hour.toString().padStart(2, '0')}:00`;
 
   return (
     <Card className="p-6 bg-gray-50">
@@ -19,7 +20,7 @@ export const BookingSuccessDetails = ({ bookingDetails }: BookingSuccessDetailsP
             {format(new Date(bookingDetails.date), 'EEEE d MMMM yyyy', { locale: fr })}
           </h3>
           <p className="text-sm text-muted-foreground">
-            {`${bookingDetails.time_slot}:00 - ${endHour}:00`}
+            {formatHour(startHour)} - {formatHour(endHour)}
           </p>
         </div>
         

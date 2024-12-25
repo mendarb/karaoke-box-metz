@@ -27,13 +27,18 @@ export const useBookingSuccess = () => {
   const [booking, setBooking] = useState<BookingDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [emailSent, setEmailSent] = useState(false);
   const { sendEmail } = useBookingEmail();
+  const [hasAttemptedEmailSend, setHasAttemptedEmailSend] = useState(false);
 
   useEffect(() => {
     const sessionId = searchParams.get("session_id");
     if (!sessionId) {
       setIsLoading(false);
+      return;
+    }
+
+    // Si on a déjà tenté d'envoyer l'email, ne pas réessayer
+    if (hasAttemptedEmailSend) {
       return;
     }
 
@@ -52,7 +57,10 @@ export const useBookingSuccess = () => {
           .limit(1)
           .maybeSingle();
 
-        if (bookingError) throw bookingError;
+        if (bookingError) {
+          console.error("❌ Error fetching booking:", bookingError);
+          throw bookingError;
+        }
 
         if (!bookingData) {
           console.warn("⚠️ No booking found with session ID:", sessionId);
@@ -62,26 +70,23 @@ export const useBookingSuccess = () => {
         console.log("✅ Found booking:", bookingData);
         setBooking(bookingData);
         
-        // Envoyer l'email une seule fois
-        if (!emailSent && bookingData) {
-          try {
-            console.log("📧 Sending confirmation email for booking:", bookingData.id);
-            await sendEmail(bookingData as Booking);
-            setEmailSent(true);
-            toast({
-              title: "Email envoyé",
-              description: "Un email de confirmation vous a été envoyé",
-            });
-          } catch (emailError: any) {
-            console.error("❌ Error sending confirmation email:", emailError);
-            toast({
-              title: "Erreur d'envoi d'email",
-              description: "L'email n'a pas pu être envoyé, mais votre réservation est bien confirmée",
-              variant: "destructive",
-            });
-            // Marquer l'email comme envoyé même en cas d'erreur pour éviter les tentatives en boucle
-            setEmailSent(true);
-          }
+        // Marquer qu'on a tenté d'envoyer l'email
+        setHasAttemptedEmailSend(true);
+
+        try {
+          console.log("📧 Sending confirmation email for booking:", bookingData.id);
+          await sendEmail(bookingData as Booking);
+          toast({
+            title: "Email envoyé",
+            description: "Un email de confirmation vous a été envoyé",
+          });
+        } catch (emailError: any) {
+          console.error("❌ Error sending confirmation email:", emailError);
+          toast({
+            title: "Erreur d'envoi d'email",
+            description: "L'email n'a pas pu être envoyé, mais votre réservation est bien confirmée",
+            variant: "destructive",
+          });
         }
 
       } catch (error: any) {
@@ -93,7 +98,7 @@ export const useBookingSuccess = () => {
     };
 
     getBookingDetails();
-  }, [searchParams, emailSent, sendEmail]);
+  }, [searchParams, hasAttemptedEmailSend, sendEmail]);
 
   return { booking, isLoading, error };
 };

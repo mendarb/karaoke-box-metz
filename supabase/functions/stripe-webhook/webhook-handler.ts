@@ -85,10 +85,7 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
               'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
             },
             body: JSON.stringify({
-              booking: {
-                ...updatedBooking,
-                time_slot: updatedBooking.time_slot.padStart(5, '0'),
-              },
+              booking: updatedBooking,
               type: 'confirmation'
             })
           });
@@ -111,10 +108,7 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
               'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
             },
             body: JSON.stringify({
-              booking: {
-                ...updatedBooking,
-                time_slot: updatedBooking.time_slot.padStart(5, '0'),
-              }
+              booking: updatedBooking
             })
           });
 
@@ -157,6 +151,35 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
         }
 
         console.log('✅ Booking marked as expired');
+        break;
+      }
+
+      case 'payment_intent.payment_failed': {
+        const session = event.data.object;
+        console.log('❌ Payment failed:', {
+          sessionId: session.id,
+          bookingId: session.metadata?.bookingId
+        });
+
+        if (!session.metadata?.bookingId) {
+          return { success: false, message: 'No booking ID' };
+        }
+
+        const { error: updateError } = await supabase
+          .from('bookings')
+          .update({
+            status: 'cancelled',
+            payment_status: 'failed',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', session.metadata.bookingId);
+
+        if (updateError) {
+          console.error('❌ Error updating failed booking:', updateError);
+          throw updateError;
+        }
+
+        console.log('✅ Booking marked as failed');
         break;
       }
     }

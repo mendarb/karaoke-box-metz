@@ -22,13 +22,15 @@ serve(async (req) => {
 
     const bookingDate = new Date(booking.date);
     const formattedDate = format(bookingDate, 'EEEE d MMMM yyyy', { locale: fr });
-    const startHour = booking.time_slot.padStart(5, '0');
-    const endHour = `${(parseInt(booking.time_slot) + parseInt(booking.duration)).toString().padStart(2, '0')}:00`;
+    const startHour = parseInt(booking.time_slot);
+    const endHour = startHour + parseInt(booking.duration);
+    const startTime = `${startHour.toString().padStart(2, '0')}:00`;
+    const endTime = `${endHour.toString().padStart(2, '0')}:00`;
 
     console.log('🕒 Formatted time:', {
       original: booking.time_slot,
-      start: startHour,
-      end: endHour,
+      start: startTime,
+      end: endTime,
       duration: booking.duration
     });
 
@@ -43,7 +45,7 @@ serve(async (req) => {
           <p><strong>Email :</strong> ${booking.user_email}</p>
           <p><strong>Téléphone :</strong> ${booking.user_phone}</p>
           <p><strong>Date :</strong> ${formattedDate}</p>
-          <p><strong>Horaire :</strong> ${startHour} - ${endHour}</p>
+          <p><strong>Horaire :</strong> ${startTime} - ${endTime}</p>
           <p><strong>Durée :</strong> ${booking.duration} heure(s)</p>
           <p><strong>Nombre de participants :</strong> ${booking.group_size} personne(s)</p>
           <p><strong>Prix :</strong> ${booking.price}€</p>

@@ -21,47 +21,50 @@ serve(async (req) => {
     }
 
     const bookingDate = new Date(booking.date);
-    // Add timezone offset to compensate for UTC conversion
     bookingDate.setMinutes(bookingDate.getMinutes() + bookingDate.getTimezoneOffset());
     
     const formattedDate = format(bookingDate, 'EEEE d MMMM yyyy', { locale: fr });
     const startHour = parseInt(booking.time_slot);
     const endHour = startHour + parseInt(booking.duration);
     const formatHour = (hour: number) => `${hour.toString().padStart(2, '0')}:00`;
-    const timeRange = `${formatHour(startHour)} - ${formatHour(endHour)}`;
-
-    console.log('🕒 Horaires formatés:', {
-      startTime: formatHour(startHour),
-      endTime: formatHour(endHour),
-      duration: booking.duration
-    });
 
     const emailContent = `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #4F46E5;">Votre réservation est confirmée !</h1>
+        <h1 style="color: #7E3AED;">Votre réservation est confirmée !</h1>
         
         <p>Bonjour ${booking.user_name},</p>
         
-        <p>Nous avons le plaisir de vous confirmer votre réservation :</p>
+        <p>Nous avons le plaisir de vous confirmer votre réservation au Karaoké Box :</p>
         
         <div style="background-color: #F3F4F6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <p><strong>Date :</strong> ${formattedDate}</p>
-          <p><strong>Horaire :</strong> ${timeRange}</p>
-          <p><strong>Durée :</strong> ${booking.duration} heure(s)</p>
-          <p><strong>Nombre de participants :</strong> ${booking.group_size} personne(s)</p>
+          <p><strong>📅 Date :</strong> ${formattedDate}</p>
+          <p><strong>⏰ Horaire :</strong> ${formatHour(startHour)} - ${formatHour(endHour)}</p>
+          <p><strong>⌛️ Durée :</strong> ${booking.duration}h</p>
+          <p><strong>👥 Nombre de participants :</strong> ${booking.group_size} personne(s)</p>
+          <p><strong>💰 Prix :</strong> ${booking.price}€</p>
+          ${booking.message ? `<p><strong>💬 Message :</strong> ${booking.message}</p>` : ''}
           ${booking.is_test_booking ? '<p style="color: #EAB308;"><strong>Ceci est une réservation de test</strong></p>' : ''}
         </div>
         
-        <h2 style="color: #4F46E5;">Informations importantes</h2>
+        <div style="background-color: #7E3AED; color: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h2 style="color: white; margin-top: 0;">📍 Lieu du rendez-vous</h2>
+          <p style="margin-bottom: 0;">L'adresse exacte vous sera communiquée par SMS le jour de votre venue</p>
+        </div>
         
-        <ul>
-          <li>Merci d'arriver 15 minutes avant l'heure de votre réservation</li>
-          <li>L'adresse exacte vous sera communiquée par SMS le jour de votre venue</li>
-          <li>En cas d'empêchement, merci de nous prévenir au moins 24h à l'avance</li>
-        </ul>
+        <div style="border-left: 4px solid #7E3AED; padding-left: 20px; margin: 20px 0;">
+          <h2 style="color: #7E3AED; margin-top: 0;">ℹ️ Informations importantes</h2>
+          <ul style="padding-left: 20px;">
+            <li>Merci d'arriver 15 minutes avant l'heure de votre réservation</li>
+            <li>En cas d'empêchement, merci de nous prévenir au moins 24h à l'avance</li>
+            <li>N'hésitez pas à préparer votre playlist à l'avance !</li>
+          </ul>
+        </div>
         
-        <p>Pour toute question, n'hésitez pas à nous contacter :</p>
-        <p>📞 <a href="tel:+33612345678">06 12 34 56 78</a></p>
+        <div style="margin-top: 40px;">
+          <p><strong>Une question ?</strong></p>
+          <p>📞 <a href="tel:+33612345678" style="color: #7E3AED;">06 12 34 56 78</a></p>
+          <p>📧 <a href="mailto:contact@karaoke-box-metz.fr" style="color: #7E3AED;">contact@karaoke-box-metz.fr</a></p>
+        </div>
         
         <p style="margin-top: 40px;">À très bientôt !</p>
         <p>L'équipe Karaoke Box Metz</p>
@@ -82,7 +85,7 @@ serve(async (req) => {
       body: JSON.stringify({
         from: 'Karaoke Box <onboarding@resend.dev>',
         to: booking.user_email,
-        subject: 'Réservation confirmée - Karaoke Box Metz',
+        subject: 'Votre réservation est confirmée ! - Karaoke Box Metz',
         html: emailContent,
       }),
     });

@@ -11,7 +11,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, {
       status: 204,
@@ -74,8 +73,9 @@ serve(async (req) => {
             <div class="footer">
               <p>À bientôt !</p>
               <p>L'équipe Karaoke Box Metz</p>
-              <p>📍 1 rue du Karaoké, 57000 Metz</p>
-              <p>📞 01 23 45 67 89</p>
+              <p>📍 12 Rue des Huiliers, 57000 Metz</p>
+              <p>📞 07 82 49 24 02</p>
+              <p>✉️ contact@karaoke-box-metz.fr</p>
             </div>
           </div>
         </body>
@@ -89,7 +89,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Karaoke Box Metz <onboarding@resend.dev>',
+        from: 'Karaoke Box Metz <contact@karaoke-box-metz.fr>',
         to: booking.user_email,
         subject: 'Réservation confirmée - Karaoke Box Metz',
         html: emailContent,

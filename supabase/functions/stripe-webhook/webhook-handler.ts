@@ -4,7 +4,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
 export async function handleWebhook(event: any, stripe: Stripe | null, supabase: any) {
   try {
-    console.log('Processing webhook event:', {
+    console.log('📦 Processing webhook event:', {
       type: event.type,
       metadata: event.data?.object?.metadata,
       sessionId: event.data?.object?.id,
@@ -15,35 +15,46 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object;
-        console.log('Checkout session completed:', {
+        console.log('💳 Checkout session completed:', {
           sessionId: session.id,
           metadata: session.metadata,
           customerEmail: session.customer_email,
           paymentStatus: session.payment_status,
           paymentIntentId: session.payment_intent,
-          bookingId: session.metadata.bookingId,
+          bookingId: session.metadata?.bookingId,
         });
 
         // Vérifier que le paiement est bien effectué
         if (session.payment_status !== 'paid') {
-          console.log('Payment not completed yet:', session.payment_status);
+          console.log('❌ Payment not completed yet:', session.payment_status);
           return { success: false, message: 'Payment not completed' };
         }
 
-        // Vérifier si la réservation n'a pas déjà été mise à jour
-        const { data: existingBooking } = await supabase
+        // Rechercher la réservation avec l'ID de session
+        const { data: booking, error: bookingError } = await supabase
           .from('bookings')
-          .select('status, payment_status')
+          .select('*')
           .eq('id', session.metadata.bookingId)
           .maybeSingle();
 
-        if (existingBooking?.payment_status === 'paid') {
-          console.log('Booking already marked as paid:', session.metadata.bookingId);
+        if (bookingError) {
+          console.error('❌ Error fetching booking:', bookingError);
+          throw bookingError;
+        }
+
+        if (!booking) {
+          console.error('❌ No booking found with ID:', session.metadata.bookingId);
+          return { success: false, message: 'Booking not found' };
+        }
+
+        // Vérifier si la réservation n'a pas déjà été mise à jour
+        if (booking.payment_status === 'paid') {
+          console.log('ℹ️ Booking already marked as paid:', booking.id);
           return { success: true, message: 'Booking already processed' };
         }
 
         // Mettre à jour la réservation
-        const { data: bookingUpdate, error: updateError } = await supabase
+        const { data: updatedBooking, error: updateError } = await supabase
           .from('bookings')
           .update({
             payment_intent_id: session.payment_intent,
@@ -56,40 +67,40 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
           .single();
 
         if (updateError) {
-          console.error('Error updating booking:', updateError);
+          console.error('❌ Error updating booking:', updateError);
           throw updateError;
         }
 
-        console.log('✅ Booking updated:', {
-          bookingId: bookingUpdate.id,
-          status: bookingUpdate.status,
-          paymentStatus: bookingUpdate.payment_status,
-          paymentIntentId: bookingUpdate.payment_intent_id
+        console.log('✅ Booking updated successfully:', {
+          bookingId: updatedBooking.id,
+          status: updatedBooking.status,
+          paymentStatus: updatedBooking.payment_status
         });
 
         // Envoyer l'email de confirmation
         try {
           await new Promise(resolve => setTimeout(resolve, 2000)); // Attendre 2 secondes
 
-          const response = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-booking-email`, {
+          const emailResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-booking-email`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
             },
             body: JSON.stringify({
-              booking: bookingUpdate,
+              booking: updatedBooking,
               type: 'confirmation'
             })
           });
 
-          if (!response.ok) {
-            throw new Error('Failed to send confirmation email');
+          if (!emailResponse.ok) {
+            throw new Error(`Failed to send confirmation email: ${await emailResponse.text()}`);
           }
-          
+
           console.log('✅ Confirmation email sent successfully');
         } catch (emailError) {
           console.error('❌ Error sending confirmation email:', emailError);
+          // Ne pas bloquer le processus si l'envoi d'email échoue
         }
 
         break;
@@ -97,11 +108,15 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
 
       case 'checkout.session.expired': {
         const session = event.data.object;
-        console.log('Checkout session expired:', {
+        console.log('⚠️ Checkout session expired:', {
           sessionId: session.id,
-          metadata: session.metadata,
-          bookingId: session.metadata.bookingId
+          bookingId: session.metadata?.bookingId
         });
+
+        if (!session.metadata?.bookingId) {
+          console.log('❌ No booking ID in metadata');
+          return { success: false, message: 'No booking ID' };
+        }
 
         const { error: updateError } = await supabase
           .from('bookings')
@@ -113,47 +128,18 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
           .eq('id', session.metadata.bookingId);
 
         if (updateError) {
-          console.error('Error updating expired booking:', updateError);
+          console.error('❌ Error updating expired booking:', updateError);
           throw updateError;
         }
 
         console.log('✅ Booking marked as expired');
         break;
       }
-
-      case 'payment_intent.payment_failed': {
-        const paymentIntent = event.data.object;
-        console.log('Payment failed:', {
-          paymentIntentId: paymentIntent.id,
-          metadata: paymentIntent.metadata,
-          bookingId: paymentIntent.metadata.bookingId
-        });
-
-        const { error: updateError } = await supabase
-          .from('bookings')
-          .update({
-            status: 'cancelled',
-            payment_status: 'failed',
-            updated_at: new Date().toISOString()
-          })
-          .eq('payment_intent_id', paymentIntent.id);
-
-        if (updateError) {
-          console.error('Error updating failed booking:', updateError);
-          throw updateError;
-        }
-
-        console.log('✅ Booking marked as failed');
-        break;
-      }
-
-      default:
-        console.log('Unhandled event type:', event.type);
     }
 
     return { success: true };
   } catch (error) {
-    console.error('Error processing webhook:', error);
+    console.error('❌ Error in webhook handler:', error);
     throw error;
   }
 }

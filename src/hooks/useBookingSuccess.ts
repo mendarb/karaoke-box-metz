@@ -40,20 +40,23 @@ export const useBookingSuccess = () => {
         // Attendre un peu pour laisser le temps au webhook de mettre à jour la réservation
         await new Promise(resolve => setTimeout(resolve, 2000));
         
-        // Rechercher la réservation par payment_intent_id
+        // Rechercher la réservation par metadata.bookingId
         const { data: bookingData, error: bookingError } = await supabase
           .from("bookings")
           .select("*")
-          .eq("payment_intent_id", sessionId)
+          .eq("payment_status", "paid")
+          .order("created_at", { ascending: false })
+          .limit(1)
           .maybeSingle();
 
         if (bookingError) throw bookingError;
 
         if (!bookingData) {
-          console.warn("⚠️ No booking found with payment_intent_id");
+          console.warn("⚠️ No booking found with session ID:", sessionId);
           throw new Error("Booking not found");
         }
 
+        console.log("✅ Found booking:", bookingData);
         setBooking(bookingData);
         
         // Envoyer l'email une seule fois
@@ -64,7 +67,7 @@ export const useBookingSuccess = () => {
         }
 
       } catch (error: any) {
-        console.error("Error retrieving booking:", error);
+        console.error("❌ Error retrieving booking:", error);
         setError(error.message);
       } finally {
         setIsLoading(false);

@@ -1,23 +1,15 @@
-import { useEffect, useState } from "react";
+import { useState, useCallback } from "react";
 import { PriceSettings } from "./types";
 
 interface CalculatePriceProps {
-  groupSize?: string;
-  duration?: string;
   settings?: { basePrice: PriceSettings };
-  onPriceCalculated?: (price: number) => void;
 }
 
-export const useCalculatePrice = ({ 
-  groupSize, 
-  duration, 
-  settings, 
-  onPriceCalculated 
-}: CalculatePriceProps = {}) => {
+export const useCalculatePrice = ({ settings }: CalculatePriceProps = {}) => {
   const [price, setPrice] = useState(0);
   const [pricePerPersonPerHour, setPricePerPersonPerHour] = useState(0);
 
-  const calculatePrice = (groupSize: string, duration: string) => {
+  const calculatePrice = useCallback((groupSize: string, duration: string) => {
     if (!settings?.basePrice) {
       console.log('❌ Paramètres de prix manquants');
       return 0;
@@ -59,20 +51,11 @@ export const useCalculatePrice = ({
       pricePerPerson
     });
 
+    setPrice(finalPrice);
+    setPricePerPersonPerHour(pricePerPerson);
+
     return finalPrice;
-  };
-
-  useEffect(() => {
-    if (groupSize && duration && settings) {
-      const calculatedPrice = calculatePrice(groupSize, duration);
-      setPrice(calculatedPrice);
-      setPricePerPersonPerHour(calculatedPrice / (parseInt(groupSize) * parseInt(duration)));
-
-      if (onPriceCalculated) {
-        onPriceCalculated(calculatedPrice);
-      }
-    }
-  }, [groupSize, duration, settings, onPriceCalculated]);
+  }, [settings]);
 
   return { price, pricePerPersonPerHour, calculatePrice };
 };

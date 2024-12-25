@@ -37,65 +37,29 @@ export const useBookingSuccess = () => {
       try {
         console.log("🔍 Retrieving details for session:", sessionId);
         
-        // Rechercher d'abord par payment_intent_id
+        // Attendre un peu pour laisser le temps au webhook de mettre à jour la réservation
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Rechercher la réservation par payment_intent_id
         const { data: bookingData, error: bookingError } = await supabase
           .from("bookings")
           .select("*")
           .eq("payment_intent_id", sessionId)
-          .single();
+          .maybeSingle();
 
-        if (bookingError || !bookingData) {
-          console.warn("⚠️ No booking found with payment_intent_id, searching recent pending bookings...");
-          
-          // Si non trouvé, rechercher parmi les réservations récentes en attente
-          const { data: recentBookings, error: recentError } = await supabase
-            .from("bookings")
-            .select("*")
-            .eq("status", "pending")
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .single();
+        if (bookingError) throw bookingError;
 
-          if (recentError || !recentBookings) {
-            throw new Error("Booking not found");
-          }
-
-          setBooking(recentBookings);
-          
-          // Mettre à jour le statut
-          const { error: updateError } = await supabase
-            .from("bookings")
-            .update({ 
-              status: "confirmed",
-              payment_status: "paid",
-              payment_intent_id: sessionId 
-            })
-            .eq("id", recentBookings.id);
-
-          if (updateError) throw updateError;
-          console.log("✅ Booking status updated to paid");
-        } else {
-          setBooking(bookingData);
+        if (!bookingData) {
+          console.warn("⚠️ No booking found with payment_intent_id");
+          throw new Error("Booking not found");
         }
 
+        setBooking(bookingData);
+        
         // Envoyer l'email une seule fois
-        if (!emailSent && booking) {
-          console.log("📧 Sending confirmation email for booking:", booking?.id);
-          await sendEmail({
-            ...booking,
-            user_id: booking.user_id || '',
-            status: booking.status || 'confirmed',
-            message: booking.message || '',
-            user_email: booking.user_email || '',
-            user_name: booking.user_name || '',
-            user_phone: booking.user_phone || '',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            deleted_at: null,
-            payment_intent_id: sessionId,
-            cabin: 'metz',
-            is_test_booking: booking.is_test_booking || false
-          } as Booking);
+        if (!emailSent && bookingData) {
+          console.log("📧 Sending confirmation email for booking:", bookingData.id);
+          await sendEmail(bookingData as Booking);
           setEmailSent(true);
         }
 
@@ -108,7 +72,7 @@ export const useBookingSuccess = () => {
     };
 
     getBookingDetails();
-  }, [searchParams, emailSent, sendEmail, booking]);
+  }, [searchParams, emailSent, sendEmail]);
 
   return { booking, isLoading, error };
 };

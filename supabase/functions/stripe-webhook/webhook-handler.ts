@@ -31,6 +31,18 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
           return { success: false, message: 'Payment not completed' };
         }
 
+        // Vérifier si la réservation n'a pas déjà été mise à jour
+        const { data: existingBooking } = await supabase
+          .from('bookings')
+          .select('status, payment_status')
+          .eq('id', session.metadata.bookingId)
+          .single();
+
+        if (existingBooking?.payment_status === 'paid') {
+          console.log('Booking already marked as paid:', session.metadata.bookingId);
+          return { success: true, message: 'Booking already processed' };
+        }
+
         // Mettre à jour la réservation avec le payment_intent_id et le statut
         const { data: bookingUpdate, error: updateError } = await supabase
           .from('bookings')
@@ -57,7 +69,7 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
           finalPrice: session.metadata.finalPrice
         });
 
-        // Envoyer l'email de confirmation
+        // Envoyer l'email de confirmation une seule fois
         try {
           const response = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-booking-email`, {
             method: 'POST',

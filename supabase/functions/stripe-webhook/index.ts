@@ -23,15 +23,7 @@ serve(async (req) => {
       throw new Error('Secret webhook non configuré');
     }
 
-    const eventData = JSON.parse(body);
-    console.log('📊 Données de l\'événement:', {
-      type: eventData.type,
-      id: eventData.id,
-      metadata: eventData.data?.object?.metadata,
-      paymentIntent: eventData.data?.object?.payment_intent,
-    });
-
-    const isTestMode = eventData.data?.object?.metadata?.isTestMode === 'true';
+    const isTestMode = req.headers.get('stripe-test-mode') === 'true';
     const stripeKey = isTestMode 
       ? Deno.env.get('STRIPE_TEST_SECRET_KEY')
       : Deno.env.get('STRIPE_SECRET_KEY');
@@ -48,6 +40,7 @@ serve(async (req) => {
     try {
       event = stripe.webhooks.constructEvent(body, signature!, webhookSecret);
       console.log('✅ Signature du webhook vérifiée');
+      console.log('📦 Type d\'événement reçu:', event.type);
     } catch (err) {
       console.error('❌ Échec de vérification de la signature du webhook:', err);
       return new Response(

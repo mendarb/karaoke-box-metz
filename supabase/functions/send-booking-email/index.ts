@@ -23,9 +23,17 @@ serve(async (req) => {
     // Formatage précis de la date et de l'heure
     const bookingDate = new Date(booking.date);
     const formattedDate = format(bookingDate, 'EEEE d MMMM yyyy', { locale: fr });
-    const startHour = parseInt(booking.time_slot);
-    const endHour = startHour + parseInt(booking.duration);
-    const timeSlot = `${startHour.toString().padStart(2, '0')}:00 - ${endHour.toString().padStart(2, '0')}:00`;
+    
+    // Ensure time_slot is in HH:00 format
+    const startHour = booking.time_slot.padStart(5, '0');
+    const endHour = `${(parseInt(booking.time_slot) + parseInt(booking.duration)).toString().padStart(2, '0')}:00`;
+    
+    console.log('🕒 Formatted time:', {
+      original: booking.time_slot,
+      start: startHour,
+      end: endHour,
+      duration: booking.duration
+    });
 
     const emailContent = `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
@@ -37,7 +45,7 @@ serve(async (req) => {
         
         <div style="background-color: #F3F4F6; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <p><strong>Date :</strong> ${formattedDate}</p>
-          <p><strong>Horaire :</strong> ${timeSlot}</p>
+          <p><strong>Horaire :</strong> ${startHour} - ${endHour}</p>
           <p><strong>Durée :</strong> ${booking.duration} heure(s)</p>
           <p><strong>Nombre de participants :</strong> ${booking.group_size} personne(s)</p>
           ${booking.is_test_booking ? '<p style="color: #EAB308;"><strong>Ceci est une réservation de test</strong></p>' : ''}

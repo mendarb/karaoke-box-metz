@@ -70,7 +70,10 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
         console.log('✅ Booking updated successfully:', {
           bookingId: updatedBooking.id,
           status: updatedBooking.status,
-          paymentStatus: updatedBooking.payment_status
+          paymentStatus: updatedBooking.payment_status,
+          date: updatedBooking.date,
+          timeSlot: updatedBooking.time_slot,
+          duration: updatedBooking.duration
         });
 
         // Envoyer l'email de confirmation une seule fois ici
@@ -82,7 +85,11 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
               'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
             },
             body: JSON.stringify({
-              booking: updatedBooking,
+              booking: {
+                ...updatedBooking,
+                // S'assurer que le format de l'heure est correct
+                time_slot: updatedBooking.time_slot.padStart(5, '0'), // Ensures "9:00" becomes "09:00"
+              },
               type: 'confirmation'
             })
           });

@@ -24,7 +24,13 @@ export const useCalculatePrice = ({
     }
 
     const hours = parseFloat(duration);
-    const size = parseFloat(groupSize);
+    let size = parseFloat(groupSize);
+
+    // Pour les groupes de 6 personnes et plus, on utilise le prix de 6 personnes
+    if (size > 6) {
+      console.log('Group size > 6, using price for 6 people');
+      size = 6;
+    }
 
     if (isNaN(hours) || isNaN(size) || hours <= 0 || size <= 0) {
       console.log('Invalid input values:', { hours, size });
@@ -53,7 +59,8 @@ export const useCalculatePrice = ({
       console.log('Price calculation:', {
         firstHourPrice,
         additionalHoursPrice,
-        finalPrice
+        finalPrice,
+        effectiveGroupSize: size
       });
     }
 

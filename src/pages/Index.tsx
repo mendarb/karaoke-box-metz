@@ -39,8 +39,8 @@ const Index = () => {
     <div className="min-h-screen flex flex-col bg-kbox-coral">
       <Navbar onShowAuth={() => setShowAuthModal(true)} />
       
-      <main className="flex-grow container mx-auto py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-0 mb-0">
+      <main className="flex-grow">
+        <div className="grid grid-cols-1 md:grid-cols-3">
           {/* Section gauche */}
           <div className="md:col-span-1">
             <HeroSection />

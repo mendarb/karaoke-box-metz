@@ -3,7 +3,7 @@ import { useCalculatePrice } from "@/components/price-calculator/useCalculatePri
 import { usePriceSettings } from "@/components/price-calculator/usePriceSettings";
 import { GroupSizeSelector } from "@/components/booking/group-size/GroupSizeSelector";
 import { DurationSelector } from "@/components/booking/duration/DurationSelector";
-import { PriceDisplay } from "@/components/price-calculator/PriceDisplay";
+import { PriceCalculator } from "@/components/PriceCalculator";
 import { useEffect } from "react";
 
 interface GroupSizeAndDurationFieldsProps {

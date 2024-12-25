@@ -6,8 +6,8 @@ interface CalculatePriceProps {
 }
 
 export const useCalculatePrice = ({ settings }: CalculatePriceProps = {}) => {
-  const [price, setPrice] = useState(0);
-  const [pricePerPersonPerHour, setPricePerPersonPerHour] = useState(0);
+  const [price, setPrice] = useState<number>(0);
+  const [pricePerPersonPerHour, setPricePerPersonPerHour] = useState<number>(0);
 
   const calculatePrice = useCallback((groupSize: string, duration: string) => {
     if (!settings?.basePrice) {

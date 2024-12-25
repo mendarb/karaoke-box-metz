@@ -75,6 +75,7 @@ export const useBookingSuccess = () => {
           .select("*")
           .eq("payment_intent_id", stripeData.paymentIntentId)
           .eq("payment_status", "paid")
+          .is("deleted_at", null)  // S'assurer que la réservation n'est pas supprimée
           .maybeSingle();
 
         if (bookingError) {
@@ -86,10 +87,12 @@ export const useBookingSuccess = () => {
           console.warn("⚠️ Aucune réservation trouvée avec le payment_intent_id:", stripeData.paymentIntentId);
           
           // Essayer de récupérer la réservation la plus récente (fallback)
+          console.log("🔍 Recherche de la réservation la plus récente");
           const { data: latestBooking, error: latestError } = await supabase
             .from("bookings")
             .select("*")
             .eq("payment_status", "paid")
+            .is("deleted_at", null)  // S'assurer que la réservation n'est pas supprimée
             .order("created_at", { ascending: false })
             .limit(1)
             .maybeSingle();
@@ -103,7 +106,7 @@ export const useBookingSuccess = () => {
             throw new Error("Aucune réservation trouvée");
           }
 
-          console.log("✅ Dernière réservation trouvée (fallback):", latestBooking);
+          console.log("✅ Réservation trouvée:", latestBooking);
           setBooking(latestBooking);
           setHasAttemptedEmailSend(true);
 

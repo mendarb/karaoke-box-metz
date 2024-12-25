@@ -5,6 +5,7 @@ import { DeleteBookingDialog } from "./actions/DeleteBookingDialog";
 import { BookingActionsMenu } from "./actions/BookingActionsMenu";
 import { useBookingEmail } from "@/hooks/useBookingEmail";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/lib/supabase";
 
 interface BookingActionsProps {
   bookingId: string;
@@ -43,7 +44,17 @@ export const BookingActions = ({
 
   const handleDelete = async () => {
     try {
-      await deleteBooking(bookingId);
+      // Marquer la réservation comme supprimée avec deleted_at
+      const { error: deleteError } = await supabase
+        .from('bookings')
+        .update({ 
+          deleted_at: new Date().toISOString(),
+          status: 'cancelled'
+        })
+        .eq('id', bookingId);
+
+      if (deleteError) throw deleteError;
+
       setShowDeleteDialog(false);
       toast({
         title: "Succès",

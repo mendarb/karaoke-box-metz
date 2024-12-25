@@ -29,6 +29,7 @@ export const GroupSizeAndDurationFields = ({
     const duration = form.getValues("duration");
     if (duration) {
       const price = calculatePrice(value, duration);
+      console.log('Calculating price after group size change:', { value, duration, price });
       onPriceCalculated(price);
     }
   };
@@ -40,6 +41,7 @@ export const GroupSizeAndDurationFields = ({
     const groupSize = form.getValues("groupSize");
     if (groupSize) {
       const price = calculatePrice(groupSize, value);
+      console.log('Calculating price after duration change:', { groupSize, value, price });
       onPriceCalculated(price);
     }
   };

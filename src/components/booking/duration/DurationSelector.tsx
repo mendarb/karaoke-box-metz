@@ -28,14 +28,15 @@ export const DurationSelector = ({
               type="button"
               variant={selectedDuration === duration ? "default" : "outline"}
               className={cn(
-                "h-12 px-3 rounded border-gray-200 flex-1",
+                "h-10 px-4 rounded border-gray-200",
                 selectedDuration === duration ? "bg-violet-600 hover:bg-violet-700 text-white" : "bg-white hover:bg-gray-50",
+                "w-[90px] justify-center",
                 isDisabled && "opacity-50 cursor-not-allowed"
               )}
               disabled={isDisabled}
               onClick={() => onDurationChange(duration)}
             >
-              {duration}h
+              {duration}
               <span className="ml-1 text-sm">
                 {duration === "1" ? "heure" : "heures"}
               </span>

@@ -32,7 +32,10 @@ export const useBookingSuccess = () => {
 
   useEffect(() => {
     const sessionId = searchParams.get("session_id");
-    if (!sessionId || emailSent) return;
+    if (!sessionId) {
+      setIsLoading(false);
+      return;
+    }
 
     const getBookingDetails = async () => {
       try {
@@ -41,7 +44,6 @@ export const useBookingSuccess = () => {
         // Attendre un peu pour laisser le temps au webhook de mettre à jour la réservation
         await new Promise(resolve => setTimeout(resolve, 2000));
         
-        // Rechercher la réservation par payment_status = 'paid'
         const { data: bookingData, error: bookingError } = await supabase
           .from("bookings")
           .select("*")
@@ -60,24 +62,31 @@ export const useBookingSuccess = () => {
         console.log("✅ Found booking:", bookingData);
         setBooking(bookingData);
         
-        if (!emailSent) {
-          console.log("📧 Sending confirmation email for booking:", bookingData.id);
-          await sendEmail(bookingData as Booking);
-          setEmailSent(true);
-          toast({
-            title: "Email envoyé",
-            description: "Un email de confirmation vous a été envoyé",
-          });
+        // Envoyer l'email une seule fois
+        if (!emailSent && bookingData) {
+          try {
+            console.log("📧 Sending confirmation email for booking:", bookingData.id);
+            await sendEmail(bookingData as Booking);
+            setEmailSent(true);
+            toast({
+              title: "Email envoyé",
+              description: "Un email de confirmation vous a été envoyé",
+            });
+          } catch (emailError: any) {
+            console.error("❌ Error sending confirmation email:", emailError);
+            toast({
+              title: "Erreur d'envoi d'email",
+              description: "L'email n'a pas pu être envoyé, mais votre réservation est bien confirmée",
+              variant: "destructive",
+            });
+            // Marquer l'email comme envoyé même en cas d'erreur pour éviter les tentatives en boucle
+            setEmailSent(true);
+          }
         }
 
       } catch (error: any) {
         console.error("❌ Error retrieving booking:", error);
         setError(error.message);
-        toast({
-          title: "Erreur",
-          description: "Une erreur est survenue lors de l'envoi de l'email de confirmation",
-          variant: "destructive",
-        });
       } finally {
         setIsLoading(false);
       }

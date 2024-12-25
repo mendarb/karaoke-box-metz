@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { format } from "https://esm.sh/date-fns@2.30.0";
-import { fr } from "https://esm.sh/date-fns@2.30.0/locale/fr/index.js";
+import { fr } from "https://esm.sh/date-fns@2.30.0/locale";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
@@ -39,10 +39,9 @@ serve(async (req) => {
       timeSlot: booking.time_slot
     });
 
+    const formattedDate = format(new Date(booking.date), "EEEE d MMMM yyyy", { locale: fr });
     const startHour = parseInt(booking.time_slot);
     const endHour = startHour + parseInt(booking.duration);
-    const date = new Date(booking.date);
-    const formattedDate = format(date, "EEEE d MMMM yyyy", { locale: fr });
 
     const emailContent = `
       <!DOCTYPE html>
@@ -62,7 +61,7 @@ serve(async (req) => {
             <div class="header">
               <h2>Réservation confirmée !</h2>
             </div>
-            <p>Bonjour ${booking.user_name || 'Client'},</p>
+            <p>Bonjour ${booking.user_name},</p>
             <p>Votre réservation a été confirmée !</p>
             <div class="details">
               <h3>Détails de la réservation :</h3>
@@ -113,9 +112,9 @@ serve(async (req) => {
   } catch (error) {
     console.error('❌ Error in send-booking-email:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error.message }), 
       { 
-        status: 500,
+        status: 500, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );

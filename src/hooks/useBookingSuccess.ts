@@ -28,17 +28,12 @@ export const useBookingSuccess = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { sendEmail } = useBookingEmail();
-  const [hasAttemptedEmailSend, setHasAttemptedEmailSend] = useState(false);
 
   useEffect(() => {
     const sessionId = searchParams.get("session_id");
     if (!sessionId) {
       console.log("❌ Pas de session_id dans l'URL");
       setIsLoading(false);
-      return;
-    }
-
-    if (hasAttemptedEmailSend) {
       return;
     }
 
@@ -76,8 +71,7 @@ export const useBookingSuccess = () => {
           .eq("payment_intent_id", stripeData.paymentIntentId)
           .eq("payment_status", "paid")
           .is("deleted_at", null)
-          .order('created_at', { ascending: false })
-          .maybeSingle();
+          .single();
 
         if (bookingError) {
           console.error("❌ Erreur lors de la récupération de la réservation:", bookingError);
@@ -86,64 +80,26 @@ export const useBookingSuccess = () => {
 
         if (!bookingData) {
           console.warn("⚠️ Aucune réservation trouvée avec le payment_intent_id:", stripeData.paymentIntentId);
-          
-          // Essayer de récupérer la dernière réservation payée
-          console.log("🔍 Recherche de la réservation la plus récente");
-          const { data: latestBooking, error: latestError } = await supabase
-            .from("bookings")
-            .select("*")
-            .eq("payment_status", "paid")
-            .is("deleted_at", null)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
+          throw new Error("Aucune réservation trouvée");
+        }
 
-          if (latestError) {
-            console.error("❌ Erreur lors de la récupération de la dernière réservation:", latestError);
-            throw latestError;
-          }
+        console.log("✅ Réservation trouvée:", bookingData);
+        setBooking(bookingData);
 
-          if (!latestBooking) {
-            throw new Error("Aucune réservation trouvée");
-          }
-
-          console.log("✅ Dernière réservation trouvée:", latestBooking);
-          setBooking(latestBooking);
-          setHasAttemptedEmailSend(true);
-
-          try {
-            await sendEmail(latestBooking as Booking);
-            toast({
-              title: "Email envoyé",
-              description: "Un email de confirmation vous a été envoyé",
-            });
-          } catch (emailError: any) {
-            console.error("❌ Erreur lors de l'envoi de l'email:", emailError);
-            toast({
-              title: "Erreur d'envoi d'email",
-              description: "L'email n'a pas pu être envoyé, mais votre réservation est bien confirmée",
-              variant: "destructive",
-            });
-          }
-        } else {
-          console.log("✅ Réservation trouvée:", bookingData);
-          setBooking(bookingData);
-          setHasAttemptedEmailSend(true);
-
-          try {
-            await sendEmail(bookingData as Booking);
-            toast({
-              title: "Email envoyé",
-              description: "Un email de confirmation vous a été envoyé",
-            });
-          } catch (emailError: any) {
-            console.error("❌ Erreur lors de l'envoi de l'email:", emailError);
-            toast({
-              title: "Erreur d'envoi d'email",
-              description: "L'email n'a pas pu être envoyé, mais votre réservation est bien confirmée",
-              variant: "destructive",
-            });
-          }
+        // Envoyer l'email de confirmation
+        try {
+          await sendEmail(bookingData as Booking);
+          toast({
+            title: "Email envoyé",
+            description: "Un email de confirmation vous a été envoyé",
+          });
+        } catch (emailError: any) {
+          console.error("❌ Erreur lors de l'envoi de l'email:", emailError);
+          toast({
+            title: "Erreur d'envoi d'email",
+            description: "L'email n'a pas pu être envoyé, mais votre réservation est bien confirmée",
+            variant: "destructive",
+          });
         }
 
       } catch (error: any) {
@@ -155,7 +111,7 @@ export const useBookingSuccess = () => {
     };
 
     getBookingDetails();
-  }, [searchParams, hasAttemptedEmailSend, sendEmail]);
+  }, [searchParams, sendEmail]);
 
   return { booking, isLoading, error };
 };

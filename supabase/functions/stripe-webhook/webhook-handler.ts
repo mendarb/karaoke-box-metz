@@ -29,7 +29,7 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
           return { success: false, message: 'Payment not completed' };
         }
 
-        // Mettre à jour la réservation avec le payment_intent_id
+        // Mettre à jour la réservation avec le payment_intent_id et le statut
         const { data: booking, error: bookingError } = await supabase
           .from('bookings')
           .update({

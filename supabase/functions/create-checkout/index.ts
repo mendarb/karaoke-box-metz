@@ -79,11 +79,13 @@ serve(async (req) => {
       metadata: session.metadata
     });
 
-    // Mettre à jour la réservation avec le payment_intent_id
+    // Initialiser le client Supabase
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Mettre à jour la réservation avec le payment_intent_id
+    console.log('🔄 Mise à jour de la réservation avec payment_intent_id:', session.payment_intent);
     const { error: updateError } = await supabase
       .from('bookings')
       .update({ payment_intent_id: session.payment_intent as string })

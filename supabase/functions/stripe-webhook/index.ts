@@ -28,6 +28,7 @@ serve(async (req) => {
       type: eventData.type,
       id: eventData.id,
       metadata: eventData.data?.object?.metadata,
+      paymentIntent: eventData.data?.object?.payment_intent,
     });
 
     const isTestMode = eventData.data?.object?.metadata?.isTestMode === 'true';
@@ -67,24 +68,35 @@ serve(async (req) => {
         metadata: session.metadata,
       });
 
-      // Mise à jour de la réservation
+      // Rechercher la réservation par payment_intent_id
       const { data: booking, error: bookingError } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('payment_intent_id', session.payment_intent)
+        .single();
+
+      if (bookingError || !booking) {
+        console.error('❌ Réservation non trouvée avec payment_intent_id:', session.payment_intent);
+        throw new Error('Réservation introuvable');
+      }
+
+      console.log('✅ Réservation trouvée:', booking);
+
+      // Mise à jour de la réservation
+      const { error: updateError } = await supabase
         .from('bookings')
         .update({
           payment_status: 'paid',
           status: 'confirmed',
-          payment_intent_id: session.payment_intent as string,
         })
-        .eq('id', session.metadata?.bookingId)
-        .select()
-        .single();
+        .eq('id', booking.id);
 
-      if (bookingError) {
-        console.error('❌ Erreur lors de la mise à jour de la réservation:', bookingError);
-        throw bookingError;
+      if (updateError) {
+        console.error('❌ Erreur lors de la mise à jour de la réservation:', updateError);
+        throw updateError;
       }
 
-      console.log('✅ Réservation mise à jour:', booking);
+      console.log('✅ Réservation mise à jour:', booking.id);
 
       // Envoi de l'email de confirmation
       try {

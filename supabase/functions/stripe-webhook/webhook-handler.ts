@@ -21,10 +21,17 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
           customerEmail: session.customer_email,
           paymentStatus: session.payment_status,
           paymentIntentId: session.payment_intent,
-          bookingId: session.metadata.bookingId
+          bookingId: session.metadata.bookingId,
+          finalPrice: session.metadata.finalPrice
         });
 
-        // Mettre à jour la réservation avec le payment_intent_id
+        // Vérifier que le paiement est bien effectué
+        if (session.payment_status !== 'paid') {
+          console.log('Payment not completed yet:', session.payment_status);
+          return { success: false, message: 'Payment not completed' };
+        }
+
+        // Mettre à jour la réservation avec le payment_intent_id et le statut
         const { data: bookingUpdate, error: updateError } = await supabase
           .from('bookings')
           .update({
@@ -46,7 +53,8 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
           bookingId: bookingUpdate.id,
           status: bookingUpdate.status,
           paymentStatus: bookingUpdate.payment_status,
-          paymentIntentId: bookingUpdate.payment_intent_id
+          paymentIntentId: bookingUpdate.payment_intent_id,
+          finalPrice: session.metadata.finalPrice
         });
 
         // Envoyer l'email de confirmation
@@ -98,6 +106,32 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
         }
 
         console.log('✅ Booking marked as expired');
+        break;
+      }
+
+      case 'payment_intent.payment_failed': {
+        const paymentIntent = event.data.object;
+        console.log('Payment failed:', {
+          paymentIntentId: paymentIntent.id,
+          metadata: paymentIntent.metadata,
+          bookingId: paymentIntent.metadata.bookingId
+        });
+
+        const { error: updateError } = await supabase
+          .from('bookings')
+          .update({
+            status: 'cancelled',
+            payment_status: 'failed',
+            updated_at: new Date().toISOString()
+          })
+          .eq('payment_intent_id', paymentIntent.id);
+
+        if (updateError) {
+          console.error('Error updating failed booking:', updateError);
+          throw updateError;
+        }
+
+        console.log('✅ Booking marked as failed');
         break;
       }
 

@@ -17,6 +17,8 @@ export const PriceDisplay = ({ price, pricePerPersonPerHour }: PriceDisplayProps
     }).format(value);
   };
 
+  if (price === 0) return null;
+
   return (
     <div className={`${isMobile ? 'mt-3 p-4' : 'mt-4 p-6'} bg-gradient-to-br from-violet-50/50 to-violet-100/50 backdrop-blur-sm rounded-2xl border border-violet-100/50 shadow-lg animate-fadeIn`}>
       <div className="flex flex-col items-center text-center">

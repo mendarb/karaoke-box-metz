@@ -18,13 +18,15 @@ export const useBookingSubmit = (
         timeSlot: data.timeSlot,
         duration,
         groupSize,
-        price: calculatedPrice,
+        originalPrice: calculatedPrice,
+        finalPrice: data.finalPrice,
+        promoCode: data.promoCode,
+        discountAmount: data.discountAmount,
         isTestMode: data.isTestMode
       });
 
       setIsSubmitting(true);
 
-      // Formater la date au format ISO (YYYY-MM-DD)
       const formattedDate = format(new Date(data.date), 'yyyy-MM-dd');
 
       // Vérifier une dernière fois la disponibilité du créneau
@@ -61,11 +63,19 @@ export const useBookingSubmit = (
         return;
       }
 
-      // Récupérer la session utilisateur si elle existe
       const { data: { session } } = await supabase.auth.getSession();
       const userId = session?.user?.id;
 
-      // Créer d'abord la réservation
+      // Utiliser le prix final si un code promo est appliqué
+      const finalPrice = data.finalPrice || calculatedPrice;
+
+      console.log('💰 Prix pour la réservation:', {
+        originalPrice: calculatedPrice,
+        finalPrice: finalPrice,
+        promoCode: data.promoCode,
+        discountAmount: data.discountAmount
+      });
+
       const { data: booking, error: bookingError } = await supabase
         .from('bookings')
         .insert([{
@@ -77,7 +87,7 @@ export const useBookingSubmit = (
           time_slot: `${data.timeSlot.toString().padStart(2, '0')}:00`,
           duration,
           group_size: groupSize,
-          price: calculatedPrice,
+          price: finalPrice, // Utiliser le prix final
           message: data.message,
           status: 'pending',
           payment_status: 'awaiting_payment',
@@ -92,9 +102,15 @@ export const useBookingSubmit = (
         throw bookingError;
       }
 
-      console.log('✅ Booking created:', booking);
+      console.log('✅ Booking created:', {
+        bookingId: booking.id,
+        finalPrice: finalPrice,
+        promoDetails: {
+          code: data.promoCode,
+          discountAmount: data.discountAmount
+        }
+      });
 
-      // Générer le lien de paiement avec l'ID de la réservation
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
         'create-checkout',
         {
@@ -107,13 +123,14 @@ export const useBookingSubmit = (
             duration,
             groupSize,
             price: calculatedPrice,
-            finalPrice: calculatedPrice,
+            finalPrice: finalPrice,
             message: data.message,
             userName: data.fullName,
             userPhone: data.phone,
             isTestMode: data.isTestMode || false,
             promoCodeId: data.promoCodeId,
             promoCode: data.promoCode,
+            discountAmount: data.discountAmount,
           }
         }
       );
@@ -130,6 +147,7 @@ export const useBookingSubmit = (
       console.log('✅ Checkout URL generated:', {
         url: checkoutData.url,
         bookingId: booking.id,
+        finalPrice: finalPrice,
         isTestMode: data.isTestMode || false
       });
       

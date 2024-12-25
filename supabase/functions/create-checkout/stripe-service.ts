@@ -14,7 +14,7 @@ export const createStripeSession = async (
   });
 
   // Utiliser exactement le prix final fourni
-  const finalPrice = data.finalPrice || data.price;
+  const finalPrice = data.finalPrice !== undefined ? data.finalPrice : data.price;
   const unitAmount = Math.round(finalPrice * 100);
 
   console.log('💰 Prix détaillés:', {
@@ -43,7 +43,7 @@ export const createStripeSession = async (
     timeSlot: data.timeSlot,
     duration: data.duration,
     groupSize: data.groupSize,
-    price: String(data.price),
+    originalPrice: String(data.price),
     finalPrice: String(finalPrice),
     message: data.message || '',
     isTestMode: String(data.isTestMode),

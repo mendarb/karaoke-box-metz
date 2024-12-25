@@ -12,30 +12,33 @@ export const usePromoCode = (
 
   useEffect(() => {
     if (!isPromoValid || !promoData) {
-      console.log('💰 Prix original utilisé:', calculatedPrice);
+      console.log('💰 Pas de code promo, prix original:', calculatedPrice);
       setFinalPrice(calculatedPrice);
       form.setValue('finalPrice', calculatedPrice);
-      form.setValue('discountAmount', 0);
       return;
     }
 
-    const { finalPrice: newPrice, discountAmount } = calculateDiscountedPrice(calculatedPrice, promoData);
+    const { finalPrice: discountedPrice, discountAmount } = calculateDiscountedPrice(calculatedPrice, promoData);
     
-    console.log('💰 Calcul du prix:', {
+    console.log('💰 Application du code promo:', {
       originalPrice: calculatedPrice,
-      promoType: promoData.type,
-      promoValue: promoData.value,
-      finalPrice: newPrice,
-      discountAmount
+      promoCode: promoData.code,
+      discountAmount,
+      finalPrice: discountedPrice
     });
-    
-    setFinalPrice(newPrice);
-    form.setValue('finalPrice', newPrice);
+
+    setFinalPrice(discountedPrice);
+    form.setValue('finalPrice', discountedPrice);
     form.setValue('discountAmount', discountAmount);
   }, [calculatedPrice, isPromoValid, promoData, form]);
 
   const handlePromoValidated = (isValid: boolean, promoCode?: any) => {
-    console.log('🎫 Résultat de la validation du code promo:', { isValid, promoCode });
+    console.log('🎫 Validation du code promo:', { 
+      isValid, 
+      promoCode,
+      originalPrice: calculatedPrice 
+    });
+
     setIsPromoValid(isValid);
     setPromoData(promoCode);
     
@@ -47,9 +50,14 @@ export const usePromoCode = (
       form.setValue('promoCodeId', null);
       form.setValue('discountAmount', 0);
     } else {
-      console.log('✅ Code promo valide, mise à jour des valeurs:', promoCode);
+      console.log('✅ Code promo valide, application de la réduction:', promoCode);
       form.setValue('promoCode', promoCode.code);
       form.setValue('promoCodeId', promoCode.id);
+      
+      const { finalPrice: discountedPrice, discountAmount } = calculateDiscountedPrice(calculatedPrice, promoCode);
+      setFinalPrice(discountedPrice);
+      form.setValue('finalPrice', discountedPrice);
+      form.setValue('discountAmount', discountAmount);
     }
   };
 

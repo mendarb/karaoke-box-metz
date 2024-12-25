@@ -30,8 +30,8 @@ export const calculateDiscountedPrice = (originalPrice: number, promoCode: any):
       break;
     case 'fixed_amount':
       if (promoCode.value) {
-        finalPrice = Math.max(0, originalPrice - promoCode.value);
         discountAmount = Math.min(100, (promoCode.value / originalPrice) * 100);
+        finalPrice = Math.max(0, originalPrice - promoCode.value);
       }
       break;
     default:
@@ -40,8 +40,8 @@ export const calculateDiscountedPrice = (originalPrice: number, promoCode: any):
 
   console.log('💰 Résultat du calcul:', {
     originalPrice,
-    finalPrice,
-    discountAmount,
+    finalPrice: Math.round(finalPrice * 100) / 100,
+    discountAmount: Math.round(discountAmount * 100) / 100,
     promoType: promoCode.type
   });
 

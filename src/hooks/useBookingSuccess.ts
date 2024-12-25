@@ -37,14 +37,13 @@ export const useBookingSuccess = () => {
       return;
     }
 
-    // Si on a déjà tenté d'envoyer l'email, ne pas réessayer
     if (hasAttemptedEmailSend) {
       return;
     }
 
     const getBookingDetails = async () => {
       try {
-        console.log("🔍 Retrieving details for session:", sessionId);
+        console.log("🔍 Recherche de la réservation pour la session:", sessionId);
         
         // Attendre un peu pour laisser le temps au webhook de mettre à jour la réservation
         await new Promise(resolve => setTimeout(resolve, 2000));
@@ -55,33 +54,38 @@ export const useBookingSuccess = () => {
           .eq("payment_status", "paid")
           .order("created_at", { ascending: false })
           .limit(1)
-          .maybeSingle();
+          .single();
 
         if (bookingError) {
-          console.error("❌ Error fetching booking:", bookingError);
+          console.error("❌ Erreur lors de la récupération de la réservation:", bookingError);
           throw bookingError;
         }
 
         if (!bookingData) {
-          console.warn("⚠️ No booking found with session ID:", sessionId);
-          throw new Error("Booking not found");
+          console.warn("⚠️ Aucune réservation trouvée pour la session:", sessionId);
+          throw new Error("Réservation non trouvée");
         }
 
-        console.log("✅ Found booking:", bookingData);
+        console.log("✅ Réservation trouvée:", {
+          id: bookingData.id,
+          date: bookingData.date,
+          timeSlot: bookingData.time_slot,
+          duration: bookingData.duration,
+          groupSize: bookingData.group_size
+        });
+
         setBooking(bookingData);
-        
-        // Marquer qu'on a tenté d'envoyer l'email
         setHasAttemptedEmailSend(true);
 
         try {
-          console.log("📧 Sending confirmation email for booking:", bookingData.id);
+          console.log("📧 Envoi de l'email de confirmation pour la réservation:", bookingData.id);
           await sendEmail(bookingData as Booking);
           toast({
             title: "Email envoyé",
             description: "Un email de confirmation vous a été envoyé",
           });
         } catch (emailError: any) {
-          console.error("❌ Error sending confirmation email:", emailError);
+          console.error("❌ Erreur lors de l'envoi de l'email de confirmation:", emailError);
           toast({
             title: "Erreur d'envoi d'email",
             description: "L'email n'a pas pu être envoyé, mais votre réservation est bien confirmée",
@@ -90,7 +94,7 @@ export const useBookingSuccess = () => {
         }
 
       } catch (error: any) {
-        console.error("❌ Error retrieving booking:", error);
+        console.error("❌ Erreur lors de la récupération de la réservation:", error);
         setError(error.message);
       } finally {
         setIsLoading(false);

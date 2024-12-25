@@ -14,22 +14,20 @@ serve(async (req) => {
 
   try {
     const { booking } = await req.json();
-    console.log('📧 Sending booking email:', booking);
+    console.log('📧 Envoi de l\'email pour la réservation:', booking);
 
     if (!booking || !booking.date || !booking.time_slot) {
-      throw new Error('Missing required booking data');
+      throw new Error('Données de réservation manquantes');
     }
 
-    // Format the date and time properly
     const bookingDate = new Date(booking.date);
     const formattedDate = format(bookingDate, 'EEEE d MMMM yyyy', { locale: fr });
-    
     const startHour = parseInt(booking.time_slot);
     const endHour = startHour + parseInt(booking.duration);
     const formatHour = (hour: number) => `${hour.toString().padStart(2, '0')}:00`;
     const timeRange = `${formatHour(startHour)} - ${formatHour(endHour)}`;
 
-    console.log('🕒 Formatted time:', {
+    console.log('🕒 Horaires formatés:', {
       startTime: formatHour(startHour),
       endTime: formatHour(endHour),
       duration: booking.duration
@@ -88,12 +86,12 @@ serve(async (req) => {
 
     if (!res.ok) {
       const error = await res.text();
-      console.error('❌ Resend API error:', error);
-      throw new Error(`Failed to send email: ${error}`);
+      console.error('❌ Erreur Resend API:', error);
+      throw new Error(`Échec de l'envoi de l'email: ${error}`);
     }
 
     const data = await res.json();
-    console.log('✅ Email sent successfully:', data);
+    console.log('✅ Email envoyé avec succès:', data);
 
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -101,7 +99,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('❌ Error in send-booking-email function:', error);
+    console.error('❌ Erreur dans la fonction send-booking-email:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       {

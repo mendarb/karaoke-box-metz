@@ -28,6 +28,7 @@ export const TimeSlots = ({
       if (!selectedDate) return;
 
       const formattedDate = format(selectedDate, 'yyyy-MM-dd');
+      console.log('🔍 Vérification des créneaux pour:', formattedDate);
       
       const { data: bookings, error } = await supabase
         .from('bookings')
@@ -37,7 +38,7 @@ export const TimeSlots = ({
         .is('deleted_at', null);
 
       if (error) {
-        console.error('Error loading booked slots:', error);
+        console.error('❌ Erreur lors du chargement des créneaux réservés:', error);
         return;
       }
 
@@ -49,10 +50,12 @@ export const TimeSlots = ({
         // Marquer tous les créneaux couverts par cette réservation comme indisponibles
         for (let hour = startHour; hour < startHour + duration; hour++) {
           bookedSlots.add(`${hour}:00`);
+          console.log(`🚫 Créneau ${hour}:00 marqué comme réservé`);
         }
       });
 
       setDisabledSlots(Array.from(bookedSlots));
+      console.log('✅ Créneaux indisponibles mis à jour:', Array.from(bookedSlots));
     };
 
     loadBookedSlots();
@@ -63,7 +66,7 @@ export const TimeSlots = ({
       {availableSlots.map((slot) => {
         const isDisabled = disabledSlots.includes(slot);
         const hour = parseInt(slot);
-        const formattedSlot = `${hour}:00`;
+        const formattedSlot = `${hour.toString().padStart(2, '0')}:00`;
 
         const slotButton = (
           <Button
@@ -71,12 +74,15 @@ export const TimeSlots = ({
             type="button"
             variant={selectedTimeSlot === slot ? "default" : "outline"}
             className={cn(
-              "w-full flex items-center gap-2 transition-all",
+              "w-full flex items-center gap-2 transition-all duration-200",
               isDisabled && "opacity-50 bg-gray-100 hover:bg-gray-100 cursor-not-allowed",
-              selectedTimeSlot === slot && "bg-violet-600 hover:bg-violet-700"
+              selectedTimeSlot === slot && "bg-violet-600 hover:bg-violet-700 scale-105"
             )}
             disabled={isDisabled || isLoading}
-            onClick={() => form.setValue("timeSlot", slot)}
+            onClick={() => {
+              form.setValue("timeSlot", slot);
+              console.log('✅ Créneau sélectionné:', slot);
+            }}
           >
             <Clock className="h-4 w-4" />
             {formattedSlot}

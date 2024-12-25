@@ -6,34 +6,43 @@ import type { BookingSettings } from "@/components/admin/settings/types/bookingS
 export const useTimeSlots = () => {
   const getAvailableSlots = async (date: Date, settings: BookingSettings | null | undefined) => {
     if (!settings?.openingHours) {
-      console.log('No opening hours settings found');
+      console.log('❌ Pas de paramètres d\'horaires');
       return [];
     }
 
+    if (settings.isTestMode) {
+      return ['14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00'];
+    }
+
+    // Utiliser directement le jour JavaScript (0-6)
     const dayOfWeek = date.getDay().toString();
     const daySettings = settings.openingHours[dayOfWeek];
 
     if (!daySettings?.isOpen) {
-      console.log('Day is closed:', { date, dayOfWeek });
+      console.log('❌ Jour fermé:', {
+        date: date.toISOString(),
+        dayOfWeek,
+        isOpen: daySettings?.isOpen
+      });
       return [];
     }
 
     const slots = daySettings.slots || [];
-    console.log('Potential slots for day:', slots);
+    console.log('🕒 Créneaux disponibles pour le jour:', {
+      date: date.toISOString(),
+      slots
+    });
 
     try {
-      // Formater la date au format YYYY-MM-DD pour Supabase
-      const formattedDate = format(date, 'yyyy-MM-dd');
-
       const { data: bookings, error } = await supabase
         .from('bookings')
         .select('*')
-        .eq('date', formattedDate)
+        .eq('date', format(date, 'yyyy-MM-dd'))
         .neq('status', 'cancelled')
         .is('deleted_at', null);
 
       if (error) {
-        console.error('Error checking bookings:', error);
+        console.error('❌ Erreur lors de la vérification des réservations:', error);
         toast({
           title: "Erreur",
           description: "Impossible de vérifier les disponibilités",
@@ -42,64 +51,79 @@ export const useTimeSlots = () => {
         return [];
       }
 
+      // Filtrer les créneaux en fonction des réservations existantes
       const availableSlots = slots.filter(slot => {
-        const slotTime = parseInt(slot.split(':')[0]);
+        const slotHour = parseInt(slot.split(':')[0]);
         
-        const isBooked = bookings?.some(booking => {
-          const bookingStartTime = parseInt(booking.time_slot.split(':')[0]);
+        // Vérifier si le créneau est déjà réservé
+        const isSlotBooked = bookings?.some(booking => {
+          const bookingStartHour = parseInt(booking.time_slot);
           const bookingDuration = parseInt(booking.duration);
-          
-          return slotTime >= bookingStartTime && slotTime < (bookingStartTime + bookingDuration);
+          const bookingEndHour = bookingStartHour + bookingDuration;
+
+          // Le créneau est indisponible si :
+          // - il commence pendant une réservation existante
+          // - il se termine pendant une réservation existante
+          // - il englobe complètement une réservation existante
+          return (
+            (slotHour >= bookingStartHour && slotHour < bookingEndHour) ||
+            (slotHour + 1 > bookingStartHour && slotHour + 1 <= bookingEndHour)
+          );
         });
-        
-        if (isBooked) {
-          console.log('Slot is booked:', slot);
+
+        if (isSlotBooked) {
+          console.log(`❌ Créneau ${slot} indisponible - déjà réservé`);
+          return false;
         }
-        return !isBooked;
+
+        return true;
       });
 
-      console.log('Available slots after filtering:', availableSlots);
+      console.log('✅ Créneaux disponibles après filtrage:', availableSlots);
       return availableSlots;
     } catch (error) {
-      console.error('Error fetching bookings:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de vérifier les disponibilités",
-        variant: "destructive",
-      });
-      return [];
+      console.error('❌ Erreur lors de la récupération des réservations:', error);
+      return slots;
     }
   };
 
   const getAvailableHoursForSlot = async (
-    date: Date, 
-    timeSlot: string, 
+    date: Date,
+    timeSlot: string,
     settings: BookingSettings | null | undefined
-  ) => {
+  ): Promise<number> => {
     if (!settings?.openingHours) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de vérifier les disponibilités",
-        variant: "destructive",
+      console.log('❌ Pas de paramètres d\'horaires');
+      return 0;
+    }
+
+    if (settings.isTestMode) {
+      return 4;
+    }
+
+    const dayOfWeek = date.getDay().toString();
+    const daySettings = settings.openingHours[dayOfWeek];
+
+    if (!daySettings?.isOpen) {
+      console.log('❌ Jour fermé:', {
+        date: date.toISOString(),
+        dayOfWeek,
+        isOpen: daySettings?.isOpen
       });
       return 0;
     }
 
-    const daySettings = settings.openingHours[date.getDay().toString()];
-    if (!daySettings?.isOpen || !daySettings.slots) {
-      console.log('Day is closed or no slots available');
-      return 0;
-    }
-
-    const slots = daySettings.slots;
+    const slots = daySettings.slots || [];
     const slotIndex = slots.indexOf(timeSlot);
+    
     if (slotIndex === -1) {
-      console.log('Invalid time slot:', timeSlot);
+      console.log('❌ Créneau invalide:', timeSlot);
       return 0;
     }
 
+    // Si c'est le dernier créneau de la journée
     if (slotIndex === slots.length - 1) {
-      console.log('Last slot of the day, limiting to 1 hour');
+      console.log('ℹ️ Dernier créneau de la journée, limité à 1 heure');
       return 1;
     }
 
@@ -107,54 +131,48 @@ export const useTimeSlots = () => {
     const maxPossibleHours = Math.min(4, remainingSlots + 1);
 
     try {
-      // Formater la date au format YYYY-MM-DD pour Supabase
-      const formattedDate = format(date, 'yyyy-MM-dd');
-
       const { data: bookings, error } = await supabase
         .from('bookings')
         .select('*')
-        .eq('date', formattedDate)
+        .eq('date', format(date, 'yyyy-MM-dd'))
         .neq('status', 'cancelled')
         .is('deleted_at', null);
 
       if (error) {
-        console.error('Error checking bookings:', error);
-        toast({
-          title: "Erreur",
-          description: "Impossible de vérifier les disponibilités",
-          variant: "destructive",
-        });
-        return 0;
-      }
-
-      if (!bookings || bookings.length === 0) {
-        console.log('No existing bookings, returning max hours:', maxPossibleHours);
+        console.error('❌ Erreur lors de la vérification des réservations:', error);
         return maxPossibleHours;
       }
 
-      const slotTime = parseInt(timeSlot.split(':')[0]);
+      if (!bookings?.length) {
+        console.log('✅ Aucune réservation existante, heures disponibles:', maxPossibleHours);
+        return maxPossibleHours;
+      }
+
+      const slotHour = parseInt(timeSlot);
       let availableHours = maxPossibleHours;
 
+      // Vérifier les réservations qui pourraient limiter la durée disponible
       bookings.forEach(booking => {
-        const bookingStartTime = parseInt(booking.time_slot.split(':')[0]);
-        const bookingDuration = parseInt(booking.duration);
+        const bookingStartHour = parseInt(booking.time_slot);
         
-        if (bookingStartTime > slotTime) {
-          const hoursUntilBooking = bookingStartTime - slotTime;
-          availableHours = Math.min(availableHours, hoursUntilBooking);
+        // Si une réservation commence après notre créneau sélectionné
+        if (bookingStartHour > slotHour) {
+          // Calculer combien d'heures sont disponibles jusqu'à la prochaine réservation
+          const hoursUntilNextBooking = bookingStartHour - slotHour;
+          availableHours = Math.min(availableHours, hoursUntilNextBooking);
+          console.log(`ℹ️ Réservation trouvée à ${bookingStartHour}h, limite la durée à ${hoursUntilNextBooking}h`);
         }
       });
 
-      console.log(`Available hours for slot ${timeSlot}:`, availableHours);
+      console.log('✅ Heures disponibles pour le créneau:', {
+        timeSlot,
+        availableHours
+      });
+
       return availableHours;
     } catch (error) {
-      console.error('Error calculating available hours:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de vérifier les disponibilités",
-        variant: "destructive",
-      });
-      return 0;
+      console.error('❌ Erreur lors du calcul des heures disponibles:', error);
+      return maxPossibleHours;
     }
   };
 

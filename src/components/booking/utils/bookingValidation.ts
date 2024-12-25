@@ -1,20 +1,25 @@
 import { supabase } from "@/lib/supabase";
 import { toast } from "@/components/ui/use-toast";
-import { addDays, startOfDay } from "date-fns";
+import { addDays, startOfDay, format } from "date-fns";
 
 export const checkTimeSlotAvailability = async (
   date: Date, 
   timeSlot: string, 
   duration: string
 ) => {
-  console.log('Checking availability for:', { date, timeSlot, duration });
+  console.log('🔍 Vérification de la disponibilité pour:', {
+    date: format(date, 'yyyy-MM-dd'),
+    timeSlot,
+    duration
+  });
   
-  const requestedStartTime = parseInt(timeSlot.split(':')[0]) * 60 + parseInt(timeSlot.split(':')[1] || '0');
-  const requestedDuration = parseInt(duration) * 60;
+  const requestedStartTime = parseInt(timeSlot);
+  const requestedDuration = parseInt(duration);
   const requestedEndTime = requestedStartTime + requestedDuration;
 
   // Vérifier si le créneau demandé ne dépasse pas minuit
-  if (requestedEndTime > 24 * 60) {
+  if (requestedEndTime > 24) {
+    console.log('❌ Le créneau dépasse minuit');
     toast({
       title: "Créneau non disponible",
       description: "Le créneau demandé dépasse minuit. Veuillez choisir un horaire plus tôt.",
@@ -31,7 +36,7 @@ export const checkTimeSlotAvailability = async (
     .single();
 
   if (settingsError) {
-    console.error('Error fetching settings:', settingsError);
+    console.error('❌ Erreur lors de la récupération des paramètres:', settingsError);
     return false;
   }
 
@@ -41,6 +46,7 @@ export const checkTimeSlotAvailability = async (
 
   // Vérifier le délai minimum de réservation
   if (date < minDate) {
+    console.log('❌ Date trop proche');
     toast({
       title: "Date non disponible",
       description: `Les réservations doivent être faites au moins ${settings.bookingWindow?.startDays} jours à l'avance.`,
@@ -54,6 +60,7 @@ export const checkTimeSlotAvailability = async (
 
   // Vérifier si le jour est ouvert
   if (!daySettings?.isOpen) {
+    console.log('❌ Jour fermé');
     toast({
       title: "Jour non disponible",
       description: "Ce jour n'est pas ouvert aux réservations.",
@@ -63,7 +70,9 @@ export const checkTimeSlotAvailability = async (
   }
 
   // Vérifier si le créneau est dans les horaires d'ouverture
-  if (!daySettings.slots.includes(timeSlot)) {
+  const formattedTimeSlot = `${requestedStartTime}:00`;
+  if (!daySettings.slots.includes(formattedTimeSlot)) {
+    console.log('❌ Créneau hors horaires d\'ouverture');
     toast({
       title: "Créneau non disponible",
       description: "Ce créneau n'est pas disponible à la réservation.",
@@ -76,18 +85,18 @@ export const checkTimeSlotAvailability = async (
   const { data: bookings, error } = await supabase
     .from('bookings')
     .select('*')
-    .eq('date', date.toISOString().split('T')[0])
+    .eq('date', format(date, 'yyyy-MM-dd'))
     .neq('status', 'cancelled')
-    .is('deleted_at', null); // Ajout du filtre pour exclure les réservations supprimées
+    .is('deleted_at', null);
 
   if (error) {
-    console.error('Error checking availability:', error);
+    console.error('❌ Erreur lors de la vérification des disponibilités:', error);
     return false;
   }
 
   const hasOverlap = bookings?.some(booking => {
-    const existingStartTime = parseInt(booking.time_slot.split(':')[0]) * 60 + parseInt(booking.time_slot.split(':')[1] || '0');
-    const existingDuration = parseInt(booking.duration) * 60;
+    const existingStartTime = parseInt(booking.time_slot);
+    const existingDuration = parseInt(booking.duration);
     const existingEndTime = existingStartTime + existingDuration;
 
     const overlap = (
@@ -97,7 +106,16 @@ export const checkTimeSlotAvailability = async (
     );
 
     if (overlap) {
-      console.log('Found overlap with booking:', booking);
+      console.log('❌ Chevauchement détecté avec la réservation:', {
+        existingBooking: {
+          start: existingStartTime,
+          end: existingEndTime
+        },
+        requestedBooking: {
+          start: requestedStartTime,
+          end: requestedEndTime
+        }
+      });
     }
     return overlap;
   });
@@ -111,5 +129,6 @@ export const checkTimeSlotAvailability = async (
     return false;
   }
 
+  console.log('✅ Créneau disponible');
   return true;
 };

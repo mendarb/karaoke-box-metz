@@ -43,57 +43,41 @@ const Index = () => {
     return <LoadingSpinner />;
   }
 
-  const contactInfo = siteSettings?.contact_info || {
-    email: 'contact@karaoke-cabin.fr',
-    phone: '01 23 45 67 89',
-    address: '1 rue du Karaoké, 57000 Metz'
+  const contactInfo = {
+    email: 'contact@karaoke-box-metz.fr',
+    phone: '07 82 49 24 02',
+    address: '12 Rue des Huiliers, 57000 Metz'
   };
 
-  const businessHours = siteSettings?.business_hours || {};
-  
-  const formatBusinessHours = (): BusinessHour[][] => {
-    const days = {
-      monday: "Lundi",
-      tuesday: "Mardi",
-      wednesday: "Mercredi",
-      thursday: "Jeudi",
-      friday: "Vendredi",
-      saturday: "Samedi",
-      sunday: "Dimanche"
-    };
-
-    return Object.entries(businessHours)
-      .map(([day, settings]: [string, any]): BusinessHour => ({
-        day: days[day as keyof typeof days],
-        hours: settings?.isOpen ? settings.hours : 'Fermé'
-      }))
-      .reduce((acc: BusinessHour[][], curr, idx) => {
-        if (idx % 2 === 0) {
-          acc.push([curr]);
-        } else {
-          acc[acc.length - 1].push(curr);
-        }
-        return acc;
-      }, []);
+  const businessHours = {
+    monday: { isOpen: false, hours: 'Fermé' },
+    tuesday: { isOpen: false, hours: 'Fermé' },
+    wednesday: { isOpen: true, hours: '17h - 23h' },
+    thursday: { isOpen: true, hours: '17h - 23h' },
+    friday: { isOpen: true, hours: '17h - 23h' },
+    saturday: { isOpen: true, hours: '17h - 23h' },
+    sunday: { isOpen: true, hours: '17h - 23h' }
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-kbox-pink to-white">
       <Navbar onShowAuth={() => setShowAuthModal(true)} />
       
       <main className="flex-grow container mx-auto py-4 px-4 md:py-8 md:px-6">
         <div className="max-w-3xl mx-auto">
           <div className="mb-6 md:mb-10 animate-fadeIn text-center">
-            <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-3">
-              Votre Box Karaoké Privative à Metz
+            <h1 className="text-2xl md:text-4xl font-bold text-kbox-coral mb-3">
+              Votre Box Karaoké Privatif à Metz
             </h1>
             <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
-              Vivez une expérience unique dans un cadre confortable et moderne. 
-              Chantez vos chansons préférées en toute intimité !
+              Partagez des moments uniques avec vos proches dans notre espace privatif et confortable.
             </p>
+            <div className="mt-4 inline-block bg-kbox-coral text-white px-6 py-2 rounded-full">
+              <span className="font-bold">À partir de 10€</span> par personne et par heure
+            </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-6 mb-8">
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-white/20 p-4 md:p-6 mb-8">
             <BookingForm />
           </div>
 
@@ -101,24 +85,24 @@ const Index = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {[
                 {
-                  icon: <Users className="w-8 h-8 text-violet-500" />,
-                  title: "Jusqu'à 10 personnes",
-                  description: "Idéal pour vos soirées entre amis ou en famille"
+                  icon: <Users className="w-8 h-8 text-kbox-coral" />,
+                  title: "Salle privative",
+                  description: "Un espace rien que pour vous et vos proches"
                 },
                 {
-                  icon: <Music2 className="w-8 h-8 text-violet-500" />,
-                  title: "Large choix de titres",
+                  icon: <Music2 className="w-8 h-8 text-kbox-coral" />,
+                  title: "Large choix",
                   description: "Des milliers de chansons disponibles"
                 },
                 {
-                  icon: <Calendar className="w-8 h-8 text-violet-500" />,
-                  title: "Réservation simple",
-                  description: "Choisissez votre créneau en quelques clics"
+                  icon: <Calendar className="w-8 h-8 text-kbox-coral" />,
+                  title: "Horaires flexibles",
+                  description: "Du mercredi au dimanche, de 17h à 23h"
                 }
               ].map((feature, index) => (
                 <div 
                   key={index}
-                  className="bg-white p-4 rounded-lg border border-gray-100 shadow-sm transition-transform hover:translate-y-[-2px]"
+                  className="bg-white/80 backdrop-blur-sm p-4 rounded-lg border border-white/20 shadow-sm transition-transform hover:translate-y-[-2px]"
                 >
                   <div className="flex flex-col items-center text-center">
                     <div className="mb-3">{feature.icon}</div>
@@ -132,7 +116,7 @@ const Index = () => {
         </div>
       </main>
 
-      <footer className="mt-auto py-6 bg-white border-t border-gray-100">
+      <footer className="mt-auto py-6 bg-white/80 backdrop-blur-sm border-t border-white/20">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
@@ -150,14 +134,10 @@ const Index = () => {
             <div>
               <h3 className="text-sm font-semibold mb-3">Horaires</h3>
               <div className="grid grid-cols-1 gap-1">
-                {formatBusinessHours().map((group, groupIdx) => (
-                  <div key={groupIdx} className="grid grid-cols-2 gap-2">
-                    {group.map((item, idx) => (
-                      <div key={idx} className="text-sm text-gray-600">
-                        <span className="font-medium">{item.day}:</span>{' '}
-                        <span>{item.hours}</span>
-                      </div>
-                    ))}
+                {Object.entries(businessHours).map(([day, info]) => (
+                  <div key={day} className="text-sm text-gray-600">
+                    <span className="font-medium capitalize">{day}:</span>{' '}
+                    <span>{info.hours}</span>
                   </div>
                 ))}
               </div>
@@ -165,7 +145,7 @@ const Index = () => {
           </div>
           <div className="mt-6 pt-6 border-t border-gray-100">
             <p className="text-center text-gray-500 text-sm">
-              © {new Date().getFullYear()} Karaoke Cabin. Tous droits réservés.
+              © {new Date().getFullYear()} K.Box - Karaoké Privatif. Tous droits réservés.
             </p>
           </div>
         </div>

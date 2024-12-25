@@ -35,7 +35,7 @@ export const GroupSizeSelector = ({
             <div className="text-sm opacity-80">pers.</div>
           </div>
         </Button>
-      )}
+      ))}
     </div>
   );
 };

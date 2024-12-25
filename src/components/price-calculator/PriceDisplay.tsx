@@ -1,4 +1,4 @@
-import { useIsMobile } from "@/hooks/use-mobile";
+import { Card } from "@/components/ui/card";
 
 interface PriceDisplayProps {
   price: number;
@@ -6,31 +6,17 @@ interface PriceDisplayProps {
 }
 
 export const PriceDisplay = ({ price, pricePerPersonPerHour }: PriceDisplayProps) => {
-  const isMobile = useIsMobile();
-
-  const formatPrice = (value: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(value);
-  };
-
-  if (price === 0) return null;
-
   return (
-    <div className="mt-4 p-6 bg-gradient-to-br from-violet-50/50 to-violet-100/50 backdrop-blur-sm rounded-2xl border border-violet-100/50 shadow-lg animate-fadeIn">
-      <div className="flex flex-col items-center text-center">
-        <p className="text-2xl sm:text-3xl font-bold text-violet-900 mb-1">
-          {formatPrice(pricePerPersonPerHour)}
-        </p>
-        <p className="text-sm text-violet-700 font-medium">
-          par personne et par heure
-        </p>
-        <p className="text-sm text-gray-600 mt-3 font-medium">
-          Total : {formatPrice(price)}
-        </p>
+    <div className="space-y-4">
+      <div className="flex flex-col gap-2">
+        <div className="flex items-baseline justify-between">
+          <span className="text-lg font-medium text-gray-700">Prix total</span>
+          <span className="text-2xl font-bold text-violet-600">{price}€</span>
+        </div>
+        <div className="flex items-baseline justify-between text-sm text-gray-500">
+          <span>Prix par personne et par heure</span>
+          <span>{pricePerPersonPerHour.toFixed(2)}€</span>
+        </div>
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import { GroupSizeSelector } from "./group-size/GroupSizeSelector";
 import { DurationSelector } from "./duration/DurationSelector";
 import { PriceDisplay } from "@/components/price-calculator/PriceDisplay";
 import { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface GroupSizeAndDurationFieldsProps {
   form: UseFormReturn<any>;
@@ -75,21 +76,27 @@ export const GroupSizeAndDurationFields = ({
 
   return (
     <div className="space-y-6">
-      <GroupSizeSelector 
-        form={form} 
-        onGroupSizeChange={handleGroupSizeChange} 
-      />
-      <DurationSelector 
-        form={form} 
-        onDurationChange={handleDurationChange}
-        availableHours={availableHours}
-      />
-      {groupSize && duration && currentPrice > 0 && (
-        <PriceDisplay
-          price={currentPrice}
-          pricePerPersonPerHour={pricePerPerson}
-        />
-      )}
+      <Card className="bg-white/50 backdrop-blur-sm border-none">
+        <CardContent className="p-6 space-y-6">
+          <GroupSizeSelector 
+            form={form} 
+            onGroupSizeChange={handleGroupSizeChange} 
+          />
+          <DurationSelector 
+            form={form} 
+            onDurationChange={handleDurationChange}
+            availableHours={availableHours}
+          />
+          {groupSize && duration && currentPrice > 0 && (
+            <div className="pt-4 border-t">
+              <PriceDisplay
+                price={currentPrice}
+                pricePerPersonPerHour={pricePerPerson}
+              />
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };

@@ -1,11 +1,9 @@
-import { UseFormReturn } from "react-hook-form";
-import { useCalculatePrice } from "@/components/price-calculator/useCalculatePrice";
-import { usePriceSettings } from "@/components/price-calculator/usePriceSettings";
-import { GroupSizeSelector } from "./group-size/GroupSizeSelector";
-import { DurationSelector } from "./duration/DurationSelector";
-import { PriceDisplay } from "@/components/price-calculator/PriceDisplay";
-import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { UseFormReturn } from "react-hook-form";
+import { DurationSelector } from "./duration/DurationSelector";
+import { GroupSizeSelector } from "./group-size/GroupSizeSelector";
+import { PriceDisplay } from "@/components/price-calculator/PriceDisplay";
+import { Users, Clock } from "lucide-react";
 
 interface GroupSizeAndDurationFieldsProps {
   form: UseFormReturn<any>;
@@ -22,79 +20,42 @@ export const GroupSizeAndDurationFields = ({
   onPriceCalculated,
   availableHours,
 }: GroupSizeAndDurationFieldsProps) => {
-  const { data: settings } = usePriceSettings();
-  const { calculatePrice } = useCalculatePrice({ settings });
-  const [currentPrice, setCurrentPrice] = useState<number>(0);
-  const [pricePerPerson, setPricePerPerson] = useState<number>(0);
-
-  const groupSize = form.watch("groupSize");
-  const duration = form.watch("duration");
-
-  const updatePrices = (size: string, dur: string) => {
-    if (size && dur) {
-      const calculatedPrice = calculatePrice(size, dur);
-      const pricePerPersonPerHour = calculatedPrice / (parseInt(size) * parseInt(dur));
-      
-      setCurrentPrice(calculatedPrice);
-      setPricePerPerson(pricePerPersonPerHour);
-      onPriceCalculated(calculatedPrice);
-      
-      console.log('💰 Prix calculé:', {
-        groupSize: size,
-        duration: dur,
-        totalPrice: calculatedPrice,
-        pricePerPerson: pricePerPersonPerHour
-      });
-    }
-  };
-
-  const handleGroupSizeChange = (value: string) => {
-    form.setValue("groupSize", value);
-    onGroupSizeChange(value);
-    
-    const currentDuration = form.getValues("duration");
-    if (currentDuration) {
-      updatePrices(value, currentDuration);
-    }
-  };
-
-  const handleDurationChange = (value: string) => {
-    form.setValue("duration", value);
-    onDurationChange(value);
-    
-    const currentGroupSize = form.getValues("groupSize");
-    if (currentGroupSize) {
-      updatePrices(currentGroupSize, value);
-    }
-  };
-
-  useEffect(() => {
-    if (groupSize && duration) {
-      updatePrices(groupSize, duration);
-    }
-  }, [groupSize, duration, settings]);
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fadeIn">
       <Card className="bg-white/50 backdrop-blur-sm border-none">
-        <CardContent className="p-6 space-y-6">
-          <GroupSizeSelector 
-            form={form} 
-            onGroupSizeChange={handleGroupSizeChange} 
-          />
-          <DurationSelector 
-            form={form} 
-            onDurationChange={handleDurationChange}
-            availableHours={availableHours}
-          />
-          {groupSize && duration && currentPrice > 0 && (
-            <div className="pt-4 border-t">
-              <PriceDisplay
-                price={currentPrice}
-                pricePerPersonPerHour={pricePerPerson}
+        <CardContent className="p-6">
+          <div className="space-y-8">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-violet-600">
+                <Users className="w-5 h-5" />
+                <h3 className="text-lg font-semibold">Nombre de personnes</h3>
+              </div>
+              <GroupSizeSelector
+                form={form}
+                onGroupSizeChange={onGroupSizeChange}
               />
             </div>
-          )}
+
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-violet-600">
+                <Clock className="w-5 h-5" />
+                <h3 className="text-lg font-semibold">Durée de la session</h3>
+              </div>
+              <DurationSelector
+                form={form}
+                onDurationChange={onDurationChange}
+                availableHours={availableHours}
+              />
+            </div>
+
+            <div className="pt-4 border-t border-gray-100">
+              <PriceDisplay
+                groupSize={form.watch("groupSize")}
+                duration={form.watch("duration")}
+                onPriceCalculated={onPriceCalculated}
+              />
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

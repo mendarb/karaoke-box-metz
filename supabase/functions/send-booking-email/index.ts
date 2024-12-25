@@ -14,19 +14,22 @@ serve(async (req) => {
 
   try {
     const { booking } = await req.json();
-    console.log('📧 Envoi de l\'email pour la réservation:', booking);
+    console.log('📧 Sending email for booking:', booking);
 
     if (!booking || !booking.date || !booking.time_slot) {
-      throw new Error('Données de réservation manquantes');
+      throw new Error('Missing required booking data');
     }
 
     const bookingDate = new Date(booking.date);
-    bookingDate.setMinutes(bookingDate.getMinutes() + bookingDate.getTimezoneOffset());
-    
     const formattedDate = format(bookingDate, 'EEEE d MMMM yyyy', { locale: fr });
     const startHour = parseInt(booking.time_slot);
     const endHour = startHour + parseInt(booking.duration);
     const formatHour = (hour: number) => `${hour.toString().padStart(2, '0')}:00`;
+
+    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+    if (!RESEND_API_KEY) {
+      throw new Error('Missing Resend API key');
+    }
 
     const emailContent = `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
@@ -71,11 +74,7 @@ serve(async (req) => {
       </div>
     `;
 
-    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-    if (!RESEND_API_KEY) {
-      throw new Error('Missing Resend API key');
-    }
-
+    console.log('📧 Sending email with Resend API');
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -92,20 +91,20 @@ serve(async (req) => {
 
     if (!res.ok) {
       const error = await res.text();
-      console.error('❌ Erreur Resend API:', error);
-      throw new Error(`Échec de l'envoi de l'email: ${error}`);
+      console.error('❌ Resend API error:', error);
+      throw new Error(`Failed to send email: ${error}`);
     }
 
     const data = await res.json();
-    console.log('✅ Email envoyé avec succès:', data);
+    console.log('✅ Email sent successfully:', data);
 
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
 
-  } catch (error) {
-    console.error('❌ Erreur dans la fonction send-booking-email:', error);
+  } catch (error: any) {
+    console.error('❌ Error in send-booking-email function:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       {

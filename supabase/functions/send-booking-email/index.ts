@@ -22,7 +22,6 @@ serve(async (req) => {
 
     const { booking, type = 'confirmation' } = await req.json();
     
-    // Vérification des données requises
     if (!booking || !booking.user_email || !booking.date || !booking.time_slot) {
       throw new Error('Missing required booking data');
     }
@@ -59,7 +58,7 @@ serve(async (req) => {
             <div class="header">
               <h2>Réservation ${type === 'confirmation' ? 'confirmée' : 'en attente'}</h2>
             </div>
-            <p>Bonjour ${booking.user_name || 'Client'},</p>
+            <p>Bonjour ${booking.user_name},</p>
             <p>${
               type === 'confirmation' 
                 ? 'Votre réservation a été confirmée !' 
@@ -69,7 +68,7 @@ serve(async (req) => {
               <h3>Détails de la réservation :</h3>
               <p>📅 Date : ${formattedDate}</p>
               <p>⏰ Horaire : ${startHour}h - ${endHour}h</p>
-              <p>👥 Nombre de personnes : ${booking.group_size}</p>
+              <p>👥 Nombre de personnes : ${booking.group_size} personne(s)</p>
               <p>💶 Prix total : ${booking.price}€</p>
               ${booking.is_test_booking ? '<p>⚠️ Ceci est une réservation de test</p>' : ''}
             </div>

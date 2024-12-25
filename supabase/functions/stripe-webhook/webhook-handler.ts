@@ -22,7 +22,6 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
           paymentStatus: session.payment_status,
           paymentIntentId: session.payment_intent,
           bookingId: session.metadata.bookingId,
-          finalPrice: session.metadata.finalPrice
         });
 
         // Vérifier que le paiement est bien effectué
@@ -31,19 +30,7 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
           return { success: false, message: 'Payment not completed' };
         }
 
-        // Vérifier si la réservation n'a pas déjà été mise à jour
-        const { data: existingBooking } = await supabase
-          .from('bookings')
-          .select('status, payment_status')
-          .eq('id', session.metadata.bookingId)
-          .single();
-
-        if (existingBooking?.payment_status === 'paid') {
-          console.log('Booking already marked as paid:', session.metadata.bookingId);
-          return { success: true, message: 'Booking already processed' };
-        }
-
-        // Mettre à jour la réservation avec le payment_intent_id et le statut
+        // Mettre à jour la réservation
         const { data: bookingUpdate, error: updateError } = await supabase
           .from('bookings')
           .update({
@@ -65,11 +52,10 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
           bookingId: bookingUpdate.id,
           status: bookingUpdate.status,
           paymentStatus: bookingUpdate.payment_status,
-          paymentIntentId: bookingUpdate.payment_intent_id,
-          finalPrice: session.metadata.finalPrice
+          paymentIntentId: bookingUpdate.payment_intent_id
         });
 
-        // Envoyer l'email de confirmation une seule fois
+        // Envoyer l'email de confirmation
         try {
           const response = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-booking-email`, {
             method: 'POST',

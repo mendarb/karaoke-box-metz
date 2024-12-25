@@ -20,12 +20,12 @@ export const PriceDisplay = ({ price, pricePerPersonPerHour }: PriceDisplayProps
   if (price === 0) return null;
 
   return (
-    <div className={`${isMobile ? 'mt-3 p-4' : 'mt-4 p-6'} bg-gradient-to-br from-violet-50/50 to-violet-100/50 backdrop-blur-sm rounded-2xl border border-violet-100/50 shadow-lg animate-fadeIn`}>
+    <div className={`${isMobile ? 'mt-3 p-4' : 'mt-4 p-6'} bg-gradient-to-br from-kbox-coral/10 to-kbox-coral/20 backdrop-blur-sm rounded-2xl border border-kbox-coral/20 shadow-lg animate-fadeIn`}>
       <div className="flex flex-col items-center text-center">
-        <p className="text-2xl sm:text-3xl font-bold text-violet-900 mb-1">
+        <p className="text-2xl sm:text-3xl font-bold text-kbox-coral mb-1">
           {formatPrice(pricePerPersonPerHour)}
         </p>
-        <p className="text-sm text-violet-700 font-medium">
+        <p className="text-sm text-kbox-coral font-medium">
           par personne et par heure
         </p>
         <p className="text-sm text-gray-600 mt-3 font-medium">

@@ -9,12 +9,14 @@ export const PriceCalculator = ({
   onPriceCalculated 
 }: PriceCalculatorProps) => {
   const { data: settings } = usePriceSettings();
-  const { price, pricePerPersonPerHour } = useCalculatePrice({
+  const { price, pricePerPersonPerHour, calculatePrice } = useCalculatePrice({
     groupSize,
     duration,
     settings,
     onPriceCalculated
   });
+
+  if (!price || !pricePerPersonPerHour) return null;
 
   return (
     <PriceDisplay 

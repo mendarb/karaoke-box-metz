@@ -55,15 +55,6 @@ export const useCalculatePrice = ({
     if (hours > 1) {
       const additionalHoursPrice = discountedPerPersonHourRate * size * (hours - 1);
       finalPrice += additionalHoursPrice;
-
-      console.log('Price calculation:', {
-        firstHourPrice,
-        additionalHoursPrice,
-        finalPrice,
-        effectiveGroupSize: size,
-        basePerPersonHourRate,
-        discountedPerPersonHourRate
-      });
     }
 
     // Calcul du prix moyen par personne et par heure

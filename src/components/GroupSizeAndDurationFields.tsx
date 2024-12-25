@@ -22,27 +22,39 @@ export const GroupSizeAndDurationFields = ({
   availableHours,
 }: GroupSizeAndDurationFieldsProps) => {
   const { data: settings } = usePriceSettings();
-  const { price, pricePerPersonPerHour, calculatePrice } = useCalculatePrice({ settings });
+  const { calculatePrice } = useCalculatePrice({ settings });
 
   const groupSize = form.watch("groupSize");
   const duration = form.watch("duration");
 
-  useEffect(() => {
-    if (groupSize && duration && settings) {
-      const calculatedPrice = calculatePrice(groupSize, duration);
-      onPriceCalculated(calculatedPrice);
-    }
-  }, [groupSize, duration, settings, calculatePrice, onPriceCalculated]);
-
   const handleGroupSizeChange = (value: string) => {
     form.setValue("groupSize", value);
     onGroupSizeChange(value);
+    
+    const currentDuration = form.getValues("duration");
+    if (currentDuration) {
+      const price = calculatePrice(value, currentDuration);
+      onPriceCalculated(price);
+    }
   };
 
   const handleDurationChange = (value: string) => {
     form.setValue("duration", value);
     onDurationChange(value);
+    
+    const currentGroupSize = form.getValues("groupSize");
+    if (currentGroupSize) {
+      const price = calculatePrice(currentGroupSize, value);
+      onPriceCalculated(price);
+    }
   };
+
+  useEffect(() => {
+    if (groupSize && duration && settings) {
+      const price = calculatePrice(groupSize, duration);
+      onPriceCalculated(price);
+    }
+  }, [groupSize, duration, settings, calculatePrice, onPriceCalculated]);
 
   return (
     <div className="space-y-6">
@@ -56,9 +68,10 @@ export const GroupSizeAndDurationFields = ({
         availableHours={availableHours}
       />
       {groupSize && duration && (
-        <PriceDisplay 
-          price={price} 
-          pricePerPersonPerHour={pricePerPersonPerHour} 
+        <PriceCalculator
+          groupSize={groupSize}
+          duration={duration}
+          onPriceCalculated={onPriceCalculated}
         />
       )}
     </div>

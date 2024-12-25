@@ -2,23 +2,19 @@ import { supabase } from "@/lib/supabase";
 import { createCheckoutSession } from "@/services/checkoutService";
 
 export const createBooking = async (data: any, userId: string | null) => {
-  console.log('📝 Création d\'une nouvelle réservation :', {
+  console.log('📝 Début de création de réservation:', {
     userId,
     email: data.email,
     date: data.date,
     timeSlot: data.timeSlot,
     duration: data.duration,
     groupSize: data.groupSize,
-    price: data.calculatedPrice
+    price: data.calculatedPrice,
+    isTestMode: data.isTestMode
   });
 
-  // Get the current session to verify authentication status
-  const { data: { session } } = await supabase.auth.getSession();
-  const authenticatedUserId = session?.user?.id;
-
-  // Only set user_id if we have an authenticated user
   const bookingData = {
-    user_id: authenticatedUserId || null, // Only set if user is authenticated
+    user_id: userId,
     user_email: data.email,
     user_name: data.fullName,
     user_phone: data.phone,
@@ -30,10 +26,10 @@ export const createBooking = async (data: any, userId: string | null) => {
     message: data.message,
     status: 'pending',
     payment_status: 'awaiting_payment',
-    is_test_booking: data.isTestMode || false,
+    is_test_booking: data.isTestMode,
   };
 
-  console.log('Creating booking with data:', bookingData);
+  console.log('🔄 Tentative d\'insertion de la réservation:', bookingData);
 
   const { data: booking, error } = await supabase
     .from('bookings')
@@ -57,31 +53,52 @@ export const createBooking = async (data: any, userId: string | null) => {
 };
 
 export const generatePaymentLink = async (data: any) => {
-  console.log('💰 Génération du lien de paiement pour la réservation:', data.bookingId);
-
-  const checkoutUrl = await createCheckoutSession({
+  console.log('💰 Début de génération du lien de paiement:', {
     bookingId: data.bookingId,
-    userId: data.userId,
-    userEmail: data.email,
-    date: data.date,
-    timeSlot: data.timeSlot,
-    duration: data.duration,
-    groupSize: data.groupSize,
-    price: data.price || data.calculatedPrice,
-    finalPrice: data.finalPrice || data.calculatedPrice,
-    message: data.message,
-    userName: data.fullName,
-    userPhone: data.phone,
-    isTestMode: data.isTestMode || false,
-    promoCodeId: data.promoCodeId,
-    promoCode: data.promoCode,
-    discountAmount: data.discountAmount,
-  });
-
-  console.log('✅ Lien de paiement généré:', {
-    url: checkoutUrl,
-    bookingId: data.bookingId,
+    email: data.email,
+    price: data.calculatedPrice,
     isTestMode: data.isTestMode
   });
-  return checkoutUrl;
+
+  try {
+    const response = await supabase.functions.invoke('create-checkout', {
+      body: {
+        bookingId: data.bookingId,
+        userId: data.userId,
+        userEmail: data.email,
+        date: data.date,
+        timeSlot: data.timeSlot,
+        duration: data.duration,
+        groupSize: data.groupSize,
+        price: data.calculatedPrice,
+        userName: data.fullName,
+        userPhone: data.phone,
+        isTestMode: data.isTestMode,
+        message: data.message
+      },
+    });
+
+    if (response.error) {
+      console.error('❌ Erreur lors de la création de la session de paiement:', response.error);
+      throw new Error(response.error.message || 'Échec de création de la session de paiement');
+    }
+
+    const { url } = response.data;
+    
+    if (!url) {
+      console.error('❌ Pas d\'URL de paiement retournée');
+      throw new Error('Pas d\'URL de paiement retournée');
+    }
+
+    console.log('✅ Lien de paiement généré avec succès:', {
+      url,
+      bookingId: data.bookingId,
+      isTestMode: data.isTestMode
+    });
+
+    return url;
+  } catch (error: any) {
+    console.error('❌ Erreur lors de la génération du lien de paiement:', error);
+    throw error;
+  }
 };

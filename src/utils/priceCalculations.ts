@@ -24,30 +24,37 @@ export const calculateDiscountedPrice = (originalPrice: number, promoCode: any):
       break;
     case 'percentage':
       if (promoCode.value) {
-        discountAmount = promoCode.value;
-        finalPrice = originalPrice * (1 - promoCode.value / 100);
+        discountAmount = Math.min(100, promoCode.value);
+        finalPrice = originalPrice * (1 - discountAmount / 100);
+        // Ensure minimum price of 1€ for percentage discounts
+        finalPrice = Math.max(1, finalPrice);
       }
       break;
     case 'fixed_amount':
       if (promoCode.value) {
+        // Calculate discount percentage
         discountAmount = Math.min(100, (promoCode.value / originalPrice) * 100);
-        finalPrice = Math.max(0, originalPrice - promoCode.value);
+        finalPrice = Math.max(1, originalPrice - promoCode.value);
       }
       break;
     default:
       break;
   }
 
+  // Round to 2 decimal places
+  finalPrice = Math.round(finalPrice * 100) / 100;
+  discountAmount = Math.round(discountAmount * 100) / 100;
+
   console.log('💰 Résultat du calcul:', {
     originalPrice,
-    finalPrice: Math.round(finalPrice * 100) / 100,
-    discountAmount: Math.round(discountAmount * 100) / 100,
+    finalPrice,
+    discountAmount,
     promoType: promoCode.type
   });
 
   return {
-    finalPrice: Math.round(finalPrice * 100) / 100,
-    discountAmount: Math.round(discountAmount * 100) / 100
+    finalPrice,
+    discountAmount
   };
 };
 

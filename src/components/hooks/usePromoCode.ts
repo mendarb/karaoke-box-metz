@@ -15,6 +15,7 @@ export const usePromoCode = (
       console.log('💰 Pas de code promo, prix original:', calculatedPrice);
       setFinalPrice(calculatedPrice);
       form.setValue('finalPrice', calculatedPrice);
+      form.setValue('discountAmount', 0);
       return;
     }
 

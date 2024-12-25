@@ -14,8 +14,9 @@ export const createStripeSession = async (
     discountAmount: data.discountAmount
   });
 
-  // Validate minimum price
-  const unitAmount = validatePrice(data.finalPrice || data.price);
+  // Ensure minimum price of 1€
+  const finalPrice = Math.max(1, data.finalPrice || data.price);
+  const unitAmount = Math.round(finalPrice * 100); // Convert to cents
 
   // Format price description with promo code if applicable
   let priceDescription = `${data.groupSize} personnes - ${data.duration}h`;
@@ -34,7 +35,7 @@ export const createStripeSession = async (
     duration: data.duration,
     groupSize: data.groupSize,
     price: String(data.price),
-    finalPrice: String(data.finalPrice || data.price),
+    finalPrice: String(finalPrice),
     message: data.message || '',
     isTestMode: String(data.isTestMode),
     promoCodeId: data.promoCodeId || '',
@@ -72,7 +73,7 @@ export const createStripeSession = async (
     sessionId: session.id,
     bookingId: data.bookingId,
     metadata: session.metadata,
-    finalPrice: data.finalPrice,
+    finalPrice,
     unitAmount
   });
 

@@ -79,37 +79,11 @@ serve(async (req) => {
       metadata: session.metadata
     });
 
-    // Initialiser le client Supabase
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    // Mettre à jour la réservation avec le payment_intent_id
-    console.log('🔄 Mise à jour de la réservation avec payment_intent_id:', session.payment_intent);
-    const { data: updatedBooking, error: updateError } = await supabase
-      .from('bookings')
-      .update({ 
-        payment_intent_id: session.payment_intent as string,
-        payment_status: 'awaiting_payment'
-      })
-      .eq('id', requestData.bookingId)
-      .select()
-      .single();
-
-    if (updateError) {
-      console.error('❌ Erreur lors de la mise à jour de la réservation:', updateError);
-      throw updateError;
-    }
-
-    console.log('✅ Réservation mise à jour avec payment_intent_id:', {
-      bookingId: updatedBooking.id,
-      paymentIntentId: updatedBooking.payment_intent_id,
-      status: updatedBooking.status,
-      paymentStatus: updatedBooking.payment_status
-    });
-
     return new Response(
-      JSON.stringify({ url: session.url }),
+      JSON.stringify({ 
+        url: session.url,
+        paymentIntentId: session.payment_intent 
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200 

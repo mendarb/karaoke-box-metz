@@ -83,16 +83,32 @@ export const generatePaymentLink = async (data: any) => {
       throw new Error(response.error.message || 'Échec de création de la session de paiement');
     }
 
-    const { url } = response.data;
+    const { url, paymentIntentId } = response.data;
     
     if (!url) {
       console.error('❌ Pas d\'URL de paiement retournée');
       throw new Error('Pas d\'URL de paiement retournée');
     }
 
+    // Mettre à jour la réservation avec le payment_intent_id
+    if (paymentIntentId) {
+      const { error: updateError } = await supabase
+        .from('bookings')
+        .update({ payment_intent_id: paymentIntentId })
+        .eq('id', data.bookingId);
+
+      if (updateError) {
+        console.error('❌ Erreur lors de la mise à jour du payment_intent_id:', updateError);
+        throw new Error('Échec de la mise à jour du payment_intent_id');
+      }
+
+      console.log('✅ payment_intent_id enregistré:', paymentIntentId);
+    }
+
     console.log('✅ Lien de paiement généré avec succès:', {
       url,
       bookingId: data.bookingId,
+      paymentIntentId,
       isTestMode: data.isTestMode
     });
 

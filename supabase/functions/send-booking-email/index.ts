@@ -20,21 +20,18 @@ serve(async (req) => {
       throw new Error('Missing required booking data');
     }
 
-    // Formatage précis de la date et de l'heure
+    // Format the date and time properly
     const bookingDate = new Date(booking.date);
     const formattedDate = format(bookingDate, 'EEEE d MMMM yyyy', { locale: fr });
     
-    // Ensure time_slot is in HH:00 format and calculate end time
     const startHour = parseInt(booking.time_slot);
-    const duration = parseInt(booking.duration);
-    const endHour = startHour + duration;
-    
-    const startTime = `${startHour.toString().padStart(2, '0')}:00`;
-    const endTime = `${endHour.toString().padStart(2, '0')}:00`;
-    
+    const endHour = startHour + parseInt(booking.duration);
+    const formatHour = (hour: number) => `${hour.toString().padStart(2, '0')}:00`;
+    const timeRange = `${formatHour(startHour)} - ${formatHour(endHour)}`;
+
     console.log('🕒 Formatted time:', {
-      startTime,
-      endTime,
+      startTime: formatHour(startHour),
+      endTime: formatHour(endHour),
       duration: booking.duration
     });
 
@@ -48,7 +45,7 @@ serve(async (req) => {
         
         <div style="background-color: #F3F4F6; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <p><strong>Date :</strong> ${formattedDate}</p>
-          <p><strong>Horaire :</strong> ${startTime} - ${endTime}</p>
+          <p><strong>Horaire :</strong> ${timeRange}</p>
           <p><strong>Durée :</strong> ${booking.duration} heure(s)</p>
           <p><strong>Nombre de participants :</strong> ${booking.group_size} personne(s)</p>
           ${booking.is_test_booking ? '<p style="color: #EAB308;"><strong>Ceci est une réservation de test</strong></p>' : ''}

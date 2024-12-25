@@ -28,6 +28,9 @@ export const BookingDetails = ({
   const startHour = parseInt(timeSlot);
   const endHour = startHour + parseInt(duration);
 
+  // Format hours to ensure they always have two digits
+  const formatHour = (hour: number) => `${hour.toString().padStart(2, '0')}:00`;
+
   return (
     <div className="space-y-6 p-4 bg-gray-50 rounded-lg">
       <div className="space-y-2">
@@ -40,7 +43,7 @@ export const BookingDetails = ({
         <div className="flex items-center text-sm">
           <Clock className="mr-2 h-4 w-4 text-violet-500" />
           <span>
-            {startHour}:00 - {endHour}:00 ({duration}h)
+            {formatHour(startHour)} - {formatHour(endHour)} ({duration}h)
           </span>
         </div>
       </div>

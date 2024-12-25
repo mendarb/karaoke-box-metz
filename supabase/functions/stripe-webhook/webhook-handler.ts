@@ -74,12 +74,16 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
           });
 
           if (!emailResponse.ok) {
-            throw new Error(`Failed to send confirmation email: ${await emailResponse.text()}`);
+            const errorText = await emailResponse.text();
+            console.error('❌ Failed to send confirmation email:', errorText);
+            throw new Error(`Failed to send confirmation email: ${errorText}`);
           }
 
-          console.log('✅ Confirmation email sent successfully');
+          const emailResult = await emailResponse.json();
+          console.log('✅ Confirmation email sent successfully:', emailResult);
         } catch (emailError) {
           console.error('❌ Error sending confirmation email:', emailError);
+          // On ne throw pas l'erreur ici pour ne pas bloquer le processus
         }
 
         break;

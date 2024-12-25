@@ -3,7 +3,7 @@ import { useCalculatePrice } from "@/components/price-calculator/useCalculatePri
 import { usePriceSettings } from "@/components/price-calculator/usePriceSettings";
 import { GroupSizeSelector } from "@/components/booking/group-size/GroupSizeSelector";
 import { DurationSelector } from "@/components/booking/duration/DurationSelector";
-import { PriceCalculator } from "@/components/PriceCalculator";
+import { PriceDisplay } from "@/components/price-calculator/PriceDisplay";
 import { useEffect } from "react";
 
 interface GroupSizeAndDurationFieldsProps {
@@ -68,11 +68,12 @@ export const GroupSizeAndDurationFields = ({
         availableHours={availableHours}
       />
       {groupSize && duration && (
-        <PriceCalculator
-          groupSize={groupSize}
-          duration={duration}
-          onPriceCalculated={onPriceCalculated}
-        />
+        <div className="mt-4">
+          <PriceDisplay
+            price={calculatePrice(groupSize, duration)}
+            pricePerPersonPerHour={calculatePrice(groupSize, "1") / parseInt(groupSize)}
+          />
+        </div>
       )}
     </div>
   );

@@ -32,13 +32,15 @@ export const GroupSizeAndDurationFields = ({
   const updatePrices = (size: string, dur: string) => {
     if (size && dur) {
       const calculatedPrice = calculatePrice(size, dur);
-      const pricePerPersonPerHour = calculatePrice(size, "1") / parseInt(size);
+      const pricePerPersonPerHour = calculatedPrice / (parseInt(size) * parseInt(dur));
       
       setCurrentPrice(calculatedPrice);
       setPricePerPerson(pricePerPersonPerHour);
       onPriceCalculated(calculatedPrice);
       
-      console.log('Prices updated:', {
+      console.log('💰 Prix calculé:', {
+        groupSize: size,
+        duration: dur,
         totalPrice: calculatedPrice,
         pricePerPerson: pricePerPersonPerHour
       });
@@ -83,12 +85,10 @@ export const GroupSizeAndDurationFields = ({
         availableHours={availableHours}
       />
       {groupSize && duration && currentPrice > 0 && (
-        <div className="mt-6">
-          <PriceDisplay
-            price={currentPrice}
-            pricePerPersonPerHour={pricePerPerson}
-          />
-        </div>
+        <PriceDisplay
+          price={currentPrice}
+          pricePerPersonPerHour={pricePerPerson}
+        />
       )}
     </div>
   );

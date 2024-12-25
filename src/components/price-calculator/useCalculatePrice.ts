@@ -18,57 +18,55 @@ export const useCalculatePrice = ({
   const [pricePerPersonPerHour, setPricePerPersonPerHour] = useState(0);
 
   const calculatePrice = (groupSize: string, duration: string) => {
-    if (!settings) {
-      console.log('Missing settings for price calculation');
+    if (!settings?.basePrice) {
+      console.log('❌ Paramètres de prix manquants');
       return 0;
     }
 
     const hours = parseFloat(duration);
-    let size = parseFloat(groupSize);
-
-    // Pour les groupes de 6 personnes et plus, on utilise le prix de 6 personnes
-    if (size > 6) {
-      console.log('Group size > 6, using price for 6 people');
-      size = 6;
-    }
+    const size = parseFloat(groupSize);
 
     if (isNaN(hours) || isNaN(size) || hours <= 0 || size <= 0) {
-      console.log('Invalid input values:', { hours, size });
+      console.log('❌ Valeurs invalides:', { hours, size });
       return 0;
     }
 
-    const baseHourRate = settings.basePrice?.perHour || 30;
-    const basePersonRate = settings.basePrice?.perPerson || 5;
+    const baseHourRate = settings.basePrice.perHour || 30;
+    const basePersonRate = settings.basePrice.perPerson || 5;
 
-    console.log('Base rates:', { baseHourRate, basePersonRate });
+    console.log('💰 Tarifs de base:', { baseHourRate, basePersonRate });
 
-    // Calcul du prix de base par personne et par heure (première heure)
-    const basePerPersonHourRate = baseHourRate / size + basePersonRate;
+    // Prix par personne pour la première heure
+    const basePrice = baseHourRate + (basePersonRate * size);
     
-    // Calcul du prix réduit par personne et par heure (heures suivantes)
-    const discountedPerPersonHourRate = basePerPersonHourRate * 0.9;
-
-    // Calcul du prix total
-    const firstHourPrice = basePerPersonHourRate * size;
-    let finalPrice = firstHourPrice;
-
+    // Prix total pour la première heure
+    let totalPrice = basePrice;
+    
+    // Prix réduit pour les heures suivantes (-10%)
     if (hours > 1) {
-      const additionalHoursPrice = discountedPerPersonHourRate * size * (hours - 1);
-      finalPrice += additionalHoursPrice;
+      const additionalHoursPrice = (basePrice * 0.9) * (hours - 1);
+      totalPrice += additionalHoursPrice;
     }
 
-    // Calcul du prix moyen par personne et par heure
-    const averagePerPersonHourRate = finalPrice / (hours * size);
-    setPricePerPersonPerHour(Math.round(averagePerPersonHourRate * 100) / 100);
+    const finalPrice = Math.round(totalPrice * 100) / 100;
+    const pricePerPerson = Math.round((finalPrice / (size * hours)) * 100) / 100;
 
-    // Arrondir le prix à 2 décimales
-    return Math.round(finalPrice * 100) / 100;
+    console.log('💰 Calcul du prix:', {
+      groupSize,
+      duration,
+      basePrice,
+      totalPrice: finalPrice,
+      pricePerPerson
+    });
+
+    return finalPrice;
   };
 
   useEffect(() => {
     if (groupSize && duration && settings) {
       const calculatedPrice = calculatePrice(groupSize, duration);
       setPrice(calculatedPrice);
+      setPricePerPersonPerHour(calculatedPrice / (parseInt(groupSize) * parseInt(duration)));
 
       if (onPriceCalculated) {
         onPriceCalculated(calculatedPrice);

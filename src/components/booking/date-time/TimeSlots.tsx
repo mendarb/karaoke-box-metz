@@ -47,7 +47,6 @@ export const TimeSlots = ({
         const startHour = parseInt(booking.time_slot);
         const duration = parseInt(booking.duration);
         
-        // Marquer tous les créneaux couverts par cette réservation comme indisponibles
         for (let hour = startHour; hour < startHour + duration; hour++) {
           bookedSlots.add(`${hour}:00`);
           console.log(`🚫 Créneau ${hour}:00 marqué comme réservé`);
@@ -61,9 +60,16 @@ export const TimeSlots = ({
     loadBookedSlots();
   }, [selectedDate]);
 
+  // Trier les créneaux par heure
+  const sortedSlots = [...availableSlots].sort((a, b) => {
+    const hourA = parseInt(a.split(':')[0]);
+    const hourB = parseInt(b.split(':')[0]);
+    return hourA - hourB;
+  });
+
   return (
     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-      {availableSlots.map((slot) => {
+      {sortedSlots.map((slot) => {
         const isDisabled = disabledSlots.includes(slot);
         const hour = parseInt(slot);
         const formattedSlot = `${hour.toString().padStart(2, '0')}:00`;

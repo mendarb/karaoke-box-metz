@@ -43,17 +43,31 @@ export const useBookingSuccess = () => {
 
     const getBookingDetails = async () => {
       try {
-        console.log("🔍 Recherche de la réservation la plus récente");
+        console.log("🔍 Recherche de la réservation avec le payment_intent_id de la session:", sessionId);
         
         // Attendre un peu pour laisser le temps au webhook de mettre à jour la réservation
         await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Récupérer d'abord les détails de la session Stripe
+        const { data: stripeData, error: stripeError } = await supabase.functions.invoke(
+          'get-payment-intent',
+          {
+            body: { sessionId }
+          }
+        );
+
+        if (stripeError || !stripeData?.paymentIntentId) {
+          console.error("❌ Erreur lors de la récupération du payment_intent_id:", stripeError);
+          throw new Error("Impossible de récupérer les détails du paiement");
+        }
+
+        console.log("💳 Payment Intent ID récupéré:", stripeData.paymentIntentId);
         
         const { data: bookingData, error: bookingError } = await supabase
           .from("bookings")
           .select("*")
+          .eq("payment_intent_id", stripeData.paymentIntentId)
           .eq("payment_status", "paid")
-          .order("created_at", { ascending: false })
-          .limit(1)
           .single();
 
         if (bookingError) {
@@ -62,7 +76,7 @@ export const useBookingSuccess = () => {
         }
 
         if (!bookingData) {
-          console.warn("⚠️ Aucune réservation trouvée");
+          console.warn("⚠️ Aucune réservation trouvée avec le payment_intent_id:", stripeData.paymentIntentId);
           throw new Error("Réservation non trouvée");
         }
 

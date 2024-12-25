@@ -18,7 +18,7 @@ export const GroupSizeSelector = ({
     <div className="space-y-4">
       <Label>Nombre de personnes</Label>
       <div className="flex flex-wrap gap-2">
-        {["1", "2", "3", "4"].map((size) => (
+        {["2", "3", "4", "5", "6", "7", "8", "9", "10"].map((size) => (
           <Button
             key={size}
             type="button"
@@ -31,7 +31,7 @@ export const GroupSizeSelector = ({
           >
             {size}
             <span className="ml-1 text-sm">
-              personne{parseInt(size) > 1 ? "s" : ""}
+              personnes
             </span>
           </Button>
         ))}

@@ -22,6 +22,7 @@ export default {
         kbox: {
           coral: "#FF5733",
           pink: "#FFE5E5",
+          violet: "#7E3AED",
           orange: {
             DEFAULT: "#FF5733",
             light: "#FF8C69",

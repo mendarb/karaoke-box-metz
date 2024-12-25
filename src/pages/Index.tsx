@@ -11,11 +11,6 @@ import { Calendar, Music2, Users } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 
-interface BusinessHour {
-  day: string;
-  hours: string;
-}
-
 const Index = () => {
   const isMobile = useIsMobile();
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -27,15 +22,11 @@ const Index = () => {
       const { data, error } = await supabase
         .from('site_settings')
         .select('*');
-
       if (error) throw error;
-      
-      const settingsMap = data.reduce((acc: any, curr) => {
+      return data.reduce((acc: any, curr) => {
         acc[curr.key] = curr.value;
         return acc;
       }, {});
-
-      return settingsMap;
     },
   });
 
@@ -43,107 +34,100 @@ const Index = () => {
     return <LoadingSpinner />;
   }
 
-  const contactInfo = {
-    email: 'contact@karaoke-box-metz.fr',
-    phone: '07 82 49 24 02',
-    address: '12 Rue des Huiliers, 57000 Metz'
-  };
-
   const businessHours = {
-    lundi: { isOpen: false, hours: 'Fermé' },
-    mardi: { isOpen: false, hours: 'Fermé' },
-    mercredi: { isOpen: true, hours: '17h - 23h' },
-    jeudi: { isOpen: true, hours: '17h - 23h' },
-    vendredi: { isOpen: true, hours: '17h - 23h' },
-    samedi: { isOpen: true, hours: '17h - 23h' },
-    dimanche: { isOpen: true, hours: '17h - 23h' }
+    lundi: 'Fermé',
+    mardi: 'Fermé',
+    mercredi: '17h - 23h',
+    jeudi: '17h - 23h',
+    vendredi: '17h - 23h',
+    samedi: '17h - 23h',
+    dimanche: '17h - 23h'
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-kbox-pink to-white">
+    <div className="min-h-screen flex flex-col bg-kbox-coral">
       <Navbar onShowAuth={() => setShowAuthModal(true)} />
       
-      <main className="flex-grow container mx-auto py-4 px-4 md:py-8 md:px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-            <div className="flex flex-col justify-center animate-fadeIn">
-              <h1 className="text-xl md:text-3xl font-bold text-kbox-coral mb-2">
-                Votre Box Karaoké Privatif à Metz
-              </h1>
-              <p className="text-sm md:text-base text-gray-600">
-                Partagez des moments uniques avec vos proches dans notre espace privatif et confortable.
-              </p>
-              <div className="mt-4 inline-block bg-kbox-coral text-white px-6 py-2 w-fit">
-                <span className="font-bold">À partir de 10€</span> par personne et par heure
-              </div>
-            </div>
-
-            <div className="bg-white/80 backdrop-blur-sm border border-white/20 p-4 md:p-6">
-              <BookingForm />
+      <main className="flex-grow container mx-auto py-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+          {/* Section gauche */}
+          <div className="bg-white/10 p-8 flex flex-col justify-center">
+            <h1 className="text-2xl md:text-3xl font-bold text-white mb-4">
+              Votre Box Karaoké Privatif à Metz
+            </h1>
+            <p className="text-white/90 mb-6">
+              Partagez des moments uniques avec vos proches dans notre espace privatif et confortable.
+            </p>
+            <div className="inline-block bg-kbox-coral text-white px-6 py-3 w-fit border border-white">
+              À partir de 10€ par pers. et par heure
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            {[
-              {
-                icon: <Users className="w-8 h-8 text-kbox-coral" />,
-                title: "Salle privative",
-                description: "Un espace rien que pour vous et vos proches"
-              },
-              {
-                icon: <Music2 className="w-8 h-8 text-kbox-coral" />,
-                title: "Large choix",
-                description: "Des milliers de chansons disponibles"
-              },
-              {
-                icon: <Calendar className="w-8 h-8 text-kbox-coral" />,
-                title: "Horaires flexibles",
-                description: "Du mercredi au dimanche, de 17h à 23h"
-              }
-            ].map((feature, index) => (
-              <div 
-                key={index}
-                className="bg-white/80 backdrop-blur-sm p-6 border border-white/20 shadow-sm transition-transform hover:translate-y-[-2px]"
-              >
-                <div className="flex flex-col items-center text-center">
-                  <div className="mb-3">{feature.icon}</div>
-                  <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-sm text-gray-600">{feature.description}</p>
-                </div>
-              </div>
-            ))}
+          {/* Section droite */}
+          <div className="bg-white p-8">
+            <h2 className="text-2xl text-kbox-coral mb-4">
+              Connectez-vous pour réserver
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Pour effectuer une réservation, vous devez être connecté à votre compte.
+            </p>
+            <button 
+              onClick={() => setShowAuthModal(true)}
+              className="bg-[#7E3AED] text-white px-6 py-3 hover:bg-[#6D28D9] transition-colors w-full md:w-auto"
+            >
+              Se connecter / S'inscrire
+            </button>
+          </div>
+        </div>
+
+        {/* Grille des caractéristiques */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
+          <div className="bg-[#7E3AED] p-8 text-center text-white">
+            <Users className="w-12 h-12 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold mb-2 text-white">Salle privative</h3>
+            <p>Un espace rien que pour vous et vos proches</p>
+          </div>
+          <div className="bg-white p-8 text-center">
+            <Music2 className="w-12 h-12 mx-auto mb-4 text-kbox-coral" />
+            <h3 className="text-xl font-semibold mb-2 text-kbox-coral">Large choix</h3>
+            <p className="text-gray-600">Des milliers de chansons disponibles</p>
+          </div>
+          <div className="bg-[#7E3AED] p-8 text-center text-white">
+            <Calendar className="w-12 h-12 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold mb-2 text-white">Horaires flexibles</h3>
+            <p>Du mercredi au dimanche, de 17h à 23h</p>
           </div>
         </div>
       </main>
 
-      <footer className="mt-auto py-6 bg-white/80 backdrop-blur-sm border-t border-white/20">
+      <footer className="bg-white py-12">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
-              <h3 className="text-sm font-semibold mb-3">Informations légales</h3>
+              <h3 className="text-sm font-semibold mb-4 text-kbox-coral">Informations légales</h3>
               <LegalLinks />
             </div>
             <div>
-              <h3 className="text-sm font-semibold mb-3">Contact</h3>
+              <h3 className="text-sm font-semibold mb-4 text-kbox-coral">Contact</h3>
               <div className="space-y-2 text-sm text-gray-600">
-                <p>Email: {contactInfo.email}</p>
-                <p>Tél: {contactInfo.phone}</p>
-                <p>Adresse: {contactInfo.address}</p>
+                <p>Email: contact@karaoke-box-metz.fr</p>
+                <p>Tél: 07 82 49 24 02</p>
+                <p>Adresse: 12 Rue des Huiliers, 57000 Metz</p>
               </div>
             </div>
             <div>
-              <h3 className="text-sm font-semibold mb-3">Horaires</h3>
+              <h3 className="text-sm font-semibold mb-4 text-kbox-coral">Horaires</h3>
               <div className="grid grid-cols-1 gap-1">
-                {Object.entries(businessHours).map(([day, info]) => (
+                {Object.entries(businessHours).map(([day, hours]) => (
                   <div key={day} className="text-sm text-gray-600">
-                    <span className="font-medium capitalize">{day}:</span>{' '}
-                    <span>{info.hours}</span>
+                    <span className="capitalize">{day}:</span>{' '}
+                    <span>{hours}</span>
                   </div>
                 ))}
               </div>
             </div>
           </div>
-          <div className="mt-6 pt-6 border-t border-gray-100">
+          <div className="mt-8 pt-8 border-t border-gray-100">
             <p className="text-center text-gray-500 text-sm">
               © {new Date().getFullYear()} K.Box - Karaoké Privatif. Tous droits réservés.
             </p>

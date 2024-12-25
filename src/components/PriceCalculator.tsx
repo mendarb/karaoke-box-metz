@@ -36,6 +36,8 @@ export const PriceCalculator = ({
 
   return (
     <PriceDisplay 
+      groupSize={groupSize}
+      duration={duration}
       price={price} 
       pricePerPersonPerHour={pricePerPersonPerHour} 
     />

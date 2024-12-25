@@ -86,6 +86,8 @@ export const GroupSizeAndDurationFields = ({
       />
       {groupSize && duration && currentPrice > 0 && (
         <PriceDisplay
+          groupSize={groupSize}
+          duration={duration}
           price={currentPrice}
           pricePerPersonPerHour={pricePerPerson}
         />

@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useBookingEmail } from "./useBookingEmail";
 import { Booking } from "@/integrations/supabase/types/booking";
+import { toast } from "./use-toast";
 
 export interface BookingDetails {
   id: string;
@@ -40,7 +41,7 @@ export const useBookingSuccess = () => {
         // Attendre un peu pour laisser le temps au webhook de mettre à jour la réservation
         await new Promise(resolve => setTimeout(resolve, 2000));
         
-        // Rechercher la réservation par metadata.bookingId
+        // Rechercher la réservation par payment_status = 'paid'
         const { data: bookingData, error: bookingError } = await supabase
           .from("bookings")
           .select("*")
@@ -59,16 +60,24 @@ export const useBookingSuccess = () => {
         console.log("✅ Found booking:", bookingData);
         setBooking(bookingData);
         
-        // Envoyer l'email une seule fois
-        if (!emailSent && bookingData) {
+        if (!emailSent) {
           console.log("📧 Sending confirmation email for booking:", bookingData.id);
           await sendEmail(bookingData as Booking);
           setEmailSent(true);
+          toast({
+            title: "Email envoyé",
+            description: "Un email de confirmation vous a été envoyé",
+          });
         }
 
       } catch (error: any) {
         console.error("❌ Error retrieving booking:", error);
         setError(error.message);
+        toast({
+          title: "Erreur",
+          description: "Une erreur est survenue lors de l'envoi de l'email de confirmation",
+          variant: "destructive",
+        });
       } finally {
         setIsLoading(false);
       }

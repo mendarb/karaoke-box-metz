@@ -7,12 +7,16 @@ const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, {
+      status: 204,
+      headers: corsHeaders
+    });
   }
 
   try {
@@ -21,19 +25,18 @@ serve(async (req) => {
       throw new Error('RESEND_API_KEY is not configured');
     }
 
-    const { booking, type = 'confirmation' } = await req.json();
+    const { booking } = await req.json();
     
     if (!booking || !booking.user_email || !booking.date || !booking.time_slot) {
-      throw new Error('Missing required booking data');
+      console.error('❌ Missing required booking data:', booking);
+      throw new Error('Données de réservation manquantes');
     }
 
-    console.log('📧 Processing email request:', { 
-      bookingId: booking.id, 
-      type,
-      userEmail: booking.user_email,
-      userName: booking.user_name || 'Client',
-      paymentStatus: booking.payment_status,
-      status: booking.status
+    console.log('📧 Processing email request:', {
+      bookingId: booking.id,
+      email: booking.user_email,
+      date: booking.date,
+      timeSlot: booking.time_slot
     });
 
     const startHour = parseInt(booking.time_slot);
@@ -57,14 +60,10 @@ serve(async (req) => {
         <body>
           <div class="container">
             <div class="header">
-              <h2>Réservation ${type === 'confirmation' ? 'confirmée' : 'en attente'}</h2>
+              <h2>Réservation confirmée !</h2>
             </div>
             <p>Bonjour ${booking.user_name || 'Client'},</p>
-            <p>${
-              type === 'confirmation' 
-                ? 'Votre réservation a été confirmée !' 
-                : 'Nous avons bien reçu votre demande de réservation.'
-            }</p>
+            <p>Votre réservation a été confirmée !</p>
             <div class="details">
               <h3>Détails de la réservation :</h3>
               <p>📅 Date : ${formattedDate}</p>
@@ -84,8 +83,6 @@ serve(async (req) => {
       </html>
     `;
 
-    console.log('📧 Sending email to:', booking.user_email);
-
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -95,7 +92,7 @@ serve(async (req) => {
       body: JSON.stringify({
         from: 'Karaoke Box Metz <onboarding@resend.dev>',
         to: booking.user_email,
-        subject: `Réservation ${type === 'confirmation' ? 'confirmée' : 'en attente'} - Karaoke Box Metz`,
+        subject: 'Réservation confirmée - Karaoke Box Metz',
         html: emailContent,
       }),
     });
@@ -106,20 +103,17 @@ serve(async (req) => {
       throw new Error(error);
     }
 
-    const responseData = await response.json();
-    console.log('✅ Email sent successfully:', responseData);
+    const data = await response.json();
+    console.log('✅ Email sent successfully:', data);
     
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
-    console.error('❌ Error processing email request:', error);
+    console.error('❌ Error in send-booking-email:', error);
     return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        details: error.toString()
-      }),
+      JSON.stringify({ error: error.message }),
       { 
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

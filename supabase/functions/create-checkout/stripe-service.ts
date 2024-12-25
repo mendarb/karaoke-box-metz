@@ -13,12 +13,13 @@ export const createStripeSession = async (
     discountAmount: data.discountAmount
   });
 
-  // Convert final price to cents for Stripe
-  const unitAmount = Math.round((data.finalPrice || data.price) * 100);
+  // Convert final price to cents for Stripe, using the exact final price
+  const finalPrice = data.finalPrice || data.price;
+  const unitAmount = Math.round(finalPrice * 100);
 
   console.log('💰 Price details:', {
     originalPrice: data.price,
-    finalPrice: data.finalPrice,
+    finalPrice,
     unitAmount,
     promoDetails: {
       code: data.promoCode,
@@ -43,7 +44,7 @@ export const createStripeSession = async (
     duration: data.duration,
     groupSize: data.groupSize,
     price: String(data.price),
-    finalPrice: String(data.finalPrice || data.price),
+    finalPrice: String(finalPrice),
     message: data.message || '',
     isTestMode: String(data.isTestMode),
     promoCodeId: data.promoCodeId || '',
@@ -81,7 +82,7 @@ export const createStripeSession = async (
     sessionId: session.id,
     bookingId: data.bookingId,
     metadata: session.metadata,
-    finalPrice: data.finalPrice,
+    finalPrice,
     unitAmount,
     promoDetails: {
       code: data.promoCode,

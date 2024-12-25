@@ -27,11 +27,18 @@ const developerDocs = [
       - Créer des réservations pour les clients
       - Générer des liens de paiement
       - Gérer le statut des réservations
+      - Recevoir des notifications par email
       
       Logs disponibles :
       - 📝 Création : "Début de création d'une réservation admin"
       - 💰 Paiement : "Génération du lien de paiement"
+      - 📧 Email : "Envoi de l'email de confirmation"
       - ✅ Succès : "Réservation créée avec succès"
+
+      Format des dates et heures :
+      - Les heures sont toujours au format "HH:00" (ex: "09:00")
+      - Les dates sont au format français (ex: "jeudi 24 janvier 2024")
+      - La durée est en heures (1, 2, 3 ou 4)
     `
   }
 ];
@@ -46,6 +53,7 @@ const adminDocs = [
       - Créer de nouvelles réservations
       - Gérer les statuts des réservations
       - Accéder aux statistiques
+      - Recevoir des notifications par email
       
       Fonctionnalités principales :
       1. Création de réservation :
@@ -57,6 +65,7 @@ const adminDocs = [
          - Modification du statut
          - Annulation
          - Consultation des détails
+         - Suivi des paiements
     `
   },
   {
@@ -72,6 +81,11 @@ const adminDocs = [
       - Pourcentage de réduction
       - Montant fixe
       - Période limitée
+      
+      Suivi des utilisations :
+      - Nombre d'utilisations maximum
+      - Nombre d'utilisations actuel
+      - Période de validité
     `
   }
 ];
@@ -83,7 +97,7 @@ const userDocs = [
     content: `
       Le processus de réservation :
       1. Sélection de la date et durée
-      2. Choix du nombre de personnes
+      2. Choix du nombre de personnes (1-15)
       3. Renseignement des informations
       4. Paiement sécurisé
       
@@ -91,6 +105,8 @@ const userDocs = [
       - Vérification en temps réel des disponibilités
       - Possibilité d'utiliser un code promo
       - Email de confirmation automatique
+      - Durées disponibles : 1h, 2h, 3h, 4h
+      - Créneaux horaires : de 14h à 23h
     `
   },
   {

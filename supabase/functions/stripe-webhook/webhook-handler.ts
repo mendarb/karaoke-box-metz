@@ -76,7 +76,7 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
           duration: updatedBooking.duration
         });
 
-        // Envoyer l'email de confirmation une seule fois ici
+        // Envoyer l'email de confirmation au client
         try {
           const emailResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-booking-email`, {
             method: 'POST',
@@ -87,8 +87,7 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
             body: JSON.stringify({
               booking: {
                 ...updatedBooking,
-                // S'assurer que le format de l'heure est correct
-                time_slot: updatedBooking.time_slot.padStart(5, '0'), // Ensures "9:00" becomes "09:00"
+                time_slot: updatedBooking.time_slot.padStart(5, '0'),
               },
               type: 'confirmation'
             })
@@ -101,6 +100,31 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
           console.log('✅ Confirmation email sent successfully');
         } catch (emailError) {
           console.error('❌ Error sending confirmation email:', emailError);
+        }
+
+        // Envoyer la notification admin
+        try {
+          const adminNotifResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-admin-notification`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+            },
+            body: JSON.stringify({
+              booking: {
+                ...updatedBooking,
+                time_slot: updatedBooking.time_slot.padStart(5, '0'),
+              }
+            })
+          });
+
+          if (!adminNotifResponse.ok) {
+            throw new Error(`Failed to send admin notification: ${await adminNotifResponse.text()}`);
+          }
+
+          console.log('✅ Admin notification sent successfully');
+        } catch (notifError) {
+          console.error('❌ Error sending admin notification:', notifError);
         }
 
         break;

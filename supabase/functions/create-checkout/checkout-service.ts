@@ -7,45 +7,43 @@ export const createCheckoutSession = async (
   data: CheckoutData,
   origin: string
 ): Promise<Stripe.Checkout.Session> => {
-  console.log('Creating checkout session with data:', {
+  console.log('💰 Création de la session de paiement:', {
     originalPrice: data.price,
     finalPrice: data.finalPrice,
     promoCode: data.promoCode,
     promoCodeId: data.promoCodeId,
     discountAmount: data.discountAmount,
-    metadata: createMetadata(data),
-    isTestMode: data.isTestMode
+    metadata: createMetadata(data)
   });
 
   const metadata = createMetadata(data);
-  const isFreeBooking = data.finalPrice === 0 || data.discountAmount === 100;
+  
+  // S'assurer d'utiliser le prix final exact
+  const finalPrice = data.finalPrice !== undefined ? data.finalPrice : data.price;
+  const unitAmount = Math.round(finalPrice * 100);
 
-  // Format price description
+  console.log('💰 Détails du prix pour Stripe:', {
+    originalPrice: data.price,
+    finalPrice,
+    unitAmount,
+    promoDetails: {
+      code: data.promoCode,
+      discountAmount: data.discountAmount
+    }
+  });
+
+  // Format de la description du prix avec code promo si applicable
   let priceDescription = `${data.groupSize} personnes - ${data.duration}h`;
   if (data.promoCode && data.discountAmount) {
     priceDescription += ` (-${Math.round(data.discountAmount)}% avec ${data.promoCode})`;
   }
-
-  // Si le discount est de 100%, le prix final doit être 0
-  const finalPrice = data.discountAmount === 100 ? 0 : data.finalPrice;
-  const unitAmount = Math.round((finalPrice || 0) * 100);
-  console.log('Final price calculation:', {
-    originalPrice: data.price,
-    discountAmount: data.discountAmount,
-    finalPrice,
-    unitAmount,
-    isTestMode: data.isTestMode
-  });
 
   const sessionConfig: Stripe.Checkout.SessionCreateParams = {
     mode: 'payment',
     success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}`,
     customer_email: data.userEmail,
-    metadata: {
-      ...metadata,
-      isTestMode: String(data.isTestMode)
-    },
+    metadata,
     locale: 'fr',
     allow_promotion_codes: false,
     payment_method_types: ['card'],
@@ -63,33 +61,20 @@ export const createCheckoutSession = async (
     }],
   };
 
-  console.log('Final session config:', {
-    mode: sessionConfig.mode,
-    finalPrice,
-    unitAmount,
-    isFreeBooking,
-    metadata: sessionConfig.metadata,
-    isTestMode: data.isTestMode,
-    promoDetails: {
-      code: data.promoCode,
-      id: data.promoCodeId,
-      originalPrice: data.price,
-      finalPrice,
-      discountAmount: data.discountAmount,
-      description: priceDescription
-    }
-  });
-
   try {
     const session = await stripe.checkout.sessions.create(sessionConfig);
-    console.log('Stripe session created:', {
+    console.log('✅ Session Stripe créée:', {
       sessionId: session.id,
-      isTestMode: data.isTestMode,
-      mode: data.isTestMode ? 'test' : 'live'
+      finalPrice,
+      unitAmount,
+      promoDetails: {
+        code: data.promoCode,
+        discountAmount: data.discountAmount
+      }
     });
     return session;
   } catch (error) {
-    console.error('Error creating Stripe session:', error);
+    console.error('❌ Erreur lors de la création de la session Stripe:', error);
     throw error;
   }
 };

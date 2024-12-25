@@ -15,19 +15,16 @@ serve(async (req) => {
 
   try {
     const requestData = await req.json();
-    console.log('📦 Request data:', {
+    console.log('📦 Données de la requête:', {
       bookingId: requestData.bookingId,
-      ...requestData,
-      promoDetails: {
-        promoCode: requestData.promoCode,
-        originalPrice: requestData.price,
-        finalPrice: requestData.finalPrice,
-        discountAmount: requestData.discountAmount
-      }
+      originalPrice: requestData.price,
+      finalPrice: requestData.finalPrice,
+      promoCode: requestData.promoCode,
+      discountAmount: requestData.discountAmount
     });
 
     if (!requestData || !requestData.bookingId) {
-      throw new Error('No booking ID provided');
+      throw new Error('ID de réservation manquant');
     }
 
     const stripeKey = requestData.isTestMode 
@@ -35,7 +32,7 @@ serve(async (req) => {
       : Deno.env.get('STRIPE_SECRET_KEY');
 
     if (!stripeKey) {
-      throw new Error(`${requestData.isTestMode ? 'Test' : 'Live'} mode Stripe API key not configured`);
+      throw new Error(`Clé API Stripe ${requestData.isTestMode ? 'test' : 'live'} non configurée`);
     }
 
     const stripe = new Stripe(stripeKey, {
@@ -43,7 +40,7 @@ serve(async (req) => {
       httpClient: Stripe.createFetchHttpClient(),
     });
 
-    // Créer la session Stripe
+    // Créer la session Stripe avec le prix final
     const session = await createStripeSession(
       stripe,
       requestData,
@@ -55,27 +52,29 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!supabaseUrl || !supabaseServiceKey) {
-      throw new Error('Missing Supabase credentials');
+      throw new Error('Identifiants Supabase manquants');
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const { error: updateError } = await supabase
       .from('bookings')
-      .update({ payment_intent_id: session.payment_intent as string })
+      .update({ 
+        payment_intent_id: session.payment_intent as string,
+        price: requestData.finalPrice // Mettre à jour le prix final dans la base de données
+      })
       .eq('id', requestData.bookingId);
 
     if (updateError) {
-      console.error('❌ Error updating booking with payment_intent_id:', updateError);
+      console.error('❌ Erreur lors de la mise à jour de la réservation:', updateError);
       throw updateError;
     }
 
-    console.log('✅ Checkout session created:', {
+    console.log('✅ Session de paiement créée:', {
       sessionId: session.id,
       mode: requestData.isTestMode ? 'TEST' : 'LIVE',
       url: session.url,
-      bookingId: requestData.bookingId,
-      paymentIntentId: session.payment_intent
+      finalPrice: requestData.finalPrice
     });
 
     return new Response(
@@ -87,7 +86,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('❌ Error in checkout process:', error);
+    console.error('❌ Erreur dans le processus de paiement:', error);
     return new Response(
       JSON.stringify({ 
         error: error.message,

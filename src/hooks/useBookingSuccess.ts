@@ -69,9 +69,8 @@ export const useBookingSuccess = () => {
           .from("bookings")
           .select("*")
           .eq("payment_intent_id", stripeData.paymentIntentId)
-          .eq("payment_status", "paid")
           .is("deleted_at", null)
-          .single();
+          .maybeSingle();
 
         if (bookingError) {
           console.error("❌ Erreur lors de la récupération de la réservation:", bookingError);
@@ -80,7 +79,44 @@ export const useBookingSuccess = () => {
 
         if (!bookingData) {
           console.warn("⚠️ Aucune réservation trouvée avec le payment_intent_id:", stripeData.paymentIntentId);
-          throw new Error("Aucune réservation trouvée");
+          
+          // Essayer de récupérer la dernière réservation payée
+          const { data: latestBooking, error: latestError } = await supabase
+            .from("bookings")
+            .select("*")
+            .eq("payment_status", "paid")
+            .is("deleted_at", null)
+            .order("created_at", { ascending: false })
+            .maybeSingle();
+
+          if (latestError) {
+            throw latestError;
+          }
+
+          if (!latestBooking) {
+            throw new Error("Aucune réservation trouvée");
+          }
+
+          console.log("✅ Dernière réservation trouvée:", latestBooking);
+          setBooking(latestBooking);
+
+          // Envoyer l'email de confirmation
+          try {
+            await sendEmail(latestBooking as Booking);
+            toast({
+              title: "Email envoyé",
+              description: "Un email de confirmation vous a été envoyé",
+            });
+          } catch (emailError: any) {
+            console.error("❌ Erreur lors de l'envoi de l'email:", emailError);
+            toast({
+              title: "Erreur d'envoi d'email",
+              description: "L'email n'a pas pu être envoyé, mais votre réservation est bien confirmée",
+              variant: "destructive",
+            });
+          }
+
+          return;
         }
 
         console.log("✅ Réservation trouvée:", bookingData);

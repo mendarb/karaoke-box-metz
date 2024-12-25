@@ -69,7 +69,7 @@ export const useCalculatePrice = ({
   };
 
   useEffect(() => {
-    if (groupSize && duration) {
+    if (groupSize && duration && settings) {
       const calculatedPrice = calculatePrice(groupSize, duration);
       setPrice(calculatedPrice);
 

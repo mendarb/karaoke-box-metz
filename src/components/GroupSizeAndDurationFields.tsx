@@ -1,8 +1,9 @@
 import { UseFormReturn } from "react-hook-form";
 import { useCalculatePrice } from "@/components/price-calculator/useCalculatePrice";
 import { usePriceSettings } from "@/components/price-calculator/usePriceSettings";
-import { GroupSizeSelector } from "./group-size/GroupSizeSelector";
-import { DurationSelector } from "./duration/DurationSelector";
+import { GroupSizeSelector } from "@/components/booking/group-size/GroupSizeSelector";
+import { DurationSelector } from "@/components/booking/duration/DurationSelector";
+import { PriceDisplay } from "@/components/price-calculator/PriceDisplay";
 
 interface GroupSizeAndDurationFieldsProps {
   form: UseFormReturn<any>;
@@ -20,7 +21,7 @@ export const GroupSizeAndDurationFields = ({
   availableHours,
 }: GroupSizeAndDurationFieldsProps) => {
   const { data: settings } = usePriceSettings();
-  const { calculatePrice } = useCalculatePrice({ settings });
+  const { price, pricePerPersonPerHour, calculatePrice } = useCalculatePrice({ settings });
 
   const handleGroupSizeChange = (value: string) => {
     form.setValue("groupSize", value);
@@ -28,9 +29,9 @@ export const GroupSizeAndDurationFields = ({
     
     const duration = form.getValues("duration");
     if (duration) {
-      const price = calculatePrice(value, duration);
-      console.log('Calculating price after group size change:', { value, duration, price });
-      onPriceCalculated(price);
+      const calculatedPrice = calculatePrice(value, duration);
+      console.log('Calculating price after group size change:', { value, duration, calculatedPrice });
+      onPriceCalculated(calculatedPrice);
     }
   };
 
@@ -40,11 +41,14 @@ export const GroupSizeAndDurationFields = ({
     
     const groupSize = form.getValues("groupSize");
     if (groupSize) {
-      const price = calculatePrice(groupSize, value);
-      console.log('Calculating price after duration change:', { groupSize, value, price });
-      onPriceCalculated(price);
+      const calculatedPrice = calculatePrice(groupSize, value);
+      console.log('Calculating price after duration change:', { groupSize, value, calculatedPrice });
+      onPriceCalculated(calculatedPrice);
     }
   };
+
+  const groupSize = form.watch("groupSize");
+  const duration = form.watch("duration");
 
   return (
     <div className="space-y-6">
@@ -57,6 +61,12 @@ export const GroupSizeAndDurationFields = ({
         onDurationChange={handleDurationChange}
         availableHours={availableHours}
       />
+      {groupSize && duration && (
+        <PriceDisplay 
+          price={price} 
+          pricePerPersonPerHour={pricePerPersonPerHour} 
+        />
+      )}
     </div>
   );
 };

@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { PriceSettings } from "./types";
 
 interface CalculatePriceProps {
-  groupSize: string;
-  duration: string;
+  groupSize?: string;
+  duration?: string;
   settings?: { basePrice: PriceSettings };
   onPriceCalculated?: (price: number) => void;
 }
@@ -13,14 +13,14 @@ export const useCalculatePrice = ({
   duration, 
   settings, 
   onPriceCalculated 
-}: CalculatePriceProps) => {
+}: CalculatePriceProps = {}) => {
   const [price, setPrice] = useState(0);
   const [pricePerPersonPerHour, setPricePerPersonPerHour] = useState(0);
 
-  useEffect(() => {
-    if (!settings || !groupSize || !duration) {
-      console.log('Missing required data:', { settings, groupSize, duration });
-      return;
+  const calculatePrice = (groupSize: string, duration: string) => {
+    if (!settings) {
+      console.log('Missing settings for price calculation');
+      return 0;
     }
 
     const hours = parseFloat(duration);
@@ -28,7 +28,7 @@ export const useCalculatePrice = ({
 
     if (isNaN(hours) || isNaN(size) || hours <= 0 || size <= 0) {
       console.log('Invalid input values:', { hours, size });
-      return;
+      return 0;
     }
 
     const baseHourRate = settings.basePrice?.perHour || 30;
@@ -41,21 +41,6 @@ export const useCalculatePrice = ({
     
     // Calcul du prix réduit par personne et par heure (heures suivantes)
     const discountedPerPersonHourRate = basePerPersonHourRate * 0.9;
-
-    // Calcul du prix moyen par personne et par heure
-    let averagePerPersonHourRate;
-    if (hours <= 1) {
-      averagePerPersonHourRate = basePerPersonHourRate;
-    } else {
-      // Moyenne pondérée : (1h au prix plein + (hours-1) au prix réduit) / total hours
-      averagePerPersonHourRate = (basePerPersonHourRate + (discountedPerPersonHourRate * (hours - 1))) / hours;
-    }
-
-    console.log('Per person rates:', {
-      basePerPersonHourRate,
-      discountedPerPersonHourRate,
-      averagePerPersonHourRate
-    });
 
     // Calcul du prix total
     const firstHourPrice = basePerPersonHourRate * size;
@@ -72,24 +57,28 @@ export const useCalculatePrice = ({
       });
     }
 
-    // Arrondir les prix à 2 décimales
-    finalPrice = Math.round(finalPrice * 100) / 100;
-    averagePerPersonHourRate = Math.round(averagePerPersonHourRate * 100) / 100;
+    // Arrondir le prix à 2 décimales
+    return Math.round(finalPrice * 100) / 100;
+  };
 
-    console.log('Final values:', {
-      finalPrice,
-      averagePerPersonHourRate,
-      hours,
-      size
-    });
+  useEffect(() => {
+    if (groupSize && duration) {
+      const calculatedPrice = calculatePrice(groupSize, duration);
+      setPrice(calculatedPrice);
 
-    setPrice(finalPrice);
-    setPricePerPersonPerHour(averagePerPersonHourRate);
+      // Calcul du prix moyen par personne et par heure
+      const hours = parseFloat(duration);
+      const size = parseFloat(groupSize);
+      if (!isNaN(hours) && !isNaN(size) && hours > 0 && size > 0) {
+        const averagePerPersonHourRate = calculatedPrice / (hours * size);
+        setPricePerPersonPerHour(Math.round(averagePerPersonHourRate * 100) / 100);
+      }
 
-    if (onPriceCalculated) {
-      onPriceCalculated(finalPrice);
+      if (onPriceCalculated) {
+        onPriceCalculated(calculatedPrice);
+      }
     }
   }, [groupSize, duration, settings, onPriceCalculated]);
 
-  return { price, pricePerPersonPerHour };
+  return { price, pricePerPersonPerHour, calculatePrice };
 };

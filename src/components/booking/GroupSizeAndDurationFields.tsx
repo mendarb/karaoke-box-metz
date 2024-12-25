@@ -3,6 +3,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useCalculatePrice } from "@/components/price-calculator/useCalculatePrice";
 import { cn } from "@/lib/utils";
+import { usePriceSettings } from "@/components/price-calculator/usePriceSettings";
 
 interface GroupSizeAndDurationFieldsProps {
   form: UseFormReturn<any>;
@@ -19,7 +20,8 @@ export const GroupSizeAndDurationFields = ({
   onPriceCalculated,
   availableHours,
 }: GroupSizeAndDurationFieldsProps) => {
-  const { calculatePrice } = useCalculatePrice();
+  const { data: settings } = usePriceSettings();
+  const { calculatePrice } = useCalculatePrice({ settings });
 
   const handleGroupSizeChange = (value: string) => {
     form.setValue("groupSize", value);

@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { format } from "https://esm.sh/date-fns@2.30.0";
-import { fr } from "https://esm.sh/date-fns@2.30.0/locale";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
@@ -58,7 +58,7 @@ serve(async (req) => {
             <div class="header">
               <h2>Réservation ${type === 'confirmation' ? 'confirmée' : 'en attente'}</h2>
             </div>
-            <p>Bonjour ${booking.user_name},</p>
+            <p>Bonjour ${booking.user_name || 'Client'},</p>
             <p>${
               type === 'confirmation' 
                 ? 'Votre réservation a été confirmée !' 
@@ -99,13 +99,13 @@ serve(async (req) => {
       }),
     });
 
-    const responseData = await response.json();
-
     if (!response.ok) {
-      console.error('❌ Failed to send email:', responseData);
-      throw new Error(responseData.message || 'Failed to send email');
+      const error = await response.text();
+      console.error('❌ Failed to send email:', error);
+      throw new Error(error);
     }
 
+    const responseData = await response.json();
     console.log('✅ Email sent successfully:', responseData);
     
     return new Response(JSON.stringify({ success: true }), {

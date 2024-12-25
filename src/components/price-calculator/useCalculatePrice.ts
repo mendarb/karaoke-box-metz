@@ -66,6 +66,10 @@ export const useCalculatePrice = ({
       });
     }
 
+    // Calcul du prix moyen par personne et par heure
+    const averagePerPersonHourRate = finalPrice / (hours * size);
+    setPricePerPersonPerHour(Math.round(averagePerPersonHourRate * 100) / 100);
+
     // Arrondir le prix à 2 décimales
     return Math.round(finalPrice * 100) / 100;
   };
@@ -74,14 +78,6 @@ export const useCalculatePrice = ({
     if (groupSize && duration && settings) {
       const calculatedPrice = calculatePrice(groupSize, duration);
       setPrice(calculatedPrice);
-
-      // Calcul du prix moyen par personne et par heure
-      const hours = parseFloat(duration);
-      const size = parseFloat(groupSize);
-      if (!isNaN(hours) && !isNaN(size) && hours > 0 && size > 0) {
-        const averagePerPersonHourRate = calculatedPrice / (hours * size);
-        setPricePerPersonPerHour(Math.round(averagePerPersonHourRate * 100) / 100);
-      }
 
       if (onPriceCalculated) {
         onPriceCalculated(calculatedPrice);

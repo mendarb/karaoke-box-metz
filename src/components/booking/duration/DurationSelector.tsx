@@ -18,8 +18,8 @@ export const DurationSelector = ({
 
   return (
     <div className="space-y-4">
-      <Label>Durée</Label>
-      <div className="flex flex-wrap gap-2">
+      <Label className="text-gray-700 font-normal">Durée</Label>
+      <div className="flex gap-2">
         {["1", "2", "3", "4"].map((duration) => {
           const isDisabled = parseInt(duration) > availableHours;
           return (
@@ -28,8 +28,8 @@ export const DurationSelector = ({
               type="button"
               variant={selectedDuration === duration ? "default" : "outline"}
               className={cn(
-                "flex-1 min-w-[60px]",
-                selectedDuration === duration && "bg-violet-600 hover:bg-violet-700",
+                "h-12 px-3 rounded border-gray-200 flex-1",
+                selectedDuration === duration ? "bg-violet-600 hover:bg-violet-700 text-white" : "bg-white hover:bg-gray-50",
                 isDisabled && "opacity-50 cursor-not-allowed"
               )}
               disabled={isDisabled}
@@ -37,10 +37,10 @@ export const DurationSelector = ({
             >
               {duration}h
               <span className="ml-1 text-sm">
-                {isDisabled ? "Non disponible" : "heure" + (parseInt(duration) > 1 ? "s" : "")}
+                {duration === "1" ? "heure" : "heures"}
               </span>
             </Button>
-          )
+          );
         })}
       </div>
     </div>

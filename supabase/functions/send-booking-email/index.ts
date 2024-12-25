@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { format } from "https://esm.sh/date-fns@2.30.0";
-import { fr } from "https://esm.sh/date-fns@2.30.0/locale/fr";
+import { fr } from "https://esm.sh/date-fns@2.30.0/locale";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
@@ -10,6 +10,7 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }

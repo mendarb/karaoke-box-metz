@@ -86,17 +86,27 @@ serve(async (req) => {
 
     // Mettre à jour la réservation avec le payment_intent_id
     console.log('🔄 Mise à jour de la réservation avec payment_intent_id:', session.payment_intent);
-    const { error: updateError } = await supabase
+    const { data: updatedBooking, error: updateError } = await supabase
       .from('bookings')
-      .update({ payment_intent_id: session.payment_intent as string })
-      .eq('id', requestData.bookingId);
+      .update({ 
+        payment_intent_id: session.payment_intent as string,
+        payment_status: 'awaiting_payment'
+      })
+      .eq('id', requestData.bookingId)
+      .select()
+      .single();
 
     if (updateError) {
       console.error('❌ Erreur lors de la mise à jour de la réservation:', updateError);
       throw updateError;
     }
 
-    console.log('✅ Payment Intent ID mis à jour dans la réservation');
+    console.log('✅ Réservation mise à jour avec payment_intent_id:', {
+      bookingId: updatedBooking.id,
+      paymentIntentId: updatedBooking.payment_intent_id,
+      status: updatedBooking.status,
+      paymentStatus: updatedBooking.payment_status
+    });
 
     return new Response(
       JSON.stringify({ url: session.url }),

@@ -10,11 +10,12 @@ export const createStripeSession = async (
     bookingId: data.bookingId,
     originalPrice: data.price,
     finalPrice: data.finalPrice,
-    promoCode: data.promoCode
+    promoCode: data.promoCode,
+    discountAmount: data.discountAmount
   });
 
   // Validate minimum price
-  const unitAmount = validatePrice(data.finalPrice);
+  const unitAmount = validatePrice(data.finalPrice || data.price);
 
   // Format price description with promo code if applicable
   let priceDescription = `${data.groupSize} personnes - ${data.duration}h`;
@@ -33,7 +34,7 @@ export const createStripeSession = async (
     duration: data.duration,
     groupSize: data.groupSize,
     price: String(data.price),
-    finalPrice: String(data.finalPrice),
+    finalPrice: String(data.finalPrice || data.price),
     message: data.message || '',
     isTestMode: String(data.isTestMode),
     promoCodeId: data.promoCodeId || '',
@@ -70,7 +71,9 @@ export const createStripeSession = async (
   console.log('✅ Stripe session created:', {
     sessionId: session.id,
     bookingId: data.bookingId,
-    metadata: session.metadata
+    metadata: session.metadata,
+    finalPrice: data.finalPrice,
+    unitAmount
   });
 
   return session;

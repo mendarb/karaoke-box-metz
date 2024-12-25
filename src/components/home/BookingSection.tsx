@@ -7,11 +7,11 @@ interface BookingSectionProps {
 
 export const BookingSection = ({ user, onShowAuth }: BookingSectionProps) => {
   return (
-    <div className="bg-white p-8">
+    <div className="bg-white h-full p-8 flex flex-col justify-center">
       {user ? (
         <BookingForm />
       ) : (
-        <>
+        <div className="flex flex-col justify-center h-full">
           <h2 className="text-2xl text-kbox-coral mb-4">
             Connectez-vous pour réserver
           </h2>
@@ -24,7 +24,7 @@ export const BookingSection = ({ user, onShowAuth }: BookingSectionProps) => {
           >
             Se connecter / S'inscrire
           </button>
-        </>
+        </div>
       )}
     </div>
   );

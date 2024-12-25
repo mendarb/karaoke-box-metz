@@ -21,6 +21,9 @@ serve(async (req) => {
     }
 
     const bookingDate = new Date(booking.date);
+    // Add timezone offset to compensate for UTC conversion
+    bookingDate.setMinutes(bookingDate.getMinutes() + bookingDate.getTimezoneOffset());
+    
     const formattedDate = format(bookingDate, 'EEEE d MMMM yyyy', { locale: fr });
     const startHour = parseInt(booking.time_slot);
     const endHour = startHour + parseInt(booking.duration);

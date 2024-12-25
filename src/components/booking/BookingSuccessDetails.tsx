@@ -12,12 +12,16 @@ export const BookingSuccessDetails = ({ bookingDetails }: BookingSuccessDetailsP
   const endHour = startHour + parseInt(bookingDetails.duration);
   const formatHour = (hour: number) => `${hour.toString().padStart(2, '0')}:00`;
 
+  const bookingDate = new Date(bookingDetails.date);
+  // Add timezone offset to compensate for UTC conversion
+  bookingDate.setMinutes(bookingDate.getMinutes() + bookingDate.getTimezoneOffset());
+
   return (
     <Card className="p-6 bg-gray-50">
       <div className="space-y-4">
         <div>
           <h3 className="text-lg font-semibold">
-            {format(new Date(bookingDetails.date), 'EEEE d MMMM yyyy', { locale: fr })}
+            {format(bookingDate, 'EEEE d MMMM yyyy', { locale: fr })}
           </h3>
           <p className="text-sm text-muted-foreground">
             {formatHour(startHour)} - {formatHour(endHour)}

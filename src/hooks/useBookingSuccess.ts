@@ -43,7 +43,7 @@ export const useBookingSuccess = () => {
 
     const getBookingDetails = async () => {
       try {
-        console.log("🔍 Recherche de la réservation pour la session:", sessionId);
+        console.log("🔍 Recherche de la réservation la plus récente");
         
         // Attendre un peu pour laisser le temps au webhook de mettre à jour la réservation
         await new Promise(resolve => setTimeout(resolve, 2000));
@@ -62,7 +62,7 @@ export const useBookingSuccess = () => {
         }
 
         if (!bookingData) {
-          console.warn("⚠️ Aucune réservation trouvée pour la session:", sessionId);
+          console.warn("⚠️ Aucune réservation trouvée");
           throw new Error("Réservation non trouvée");
         }
 
@@ -71,7 +71,8 @@ export const useBookingSuccess = () => {
           date: bookingData.date,
           timeSlot: bookingData.time_slot,
           duration: bookingData.duration,
-          groupSize: bookingData.group_size
+          groupSize: bookingData.group_size,
+          price: bookingData.price
         });
 
         setBooking(bookingData);

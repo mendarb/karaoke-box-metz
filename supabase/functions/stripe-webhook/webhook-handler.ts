@@ -29,28 +29,8 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
           return { success: false, message: 'Payment not completed' };
         }
 
+        // Mettre à jour la réservation avec le payment_intent_id
         const { data: booking, error: bookingError } = await supabase
-          .from('bookings')
-          .select('*')
-          .eq('id', session.metadata.bookingId)
-          .maybeSingle();
-
-        if (bookingError) {
-          console.error('❌ Error fetching booking:', bookingError);
-          throw bookingError;
-        }
-
-        if (!booking) {
-          console.error('❌ No booking found with ID:', session.metadata.bookingId);
-          return { success: false, message: 'Booking not found' };
-        }
-
-        if (booking.payment_status === 'paid') {
-          console.log('ℹ️ Booking already marked as paid:', booking.id);
-          return { success: true, message: 'Booking already processed' };
-        }
-
-        const { data: updatedBooking, error: updateError } = await supabase
           .from('bookings')
           .update({
             payment_intent_id: session.payment_intent,
@@ -62,18 +42,21 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
           .select()
           .single();
 
-        if (updateError) {
-          console.error('❌ Error updating booking:', updateError);
-          throw updateError;
+        if (bookingError) {
+          console.error('❌ Error updating booking:', bookingError);
+          throw bookingError;
+        }
+
+        if (!booking) {
+          console.error('❌ No booking found with ID:', session.metadata.bookingId);
+          return { success: false, message: 'Booking not found' };
         }
 
         console.log('✅ Booking updated successfully:', {
-          bookingId: updatedBooking.id,
-          status: updatedBooking.status,
-          paymentStatus: updatedBooking.payment_status,
-          date: updatedBooking.date,
-          timeSlot: updatedBooking.time_slot,
-          duration: updatedBooking.duration
+          bookingId: booking.id,
+          status: booking.status,
+          paymentStatus: booking.payment_status,
+          paymentIntentId: booking.payment_intent_id
         });
 
         // Envoyer l'email de confirmation au client
@@ -85,7 +68,7 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
               'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
             },
             body: JSON.stringify({
-              booking: updatedBooking,
+              booking: booking,
               type: 'confirmation'
             })
           });
@@ -97,28 +80,6 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
           console.log('✅ Confirmation email sent successfully');
         } catch (emailError) {
           console.error('❌ Error sending confirmation email:', emailError);
-        }
-
-        // Envoyer la notification admin
-        try {
-          const adminNotifResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-admin-notification`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
-            },
-            body: JSON.stringify({
-              booking: updatedBooking
-            })
-          });
-
-          if (!adminNotifResponse.ok) {
-            throw new Error(`Failed to send admin notification: ${await adminNotifResponse.text()}`);
-          }
-
-          console.log('✅ Admin notification sent successfully');
-        } catch (notifError) {
-          console.error('❌ Error sending admin notification:', notifError);
         }
 
         break;

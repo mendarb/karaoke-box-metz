@@ -68,14 +68,14 @@ export const useBookingSuccess = () => {
         }
 
         console.log("💳 Payment Intent ID récupéré:", stripeData.paymentIntentId);
-        
+
         // Récupérer la réservation avec le payment_intent_id
         const { data: bookingData, error: bookingError } = await supabase
           .from("bookings")
           .select("*")
           .eq("payment_intent_id", stripeData.paymentIntentId)
           .eq("payment_status", "paid")
-          .is("deleted_at", null)  // S'assurer que la réservation n'est pas supprimée
+          .is("deleted_at", null)
           .maybeSingle();
 
         if (bookingError) {
@@ -85,58 +85,10 @@ export const useBookingSuccess = () => {
 
         if (!bookingData) {
           console.warn("⚠️ Aucune réservation trouvée avec le payment_intent_id:", stripeData.paymentIntentId);
-          
-          // Essayer de récupérer la réservation la plus récente (fallback)
-          console.log("🔍 Recherche de la réservation la plus récente");
-          const { data: latestBooking, error: latestError } = await supabase
-            .from("bookings")
-            .select("*")
-            .eq("payment_status", "paid")
-            .is("deleted_at", null)  // S'assurer que la réservation n'est pas supprimée
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          if (latestError) {
-            console.error("❌ Erreur lors de la récupération de la dernière réservation:", latestError);
-            throw latestError;
-          }
-
-          if (!latestBooking) {
-            throw new Error("Aucune réservation trouvée");
-          }
-
-          console.log("✅ Réservation trouvée:", latestBooking);
-          setBooking(latestBooking);
-          setHasAttemptedEmailSend(true);
-
-          try {
-            await sendEmail(latestBooking as Booking);
-            toast({
-              title: "Email envoyé",
-              description: "Un email de confirmation vous a été envoyé",
-            });
-          } catch (emailError: any) {
-            console.error("❌ Erreur lors de l'envoi de l'email:", emailError);
-            toast({
-              title: "Erreur d'envoi d'email",
-              description: "L'email n'a pas pu être envoyé, mais votre réservation est bien confirmée",
-              variant: "destructive",
-            });
-          }
-
-          return;
+          throw new Error("Aucune réservation trouvée");
         }
 
-        console.log("✅ Réservation trouvée:", {
-          id: bookingData.id,
-          date: bookingData.date,
-          timeSlot: bookingData.time_slot,
-          duration: bookingData.duration,
-          groupSize: bookingData.group_size,
-          price: bookingData.price
-        });
-
+        console.log("✅ Réservation trouvée:", bookingData);
         setBooking(bookingData);
         setHasAttemptedEmailSend(true);
 

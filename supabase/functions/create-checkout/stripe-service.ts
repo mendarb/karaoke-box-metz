@@ -13,11 +13,11 @@ export const createStripeSession = async (
     discountAmount: data.discountAmount
   });
 
-  // Convert final price to cents for Stripe, using the exact final price
+  // Utiliser exactement le prix final fourni
   const finalPrice = data.finalPrice || data.price;
   const unitAmount = Math.round(finalPrice * 100);
 
-  console.log('💰 Price details:', {
+  console.log('💰 Prix détaillés:', {
     originalPrice: data.price,
     finalPrice,
     unitAmount,

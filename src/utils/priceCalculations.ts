@@ -26,22 +26,19 @@ export const calculateDiscountedPrice = (originalPrice: number, promoCode: any):
       if (promoCode.value) {
         discountAmount = Math.min(100, promoCode.value);
         finalPrice = originalPrice * (1 - discountAmount / 100);
-        // Ensure minimum price of 1€ for percentage discounts
-        finalPrice = Math.max(1, finalPrice);
       }
       break;
     case 'fixed_amount':
       if (promoCode.value) {
-        // Calculate discount percentage
         discountAmount = Math.min(100, (promoCode.value / originalPrice) * 100);
-        finalPrice = Math.max(1, originalPrice - promoCode.value);
+        finalPrice = Math.max(0, originalPrice - promoCode.value);
       }
       break;
     default:
       break;
   }
 
-  // Round to 2 decimal places
+  // Arrondir à 2 décimales
   finalPrice = Math.round(finalPrice * 100) / 100;
   discountAmount = Math.round(discountAmount * 100) / 100;
 

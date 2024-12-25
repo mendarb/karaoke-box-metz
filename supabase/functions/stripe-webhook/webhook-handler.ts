@@ -77,10 +77,8 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
           paymentStatus: updatedBooking.payment_status
         });
 
-        // Envoyer l'email de confirmation
+        // Envoyer l'email de confirmation une seule fois ici
         try {
-          await new Promise(resolve => setTimeout(resolve, 2000)); // Attendre 2 secondes
-
           const emailResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-booking-email`, {
             method: 'POST',
             headers: {

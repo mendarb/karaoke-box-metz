@@ -89,7 +89,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Karaoke Box Metz <contact@karaoke-box-metz.fr>',
+        from: 'Resend <onboarding@resend.dev>',
         to: booking.user_email,
         subject: 'Réservation confirmée - Karaoke Box Metz',
         html: emailContent,

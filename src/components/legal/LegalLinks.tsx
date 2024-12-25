@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 export const LegalLinks = () => {
   return (
     <div className="space-y-2">
-      <h3 className="text-lg font-semibold mb-4">Informations légales</h3>
       <div className="flex flex-col space-y-2">
         <Link 
           to="/legal/terms" 

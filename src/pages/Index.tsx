@@ -50,13 +50,13 @@ const Index = () => {
   };
 
   const businessHours = {
-    monday: { isOpen: false, hours: 'Fermé' },
-    tuesday: { isOpen: false, hours: 'Fermé' },
-    wednesday: { isOpen: true, hours: '17h - 23h' },
-    thursday: { isOpen: true, hours: '17h - 23h' },
-    friday: { isOpen: true, hours: '17h - 23h' },
-    saturday: { isOpen: true, hours: '17h - 23h' },
-    sunday: { isOpen: true, hours: '17h - 23h' }
+    lundi: { isOpen: false, hours: 'Fermé' },
+    mardi: { isOpen: false, hours: 'Fermé' },
+    mercredi: { isOpen: true, hours: '17h - 23h' },
+    jeudi: { isOpen: true, hours: '17h - 23h' },
+    vendredi: { isOpen: true, hours: '17h - 23h' },
+    samedi: { isOpen: true, hours: '17h - 23h' },
+    dimanche: { isOpen: true, hours: '17h - 23h' }
   };
 
   return (
@@ -72,12 +72,12 @@ const Index = () => {
             <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
               Partagez des moments uniques avec vos proches dans notre espace privatif et confortable.
             </p>
-            <div className="mt-4 inline-block bg-kbox-coral text-white px-6 py-2 rounded-full">
+            <div className="mt-4 inline-block bg-kbox-coral text-white px-6 py-2">
               <span className="font-bold">À partir de 10€</span> par personne et par heure
             </div>
           </div>
 
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-white/20 p-4 md:p-6 mb-8">
+          <div className="bg-white/80 backdrop-blur-sm border border-white/20 p-4 md:p-6 mb-8">
             <BookingForm />
           </div>
 
@@ -102,7 +102,7 @@ const Index = () => {
               ].map((feature, index) => (
                 <div 
                   key={index}
-                  className="bg-white/80 backdrop-blur-sm p-4 rounded-lg border border-white/20 shadow-sm transition-transform hover:translate-y-[-2px]"
+                  className="bg-white/80 backdrop-blur-sm p-4 border border-white/20 shadow-sm transition-transform hover:translate-y-[-2px]"
                 >
                   <div className="flex flex-col items-center text-center">
                     <div className="mb-3">{feature.icon}</div>

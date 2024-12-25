@@ -1,6 +1,6 @@
 import { UseFormReturn } from "react-hook-form";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface DurationSelectorProps {
@@ -14,37 +14,35 @@ export const DurationSelector = ({
   onDurationChange,
   availableHours,
 }: DurationSelectorProps) => {
+  const selectedDuration = form.watch("duration");
+
   return (
     <div className="space-y-4">
       <Label>Durée</Label>
-      <RadioGroup
-        defaultValue={form.getValues("duration")}
-        onValueChange={onDurationChange}
-        className="grid grid-cols-2 sm:grid-cols-4 gap-4"
-      >
+      <div className="flex flex-wrap gap-2">
         {["1", "2", "3", "4"].map((duration) => {
           const isDisabled = parseInt(duration) > availableHours;
           return (
-            <Label
+            <Button
               key={duration}
+              type="button"
+              variant={selectedDuration === duration ? "default" : "outline"}
               className={cn(
-                "flex flex-col items-center justify-between rounded-md border-2 border-muted bg-transparent p-4 hover:bg-accent hover:text-accent-foreground [&:has([data-state=checked])]:border-primary",
-                isDisabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                "flex-1 min-w-[60px]",
+                selectedDuration === duration && "bg-violet-600 hover:bg-violet-700",
+                isDisabled && "opacity-50 cursor-not-allowed"
               )}
+              disabled={isDisabled}
+              onClick={() => onDurationChange(duration)}
             >
-              <RadioGroupItem 
-                value={duration} 
-                className="sr-only" 
-                disabled={isDisabled}
-              />
-              <span className="text-xl font-bold">{duration}h</span>
-              <span className="text-sm">
+              {duration}h
+              <span className="ml-1 text-sm">
                 {isDisabled ? "Non disponible" : "heure" + (parseInt(duration) > 1 ? "s" : "")}
               </span>
-            </Label>
-          );
+            </Button>
+          )
         })}
-      </RadioGroup>
+      </div>
     </div>
   );
 };

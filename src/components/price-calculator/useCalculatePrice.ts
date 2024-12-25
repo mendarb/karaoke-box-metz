@@ -60,7 +60,9 @@ export const useCalculatePrice = ({
         firstHourPrice,
         additionalHoursPrice,
         finalPrice,
-        effectiveGroupSize: size
+        effectiveGroupSize: size,
+        basePerPersonHourRate,
+        discountedPerPersonHourRate
       });
     }
 

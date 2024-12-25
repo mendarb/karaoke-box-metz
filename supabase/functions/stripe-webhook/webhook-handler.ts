@@ -24,13 +24,11 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
           bookingId: session.metadata?.bookingId,
         });
 
-        // Vérifier que le paiement est bien effectué
         if (session.payment_status !== 'paid') {
           console.log('❌ Payment not completed yet:', session.payment_status);
           return { success: false, message: 'Payment not completed' };
         }
 
-        // Rechercher la réservation avec l'ID de session
         const { data: booking, error: bookingError } = await supabase
           .from('bookings')
           .select('*')
@@ -47,13 +45,11 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
           return { success: false, message: 'Booking not found' };
         }
 
-        // Vérifier si la réservation n'a pas déjà été mise à jour
         if (booking.payment_status === 'paid') {
           console.log('ℹ️ Booking already marked as paid:', booking.id);
           return { success: true, message: 'Booking already processed' };
         }
 
-        // Mettre à jour la réservation
         const { data: updatedBooking, error: updateError } = await supabase
           .from('bookings')
           .update({
@@ -98,7 +94,6 @@ export async function handleWebhook(event: any, stripe: Stripe | null, supabase:
           console.log('✅ Confirmation email sent successfully');
         } catch (emailError) {
           console.error('❌ Error sending confirmation email:', emailError);
-          // Ne pas bloquer le processus si l'envoi d'email échoue
         }
 
         break;

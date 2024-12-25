@@ -18,18 +18,14 @@ export const useBookingSubmit = (
         timeSlot: data.timeSlot,
         duration,
         groupSize,
-        originalPrice: calculatedPrice,
-        finalPrice: data.finalPrice,
-        promoCode: data.promoCode,
-        discountAmount: data.discountAmount,
-        isTestMode: data.isTestMode
+        price: calculatedPrice
       });
 
       setIsSubmitting(true);
 
       const formattedDate = format(new Date(data.date), 'yyyy-MM-dd');
 
-      // Vérifier une dernière fois la disponibilité du créneau
+      // Vérifier la disponibilité du créneau
       const { data: existingBookings, error: checkError } = await supabase
         .from('bookings')
         .select('*')
@@ -63,95 +59,37 @@ export const useBookingSubmit = (
         return;
       }
 
-      const { data: { session } } = await supabase.auth.getSession();
-      const userId = session?.user?.id;
-
-      // Utiliser le prix final si un code promo est appliqué
-      const finalPrice = data.finalPrice || calculatedPrice;
-
-      console.log('💰 Prix pour la réservation:', {
-        originalPrice: calculatedPrice,
-        finalPrice: finalPrice,
-        promoCode: data.promoCode,
-        discountAmount: data.discountAmount
-      });
-
-      const { data: booking, error: bookingError } = await supabase
-        .from('bookings')
-        .insert([{
-          user_id: userId,
-          user_email: data.email,
-          user_name: data.fullName,
-          user_phone: data.phone,
-          date: formattedDate,
-          time_slot: `${data.timeSlot.toString().padStart(2, '0')}:00`,
-          duration,
-          group_size: groupSize,
-          price: finalPrice, // Utiliser le prix final
-          message: data.message,
-          status: 'pending',
-          payment_status: 'awaiting_payment',
-          is_test_booking: data.isTestMode || false,
-          promo_code_id: data.promoCodeId,
-        }])
-        .select()
-        .single();
-
-      if (bookingError) {
-        console.error('❌ Error creating booking:', bookingError);
-        throw bookingError;
-      }
-
-      console.log('✅ Booking created:', {
-        bookingId: booking.id,
-        finalPrice: finalPrice,
-        promoDetails: {
-          code: data.promoCode,
-          discountAmount: data.discountAmount
-        }
-      });
-
-      const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke(
-        'create-checkout',
+      // Appeler la nouvelle fonction Edge pour créer la réservation
+      const { data: response, error } = await supabase.functions.invoke(
+        'create-booking',
         {
           body: {
-            bookingId: booking.id,
-            userId: userId,
-            userEmail: data.email,
+            email: data.email,
+            fullName: data.fullName,
+            phone: data.phone,
             date: formattedDate,
-            timeSlot: `${data.timeSlot.toString().padStart(2, '0')}:00`,
+            timeSlot: data.timeSlot,
             duration,
             groupSize,
             price: calculatedPrice,
-            finalPrice: finalPrice,
             message: data.message,
-            userName: data.fullName,
-            userPhone: data.phone,
             isTestMode: data.isTestMode || false,
-            promoCodeId: data.promoCodeId,
-            promoCode: data.promoCode,
-            discountAmount: data.discountAmount,
           }
         }
       );
 
-      if (checkoutError) {
-        console.error('❌ Error generating checkout URL:', checkoutError);
-        throw checkoutError;
+      if (error) {
+        console.error('❌ Error creating booking:', error);
+        throw error;
       }
 
-      if (!checkoutData.url) {
-        throw new Error('No checkout URL returned');
-      }
-
-      console.log('✅ Checkout URL generated:', {
-        url: checkoutData.url,
-        bookingId: booking.id,
-        finalPrice: finalPrice,
-        isTestMode: data.isTestMode || false
+      console.log('✅ Booking created and payment link generated:', {
+        bookingId: response.bookingId,
+        checkoutUrl: response.checkoutUrl
       });
-      
-      window.location.href = checkoutData.url;
+
+      // Rediriger vers la page de paiement Stripe
+      window.location.href = response.checkoutUrl;
 
     } catch (error: any) {
       console.error('❌ Error in booking process:', error);

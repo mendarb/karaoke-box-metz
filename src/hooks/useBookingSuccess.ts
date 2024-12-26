@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { useBookingEmail } from "./useBookingEmail";
-import { Booking } from "@/integrations/supabase/types/booking";
 import { toast } from "./use-toast";
 
 export interface BookingDetails {
@@ -27,7 +25,6 @@ export const useBookingSuccess = () => {
   const [booking, setBooking] = useState<BookingDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { sendEmail } = useBookingEmail();
 
   useEffect(() => {
     const sessionId = searchParams.get("session_id");
@@ -99,44 +96,11 @@ export const useBookingSuccess = () => {
 
           console.log("✅ Dernière réservation trouvée:", latestBooking);
           setBooking(latestBooking);
-
-          // Envoyer l'email de confirmation
-          try {
-            await sendEmail(latestBooking as Booking);
-            toast({
-              title: "Email envoyé",
-              description: "Un email de confirmation vous a été envoyé",
-            });
-          } catch (emailError: any) {
-            console.error("❌ Erreur lors de l'envoi de l'email:", emailError);
-            toast({
-              title: "Erreur d'envoi d'email",
-              description: "L'email n'a pas pu être envoyé, mais votre réservation est bien confirmée",
-              variant: "destructive",
-            });
-          }
-
           return;
         }
 
         console.log("✅ Réservation trouvée:", bookingData);
         setBooking(bookingData);
-
-        // Envoyer l'email de confirmation
-        try {
-          await sendEmail(bookingData as Booking);
-          toast({
-            title: "Email envoyé",
-            description: "Un email de confirmation vous a été envoyé",
-          });
-        } catch (emailError: any) {
-          console.error("❌ Erreur lors de l'envoi de l'email:", emailError);
-          toast({
-            title: "Erreur d'envoi d'email",
-            description: "L'email n'a pas pu être envoyé, mais votre réservation est bien confirmée",
-            variant: "destructive",
-          });
-        }
 
       } catch (error: any) {
         console.error("❌ Erreur lors de la récupération de la réservation:", error);
@@ -147,7 +111,7 @@ export const useBookingSuccess = () => {
     };
 
     getBookingDetails();
-  }, [searchParams, sendEmail]);
+  }, [searchParams]);
 
   return { booking, isLoading, error };
 };

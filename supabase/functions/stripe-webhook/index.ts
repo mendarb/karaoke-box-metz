@@ -28,7 +28,7 @@ serve(async (req) => {
     console.log('📝 Stripe signature:', signature);
 
     const body = await req.text();
-    console.log('📦 Request body received:', body.substring(0, 100) + '...');
+    console.log('📦 Request body received:', body);
 
     // Parse the event to determine if it's a test event
     const rawEvent = JSON.parse(body);
@@ -130,6 +130,7 @@ serve(async (req) => {
           .update({
             status: 'confirmed',
             payment_status: 'paid',
+            payment_intent_id: session.payment_intent as string,
             updated_at: new Date().toISOString()
           })
           .eq('id', booking.id);

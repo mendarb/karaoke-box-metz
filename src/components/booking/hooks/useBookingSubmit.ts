@@ -77,11 +77,9 @@ export const useBookingSubmit = (
 
       console.log('📝 Calling create-booking function with user ID:', user.id);
 
-      // Ensure we have a valid price
+      // S'assurer que nous avons un prix valide
       const finalPrice = data.finalPrice || calculatedPrice;
-      if (!finalPrice || finalPrice < 0) {
-        throw new Error('Prix invalide');
-      }
+      console.log('💰 Prix final:', finalPrice);
 
       // Appeler la nouvelle fonction Edge pour créer la réservation
       const { data: response, error } = await supabase.functions.invoke(

@@ -16,7 +16,7 @@ serve(async (req) => {
     const requestBody = await req.json();
     console.log('📦 Données de réservation reçues:', {
       email: requestBody.email,
-      fullName: requestBody.userName,
+      fullName: requestBody.fullName,
       date: requestBody.date,
       timeSlot: requestBody.timeSlot,
       duration: requestBody.duration,
@@ -51,8 +51,8 @@ serve(async (req) => {
       .insert([{
         user_id: requestBody.userId,
         user_email: requestBody.email,
-        user_name: requestBody.userName,
-        user_phone: requestBody.userPhone,
+        user_name: requestBody.fullName,
+        user_phone: requestBody.phone,
         date: requestBody.date,
         time_slot: requestBody.timeSlot,
         duration: requestBody.duration,
@@ -111,8 +111,8 @@ serve(async (req) => {
         bookingId: booking.id,
         userId: requestBody.userId,
         userEmail: requestBody.email,
-        userName: requestBody.userName,
-        userPhone: requestBody.userPhone,
+        userName: requestBody.fullName,
+        userPhone: requestBody.phone,
         date: requestBody.date,
         timeSlot: requestBody.timeSlot,
         duration: requestBody.duration,

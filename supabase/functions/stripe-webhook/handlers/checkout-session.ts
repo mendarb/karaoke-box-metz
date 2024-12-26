@@ -1,7 +1,5 @@
 import { Stripe } from 'https://esm.sh/stripe@14.21.0';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
-import { createBooking } from '../services/booking-service.ts';
-import { sendConfirmationEmail } from '../services/email-service.ts';
 
 export const handleCheckoutSession = async (
   session: Stripe.Checkout.Session,
@@ -10,16 +8,16 @@ export const handleCheckoutSession = async (
   console.log('💳 Processing checkout session:', {
     sessionId: session.id,
     metadata: session.metadata,
-    paymentStatus: session.payment_status,
-    amount: session.amount_total
+    paymentStatus: session.payment_status
   });
 
   try {
-    // Pour les réservations gratuites, on considère le paiement comme complété
-    const isFreeBooking = session.amount_total === 0;
-    const isPaid = isFreeBooking || session.payment_status === 'paid';
+    if (session.payment_status !== "paid") {
+      console.log("❌ Payment not completed yet:", session.payment_status);
+      return { received: true, status: "pending" };
+    }
 
-    // Mettre à jour le statut de la réservation
+    // Update booking status
     const bookingId = session.metadata?.bookingId;
     if (!bookingId) {
       throw new Error('Booking ID not found in session metadata');
@@ -28,9 +26,10 @@ export const handleCheckoutSession = async (
     const { data: booking, error: updateError } = await supabase
       .from('bookings')
       .update({
-        payment_status: isPaid ? 'paid' : 'unpaid',
-        status: isPaid ? 'confirmed' : 'cancelled',
+        payment_status: 'paid',
+        status: 'confirmed',
         payment_intent_id: session.payment_intent as string,
+        updated_at: new Date().toISOString(),
       })
       .eq('id', bookingId)
       .select()
@@ -43,9 +42,29 @@ export const handleCheckoutSession = async (
 
     console.log('✅ Booking updated:', booking);
 
-    // Envoyer l'email de confirmation avec le statut approprié
-    await sendConfirmationEmail(booking, supabase);
-    console.log('📧 Confirmation email sent');
+    // Send confirmation email
+    try {
+      const emailResponse = await fetch(
+        `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-booking-email`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+          },
+          body: JSON.stringify({ booking }),
+        }
+      );
+
+      if (!emailResponse.ok) {
+        throw new Error(await emailResponse.text());
+      }
+
+      console.log('📧 Confirmation email sent');
+    } catch (emailError) {
+      console.error('❌ Error sending confirmation email:', emailError);
+      // Don't block the process if email fails
+    }
 
     return { received: true, booking };
   } catch (error) {

@@ -13,22 +13,20 @@ serve(async (req) => {
   }
 
   try {
-    const { email, fullName, phone, date, timeSlot, duration, groupSize, price, message, isTestMode, userId } = await req.json();
-
-    console.log('📝 Starting unified booking process:', {
-      email,
-      fullName,
-      date,
-      timeSlot,
-      duration,
-      groupSize,
-      price,
-      isTestMode,
-      userId,
-      requestBody: await req.json()
+    const requestBody = await req.json();
+    console.log('📦 Received request data:', {
+      email: requestBody.email,
+      fullName: requestBody.fullName,
+      date: requestBody.date,
+      timeSlot: requestBody.timeSlot,
+      duration: requestBody.duration,
+      groupSize: requestBody.groupSize,
+      price: requestBody.price,
+      isTestMode: requestBody.isTestMode,
+      userId: requestBody.userId,
     });
 
-    if (!userId) {
+    if (!requestBody.userId) {
       console.error('❌ No user ID provided in request');
       throw new Error('User ID is required');
     }
@@ -39,23 +37,23 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Create booking with user_id
-    console.log('📅 Creating booking with user_id:', userId);
+    console.log('📅 Creating booking with user_id:', requestBody.userId);
     const { data: booking, error: bookingError } = await supabase
       .from('bookings')
       .insert([{
-        user_id: userId,
-        user_email: email,
-        user_name: fullName,
-        user_phone: phone,
-        date,
-        time_slot: timeSlot,
-        duration,
-        group_size: groupSize,
-        price,
-        message,
+        user_id: requestBody.userId,
+        user_email: requestBody.email,
+        user_name: requestBody.fullName,
+        user_phone: requestBody.phone,
+        date: requestBody.date,
+        time_slot: requestBody.timeSlot,
+        duration: requestBody.duration,
+        group_size: requestBody.groupSize,
+        price: requestBody.price,
+        message: requestBody.message,
         status: 'pending',
         payment_status: 'awaiting_payment',
-        is_test_booking: isTestMode,
+        is_test_booking: requestBody.isTestMode,
       }])
       .select()
       .single();
@@ -68,22 +66,30 @@ serve(async (req) => {
     console.log('✅ Booking created:', booking);
 
     // Create Stripe checkout session
-    const stripe = new Stripe(isTestMode ? 
+    const stripeKey = requestBody.isTestMode ? 
       Deno.env.get('STRIPE_TEST_SECRET_KEY')! : 
-      Deno.env.get('STRIPE_SECRET_KEY')!, 
-      { apiVersion: '2023-10-16' }
-    );
+      Deno.env.get('STRIPE_SECRET_KEY')!;
 
-    console.log('💳 Creating Stripe checkout session...');
+    if (!stripeKey) {
+      throw new Error(`${requestBody.isTestMode ? 'Test' : 'Live'} mode Stripe key not configured`);
+    }
+
+    const stripe = new Stripe(stripeKey, {
+      apiVersion: '2023-10-16',
+      httpClient: Stripe.createFetchHttpClient(),
+    });
+
+    console.log('💳 Creating Stripe session...');
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [{
         price_data: {
           currency: 'eur',
-          unit_amount: Math.round(price * 100),
+          unit_amount: Math.round(requestBody.price * 100),
           product_data: {
-            name: isTestMode ? '[TEST MODE] Karaoké BOX - MB EI' : 'Karaoké BOX - MB EI',
-            description: `${groupSize} personnes - ${duration}h`,
+            name: requestBody.isTestMode ? '[TEST MODE] Karaoké BOX - MB EI' : 'Karaoké BOX - MB EI',
+            description: `${requestBody.groupSize} personnes - ${requestBody.duration}h`,
           },
         },
         quantity: 1,
@@ -91,28 +97,28 @@ serve(async (req) => {
       mode: 'payment',
       success_url: `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get('origin')}`,
-      customer_email: email,
+      customer_email: requestBody.email,
       metadata: {
         bookingId: booking.id,
-        userId,
-        userEmail: email,
-        userName: fullName,
-        userPhone: phone,
-        date,
-        timeSlot,
-        duration,
-        groupSize,
-        price: price.toString(),
-        message: message || '',
-        isTestMode: isTestMode ? 'true' : 'false',
+        userId: requestBody.userId,
+        userEmail: requestBody.email,
+        userName: requestBody.fullName,
+        userPhone: requestBody.phone,
+        date: requestBody.date,
+        timeSlot: requestBody.timeSlot,
+        duration: requestBody.duration,
+        groupSize: requestBody.groupSize,
+        price: String(requestBody.price),
+        message: requestBody.message || '',
+        isTestMode: String(requestBody.isTestMode),
       },
     });
 
-    console.log('✅ Checkout session created:', {
+    console.log('✅ Stripe session created:', {
       sessionId: session.id,
       paymentIntentId: session.payment_intent,
       bookingId: booking.id,
-      userId,
+      userId: requestBody.userId,
       metadata: session.metadata
     });
 

@@ -31,7 +31,8 @@ export const useBookingSubmit = (
         timeSlot: data.timeSlot,
         duration,
         groupSize,
-        price: calculatedPrice,
+        calculatedPrice,
+        finalPrice: data.finalPrice,
         userId: user.id,
         userObject: user
       });
@@ -76,6 +77,12 @@ export const useBookingSubmit = (
 
       console.log('📝 Calling create-booking function with user ID:', user.id);
 
+      // Ensure we have a valid price
+      const finalPrice = data.finalPrice || calculatedPrice;
+      if (!finalPrice || finalPrice < 0) {
+        throw new Error('Prix invalide');
+      }
+
       // Appeler la nouvelle fonction Edge pour créer la réservation
       const { data: response, error } = await supabase.functions.invoke(
         'create-booking',
@@ -88,10 +95,13 @@ export const useBookingSubmit = (
             timeSlot: data.timeSlot,
             duration,
             groupSize,
-            price: calculatedPrice,
+            price: finalPrice,
             message: data.message,
             isTestMode: data.isTestMode || false,
-            userId: user.id
+            userId: user.id,
+            promoCode: data.promoCode,
+            promoCodeId: data.promoCodeId,
+            discountAmount: data.discountAmount
           }
         }
       );
@@ -104,6 +114,7 @@ export const useBookingSubmit = (
         bookingId: response.bookingId,
         checkoutUrl: response.checkoutUrl,
         userId: user.id,
+        price: finalPrice,
         responseData: response
       });
 

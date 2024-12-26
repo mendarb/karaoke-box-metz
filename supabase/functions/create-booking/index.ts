@@ -15,7 +15,7 @@ serve(async (req) => {
   try {
     const requestBody = await req.json();
     console.log('📦 Données de réservation reçues:', {
-      email: requestBody.userEmail,
+      email: requestBody.email,
       fullName: requestBody.userName,
       date: requestBody.date,
       timeSlot: requestBody.timeSlot,
@@ -33,7 +33,8 @@ serve(async (req) => {
       throw new Error('ID utilisateur requis');
     }
 
-    if (!requestBody.price || requestBody.price < 0) {
+    // Validate price
+    if (typeof requestBody.price !== 'number' || requestBody.price < 0) {
       console.error('❌ Prix invalide:', requestBody.price);
       throw new Error('Prix invalide');
     }
@@ -49,7 +50,7 @@ serve(async (req) => {
       .from('bookings')
       .insert([{
         user_id: requestBody.userId,
-        user_email: requestBody.userEmail,
+        user_email: requestBody.email,
         user_name: requestBody.userName,
         user_phone: requestBody.userPhone,
         date: requestBody.date,
@@ -105,11 +106,11 @@ serve(async (req) => {
       mode: 'payment',
       success_url: `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get('origin')}`,
-      customer_email: requestBody.userEmail,
+      customer_email: requestBody.email,
       metadata: {
         bookingId: booking.id,
         userId: requestBody.userId,
-        userEmail: requestBody.userEmail,
+        userEmail: requestBody.email,
         userName: requestBody.userName,
         userPhone: requestBody.userPhone,
         date: requestBody.date,
@@ -129,6 +130,7 @@ serve(async (req) => {
       paymentIntentId: session.payment_intent,
       bookingId: booking.id,
       userId: requestBody.userId,
+      price: requestBody.price,
       metadata: session.metadata
     });
 

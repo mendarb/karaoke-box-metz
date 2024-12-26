@@ -87,6 +87,7 @@ export const checkTimeSlotAvailability = async (
     .select('*')
     .eq('date', format(date, 'yyyy-MM-dd'))
     .neq('status', 'cancelled')
+    .eq('payment_status', 'paid') // Ne prendre en compte que les réservations payées
     .is('deleted_at', null);
 
   if (error) {
@@ -109,7 +110,9 @@ export const checkTimeSlotAvailability = async (
       console.log('❌ Chevauchement détecté avec la réservation:', {
         existingBooking: {
           start: existingStartTime,
-          end: existingEndTime
+          end: existingEndTime,
+          status: booking.status,
+          paymentStatus: booking.payment_status
         },
         requestedBooking: {
           start: requestedStartTime,

@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import Stripe from 'https://esm.sh/stripe@14.21.0';
 
@@ -47,16 +47,31 @@ serve(async (req) => {
     const isTestMode = !rawEvent.livemode;
     console.log('🔑 Mode:', isTestMode ? 'TEST' : 'LIVE');
 
+    // Use appropriate webhook secret based on mode
+    const webhookSecret = isTestMode 
+      ? Deno.env.get('STRIPE_WEBHOOK_SECRET')
+      : Deno.env.get('STRIPE_LIVE_WEBHOOK_SECRET');
+
+    if (!webhookSecret) {
+      console.error('❌ Webhook secret not configured for', isTestMode ? 'test' : 'live', 'mode');
+      return new Response(
+        JSON.stringify({ error: `Webhook secret not configured for ${isTestMode ? 'test' : 'live'} mode` }),
+        { 
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
     // Use appropriate secret key based on mode
     const stripeKey = isTestMode 
       ? Deno.env.get('STRIPE_TEST_SECRET_KEY')
       : Deno.env.get('STRIPE_SECRET_KEY');
 
-    const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
-    if (!webhookSecret) {
-      console.error('❌ Webhook secret not configured');
+    if (!stripeKey) {
+      console.error('❌ Stripe key not configured for', isTestMode ? 'test' : 'live', 'mode');
       return new Response(
-        JSON.stringify({ error: 'Webhook secret not configured' }),
+        JSON.stringify({ error: `Stripe key not configured for ${isTestMode ? 'test' : 'live'} mode` }),
         { 
           status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -65,7 +80,7 @@ serve(async (req) => {
     }
 
     console.log('🔐 Attempting to verify webhook signature');
-    const stripe = new Stripe(stripeKey!, {
+    const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
       httpClient: Stripe.createFetchHttpClient(),
     });

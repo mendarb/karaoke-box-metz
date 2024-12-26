@@ -50,8 +50,8 @@ serve(async (req) => {
         </div>
         
         <div style="background-color: #7E3AED; color: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h2 style="color: white; margin-top: 0;">📍 Lieu du rendez-vous</h2>
-          <p style="margin-bottom: 0;">L'adresse exacte vous sera communiquée par SMS le jour de votre venue</p>
+          <h2 style="color: white; margin-top: 0;">📍 Adresse</h2>
+          <p style="margin-bottom: 0;">12 Rue des Huiliers, 57000 Metz</p>
         </div>
         
         <div style="border-left: 4px solid #7E3AED; padding-left: 20px; margin: 20px 0;">
@@ -65,8 +65,16 @@ serve(async (req) => {
         
         <div style="margin-top: 40px;">
           <p><strong>Une question ?</strong></p>
-          <p>📞 <a href="tel:+33612345678" style="color: #7E3AED;">06 12 34 56 78</a></p>
+          <p>📞 <a href="tel:+33782492402" style="color: #7E3AED;">07 82 49 24 02</a></p>
           <p>📧 <a href="mailto:contact@karaoke-box-metz.fr" style="color: #7E3AED;">contact@karaoke-box-metz.fr</a></p>
+        </div>
+        
+        <div style="margin-top: 20px; text-align: center;">
+          <p>Suivez-nous sur les réseaux sociaux :</p>
+          <p>
+            <a href="https://www.instagram.com/karaokeboxmetz/" style="color: #7E3AED; margin: 0 10px;">Instagram</a>
+            <a href="https://www.facebook.com/people/Karaoké-BOX-Metz/61571072424332/" style="color: #7E3AED; margin: 0 10px;">Facebook</a>
+          </p>
         </div>
         
         <p style="margin-top: 40px;">À très bientôt !</p>

@@ -1,4 +1,5 @@
 import { LegalLinks } from "@/components/legal/LegalLinks";
+import { Instagram, Facebook } from "lucide-react";
 
 interface BusinessHours {
   [key: string]: string;
@@ -26,9 +27,27 @@ export const Footer = () => {
           <div>
             <h3 className="text-sm font-semibold mb-4 text-kbox-coral">Contact</h3>
             <div className="space-y-2 text-sm text-gray-600">
-              <p>Email: contact@karaoke-box-metz.fr</p>
-              <p>Tél: 07 82 49 24 02</p>
+              <p>Email: <a href="mailto:contact@karaoke-box-metz.fr" className="hover:text-kbox-coral">contact@karaoke-box-metz.fr</a></p>
+              <p>Tél: <a href="tel:+33782492402" className="hover:text-kbox-coral">07 82 49 24 02</a></p>
               <p>Adresse: 12 Rue des Huiliers, 57000 Metz</p>
+              <div className="flex space-x-4 mt-4">
+                <a 
+                  href="https://www.instagram.com/karaokeboxmetz/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-gray-600 hover:text-kbox-coral"
+                >
+                  <Instagram className="w-5 h-5" />
+                </a>
+                <a 
+                  href="https://www.facebook.com/people/Karaoké-BOX-Metz/61571072424332/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-gray-600 hover:text-kbox-coral"
+                >
+                  <Facebook className="w-5 h-5" />
+                </a>
+              </div>
             </div>
           </div>
           <div>

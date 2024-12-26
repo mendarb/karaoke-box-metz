@@ -19,13 +19,13 @@ export function useAuthHandlers() {
         if (error.message === "Invalid login credentials") {
           toast({
             title: "Erreur de connexion",
-            description: "Email ou mot de passe incorrect. Essayez de réinitialiser votre mot de passe si vous l'avez oublié.",
+            description: "Email ou mot de passe incorrect",
             variant: "destructive",
           })
         } else if (error.message.includes("Email not confirmed")) {
           toast({
             title: "Email non confirmé",
-            description: "Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte de réception.",
+            description: "Veuillez confirmer votre email avant de vous connecter",
             variant: "destructive",
           })
         } else {
@@ -69,10 +69,14 @@ export function useAuthHandlers() {
       }
 
       // Vérifier si l'utilisateur existe déjà
-      const { data: { users } } = await supabase.auth.admin.listUsers()
-      const existingUser = users?.find(u => u.email === email.trim())
+      const { data: { users } } = await supabase.auth.admin.listUsers({
+        filters: {
+          email: email.trim()
+        }
+      })
 
-      if (existingUser) {
+      if (users && users.length > 0) {
+        const existingUser = users[0]
         if (!existingUser.email_confirmed_at) {
           toast({
             title: "Email non confirmé",
@@ -119,10 +123,18 @@ export function useAuthHandlers() {
         }
       }
 
-      toast({
-        title: "Inscription réussie",
-        description: "Un email de confirmation vous a été envoyé. Veuillez vérifier votre boîte de réception.",
-      })
+      // Vérifier si l'email nécessite une confirmation
+      if (data?.user?.identities?.length === 0) {
+        toast({
+          title: "Compte créé avec succès",
+          description: "Un email de confirmation vous a été envoyé. Veuillez vérifier votre boîte de réception.",
+        })
+      } else {
+        toast({
+          title: "Inscription réussie",
+          description: "Votre compte a été créé avec succès",
+        })
+      }
       return { success: true, shouldSwitchToLogin: false }
     } catch (error: any) {
       console.error("Auth error:", error)

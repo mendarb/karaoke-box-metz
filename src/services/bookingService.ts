@@ -66,30 +66,49 @@ export const generatePaymentLink = async (booking: any, data: any) => {
     isTestMode: data.isTestMode
   });
 
-  const checkoutUrl = await createCheckoutSession({
-    bookingId: booking.id,
-    userId: booking.user_id,
-    userEmail: data.email,
-    date: data.date,
-    timeSlot: data.timeSlot,
-    duration: data.duration,
-    groupSize: data.groupSize,
-    price: data.calculatedPrice,
-    finalPrice: data.finalPrice || data.calculatedPrice,
-    message: data.message,
-    userName: data.fullName,
-    userPhone: data.phone,
-    isTestMode: data.isTestMode,
-    promoCodeId: data.promoCodeId,
-    promoCode: data.promoCode,
-    discountAmount: data.discountAmount,
-  });
+  try {
+    const response = await supabase.functions.invoke('create-checkout', {
+      body: {
+        bookingId: booking.id,
+        userId: booking.user_id,
+        userEmail: data.email,
+        date: data.date,
+        timeSlot: data.timeSlot,
+        duration: data.duration,
+        groupSize: data.groupSize,
+        price: data.calculatedPrice,
+        finalPrice: data.finalPrice || data.calculatedPrice,
+        message: data.message,
+        userName: data.fullName,
+        userPhone: data.phone,
+        isTestMode: data.isTestMode,
+        promoCodeId: data.promoCodeId,
+        promoCode: data.promoCode,
+        discountAmount: data.discountAmount,
+      },
+    });
 
-  console.log('✅ Payment link generated:', {
-    url: checkoutUrl,
-    isTestMode: data.isTestMode
-  });
-  return checkoutUrl;
+    if (response.error) {
+      console.error('❌ Error creating checkout session:', response.error);
+      throw new Error(response.error.message || 'Failed to create checkout session');
+    }
+
+    const { url } = response.data;
+    
+    if (!url) {
+      throw new Error('No checkout URL returned');
+    }
+
+    console.log('✅ Payment link generated:', {
+      url,
+      isTestMode: data.isTestMode
+    });
+
+    return url;
+  } catch (error: any) {
+    console.error('Error creating checkout session:', error);
+    throw new Error(error.message || 'Failed to create checkout session');
+  }
 };
 
 export const fetchBookings = async () => {

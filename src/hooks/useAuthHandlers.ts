@@ -64,9 +64,19 @@ export function useAuthHandlers(): AuthHandlers {
       }
 
       // Vérifier si l'utilisateur existe déjà
-      const { user: existingUser } = await checkExistingUser(email, password);
+      const { exists, error: checkError } = await checkExistingUser(email);
 
-      if (existingUser) {
+      if (checkError) {
+        console.error("Error checking user:", checkError);
+        toast({
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la vérification de l'email",
+          variant: "destructive",
+        });
+        return { success: false, shouldSwitchToLogin: false };
+      }
+
+      if (exists) {
         toast({
           title: "Compte existant",
           description: "Un compte existe déjà avec cet email. Veuillez vous connecter ou réinitialiser votre mot de passe si vous l'avez oublié.",
@@ -74,7 +84,7 @@ export function useAuthHandlers(): AuthHandlers {
         return { success: false, shouldSwitchToLogin: true };
       }
 
-      const { data: signUpData, error: signUpError } = await signUp(
+      const { error: signUpError } = await signUp(
         email,
         password,
         fullName,
@@ -91,17 +101,10 @@ export function useAuthHandlers(): AuthHandlers {
         return { success: false, shouldSwitchToLogin: false };
       }
 
-      if (!signUpData.user) {
-        toast({
-          title: "Compte créé avec succès",
-          description: "Un email de confirmation vous a été envoyé. Veuillez vérifier votre boîte de réception.",
-        });
-      } else {
-        toast({
-          title: "Inscription réussie",
-          description: "Votre compte a été créé avec succès",
-        });
-      }
+      toast({
+        title: "Compte créé avec succès",
+        description: "Un email de confirmation vous a été envoyé. Veuillez vérifier votre boîte de réception.",
+      });
       return { success: true, shouldSwitchToLogin: false };
     } catch (error: any) {
       console.error("Auth error:", error);

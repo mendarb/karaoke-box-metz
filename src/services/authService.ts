@@ -32,7 +32,14 @@ export const resetPassword = async (email: string) => {
   });
 };
 
-export const checkExistingUser = async (email: string, password: string) => {
-  const { data: { user }, error } = await signIn(email, password);
-  return { user, error };
+export const checkExistingUser = async (email: string) => {
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('user_id')
+    .eq('user_email', email)
+    .not('user_id', 'is', null)
+    .limit(1)
+    .maybeSingle();
+
+  return { exists: !!data?.user_id, error };
 };

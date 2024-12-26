@@ -62,8 +62,13 @@ serve(async (req) => {
           .eq('payment_intent_id', session.payment_intent)
           .single();
 
-        if (bookingError || !booking) {
-          console.error('❌ Réservation non trouvée par payment_intent_id:', bookingError);
+        if (bookingError) {
+          console.error('❌ Erreur lors de la recherche de la réservation:', bookingError);
+          throw bookingError;
+        }
+
+        if (!booking) {
+          console.error('❌ Aucune réservation trouvée avec le payment_intent_id:', session.payment_intent);
           throw new Error('Réservation introuvable');
         }
 
@@ -106,22 +111,6 @@ serve(async (req) => {
           }
 
           console.log('✅ Email de confirmation envoyé');
-
-          // Envoi de la notification admin
-          const adminResponse = await fetch(`${supabaseUrl}/functions/v1/send-admin-notification`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
-            },
-            body: JSON.stringify({ booking })
-          });
-
-          if (!adminResponse.ok) {
-            console.error('⚠️ Erreur lors de l\'envoi de la notification admin');
-          } else {
-            console.log('✅ Notification admin envoyée');
-          }
 
         } catch (emailError) {
           console.error('❌ Erreur lors de l\'envoi de l\'email:', emailError);

@@ -61,6 +61,7 @@ export const generatePaymentLink = async (data: any) => {
   });
 
   try {
+    // Créer la session de paiement
     const response = await supabase.functions.invoke('create-checkout', {
       body: {
         bookingId: data.bookingId,
@@ -92,9 +93,14 @@ export const generatePaymentLink = async (data: any) => {
 
     // Mettre à jour la réservation avec le payment_intent_id
     if (paymentIntentId) {
+      console.log('📝 Mise à jour de la réservation avec payment_intent_id:', paymentIntentId);
+      
       const { error: updateError } = await supabase
         .from('bookings')
-        .update({ payment_intent_id: paymentIntentId })
+        .update({ 
+          payment_intent_id: paymentIntentId,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', data.bookingId);
 
       if (updateError) {
@@ -102,7 +108,7 @@ export const generatePaymentLink = async (data: any) => {
         throw new Error('Échec de la mise à jour du payment_intent_id');
       }
 
-      console.log('✅ payment_intent_id enregistré:', paymentIntentId);
+      console.log('✅ payment_intent_id enregistré avec succès:', paymentIntentId);
     }
 
     console.log('✅ Lien de paiement généré avec succès:', {

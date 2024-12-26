@@ -15,21 +15,31 @@ serve(async (req) => {
       return new Response(null, { headers: corsHeaders });
     }
 
+    // Récupérer la signature du webhook depuis les en-têtes
     const signature = req.headers.get('stripe-signature');
-    const body = await req.text();
-    const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
-
-    if (!webhookSecret) {
-      throw new Error('Secret webhook non configuré');
+    if (!signature) {
+      console.error('❌ Pas de signature Stripe dans les en-têtes');
+      throw new Error('No stripe signature found in headers');
     }
+
+    const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
+    if (!webhookSecret) {
+      console.error('❌ Secret webhook non configuré');
+      throw new Error('Webhook secret not configured');
+    }
+
+    // Récupérer le corps de la requête en tant que texte
+    const body = await req.text();
+    console.log('📦 Corps de la requête reçu:', body.substring(0, 100) + '...');
 
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
       apiVersion: '2023-10-16',
     });
 
+    // Vérifier la signature du webhook
     let event: Stripe.Event;
     try {
-      event = stripe.webhooks.constructEvent(body, signature!, webhookSecret);
+      event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
       console.log('✅ Signature du webhook vérifiée');
       console.log('📦 Type d\'événement reçu:', event.type);
     } catch (err) {

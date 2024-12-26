@@ -24,13 +24,17 @@ serve(async (req) => {
       });
     }
 
+    // 1. Vérifier la présence de la signature Stripe
     const signature = req.headers.get('stripe-signature');
     console.log('📝 Stripe signature:', signature);
 
     if (!signature) {
       console.error('❌ No Stripe signature found in headers');
       return new Response(
-        JSON.stringify({ error: 'No Stripe signature found' }),
+        JSON.stringify({ 
+          error: 'No Stripe signature found',
+          headers: Object.fromEntries(req.headers.entries())
+        }),
         { 
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -38,25 +42,27 @@ serve(async (req) => {
       );
     }
 
+    // 2. Récupérer et logger le corps de la requête
     const body = await req.text();
     console.log('📦 Request body received:', body);
 
-    // Parse the event to determine if it's a test event
+    // 3. Déterminer le mode (test/live) et le secret approprié
     const rawEvent = JSON.parse(body);
     const isTestMode = !rawEvent.livemode;
     console.log('🔑 Mode:', isTestMode ? 'TEST' : 'LIVE');
 
-    // Use appropriate webhook secret based on mode
+    // 4. Utiliser le secret webhook approprié
     const webhookSecret = isTestMode 
       ? Deno.env.get('STRIPE_WEBHOOK_SECRET')
       : Deno.env.get('STRIPE_LIVE_WEBHOOK_SECRET');
 
-    console.log('🔐 Using webhook secret for', isTestMode ? 'TEST' : 'LIVE', 'mode');
-
     if (!webhookSecret) {
       console.error('❌ Webhook secret not configured for', isTestMode ? 'test' : 'live', 'mode');
       return new Response(
-        JSON.stringify({ error: `Webhook secret not configured for ${isTestMode ? 'test' : 'live'} mode` }),
+        JSON.stringify({ 
+          error: `Webhook secret not configured for ${isTestMode ? 'test' : 'live'} mode`,
+          mode: isTestMode ? 'test' : 'live'
+        }),
         { 
           status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -64,7 +70,7 @@ serve(async (req) => {
       );
     }
 
-    // Use appropriate secret key based on mode
+    // 5. Utiliser la clé API Stripe appropriée
     const stripeKey = isTestMode 
       ? Deno.env.get('STRIPE_TEST_SECRET_KEY')
       : Deno.env.get('STRIPE_SECRET_KEY');
@@ -72,7 +78,10 @@ serve(async (req) => {
     if (!stripeKey) {
       console.error('❌ Stripe key not configured for', isTestMode ? 'test' : 'live', 'mode');
       return new Response(
-        JSON.stringify({ error: `Stripe key not configured for ${isTestMode ? 'test' : 'live'} mode` }),
+        JSON.stringify({ 
+          error: `Stripe key not configured for ${isTestMode ? 'test' : 'live'} mode`,
+          mode: isTestMode ? 'test' : 'live'
+        }),
         { 
           status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -80,7 +89,8 @@ serve(async (req) => {
       );
     }
 
-    console.log('🔐 Attempting to verify webhook signature');
+    console.log('🔐 Attempting to verify webhook signature with', isTestMode ? 'TEST' : 'LIVE', 'mode secret');
+    
     const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
       httpClient: Stripe.createFetchHttpClient(),
@@ -97,7 +107,11 @@ serve(async (req) => {
     } catch (err) {
       console.error('❌ Webhook signature verification failed:', err);
       return new Response(
-        JSON.stringify({ error: `Webhook Error: ${err.message}` }),
+        JSON.stringify({ 
+          error: `Webhook Error: ${err.message}`,
+          signature: signature,
+          mode: isTestMode ? 'test' : 'live'
+        }),
         { 
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -105,10 +119,7 @@ serve(async (req) => {
       );
     }
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
+    // 6. Traiter l'événement vérifié
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
       console.log('💳 Checkout session completed:', {
@@ -118,6 +129,10 @@ serve(async (req) => {
       });
 
       try {
+        const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+        const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+        const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
         const { data: booking, error: bookingError } = await supabase
           .from('bookings')
           .select('*')
@@ -172,9 +187,8 @@ serve(async (req) => {
 
         } catch (emailError) {
           console.error('❌ Error sending confirmation email:', emailError);
-          // Don't throw here, we don't want to fail the webhook if email fails
+          // Ne pas bloquer le processus si l'email échoue
         }
-
       } catch (error) {
         console.error('❌ Error processing checkout session:', error);
         throw error;

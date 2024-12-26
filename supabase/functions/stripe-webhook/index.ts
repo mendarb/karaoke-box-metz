@@ -15,12 +15,15 @@ serve(async (req) => {
   try {
     console.log('📦 Received webhook request');
     const signature = req.headers.get('stripe-signature');
-    const body = await req.text();
 
     if (!signature) {
       console.error('❌ No Stripe signature found in request');
       throw new Error('No Stripe signature found in request');
     }
+
+    // Get the raw body as text
+    const rawBody = await req.text();
+    console.log('📝 Raw webhook body received');
 
     // Initialize Stripe with the appropriate secret key
     const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY')!;
@@ -28,8 +31,8 @@ serve(async (req) => {
     const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')!;
     const liveWebhookSecret = Deno.env.get('STRIPE_LIVE_WEBHOOK_SECRET')!;
 
-    // Determine if this is a test event
-    const isTestMode = body.includes('"livemode":false');
+    // Determine if this is a test event based on the raw body content
+    const isTestMode = rawBody.includes('"livemode":false');
     const stripe = new Stripe(isTestMode ? stripeTestSecretKey : stripeSecretKey, {
       apiVersion: "2023-10-16",
       httpClient: Stripe.createFetchHttpClient(),
@@ -39,7 +42,7 @@ serve(async (req) => {
     let event;
     try {
       event = await stripe.webhooks.constructEventAsync(
-        body,
+        rawBody,
         signature,
         isTestMode ? webhookSecret : liveWebhookSecret
       );
@@ -153,7 +156,10 @@ serve(async (req) => {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
             },
-            body: JSON.stringify({ booking: updatedBooking }),
+            body: JSON.stringify({ 
+              booking: updatedBooking,
+              type: 'confirmation'
+            }),
           }
         );
 

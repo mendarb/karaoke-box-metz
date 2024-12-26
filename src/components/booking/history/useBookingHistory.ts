@@ -26,7 +26,16 @@ export const useBookingHistory = () => {
 
         console.log('All bookings (without deleted_at filter):', allBookings);
 
-        // Maintenant la requête avec tous les filtres
+        // Vérifions maintenant avec le filtre de status
+        const { data: pendingBookings, error: pendingError } = await supabase
+          .from('bookings')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .eq('status', 'pending');
+
+        console.log('Pending bookings:', pendingBookings);
+
+        // Maintenant la requête finale avec tous les filtres
         const { data, error } = await supabase
           .from('bookings')
           .select('*')
@@ -39,7 +48,7 @@ export const useBookingHistory = () => {
           throw error;
         }
 
-        console.log('Fetched bookings:', data);
+        console.log('Final filtered bookings:', data);
         return data;
       } catch (error: any) {
         console.error('Error in useBookingHistory:', error);

@@ -39,6 +39,15 @@ serve(async (req) => {
 
     // Utiliser le prix final après réduction
     const finalAmount = Math.round((requestData.finalPrice || requestData.price) * 100);
+    console.log('💰 Montant final pour Stripe:', {
+      originalPrice: requestData.price,
+      finalPrice: requestData.finalPrice,
+      finalAmount,
+      promoDetails: {
+        code: requestData.promoCode,
+        discountAmount: requestData.discountAmount
+      }
+    });
 
     // Format price description with promo code if applicable
     let priceDescription = `${requestData.groupSize} personnes - ${requestData.duration}h`;

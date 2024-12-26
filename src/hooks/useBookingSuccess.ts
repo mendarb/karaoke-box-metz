@@ -84,6 +84,7 @@ export const useBookingSuccess = () => {
             .eq("payment_status", "paid")
             .is("deleted_at", null)
             .order("created_at", { ascending: false })
+            .limit(1)
             .maybeSingle();
 
           if (latestError) {
@@ -105,6 +106,11 @@ export const useBookingSuccess = () => {
       } catch (error: any) {
         console.error("❌ Erreur lors de la récupération de la réservation:", error);
         setError(error.message);
+        toast({
+          title: "Erreur",
+          description: "Impossible de récupérer les détails de votre réservation. Veuillez contacter le support.",
+          variant: "destructive",
+        });
       } finally {
         setIsLoading(false);
       }

@@ -8,13 +8,9 @@ interface AuthFormProps {
 }
 
 export function AuthForm({ onClose, isLogin, onToggleMode }: AuthFormProps) {
-  const handleSuccess = () => {
-    onClose()
-  }
-
   return isLogin ? (
-    <LoginForm onToggleMode={onToggleMode} />
+    <LoginForm onToggleMode={onToggleMode} onSuccess={onClose} />
   ) : (
-    <SignupForm onToggleMode={onToggleMode} />
+    <SignupForm onToggleMode={onToggleMode} onSuccess={onClose} />
   )
 }

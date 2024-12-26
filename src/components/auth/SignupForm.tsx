@@ -6,9 +6,10 @@ import { useAuthHandlers } from "@/hooks/useAuthHandlers"
 
 interface SignupFormProps {
   onToggleMode: () => void;
+  onSuccess?: () => void;
 }
 
-export function SignupForm({ onToggleMode }: SignupFormProps) {
+export function SignupForm({ onToggleMode, onSuccess }: SignupFormProps) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [fullName, setFullName] = useState("")
@@ -17,7 +18,12 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await handleSignup(email, password, fullName, phone)
+    const { success, shouldSwitchToLogin } = await handleSignup(email, password, fullName, phone)
+    if (shouldSwitchToLogin) {
+      onToggleMode()
+    } else if (success && onSuccess) {
+      onSuccess()
+    }
   }
 
   return (
@@ -30,6 +36,7 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
           onChange={(e) => setFullName(e.target.value)}
           required
           placeholder="Jean Dupont"
+          disabled={isLoading}
         />
       </div>
       <div className="space-y-2">
@@ -41,6 +48,7 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
           onChange={(e) => setEmail(e.target.value)}
           required
           placeholder="votre@email.com"
+          disabled={isLoading}
         />
       </div>
       <div className="space-y-2">
@@ -53,6 +61,7 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
           required
           placeholder="••••••••"
           minLength={6}
+          disabled={isLoading}
         />
       </div>
       <div className="space-y-2">
@@ -64,6 +73,7 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
           onChange={(e) => setPhone(e.target.value)}
           required
           placeholder="06 12 34 56 78"
+          disabled={isLoading}
         />
       </div>
       <Button type="submit" className="w-full" disabled={isLoading}>
@@ -74,6 +84,7 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
         variant="link"
         className="w-full"
         onClick={onToggleMode}
+        disabled={isLoading}
       >
         Déjà un compte ? Se connecter
       </Button>

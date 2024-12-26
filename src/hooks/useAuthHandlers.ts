@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { supabase } from "@/lib/supabase"
-import { useToast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
 
 export function useAuthHandlers() {
   const [isLoading, setIsLoading] = useState(false)
@@ -9,6 +9,19 @@ export function useAuthHandlers() {
   const handleLogin = async (email: string, password: string) => {
     setIsLoading(true)
     try {
+      // Vérifier d'abord si l'email est confirmé
+      const { data: { users }, error: getUserError } = await supabase.auth.admin.listUsers()
+      const existingUser = users?.find(u => u.email === email.trim())
+
+      if (existingUser && !existingUser.email_confirmed_at) {
+        toast({
+          title: "Email non confirmé",
+          description: "Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte de réception.",
+          variant: "destructive",
+        })
+        return false
+      }
+
       const { error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password: password.trim(),
@@ -62,14 +75,14 @@ export function useAuthHandlers() {
         return { success: false, shouldSwitchToLogin: false }
       }
 
-      // Vérifier d'abord si l'utilisateur existe
-      const { data: { user: existingUser } } = await supabase.auth.getUser()
-      
+      // Vérifier si l'utilisateur existe déjà
+      const { data: { users } } = await supabase.auth.admin.listUsers()
+      const existingUser = users?.find(u => u.email === email.trim())
+
       if (existingUser) {
         toast({
           title: "Compte existant",
           description: "Un compte existe déjà avec cet email. Veuillez vous connecter.",
-          variant: "destructive",
         })
         return { success: false, shouldSwitchToLogin: true }
       }
@@ -89,34 +102,18 @@ export function useAuthHandlers() {
 
       if (error) {
         console.error("Signup error:", error)
-        if (error.message.includes("User already registered")) {
-          toast({
-            title: "Compte existant",
-            description: "Un compte existe déjà avec cet email. Veuillez vous connecter.",
-          })
-          return { success: false, shouldSwitchToLogin: true }
-        } else {
-          toast({
-            title: "Erreur",
-            description: error.message,
-            variant: "destructive",
-          })
-          return { success: false, shouldSwitchToLogin: false }
-        }
+        toast({
+          title: "Erreur",
+          description: error.message,
+          variant: "destructive",
+        })
+        return { success: false, shouldSwitchToLogin: false }
       }
 
-      // Vérifier si l'email nécessite une confirmation
-      if (data?.user?.identities?.length === 0) {
-        toast({
-          title: "Compte créé avec succès",
-          description: "Un email de confirmation vous a été envoyé. Veuillez vérifier votre boîte de réception.",
-        })
-      } else {
-        toast({
-          title: "Inscription réussie",
-          description: "Votre compte a été créé avec succès",
-        })
-      }
+      toast({
+        title: "Inscription réussie",
+        description: "Un email de confirmation vous a été envoyé. Veuillez vérifier votre boîte de réception.",
+      })
       return { success: true, shouldSwitchToLogin: false }
     } catch (error: any) {
       console.error("Auth error:", error)

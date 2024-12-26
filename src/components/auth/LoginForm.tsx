@@ -6,16 +6,20 @@ import { useAuthHandlers } from "@/hooks/useAuthHandlers"
 
 interface LoginFormProps {
   onToggleMode: () => void;
+  onSuccess?: () => void;
 }
 
-export function LoginForm({ onToggleMode }: LoginFormProps) {
+export function LoginForm({ onToggleMode, onSuccess }: LoginFormProps) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const { handleLogin, isLoading } = useAuthHandlers()
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await handleLogin(email, password)
+    const success = await handleLogin(email, password)
+    if (success && onSuccess) {
+      onSuccess()
+    }
   }
 
   return (
@@ -29,6 +33,7 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
           onChange={(e) => setEmail(e.target.value)}
           required
           placeholder="votre@email.com"
+          disabled={isLoading}
         />
       </div>
       <div className="space-y-2">
@@ -41,6 +46,7 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
           required
           placeholder="••••••••"
           minLength={6}
+          disabled={isLoading}
         />
       </div>
       <Button type="submit" className="w-full" disabled={isLoading}>
@@ -51,6 +57,7 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
         variant="link"
         className="w-full"
         onClick={onToggleMode}
+        disabled={isLoading}
       >
         Pas encore de compte ? S'inscrire
       </Button>

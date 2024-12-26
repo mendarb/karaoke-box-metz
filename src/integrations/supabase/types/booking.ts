@@ -20,4 +20,5 @@ export interface Booking {
   is_test_booking: boolean;
   payment_intent_id: string | null;
   cabin: string;
+  invoice_url: string | null;
 }

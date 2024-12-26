@@ -29,7 +29,7 @@ export const EmailSection = () => {
       const { data, error } = await supabase.auth.updateUser({ 
         email: newEmail 
       }, {
-        emailRedirectTo: `${window.location.origin}/account/security`
+        emailRedirectTo: `${window.location.origin}/account`
       });
 
       console.log("Réponse de updateUser:", { data, error });

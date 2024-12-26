@@ -4,9 +4,7 @@ import Stripe from 'https://esm.sh/stripe@14.21.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, stripe-signature',
-  'Access-Control-Max-Age': '86400',
 };
 
 serve(async (req) => {
@@ -27,20 +25,10 @@ serve(async (req) => {
     }
 
     const signature = req.headers.get('stripe-signature');
-    if (!signature) {
-      console.error('❌ No stripe signature found in headers');
-      console.log('📝 Available headers:', Object.fromEntries(req.headers.entries()));
-      return new Response(
-        JSON.stringify({ error: 'No stripe signature found in headers' }),
-        { 
-          status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
+    console.log('📝 Stripe signature:', signature);
 
     const body = await req.text();
-    console.log('📦 Request body received (first 100 chars):', body.substring(0, 100) + '...');
+    console.log('📦 Request body received:', body.substring(0, 100) + '...');
 
     // Parse the event to determine if it's a test event
     const rawEvent = JSON.parse(body);
@@ -51,6 +39,8 @@ serve(async (req) => {
     const webhookSecret = isTestMode 
       ? Deno.env.get('STRIPE_WEBHOOK_SECRET')
       : Deno.env.get('STRIPE_LIVE_WEBHOOK_SECRET');
+
+    console.log('🔐 Using webhook secret for', isTestMode ? 'TEST' : 'LIVE', 'mode');
 
     if (!webhookSecret) {
       console.error('❌ Webhook secret not configured for', isTestMode ? 'test' : 'live', 'mode');
@@ -89,7 +79,7 @@ serve(async (req) => {
     try {
       event = stripe.webhooks.constructEvent(
         body,
-        signature,
+        signature || '',
         webhookSecret
       );
       console.log('✅ Webhook signature verified, event:', event.type);
@@ -120,7 +110,7 @@ serve(async (req) => {
         const { data: booking, error: bookingError } = await supabase
           .from('bookings')
           .select('*')
-          .eq('payment_intent_id', session.payment_intent)
+          .eq('id', session.metadata?.bookingId)
           .single();
 
         if (bookingError) {
@@ -129,7 +119,7 @@ serve(async (req) => {
         }
 
         if (!booking) {
-          console.error('❌ No booking found with payment_intent_id:', session.payment_intent);
+          console.error('❌ No booking found with ID:', session.metadata?.bookingId);
           throw new Error('Booking not found');
         }
 
@@ -157,7 +147,7 @@ serve(async (req) => {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+              'Authorization': `Bearer ${supabaseServiceKey}`,
             },
             body: JSON.stringify({ booking })
           });

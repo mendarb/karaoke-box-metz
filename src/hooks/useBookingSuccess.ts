@@ -62,47 +62,26 @@ export const useBookingSuccess = () => {
         console.log("💳 Payment Intent ID récupéré:", stripeData.paymentIntentId);
 
         // Récupérer la réservation avec le payment_intent_id
-        const { data: bookingData, error: bookingError } = await supabase
+        const { data: bookings, error: bookingError } = await supabase
           .from("bookings")
           .select("*")
           .eq("payment_intent_id", stripeData.paymentIntentId)
-          .is("deleted_at", null)
-          .single();
+          .is("deleted_at", null);
 
         if (bookingError) {
           console.error("❌ Erreur lors de la récupération de la réservation:", bookingError);
           throw bookingError;
         }
 
-        if (!bookingData) {
+        if (!bookings || bookings.length === 0) {
           console.warn("⚠️ Aucune réservation trouvée avec le payment_intent_id:", stripeData.paymentIntentId);
-          
-          // Essayer de récupérer la dernière réservation payée et confirmée
-          const { data: latestBooking, error: latestError } = await supabase
-            .from("bookings")
-            .select("*")
-            .eq("payment_status", "paid")
-            .eq("status", "confirmed")
-            .is("deleted_at", null)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .single();
-
-          if (latestError) {
-            throw latestError;
-          }
-
-          if (!latestBooking) {
-            throw new Error("Aucune réservation trouvée");
-          }
-
-          console.log("✅ Dernière réservation trouvée:", latestBooking);
-          setBooking(latestBooking);
-          return;
+          throw new Error("Aucune réservation trouvée");
         }
 
-        console.log("✅ Réservation trouvée:", bookingData);
-        setBooking(bookingData);
+        // Prendre la réservation la plus récente si plusieurs sont trouvées
+        const latestBooking = bookings[0];
+        console.log("✅ Réservation trouvée:", latestBooking);
+        setBooking(latestBooking);
 
       } catch (error: any) {
         console.error("❌ Erreur lors de la récupération de la réservation:", error);

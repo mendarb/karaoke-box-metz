@@ -86,37 +86,19 @@ serve(async (req) => {
         throw new Error('Booking ID not found in session metadata');
       }
 
-      console.log('🔍 Looking for booking with ID:', bookingId);
-      const { data: booking, error: bookingError } = await supabase
-        .from('bookings')
-        .select('*')
-        .eq('id', bookingId)
-        .maybeSingle();
-
-      if (bookingError) {
-        console.error('❌ Error fetching booking:', bookingError);
-        throw new Error(`Error fetching booking: ${bookingError.message}`);
-      }
-
-      if (!booking) {
-        console.error('❌ Booking not found:', bookingId);
-        throw new Error(`Booking not found: ${bookingId}`);
-      }
-
-      console.log('✅ Found booking:', {
-        id: booking.id,
-        status: booking.status,
-        paymentStatus: booking.payment_status
-      });
-
       // Get invoice URL from Stripe
       let invoiceUrl = null;
       if (session.payment_intent) {
-        const paymentIntent = await stripe.paymentIntents.retrieve(session.payment_intent as string);
-        if (paymentIntent.invoice) {
-          const invoice = await stripe.invoices.retrieve(paymentIntent.invoice as string);
-          invoiceUrl = invoice.hosted_invoice_url;
-          console.log('📄 Retrieved invoice URL:', invoiceUrl);
+        try {
+          const paymentIntent = await stripe.paymentIntents.retrieve(session.payment_intent as string);
+          if (paymentIntent.invoice) {
+            const invoice = await stripe.invoices.retrieve(paymentIntent.invoice as string);
+            invoiceUrl = invoice.hosted_invoice_url;
+            console.log('📄 Retrieved invoice URL:', invoiceUrl);
+          }
+        } catch (error) {
+          console.error('❌ Error retrieving invoice:', error);
+          // Continue without invoice URL
         }
       }
 
@@ -142,7 +124,8 @@ serve(async (req) => {
       console.log('✅ Booking updated successfully:', {
         id: updatedBooking.id,
         status: updatedBooking.status,
-        paymentStatus: updatedBooking.payment_status
+        paymentStatus: updatedBooking.payment_status,
+        paymentIntentId: updatedBooking.payment_intent_id
       });
 
       // Send confirmation email

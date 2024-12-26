@@ -1,4 +1,20 @@
 import { supabase } from "@/lib/supabase";
+import { Booking } from "@/integrations/supabase/types/booking";
+
+export const fetchBookings = async (): Promise<Booking[]> => {
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('*')
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching bookings:', error);
+    throw error;
+  }
+
+  return data || [];
+};
 
 export const generatePaymentLink = async (data: any) => {
   console.log('💰 Début de génération du lien de paiement:', {

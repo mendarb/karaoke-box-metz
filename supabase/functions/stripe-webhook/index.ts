@@ -9,12 +9,10 @@ const corsHeaders = {
 
 serve(async (req) => {
   try {
-    // Gérer les requêtes CORS preflight
     if (req.method === 'OPTIONS') {
       return new Response(null, { headers: corsHeaders });
     }
 
-    // Récupérer la signature du webhook
     const signature = req.headers.get('stripe-signature');
     if (!signature) {
       console.error('❌ Pas de signature Stripe dans les en-têtes');
@@ -26,6 +24,19 @@ serve(async (req) => {
         }
       );
     }
+
+    const body = await req.text();
+    console.log('📦 Corps de la requête reçu:', body.substring(0, 100) + '...');
+
+    // Déterminer si nous sommes en mode test
+    const event = JSON.parse(body);
+    const isTestMode = !event.livemode;
+    console.log('🔑 Mode:', isTestMode ? 'TEST' : 'LIVE');
+
+    // Utiliser la clé appropriée en fonction du mode
+    const stripeKey = isTestMode 
+      ? Deno.env.get('STRIPE_TEST_SECRET_KEY')
+      : Deno.env.get('STRIPE_SECRET_KEY');
 
     const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
     if (!webhookSecret) {
@@ -39,25 +50,19 @@ serve(async (req) => {
       );
     }
 
-    // Récupérer le corps de la requête en tant que texte brut
-    const body = await req.text();
-    console.log('📦 Corps de la requête reçu:', body.substring(0, 100) + '...');
-
-    // Initialiser Stripe avec la clé secrète
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
+    const stripe = new Stripe(stripeKey!, {
       apiVersion: '2023-10-16',
       httpClient: Stripe.createFetchHttpClient(),
     });
 
-    // Vérifier la signature du webhook
-    let event: Stripe.Event;
+    let verifiedEvent: Stripe.Event;
     try {
-      event = stripe.webhooks.constructEvent(
+      verifiedEvent = stripe.webhooks.constructEvent(
         body,
         signature,
         webhookSecret
       );
-      console.log('✅ Signature du webhook vérifiée, événement:', event.type);
+      console.log('✅ Signature du webhook vérifiée, événement:', verifiedEvent.type);
     } catch (err) {
       console.error('❌ Erreur de vérification de la signature:', err);
       return new Response(
@@ -69,14 +74,12 @@ serve(async (req) => {
       );
     }
 
-    // Initialiser le client Supabase
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Traiter l'événement
-    if (event.type === 'checkout.session.completed') {
-      const session = event.data.object as Stripe.Checkout.Session;
+    if (verifiedEvent.type === 'checkout.session.completed') {
+      const session = verifiedEvent.data.object as Stripe.Checkout.Session;
       console.log('💳 Session de paiement complétée:', {
         sessionId: session.id,
         paymentIntentId: session.payment_intent,
@@ -84,7 +87,6 @@ serve(async (req) => {
       });
 
       try {
-        // Rechercher la réservation avec le payment_intent_id
         const { data: booking, error: bookingError } = await supabase
           .from('bookings')
           .select('*')
@@ -103,7 +105,6 @@ serve(async (req) => {
 
         console.log('✅ Réservation trouvée:', booking);
 
-        // Mettre à jour le statut de la réservation
         const { error: updateError } = await supabase
           .from('bookings')
           .update({
@@ -120,7 +121,6 @@ serve(async (req) => {
 
         console.log('✅ Réservation mise à jour avec succès');
 
-        // Envoyer l'email de confirmation
         try {
           console.log('📧 Envoi de l\'email de confirmation...');
           const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-booking-email`, {
@@ -143,7 +143,6 @@ serve(async (req) => {
 
         } catch (emailError) {
           console.error('❌ Erreur lors de l\'envoi de l\'email:', emailError);
-          // Ne pas bloquer le processus si l'email échoue
         }
 
       } catch (error) {

@@ -31,7 +31,9 @@ export const AccountsTable = () => {
     queryKey: ['admin-profiles'],
     queryFn: async () => {
       try {
-        console.log("Fetching profiles as admin:", isAdmin);
+        // Ajout de logs pour déboguer
+        console.log("Début de la requête des profils");
+        
         const { data: profiles, error } = await supabase
           .from('profiles')
           .select('*')
@@ -47,7 +49,7 @@ export const AccountsTable = () => {
           throw error;
         }
 
-        console.log("Fetched profiles:", profiles);
+        console.log("Profils récupérés:", profiles);
         return profiles || [];
       } catch (err) {
         console.error('Query error:', err);

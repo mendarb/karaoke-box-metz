@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
-import { AdminUserResponse } from "@supabase/supabase-js";
+import { User } from "@supabase/supabase-js";
 
 interface UserProfile {
   id: string;
@@ -47,7 +47,7 @@ export const AccountsTable = () => {
 
       // Combiner les données des profils avec les emails
       return profiles.map(profile => {
-        const user = users.find(u => u.id === profile.id);
+        const user = (users as User[]).find(u => u.id === profile.id);
         return {
           ...profile,
           email: user?.email || 'N/A'

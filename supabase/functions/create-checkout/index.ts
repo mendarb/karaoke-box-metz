@@ -15,17 +15,12 @@ serve(async (req) => {
   try {
     const requestData = await req.json();
     console.log('📦 Données reçues pour la création de session:', {
-      bookingId: requestData.bookingId,
       originalPrice: requestData.price,
       finalPrice: requestData.finalPrice,
       promoCode: requestData.promoCode,
       discountAmount: requestData.discountAmount,
       isTestMode: requestData.isTestMode
     });
-
-    if (!requestData || !requestData.bookingId) {
-      throw new Error('ID de réservation manquant');
-    }
 
     const stripeKey = requestData.isTestMode 
       ? Deno.env.get('STRIPE_TEST_SECRET_KEY')
@@ -77,8 +72,7 @@ serve(async (req) => {
       cancel_url: `${req.headers.get('origin')}`,
       customer_email: requestData.userEmail,
       metadata: {
-        bookingId: requestData.bookingId,
-        userId: requestData.userId || '',
+        userId: requestData.userId,
         userEmail: requestData.userEmail,
         userName: requestData.userName,
         userPhone: requestData.userPhone,
@@ -99,7 +93,6 @@ serve(async (req) => {
     console.log('✅ Session Stripe créée:', {
       sessionId: session.id,
       paymentIntentId: session.payment_intent,
-      bookingId: requestData.bookingId,
       metadata: session.metadata,
       finalAmount,
       promoDetails: {

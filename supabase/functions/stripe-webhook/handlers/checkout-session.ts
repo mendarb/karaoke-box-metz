@@ -18,68 +18,75 @@ export const handleCheckoutSession = async (
       return { received: true, status: "pending" };
     }
 
-    // Get payment intent to retrieve receipt
-    const stripeKey = session.livemode 
-      ? Deno.env.get('STRIPE_SECRET_KEY')
-      : Deno.env.get('STRIPE_TEST_SECRET_KEY');
+    // Create booking only after successful payment
+    const { data: booking, error: bookingError } = await supabase
+      .from('bookings')
+      .insert([{
+        user_id: session.metadata?.userId,
+        user_email: session.metadata?.userEmail,
+        user_name: session.metadata?.userName,
+        user_phone: session.metadata?.userPhone,
+        date: session.metadata?.date,
+        time_slot: session.metadata?.timeSlot,
+        duration: session.metadata?.duration,
+        group_size: session.metadata?.groupSize,
+        price: parseFloat(session.metadata?.originalPrice || '0'),
+        message: session.metadata?.message,
+        status: 'confirmed',
+        payment_status: 'paid',
+        is_test_booking: session.metadata?.isTestMode === 'true',
+        payment_intent_id: session.payment_intent as string,
+        promo_code_id: session.metadata?.promoCodeId || null,
+      }])
+      .select()
+      .single();
 
-    if (!stripeKey) {
-      throw new Error(`${session.livemode ? 'Live' : 'Test'} mode Stripe API key not configured`);
+    if (bookingError) {
+      console.error('❌ Error creating booking:', bookingError);
+      throw bookingError;
     }
 
-    const stripe = new Stripe(stripeKey, {
-      apiVersion: '2023-10-16',
+    console.log('✅ Booking created:', {
+      id: booking.id,
+      status: booking.status,
+      paymentStatus: booking.payment_status
     });
-
-    const paymentIntentId = session.payment_intent as string;
-    console.log('🔍 Retrieving payment intent:', paymentIntentId, 'Mode:', session.livemode ? 'LIVE' : 'TEST');
 
     // Get receipt URL
     let receiptUrl = null;
     try {
+      const stripeKey = session.livemode 
+        ? Deno.env.get('STRIPE_SECRET_KEY')
+        : Deno.env.get('STRIPE_TEST_SECRET_KEY');
+
+      if (!stripeKey) {
+        throw new Error(`${session.livemode ? 'Live' : 'Test'} mode Stripe API key not configured`);
+      }
+
+      const stripe = new Stripe(stripeKey, {
+        apiVersion: '2023-10-16',
+      });
+
+      const paymentIntentId = session.payment_intent as string;
       const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
       if (paymentIntent.latest_charge) {
         const charge = await stripe.charges.retrieve(paymentIntent.latest_charge as string);
         receiptUrl = charge.receipt_url;
         console.log('🧾 Receipt URL retrieved:', receiptUrl);
-      } else {
-        console.log('⚠️ No charge found in payment intent:', paymentIntentId);
+
+        // Update booking with receipt URL
+        const { error: updateError } = await supabase
+          .from('bookings')
+          .update({ invoice_url: receiptUrl })
+          .eq('id', booking.id);
+
+        if (updateError) {
+          console.error('⚠️ Error updating booking with receipt URL:', updateError);
+        }
       }
     } catch (receiptError) {
       console.error('⚠️ Error retrieving receipt:', receiptError);
-      // Continue execution even if receipt retrieval fails
     }
-
-    // Update booking status
-    const bookingId = session.metadata?.bookingId;
-    if (!bookingId) {
-      throw new Error('Booking ID not found in session metadata');
-    }
-
-    const { data: booking, error: updateError } = await supabase
-      .from('bookings')
-      .update({
-        payment_status: 'paid',
-        status: 'confirmed',
-        payment_intent_id: paymentIntentId,
-        invoice_url: receiptUrl,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', bookingId)
-      .select()
-      .single();
-
-    if (updateError) {
-      console.error('❌ Error updating booking:', updateError);
-      throw updateError;
-    }
-
-    console.log('✅ Booking updated:', {
-      id: booking.id,
-      status: booking.status,
-      paymentStatus: booking.payment_status,
-      receiptUrl: booking.invoice_url
-    });
 
     // Send confirmation email
     try {
@@ -102,7 +109,6 @@ export const handleCheckoutSession = async (
       console.log('📧 Confirmation email sent');
     } catch (emailError) {
       console.error('❌ Error sending confirmation email:', emailError);
-      // Don't block the process if email fails
     }
 
     return { received: true, booking };

@@ -68,32 +68,7 @@ export function useAuthHandlers() {
         return { success: false, shouldSwitchToLogin: false }
       }
 
-      // Vérifier si l'utilisateur existe déjà
-      const { data: { users } } = await supabase.auth.admin.listUsers({
-        filters: {
-          email: email.trim()
-        }
-      })
-
-      if (users && users.length > 0) {
-        const existingUser = users[0]
-        if (!existingUser.email_confirmed_at) {
-          toast({
-            title: "Email non confirmé",
-            description: "Vous avez déjà un compte mais votre email n'est pas confirmé. Vérifiez votre boîte de réception ou demandez un nouveau lien de confirmation.",
-            variant: "destructive",
-          })
-        } else {
-          toast({
-            title: "Compte existant",
-            description: "Un compte existe déjà avec cet email. Veuillez vous connecter ou réinitialiser votre mot de passe si vous l'avez oublié.",
-          })
-        }
-        return { success: false, shouldSwitchToLogin: true }
-      }
-
-      // Inscription avec les métadonnées utilisateur
-      const { error, data } = await supabase.auth.signUp({
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: email.trim(),
         password: password.trim(),
         options: {
@@ -105,9 +80,9 @@ export function useAuthHandlers() {
         },
       })
 
-      if (error) {
-        console.error("Signup error:", error)
-        if (error.message.includes("User already registered")) {
+      if (signUpError) {
+        console.error("Signup error:", signUpError)
+        if (signUpError.message.includes("User already registered")) {
           toast({
             title: "Compte existant",
             description: "Un compte existe déjà avec cet email. Veuillez vous connecter ou réinitialiser votre mot de passe si vous l'avez oublié.",
@@ -116,15 +91,14 @@ export function useAuthHandlers() {
         } else {
           toast({
             title: "Erreur",
-            description: error.message,
+            description: signUpError.message,
             variant: "destructive",
           })
           return { success: false, shouldSwitchToLogin: false }
         }
       }
 
-      // Vérifier si l'email nécessite une confirmation
-      if (data?.user?.identities?.length === 0) {
+      if (!signUpData.user) {
         toast({
           title: "Compte créé avec succès",
           description: "Un email de confirmation vous a été envoyé. Veuillez vérifier votre boîte de réception.",

@@ -94,7 +94,7 @@ export const BookingDetailsDialog = ({ isOpen, onClose, booking }: BookingDetail
             </div>
           )}
 
-          {booking.payment_status === 'paid' && !booking.isTestBooking && booking.invoice_url && (
+          {booking.payment_status === 'paid' && booking.invoice_url && (
             <div className="space-y-2">
               <h3 className="font-semibold">Documents</h3>
               <Button
@@ -103,7 +103,7 @@ export const BookingDetailsDialog = ({ isOpen, onClose, booking }: BookingDetail
                 onClick={() => window.open(booking.invoice_url, '_blank', 'noopener,noreferrer')}
               >
                 <Download className="mr-2 h-4 w-4" />
-                Télécharger le reçu
+                Télécharger {booking.isTestBooking ? 'la facture test' : 'le reçu'}
               </Button>
             </div>
           )}

@@ -3,7 +3,6 @@ import { fr } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { BookingStatusBadge } from "../../admin/BookingStatusBadge";
-import { useToast } from "@/components/ui/use-toast";
 import { Calendar, Clock, Users, Euro, Download } from "lucide-react";
 
 interface BookingCardProps {
@@ -11,7 +10,6 @@ interface BookingCardProps {
 }
 
 export const BookingCard = ({ booking }: BookingCardProps) => {
-  const { toast } = useToast();
   const startHour = parseInt(booking.time_slot);
   const endHour = startHour + parseInt(booking.duration);
 
@@ -62,20 +60,18 @@ export const BookingCard = ({ booking }: BookingCardProps) => {
           </div>
         )}
 
-        {booking.payment_status === 'paid' && !booking.is_test_booking && (
+        {booking.payment_status === 'paid' && booking.invoice_url && (
           <div className="flex flex-col gap-2">
-            {booking.invoice_url && (
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => {
-                  window.open(booking.invoice_url, '_blank', 'noopener,noreferrer');
-                }}
-              >
-                <Download className="mr-2 h-4 w-4" />
-                Télécharger le reçu
-              </Button>
-            )}
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => {
+                window.open(booking.invoice_url, '_blank', 'noopener,noreferrer');
+              }}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Télécharger {booking.is_test_booking ? 'la facture test' : 'le reçu'}
+            </Button>
           </div>
         )}
       </div>

@@ -40,41 +40,6 @@ serve(async (req) => {
       throw new Error('Prix invalide');
     }
 
-    // Initialiser le client Supabase
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    // Créer la réservation
-    console.log('📅 Création de la réservation pour l\'utilisateur:', requestBody.userId);
-    const { data: booking, error: bookingError } = await supabase
-      .from('bookings')
-      .insert([{
-        user_id: requestBody.userId,
-        user_email: requestBody.email,
-        user_name: requestBody.fullName,
-        user_phone: requestBody.phone,
-        date: requestBody.date,
-        time_slot: requestBody.timeSlot,
-        duration: requestBody.duration,
-        group_size: requestBody.groupSize,
-        price: price,
-        message: requestBody.message,
-        status: 'pending',
-        payment_status: 'awaiting_payment',
-        is_test_booking: requestBody.isTestMode,
-        promo_code_id: requestBody.promoCodeId,
-      }])
-      .select()
-      .single();
-
-    if (bookingError) {
-      console.error('❌ Erreur lors de la création de la réservation:', bookingError);
-      throw bookingError;
-    }
-
-    console.log('✅ Réservation créée:', booking);
-
     // Créer la session Stripe
     const stripeKey = requestBody.isTestMode ? 
       Deno.env.get('STRIPE_TEST_SECRET_KEY')! : 
@@ -109,7 +74,6 @@ serve(async (req) => {
       cancel_url: `${req.headers.get('origin')}`,
       customer_email: requestBody.email,
       metadata: {
-        bookingId: booking.id,
         userId: requestBody.userId,
         userEmail: requestBody.email,
         userName: requestBody.fullName,
@@ -129,7 +93,6 @@ serve(async (req) => {
     console.log('✅ Session Stripe créée:', {
       sessionId: session.id,
       paymentIntentId: session.payment_intent,
-      bookingId: booking.id,
       userId: requestBody.userId,
       price: price,
       metadata: session.metadata
@@ -143,7 +106,6 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true,
-        bookingId: booking.id,
         url: session.url 
       }),
       { 

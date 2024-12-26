@@ -30,7 +30,7 @@ export const handleCheckoutSession = async (
         time_slot: session.metadata?.timeSlot,
         duration: session.metadata?.duration,
         group_size: session.metadata?.groupSize,
-        price: parseFloat(session.metadata?.originalPrice || '0'),
+        price: parseFloat(session.metadata?.price || '0'),
         message: session.metadata?.message,
         status: 'confirmed',
         payment_status: 'paid',

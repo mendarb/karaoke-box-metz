@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
-import { verifyStripeWebhook } from "./webhook-verification.ts";
+import { Stripe } from "https://esm.sh/stripe@14.21.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -20,15 +20,65 @@ serve(async (req) => {
     // Get the raw body and signature
     const rawBody = await req.text();
     const signature = req.headers.get("stripe-signature");
-    
+
+    if (!signature) {
+      console.error("❌ No Stripe signature found in headers");
+      return new Response(
+        JSON.stringify({ error: "No Stripe signature found" }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400 
+        }
+      );
+    }
+
     // Parse the event to determine test/live mode
     const rawEvent = JSON.parse(rawBody);
     const isTestMode = !rawEvent.livemode;
     console.log("🔑 Mode:", isTestMode ? "TEST" : "LIVE");
 
-    // Verify webhook signature and construct event
-    const event = await verifyStripeWebhook(signature, rawBody, isTestMode);
-    console.log("✅ Webhook signature verified, event:", event.type);
+    // Get the appropriate webhook secret based on mode
+    const webhookSecret = isTestMode
+      ? Deno.env.get("STRIPE_WEBHOOK_SECRET")
+      : Deno.env.get("STRIPE_LIVE_WEBHOOK_SECRET");
+
+    if (!webhookSecret) {
+      console.error(`❌ ${isTestMode ? "Test" : "Live"} webhook secret not configured`);
+      return new Response(
+        JSON.stringify({ error: "Webhook secret not configured" }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 500 
+        }
+      );
+    }
+
+    // Initialize Stripe with the appropriate secret key
+    const stripe = new Stripe(
+      isTestMode
+        ? Deno.env.get("STRIPE_TEST_SECRET_KEY") || ""
+        : Deno.env.get("STRIPE_SECRET_KEY") || "",
+      {
+        apiVersion: "2023-10-16",
+        httpClient: Stripe.createFetchHttpClient(),
+      }
+    );
+
+    // Verify webhook signature
+    let event;
+    try {
+      event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
+      console.log("✅ Webhook signature verified, event:", event.type);
+    } catch (err) {
+      console.error("❌ Error verifying webhook signature:", err);
+      return new Response(
+        JSON.stringify({ error: `Webhook signature verification failed: ${err.message}` }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400 
+        }
+      );
+    }
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;

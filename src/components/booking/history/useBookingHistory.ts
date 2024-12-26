@@ -27,6 +27,7 @@ export const useBookingHistory = () => {
           throw error;
         }
 
+        console.log('Fetched bookings:', data);
         return data;
       } catch (error: any) {
         console.error('Error in useBookingHistory:', error);

@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { email, fullName, phone, date, timeSlot, duration, groupSize, price, message, isTestMode } = await req.json();
+    const { email, fullName, phone, date, timeSlot, duration, groupSize, price, message, isTestMode, userId } = await req.json();
 
     console.log('📝 Starting unified booking process:', {
       email,
@@ -23,7 +23,8 @@ serve(async (req) => {
       duration,
       groupSize,
       price,
-      isTestMode
+      isTestMode,
+      userId // Log l'ID utilisateur reçu
     });
 
     // Initialize Supabase client
@@ -31,23 +32,12 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // 1. Find or create user
-    const { data: existingUsers } = await supabase
-      .from('bookings')
-      .select('user_id')
-      .eq('user_email', email)
-      .not('user_id', 'is', null)
-      .limit(1);
-
-    let userId = existingUsers?.[0]?.user_id || null;
-    console.log('👤 User lookup result:', { userId, email });
-
-    // 2. Create booking
-    console.log('📅 Creating booking...');
+    // 2. Create booking with user_id
+    console.log('📅 Creating booking with user_id:', userId);
     const { data: booking, error: bookingError } = await supabase
       .from('bookings')
       .insert([{
-        user_id: userId,
+        user_id: userId, // Utiliser l'ID utilisateur reçu
         user_email: email,
         user_name: fullName,
         user_phone: phone,
@@ -114,8 +104,9 @@ serve(async (req) => {
 
     console.log('✅ Checkout session created:', {
       sessionId: session.id,
+      paymentIntentId: session.payment_intent,
       bookingId: booking.id,
-      url: session.url
+      metadata: session.metadata
     });
 
     return new Response(

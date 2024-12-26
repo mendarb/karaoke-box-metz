@@ -2,6 +2,7 @@ import { UseFormReturn } from "react-hook-form";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
 import { format } from "date-fns";
+import { useUserState } from "@/hooks/useUserState";
 
 export const useBookingSubmit = (
   form: UseFormReturn<any>,
@@ -10,6 +11,8 @@ export const useBookingSubmit = (
   calculatedPrice: number,
   setIsSubmitting: (value: boolean) => void
 ) => {
+  const { user } = useUserState();
+
   const handleSubmit = async (data: any) => {
     try {
       console.log('🎯 Starting booking process:', {
@@ -18,7 +21,8 @@ export const useBookingSubmit = (
         timeSlot: data.timeSlot,
         duration,
         groupSize,
-        price: calculatedPrice
+        price: calculatedPrice,
+        userId: user?.id // Log the user ID
       });
 
       setIsSubmitting(true);
@@ -74,6 +78,7 @@ export const useBookingSubmit = (
             price: calculatedPrice,
             message: data.message,
             isTestMode: data.isTestMode || false,
+            userId: user?.id // Ajouter l'ID de l'utilisateur
           }
         }
       );
@@ -85,7 +90,8 @@ export const useBookingSubmit = (
 
       console.log('✅ Booking created and payment link generated:', {
         bookingId: response.bookingId,
-        checkoutUrl: response.checkoutUrl
+        checkoutUrl: response.checkoutUrl,
+        userId: user?.id // Log l'ID utilisateur pour confirmation
       });
 
       // Rediriger vers la page de paiement Stripe

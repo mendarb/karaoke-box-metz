@@ -34,6 +34,8 @@ export const ProfileSection = () => {
     
     setIsLoading(true);
     try {
+      console.log('Updating profile with data:', data);
+      
       // Mettre à jour le profil
       const { error: profileUpdateError } = await supabase
         .from('profiles')
@@ -62,6 +64,22 @@ export const ProfileSection = () => {
         title: "Profil mis à jour",
         description: "Vos informations ont été mises à jour avec succès.",
       });
+
+      // Recharger les données du profil immédiatement après la mise à jour
+      const { data: updatedProfile, error: refreshError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (!refreshError && updatedProfile) {
+        setInitialData({
+          first_name: updatedProfile.first_name || "",
+          last_name: updatedProfile.last_name || "",
+          email: user.email || "",
+          phone: updatedProfile.phone || "",
+        });
+      }
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
@@ -75,16 +93,43 @@ export const ProfileSection = () => {
   };
 
   useEffect(() => {
-    if (profile) {
-      console.log('Profile data loaded:', profile);
-      setInitialData({
-        first_name: profile.first_name || "",
-        last_name: profile.last_name || "",
-        email: user?.email || "",
-        phone: profile.phone || "",
-      });
-    }
-  }, [profile, user]);
+    const loadProfileData = async () => {
+      if (!user) return;
+
+      try {
+        console.log('Loading profile data for user:', user.id);
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        if (profileError) {
+          console.error('Error loading profile:', profileError);
+          throw profileError;
+        }
+
+        console.log('Profile data loaded:', profileData);
+        if (profileData) {
+          setInitialData({
+            first_name: profileData.first_name || "",
+            last_name: profileData.last_name || "",
+            email: user.email || "",
+            phone: profileData.phone || "",
+          });
+        }
+      } catch (error) {
+        console.error('Error in loadProfileData:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger vos informations",
+          variant: "destructive",
+        });
+      }
+    };
+
+    loadProfileData();
+  }, [user, toast]);
 
   return (
     <Card>

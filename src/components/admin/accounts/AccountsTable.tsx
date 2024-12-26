@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
+import { AdminUserResponse } from "@supabase/supabase-js";
 
 interface UserProfile {
   id: string;
@@ -41,12 +42,12 @@ export const AccountsTable = () => {
       if (error) throw error;
 
       // Récupérer les emails des utilisateurs
-      const { data: users, error: usersError } = await supabase.auth.admin.listUsers();
+      const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers();
       if (usersError) throw usersError;
 
       // Combiner les données des profils avec les emails
       return profiles.map(profile => {
-        const user = users.users.find(u => u.id === profile.id);
+        const user = users.find(u => u.id === profile.id);
         return {
           ...profile,
           email: user?.email || 'N/A'

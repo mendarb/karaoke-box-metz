@@ -27,14 +27,17 @@ interface ProfileFormProps {
 }
 
 export const ProfileForm = ({ initialData, onSubmit, isLoading }: ProfileFormProps) => {
-  const form = useForm<ProfileFormData>({
-    defaultValues: initialData,
-  });
+  const form = useForm<ProfileFormData>();
 
   // Mettre à jour le formulaire quand initialData change
   useEffect(() => {
-    console.log("Updating form with initialData:", initialData);
-    form.reset(initialData);
+    if (initialData) {
+      console.log("Setting form values with:", initialData);
+      form.setValue("first_name", initialData.first_name || "");
+      form.setValue("last_name", initialData.last_name || "");
+      form.setValue("email", initialData.email || "");
+      form.setValue("phone", initialData.phone || "");
+    }
   }, [initialData, form]);
 
   return (

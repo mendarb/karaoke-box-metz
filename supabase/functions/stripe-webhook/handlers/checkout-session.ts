@@ -17,6 +17,31 @@ export const handleCheckoutSession = async (
       return { received: true, status: "pending" };
     }
 
+    // Get payment intent to retrieve invoice
+    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
+      apiVersion: '2023-10-16',
+    });
+
+    const paymentIntentId = session.payment_intent as string;
+    console.log('🔍 Retrieving payment intent:', paymentIntentId);
+
+    // Get invoice URL
+    let invoiceUrl = null;
+    try {
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+      if (paymentIntent.latest_charge) {
+        const charge = await stripe.charges.retrieve(paymentIntent.latest_charge as string);
+        if (charge.invoice) {
+          const invoice = await stripe.invoices.retrieve(charge.invoice as string);
+          invoiceUrl = invoice.invoice_pdf;
+          console.log('📄 Invoice URL retrieved:', invoiceUrl);
+        }
+      }
+    } catch (invoiceError) {
+      console.error('⚠️ Error retrieving invoice (non-blocking):', invoiceError);
+      // Continue execution even if invoice retrieval fails
+    }
+
     // Update booking status
     const bookingId = session.metadata?.bookingId;
     if (!bookingId) {
@@ -28,7 +53,8 @@ export const handleCheckoutSession = async (
       .update({
         payment_status: 'paid',
         status: 'confirmed',
-        payment_intent_id: session.payment_intent as string,
+        payment_intent_id: paymentIntentId,
+        invoice_url: invoiceUrl,
         updated_at: new Date().toISOString(),
       })
       .eq('id', bookingId)

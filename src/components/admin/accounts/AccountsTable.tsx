@@ -10,9 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
-import { User } from "@supabase/supabase-js";
 
 interface UserProfile {
   id: string;
@@ -29,32 +27,23 @@ export const AccountsTable = () => {
   const { data: profiles = [], isLoading: isLoadingProfiles } = useQuery({
     queryKey: ['admin-profiles'],
     queryFn: async () => {
-      const { data: profiles, error } = await supabase
-        .from('profiles')
-        .select(`
-          id,
-          first_name,
-          last_name,
-          phone,
-          created_at
-        `);
+      try {
+        const { data: profiles, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-      if (error) throw error;
+        if (error) {
+          console.error('Error fetching profiles:', error);
+          throw error;
+        }
 
-      // Récupérer les emails des utilisateurs
-      const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers();
-      if (usersError) throw usersError;
-
-      // Combiner les données des profils avec les emails
-      return profiles.map(profile => {
-        const user = (users as User[]).find(u => u.id === profile.id);
-        return {
-          ...profile,
-          email: user?.email || 'N/A'
-        };
-      });
+        return profiles || [];
+      } catch (err) {
+        console.error('Query error:', err);
+        throw err;
+      }
     },
-    enabled: true,
   });
 
   if (isLoadingProfiles) {
@@ -71,7 +60,6 @@ export const AccountsTable = () => {
         <TableHeader>
           <TableRow>
             <TableHead>Nom</TableHead>
-            <TableHead>Email</TableHead>
             <TableHead>Téléphone</TableHead>
             <TableHead>Date d'inscription</TableHead>
             <TableHead>Actions</TableHead>
@@ -87,7 +75,6 @@ export const AccountsTable = () => {
                   <span className="text-gray-500">Non renseigné</span>
                 )}
               </TableCell>
-              <TableCell>{profile.email}</TableCell>
               <TableCell>
                 {profile.phone || <span className="text-gray-500">Non renseigné</span>}
               </TableCell>

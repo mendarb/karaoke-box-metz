@@ -8,7 +8,8 @@ export const handleCheckoutSession = async (
   console.log('💳 Processing checkout session:', {
     sessionId: session.id,
     metadata: session.metadata,
-    paymentStatus: session.payment_status
+    paymentStatus: session.payment_status,
+    livemode: session.livemode
   });
 
   try {
@@ -18,12 +19,20 @@ export const handleCheckoutSession = async (
     }
 
     // Get payment intent to retrieve invoice
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
+    const stripeKey = session.livemode 
+      ? Deno.env.get('STRIPE_SECRET_KEY')
+      : Deno.env.get('STRIPE_TEST_SECRET_KEY');
+
+    if (!stripeKey) {
+      throw new Error(`${session.livemode ? 'Live' : 'Test'} mode Stripe API key not configured`);
+    }
+
+    const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
     });
 
     const paymentIntentId = session.payment_intent as string;
-    console.log('🔍 Retrieving payment intent:', paymentIntentId);
+    console.log('🔍 Retrieving payment intent:', paymentIntentId, 'Mode:', session.livemode ? 'LIVE' : 'TEST');
 
     // Get invoice URL
     let invoiceUrl = null;

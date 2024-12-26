@@ -20,9 +20,8 @@ export const generatePaymentLink = async (data: any) => {
         timeSlot: data.timeSlot,
         duration: data.duration,
         groupSize: data.groupSize,
-        price: data.finalPrice || data.calculatedPrice, // Utiliser le prix final s'il existe
-        originalPrice: data.calculatedPrice, // Garder une trace du prix original
-        finalPrice: data.finalPrice, // Envoyer le prix final
+        originalPrice: data.calculatedPrice,
+        finalPrice: data.finalPrice || data.calculatedPrice,
         userName: data.fullName,
         userPhone: data.phone,
         isTestMode: data.isTestMode,

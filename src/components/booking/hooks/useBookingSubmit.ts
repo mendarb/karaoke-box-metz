@@ -79,6 +79,9 @@ export const useBookingSubmit = (
 
       // S'assurer que nous avons un prix valide
       const finalPrice = data.finalPrice || calculatedPrice;
+      if (!finalPrice || finalPrice <= 0) {
+        throw new Error('Prix invalide');
+      }
       console.log('💰 Prix final:', finalPrice);
 
       // Appeler la nouvelle fonction Edge pour créer la réservation
@@ -106,18 +109,21 @@ export const useBookingSubmit = (
 
       if (error) throw error;
 
-      if (!response?.checkoutUrl) throw new Error('No checkout URL returned');
+      if (!response?.url) {
+        console.error('❌ No checkout URL returned:', response);
+        throw new Error('No checkout URL returned');
+      }
 
       console.log('✅ Booking created and payment link generated:', {
         bookingId: response.bookingId,
-        checkoutUrl: response.checkoutUrl,
+        checkoutUrl: response.url,
         userId: user.id,
         price: finalPrice,
         responseData: response
       });
 
       // Rediriger vers la page de paiement Stripe
-      window.location.href = response.checkoutUrl;
+      window.location.href = response.url;
 
     } catch (error: any) {
       console.error('❌ Error in booking process:', error);

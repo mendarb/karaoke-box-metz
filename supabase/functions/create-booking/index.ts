@@ -34,8 +34,9 @@ serve(async (req) => {
     }
 
     // Validate price
-    if (typeof requestBody.price !== 'number' || requestBody.price < 0) {
-      console.error('❌ Prix invalide:', requestBody.price);
+    const price = parseFloat(requestBody.price);
+    if (isNaN(price) || price < 0) {
+      console.error('❌ Prix invalide:', price);
       throw new Error('Prix invalide');
     }
 
@@ -44,7 +45,7 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Créer la réservation avec l'ID utilisateur
+    // Créer la réservation
     console.log('📅 Création de la réservation pour l\'utilisateur:', requestBody.userId);
     const { data: booking, error: bookingError } = await supabase
       .from('bookings')
@@ -57,7 +58,7 @@ serve(async (req) => {
         time_slot: requestBody.timeSlot,
         duration: requestBody.duration,
         group_size: requestBody.groupSize,
-        price: requestBody.price,
+        price: price,
         message: requestBody.message,
         status: 'pending',
         payment_status: 'awaiting_payment',
@@ -95,7 +96,7 @@ serve(async (req) => {
       line_items: [{
         price_data: {
           currency: 'eur',
-          unit_amount: Math.round(requestBody.price * 100),
+          unit_amount: Math.round(price * 100),
           product_data: {
             name: requestBody.isTestMode ? '[TEST MODE] Karaoké BOX - MB EI' : 'Karaoké BOX - MB EI',
             description: `${requestBody.groupSize} personnes - ${requestBody.duration}h${requestBody.promoCode ? ` (Code promo: ${requestBody.promoCode})` : ''}`,
@@ -117,7 +118,7 @@ serve(async (req) => {
         timeSlot: requestBody.timeSlot,
         duration: requestBody.duration,
         groupSize: requestBody.groupSize,
-        price: String(requestBody.price),
+        price: String(price),
         promoCode: requestBody.promoCode || '',
         discountAmount: String(requestBody.discountAmount || 0),
         message: requestBody.message || '',
@@ -130,9 +131,14 @@ serve(async (req) => {
       paymentIntentId: session.payment_intent,
       bookingId: booking.id,
       userId: requestBody.userId,
-      price: requestBody.price,
+      price: price,
       metadata: session.metadata
     });
+
+    if (!session.url) {
+      console.error('❌ Pas d\'URL de paiement retournée par Stripe');
+      throw new Error('Pas d\'URL de paiement retournée par Stripe');
+    }
 
     return new Response(
       JSON.stringify({ 

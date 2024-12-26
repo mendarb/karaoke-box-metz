@@ -35,10 +35,10 @@ serve(async (req) => {
       httpClient: Stripe.createFetchHttpClient(),
     });
 
-    // Verify webhook signature
+    // Verify webhook signature using constructEventAsync
     let event;
     try {
-      event = stripe.webhooks.constructEvent(
+      event = await stripe.webhooks.constructEventAsync(
         body,
         signature,
         isTestMode ? webhookSecret : liveWebhookSecret
@@ -88,10 +88,15 @@ serve(async (req) => {
         .from('bookings')
         .select('*')
         .eq('id', bookingId)
-        .single();
+        .maybeSingle();
 
-      if (bookingError || !booking) {
-        console.error('❌ Error fetching booking:', bookingError || 'Booking not found');
+      if (bookingError) {
+        console.error('❌ Error fetching booking:', bookingError);
+        throw new Error(`Error fetching booking: ${bookingError.message}`);
+      }
+
+      if (!booking) {
+        console.error('❌ Booking not found:', bookingId);
         throw new Error(`Booking not found: ${bookingId}`);
       }
 

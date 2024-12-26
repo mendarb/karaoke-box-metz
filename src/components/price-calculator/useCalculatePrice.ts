@@ -40,8 +40,9 @@ export const useCalculatePrice = ({ settings }: CalculatePriceProps = {}) => {
       totalPrice += additionalHoursPrice;
     }
 
-    const finalPrice = Math.round(totalPrice * 100) / 100;
-    const pricePerPerson = Math.round((finalPrice / (size * hours)) * 100) / 100;
+    // Arrondir à 2 décimales maximum
+    const finalPrice = Number(totalPrice.toFixed(2));
+    const pricePerPerson = Number((finalPrice / (size * hours)).toFixed(2));
 
     console.log('💰 Calcul du prix:', {
       groupSize,

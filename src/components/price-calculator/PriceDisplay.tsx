@@ -21,13 +21,16 @@ export const PriceDisplay = ({
     );
   }
 
+  // Formater le prix par personne avec maximum 2 décimales
+  const formattedPricePerPerson = Number(pricePerPersonPerHour.toFixed(2));
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="text-gray-600">
           Prix par personne et par heure
         </div>
-        <div>{pricePerPersonPerHour}€</div>
+        <div>{formattedPricePerPerson}€</div>
       </div>
       
       <div className="flex items-center justify-between pt-4 border-t border-gray-100">

@@ -21,8 +21,7 @@ serve(async (req) => {
       timeSlot: requestBody.timeSlot,
       duration: requestBody.duration,
       groupSize: requestBody.groupSize,
-      originalPrice: requestBody.originalPrice,
-      finalPrice: requestBody.finalPrice,
+      price: requestBody.price,
       promoCode: requestBody.promoCode,
       discountAmount: requestBody.discountAmount,
       isTestMode: requestBody.isTestMode,
@@ -32,6 +31,11 @@ serve(async (req) => {
     if (!requestBody.userId) {
       console.error('❌ Pas d\'ID utilisateur fourni');
       throw new Error('ID utilisateur requis');
+    }
+
+    if (!requestBody.price || requestBody.price < 0) {
+      console.error('❌ Prix invalide:', requestBody.price);
+      throw new Error('Prix invalide');
     }
 
     // Initialiser le client Supabase
@@ -52,7 +56,7 @@ serve(async (req) => {
         time_slot: requestBody.timeSlot,
         duration: requestBody.duration,
         group_size: requestBody.groupSize,
-        price: requestBody.finalPrice || requestBody.originalPrice,
+        price: requestBody.price,
         message: requestBody.message,
         status: 'pending',
         payment_status: 'awaiting_payment',
@@ -85,16 +89,12 @@ serve(async (req) => {
 
     console.log('💳 Création de la session Stripe...');
 
-    // Utiliser le prix final pour la session Stripe
-    const priceToCharge = requestBody.finalPrice || requestBody.originalPrice;
-    console.log('💰 Prix final pour Stripe:', priceToCharge);
-
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [{
         price_data: {
           currency: 'eur',
-          unit_amount: Math.round(priceToCharge * 100),
+          unit_amount: Math.round(requestBody.price * 100),
           product_data: {
             name: requestBody.isTestMode ? '[TEST MODE] Karaoké BOX - MB EI' : 'Karaoké BOX - MB EI',
             description: `${requestBody.groupSize} personnes - ${requestBody.duration}h${requestBody.promoCode ? ` (Code promo: ${requestBody.promoCode})` : ''}`,
@@ -116,8 +116,7 @@ serve(async (req) => {
         timeSlot: requestBody.timeSlot,
         duration: requestBody.duration,
         groupSize: requestBody.groupSize,
-        originalPrice: String(requestBody.originalPrice),
-        finalPrice: String(priceToCharge),
+        price: String(requestBody.price),
         promoCode: requestBody.promoCode || '',
         discountAmount: String(requestBody.discountAmount || 0),
         message: requestBody.message || '',

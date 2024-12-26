@@ -68,6 +68,21 @@ export function useAuthHandlers() {
         return { success: false, shouldSwitchToLogin: false }
       }
 
+      // Vérifier si l'utilisateur existe déjà
+      const { data: { user: existingUser }, error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password.trim(),
+      })
+
+      if (existingUser) {
+        toast({
+          title: "Compte existant",
+          description: "Un compte existe déjà avec cet email. Veuillez vous connecter ou réinitialiser votre mot de passe si vous l'avez oublié.",
+        })
+        return { success: false, shouldSwitchToLogin: true }
+      }
+
+      // Si l'utilisateur n'existe pas, procéder à l'inscription
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: email.trim(),
         password: password.trim(),
@@ -82,20 +97,12 @@ export function useAuthHandlers() {
 
       if (signUpError) {
         console.error("Signup error:", signUpError)
-        if (signUpError.message.includes("User already registered")) {
-          toast({
-            title: "Compte existant",
-            description: "Un compte existe déjà avec cet email. Veuillez vous connecter ou réinitialiser votre mot de passe si vous l'avez oublié.",
-          })
-          return { success: false, shouldSwitchToLogin: true }
-        } else {
-          toast({
-            title: "Erreur",
-            description: signUpError.message,
-            variant: "destructive",
-          })
-          return { success: false, shouldSwitchToLogin: false }
-        }
+        toast({
+          title: "Erreur",
+          description: signUpError.message,
+          variant: "destructive",
+        })
+        return { success: false, shouldSwitchToLogin: false }
       }
 
       if (!signUpData.user) {

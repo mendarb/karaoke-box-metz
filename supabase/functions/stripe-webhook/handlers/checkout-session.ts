@@ -37,17 +37,29 @@ export const handleCheckoutSession = async (
     // Get invoice URL
     let invoiceUrl = null;
     try {
-      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-      if (paymentIntent.latest_charge) {
-        const charge = await stripe.charges.retrieve(paymentIntent.latest_charge as string);
-        if (charge.invoice) {
-          const invoice = await stripe.invoices.retrieve(charge.invoice as string);
-          invoiceUrl = invoice.invoice_pdf;
-          console.log('📄 Invoice URL retrieved:', invoiceUrl);
+      // First, try to get the invoice directly from the session
+      if (session.invoice) {
+        const invoice = await stripe.invoices.retrieve(session.invoice as string);
+        invoiceUrl = invoice.invoice_pdf;
+        console.log('📄 Invoice URL retrieved from session:', invoiceUrl);
+      } else {
+        // If no invoice in session, try to get it from the payment intent
+        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+        if (paymentIntent.latest_charge) {
+          const charge = await stripe.charges.retrieve(paymentIntent.latest_charge as string);
+          if (charge.invoice) {
+            const invoice = await stripe.invoices.retrieve(charge.invoice as string);
+            invoiceUrl = invoice.invoice_pdf;
+            console.log('📄 Invoice URL retrieved from payment intent:', invoiceUrl);
+          } else {
+            console.log('⚠️ No invoice found in charge:', charge.id);
+          }
+        } else {
+          console.log('⚠️ No charge found in payment intent:', paymentIntentId);
         }
       }
     } catch (invoiceError) {
-      console.error('⚠️ Error retrieving invoice (non-blocking):', invoiceError);
+      console.error('⚠️ Error retrieving invoice:', invoiceError);
       // Continue execution even if invoice retrieval fails
     }
 
@@ -75,7 +87,12 @@ export const handleCheckoutSession = async (
       throw updateError;
     }
 
-    console.log('✅ Booking updated:', booking);
+    console.log('✅ Booking updated:', {
+      id: booking.id,
+      status: booking.status,
+      paymentStatus: booking.payment_status,
+      invoiceUrl: booking.invoice_url
+    });
 
     // Send confirmation email
     try {

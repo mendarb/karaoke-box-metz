@@ -33,7 +33,7 @@ export const resetPassword = async (email: string) => {
 };
 
 export const checkExistingUser = async (email: string) => {
-  // D'abord, vérifier dans auth.users via une réservation existante
+  // Vérifier d'abord dans les réservations existantes
   const { data: bookingData, error: bookingError } = await supabase
     .from('bookings')
     .select('user_id')
@@ -51,19 +51,6 @@ export const checkExistingUser = async (email: string) => {
     return { exists: true, error: null };
   }
 
-  // Si aucune réservation n'est trouvée, essayer de se connecter avec un email magique
-  const { data, error } = await supabase.auth.signInWithOtp({
-    email: email.trim(),
-    options: {
-      shouldCreateUser: false,
-    }
-  });
-
-  // Si pas d'erreur "User not found", cela signifie que l'utilisateur existe
-  const userExists = !error || !error.message.includes('User not found');
-  
-  return { 
-    exists: userExists, 
-    error: null 
-  };
+  // Si aucune réservation n'est trouvée avec cet email, on considère que l'utilisateur n'existe pas
+  return { exists: false, error: null };
 };

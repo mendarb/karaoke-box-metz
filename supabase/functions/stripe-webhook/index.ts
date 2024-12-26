@@ -11,7 +11,12 @@ const corsHeaders = {
 
 serve(async (req) => {
   try {
+    console.log('🎯 Webhook request received');
+    console.log('📋 Method:', req.method);
+    console.log('🔑 Headers:', Object.fromEntries(req.headers.entries()));
+
     if (req.method === 'OPTIONS') {
+      console.log('✨ Responding to OPTIONS request');
       return new Response(null, { 
         headers: {
           ...corsHeaders,
@@ -23,7 +28,8 @@ serve(async (req) => {
 
     const signature = req.headers.get('stripe-signature');
     if (!signature) {
-      console.error('❌ Pas de signature Stripe dans les en-têtes');
+      console.error('❌ No stripe signature found in headers');
+      console.log('📝 Available headers:', Object.fromEntries(req.headers.entries()));
       return new Response(
         JSON.stringify({ error: 'No stripe signature found in headers' }),
         { 
@@ -34,22 +40,21 @@ serve(async (req) => {
     }
 
     const body = await req.text();
-    console.log('📦 Corps de la requête reçu:', body.substring(0, 100) + '...');
-    console.log('🔍 Headers reçus:', Object.fromEntries(req.headers.entries()));
+    console.log('📦 Request body received (first 100 chars):', body.substring(0, 100) + '...');
 
-    // Déterminer si nous sommes en mode test
-    const event = JSON.parse(body);
-    const isTestMode = !event.livemode;
+    // Parse the event to determine if it's a test event
+    const rawEvent = JSON.parse(body);
+    const isTestMode = !rawEvent.livemode;
     console.log('🔑 Mode:', isTestMode ? 'TEST' : 'LIVE');
 
-    // Utiliser la clé appropriée en fonction du mode
+    // Use appropriate secret key based on mode
     const stripeKey = isTestMode 
       ? Deno.env.get('STRIPE_TEST_SECRET_KEY')
       : Deno.env.get('STRIPE_SECRET_KEY');
 
     const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
     if (!webhookSecret) {
-      console.error('❌ Secret webhook non configuré');
+      console.error('❌ Webhook secret not configured');
       return new Response(
         JSON.stringify({ error: 'Webhook secret not configured' }),
         { 
@@ -59,21 +64,22 @@ serve(async (req) => {
       );
     }
 
+    console.log('🔐 Attempting to verify webhook signature');
     const stripe = new Stripe(stripeKey!, {
       apiVersion: '2023-10-16',
       httpClient: Stripe.createFetchHttpClient(),
     });
 
-    let verifiedEvent: Stripe.Event;
+    let event: Stripe.Event;
     try {
-      verifiedEvent = stripe.webhooks.constructEvent(
+      event = stripe.webhooks.constructEvent(
         body,
         signature,
         webhookSecret
       );
-      console.log('✅ Signature du webhook vérifiée, événement:', verifiedEvent.type);
+      console.log('✅ Webhook signature verified, event:', event.type);
     } catch (err) {
-      console.error('❌ Erreur de vérification de la signature:', err);
+      console.error('❌ Webhook signature verification failed:', err);
       return new Response(
         JSON.stringify({ error: `Webhook Error: ${err.message}` }),
         { 
@@ -87,9 +93,9 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    if (verifiedEvent.type === 'checkout.session.completed') {
-      const session = verifiedEvent.data.object as Stripe.Checkout.Session;
-      console.log('💳 Session de paiement complétée:', {
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object as Stripe.Checkout.Session;
+      console.log('💳 Checkout session completed:', {
         sessionId: session.id,
         paymentIntentId: session.payment_intent,
         metadata: session.metadata,
@@ -103,16 +109,16 @@ serve(async (req) => {
           .single();
 
         if (bookingError) {
-          console.error('❌ Erreur lors de la recherche de la réservation:', bookingError);
+          console.error('❌ Error finding booking:', bookingError);
           throw bookingError;
         }
 
         if (!booking) {
-          console.error('❌ Aucune réservation trouvée avec le payment_intent_id:', session.payment_intent);
-          throw new Error('Réservation introuvable');
+          console.error('❌ No booking found with payment_intent_id:', session.payment_intent);
+          throw new Error('Booking not found');
         }
 
-        console.log('✅ Réservation trouvée:', booking);
+        console.log('✅ Booking found:', booking);
 
         const { error: updateError } = await supabase
           .from('bookings')
@@ -124,38 +130,36 @@ serve(async (req) => {
           .eq('id', booking.id);
 
         if (updateError) {
-          console.error('❌ Erreur lors de la mise à jour de la réservation:', updateError);
+          console.error('❌ Error updating booking:', updateError);
           throw updateError;
         }
 
-        console.log('✅ Réservation mise à jour avec succès');
+        console.log('✅ Booking updated successfully');
 
         try {
-          console.log('📧 Envoi de l\'email de confirmation...');
+          console.log('📧 Attempting to send confirmation email...');
           const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-booking-email`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
             },
-            body: JSON.stringify({ 
-              booking,
-              type: 'confirmation'
-            })
+            body: JSON.stringify({ booking })
           });
 
           if (!emailResponse.ok) {
-            throw new Error(`Erreur d'envoi d'email: ${await emailResponse.text()}`);
+            throw new Error(`Failed to send email: ${await emailResponse.text()}`);
           }
 
-          console.log('✅ Email de confirmation envoyé');
+          console.log('✅ Confirmation email sent');
 
         } catch (emailError) {
-          console.error('❌ Erreur lors de l\'envoi de l\'email:', emailError);
+          console.error('❌ Error sending confirmation email:', emailError);
+          // Don't throw here, we don't want to fail the webhook if email fails
         }
 
       } catch (error) {
-        console.error('❌ Erreur dans le traitement de la session:', error);
+        console.error('❌ Error processing checkout session:', error);
         throw error;
       }
     }
@@ -165,7 +169,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('❌ Erreur dans le gestionnaire de webhook:', error);
+    console.error('❌ Error in webhook handler:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 

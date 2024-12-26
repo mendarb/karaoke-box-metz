@@ -24,20 +24,26 @@ serve(async (req) => {
       groupSize,
       price,
       isTestMode,
-      userId // Log l'ID utilisateur reçu
+      userId,
+      requestBody: await req.json()
     });
+
+    if (!userId) {
+      console.error('❌ No user ID provided in request');
+      throw new Error('User ID is required');
+    }
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // 2. Create booking with user_id
+    // Create booking with user_id
     console.log('📅 Creating booking with user_id:', userId);
     const { data: booking, error: bookingError } = await supabase
       .from('bookings')
       .insert([{
-        user_id: userId, // Utiliser l'ID utilisateur reçu
+        user_id: userId,
         user_email: email,
         user_name: fullName,
         user_phone: phone,
@@ -59,9 +65,9 @@ serve(async (req) => {
       throw bookingError;
     }
 
-    console.log('✅ Booking created:', booking.id);
+    console.log('✅ Booking created:', booking);
 
-    // 3. Create Stripe checkout session
+    // Create Stripe checkout session
     const stripe = new Stripe(isTestMode ? 
       Deno.env.get('STRIPE_TEST_SECRET_KEY')! : 
       Deno.env.get('STRIPE_SECRET_KEY')!, 
@@ -106,6 +112,7 @@ serve(async (req) => {
       sessionId: session.id,
       paymentIntentId: session.payment_intent,
       bookingId: booking.id,
+      userId,
       metadata: session.metadata
     });
 

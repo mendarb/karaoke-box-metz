@@ -9,19 +9,6 @@ export function useAuthHandlers() {
   const handleLogin = async (email: string, password: string) => {
     setIsLoading(true)
     try {
-      // Vérifier d'abord si l'email est confirmé
-      const { data: { users }, error: getUserError } = await supabase.auth.admin.listUsers()
-      const existingUser = users?.find(u => u.email === email.trim())
-
-      if (existingUser && !existingUser.email_confirmed_at) {
-        toast({
-          title: "Email non confirmé",
-          description: "Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte de réception.",
-          variant: "destructive",
-        })
-        return false
-      }
-
       const { error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password: password.trim(),
@@ -32,7 +19,13 @@ export function useAuthHandlers() {
         if (error.message === "Invalid login credentials") {
           toast({
             title: "Erreur de connexion",
-            description: "Email ou mot de passe incorrect",
+            description: "Email ou mot de passe incorrect. Essayez de réinitialiser votre mot de passe si vous l'avez oublié.",
+            variant: "destructive",
+          })
+        } else if (error.message.includes("Email not confirmed")) {
+          toast({
+            title: "Email non confirmé",
+            description: "Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte de réception.",
             variant: "destructive",
           })
         } else {
@@ -80,10 +73,18 @@ export function useAuthHandlers() {
       const existingUser = users?.find(u => u.email === email.trim())
 
       if (existingUser) {
-        toast({
-          title: "Compte existant",
-          description: "Un compte existe déjà avec cet email. Veuillez vous connecter.",
-        })
+        if (!existingUser.email_confirmed_at) {
+          toast({
+            title: "Email non confirmé",
+            description: "Vous avez déjà un compte mais votre email n'est pas confirmé. Vérifiez votre boîte de réception ou demandez un nouveau lien de confirmation.",
+            variant: "destructive",
+          })
+        } else {
+          toast({
+            title: "Compte existant",
+            description: "Un compte existe déjà avec cet email. Veuillez vous connecter ou réinitialiser votre mot de passe si vous l'avez oublié.",
+          })
+        }
         return { success: false, shouldSwitchToLogin: true }
       }
 
@@ -102,12 +103,20 @@ export function useAuthHandlers() {
 
       if (error) {
         console.error("Signup error:", error)
-        toast({
-          title: "Erreur",
-          description: error.message,
-          variant: "destructive",
-        })
-        return { success: false, shouldSwitchToLogin: false }
+        if (error.message.includes("User already registered")) {
+          toast({
+            title: "Compte existant",
+            description: "Un compte existe déjà avec cet email. Veuillez vous connecter ou réinitialiser votre mot de passe si vous l'avez oublié.",
+          })
+          return { success: false, shouldSwitchToLogin: true }
+        } else {
+          toast({
+            title: "Erreur",
+            description: error.message,
+            variant: "destructive",
+          })
+          return { success: false, shouldSwitchToLogin: false }
+        }
       }
 
       toast({
@@ -128,9 +137,44 @@ export function useAuthHandlers() {
     }
   }
 
+  const handleResetPassword = async (email: string) => {
+    setIsLoading(true)
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/account/reset-password`,
+      })
+
+      if (error) {
+        toast({
+          title: "Erreur",
+          description: "Impossible d'envoyer le lien de réinitialisation",
+          variant: "destructive",
+        })
+        return false
+      }
+
+      toast({
+        title: "Email envoyé",
+        description: "Vérifiez votre boîte mail pour réinitialiser votre mot de passe",
+      })
+      return true
+    } catch (error) {
+      console.error("Reset password error:", error)
+      toast({
+        title: "Erreur",
+        description: "Une erreur inattendue s'est produite",
+        variant: "destructive",
+      })
+      return false
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return {
     handleLogin,
     handleSignup,
+    handleResetPassword,
     isLoading
   }
 }

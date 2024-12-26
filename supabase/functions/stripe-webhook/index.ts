@@ -4,13 +4,21 @@ import Stripe from 'https://esm.sh/stripe@14.21.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, stripe-signature',
+  'Access-Control-Max-Age': '86400',
 };
 
 serve(async (req) => {
   try {
     if (req.method === 'OPTIONS') {
-      return new Response(null, { headers: corsHeaders });
+      return new Response(null, { 
+        headers: {
+          ...corsHeaders,
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Max-Age': '86400',
+        }
+      });
     }
 
     const signature = req.headers.get('stripe-signature');
@@ -27,6 +35,7 @@ serve(async (req) => {
 
     const body = await req.text();
     console.log('📦 Corps de la requête reçu:', body.substring(0, 100) + '...');
+    console.log('🔍 Headers reçus:', Object.fromEntries(req.headers.entries()));
 
     // Déterminer si nous sommes en mode test
     const event = JSON.parse(body);

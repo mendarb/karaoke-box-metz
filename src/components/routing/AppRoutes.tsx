@@ -12,6 +12,7 @@ import { MyBookings } from "@/pages/MyBookings";
 import Success from "@/pages/Success";
 import { Error } from "@/pages/Error";
 import { DocumentationPage } from "@/components/admin/documentation/DocumentationPage";
+import { Accounts } from "@/pages/Accounts";
 
 export const AppRoutes = () => {
   return (
@@ -45,6 +46,14 @@ export const AppRoutes = () => {
         element={
           <ProtectedRoute adminOnly>
             <Settings />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/accounts"
+        element={
+          <ProtectedRoute adminOnly>
+            <Accounts />
           </ProtectedRoute>
         }
       />

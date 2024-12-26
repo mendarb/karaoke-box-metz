@@ -31,7 +31,7 @@ export const useUserState = (): UserState => {
           .from('profiles')
           .select('*')
           .eq('id', userId)
-          .single();
+          .maybeSingle();
 
         if (error) {
           console.error('Error loading user profile:', error);
@@ -59,6 +59,8 @@ export const useUserState = (): UserState => {
       setSession(session);
       if (session?.user?.id) {
         loadUserProfile(session.user.id);
+      } else {
+        setProfile(null);
       }
       setIsLoading(false);
       setSessionChecked(true);

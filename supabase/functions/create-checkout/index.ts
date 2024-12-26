@@ -16,7 +16,10 @@ serve(async (req) => {
     const requestData = await req.json();
     console.log('📦 Données reçues pour la création de session:', {
       bookingId: requestData.bookingId,
-      price: requestData.price,
+      originalPrice: requestData.price,
+      finalPrice: requestData.finalPrice,
+      promoCode: requestData.promoCode,
+      discountAmount: requestData.discountAmount,
       isTestMode: requestData.isTestMode
     });
 
@@ -39,15 +42,21 @@ serve(async (req) => {
 
     console.log('💳 Création de la session Stripe...');
 
+    // Format price description with promo code if applicable
+    let priceDescription = `${requestData.groupSize} personnes - ${requestData.duration}h`;
+    if (requestData.promoCode && requestData.discountAmount) {
+      priceDescription += ` (-${Math.round(requestData.discountAmount)}% avec ${requestData.promoCode})`;
+    }
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [{
         price_data: {
           currency: 'eur',
-          unit_amount: Math.round(requestData.price * 100),
+          unit_amount: Math.round(requestData.finalPrice * 100),
           product_data: {
             name: requestData.isTestMode ? '[TEST MODE] Karaoké BOX - MB EI' : 'Karaoké BOX - MB EI',
-            description: `${requestData.groupSize} personnes - ${requestData.duration}h`,
+            description: priceDescription,
           },
         },
         quantity: 1,
@@ -66,9 +75,13 @@ serve(async (req) => {
         timeSlot: requestData.timeSlot,
         duration: requestData.duration,
         groupSize: requestData.groupSize,
-        price: String(requestData.price),
+        originalPrice: String(requestData.price),
+        finalPrice: String(requestData.finalPrice),
         message: requestData.message || '',
         isTestMode: String(requestData.isTestMode),
+        promoCodeId: requestData.promoCodeId || '',
+        promoCode: requestData.promoCode || '',
+        discountAmount: String(requestData.discountAmount || 0),
       },
     });
 

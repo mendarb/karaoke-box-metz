@@ -49,7 +49,7 @@ serve(async (req) => {
     }
 
     // Utiliser le prix final après réduction
-    const finalAmount = Math.round(requestData.finalPrice * 100);
+    const finalAmount = Math.round((requestData.finalPrice || requestData.price) * 100);
 
     console.log('💰 Montant final pour Stripe:', {
       originalPrice: requestData.price,
@@ -67,6 +67,7 @@ serve(async (req) => {
           product_data: {
             name: requestData.isTestMode ? '[TEST MODE] Karaoké BOX - MB EI' : 'Karaoké BOX - MB EI',
             description: priceDescription,
+            images: ['https://raw.githubusercontent.com/lovable-karaoke/assets/main/logo.png'],
           },
         },
         quantity: 1,
@@ -86,7 +87,7 @@ serve(async (req) => {
         duration: requestData.duration,
         groupSize: requestData.groupSize,
         originalPrice: String(requestData.price),
-        finalPrice: String(requestData.finalPrice),
+        finalPrice: String(requestData.finalPrice || requestData.price),
         message: requestData.message || '',
         isTestMode: String(requestData.isTestMode),
         promoCodeId: requestData.promoCodeId || '',
@@ -99,7 +100,12 @@ serve(async (req) => {
       sessionId: session.id,
       paymentIntentId: session.payment_intent,
       bookingId: requestData.bookingId,
-      metadata: session.metadata
+      metadata: session.metadata,
+      finalAmount,
+      promoDetails: {
+        code: requestData.promoCode,
+        discountAmount: requestData.discountAmount
+      }
     });
 
     return new Response(

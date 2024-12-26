@@ -1,5 +1,4 @@
 import { supabase } from "@/lib/supabase";
-import { createCheckoutSession } from "@/services/checkoutService";
 
 export const createBooking = async (data: any, userId: string | null) => {
   console.log('📝 Début de création de réservation:', {
@@ -10,6 +9,9 @@ export const createBooking = async (data: any, userId: string | null) => {
     duration: data.duration,
     groupSize: data.groupSize,
     price: data.calculatedPrice,
+    finalPrice: data.finalPrice,
+    promoCode: data.promoCode,
+    discountAmount: data.discountAmount,
     isTestMode: data.isTestMode
   });
 
@@ -27,6 +29,7 @@ export const createBooking = async (data: any, userId: string | null) => {
     status: 'pending',
     payment_status: 'awaiting_payment',
     is_test_booking: data.isTestMode,
+    promo_code_id: data.promoCodeId,
   };
 
   console.log('🔄 Tentative d\'insertion de la réservation:', bookingData);
@@ -54,14 +57,15 @@ export const createBooking = async (data: any, userId: string | null) => {
 
 export const generatePaymentLink = async (data: any) => {
   console.log('💰 Début de génération du lien de paiement:', {
-    bookingId: data.bookingId,
     email: data.email,
-    price: data.calculatedPrice,
+    originalPrice: data.calculatedPrice,
+    finalPrice: data.finalPrice,
+    promoCode: data.promoCode,
+    discountAmount: data.discountAmount,
     isTestMode: data.isTestMode
   });
 
   try {
-    // Créer la session de paiement
     const response = await supabase.functions.invoke('create-checkout', {
       body: {
         bookingId: data.bookingId,
@@ -72,9 +76,13 @@ export const generatePaymentLink = async (data: any) => {
         duration: data.duration,
         groupSize: data.groupSize,
         price: data.calculatedPrice,
+        finalPrice: data.finalPrice || data.calculatedPrice,
         userName: data.fullName,
         userPhone: data.phone,
         isTestMode: data.isTestMode,
+        promoCodeId: data.promoCodeId,
+        promoCode: data.promoCode,
+        discountAmount: data.discountAmount,
         message: data.message
       },
     });
@@ -115,6 +123,10 @@ export const generatePaymentLink = async (data: any) => {
       url,
       bookingId: data.bookingId,
       paymentIntentId,
+      originalPrice: data.calculatedPrice,
+      finalPrice: data.finalPrice,
+      promoCode: data.promoCode,
+      discountAmount: data.discountAmount,
       isTestMode: data.isTestMode
     });
 

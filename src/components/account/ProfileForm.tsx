@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Loader2, Mail } from "lucide-react";
+import { useEffect } from "react";
 
 interface ProfileFormData {
   first_name: string;
@@ -29,6 +30,12 @@ export const ProfileForm = ({ initialData, onSubmit, isLoading }: ProfileFormPro
   const form = useForm<ProfileFormData>({
     defaultValues: initialData,
   });
+
+  // Mettre à jour le formulaire quand initialData change
+  useEffect(() => {
+    console.log("Updating form with initialData:", initialData);
+    form.reset(initialData);
+  }, [initialData, form]);
 
   return (
     <Form {...form}>

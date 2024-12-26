@@ -8,9 +8,8 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  console.log('📥 Webhook Stripe reçu');
-  
   try {
+    // Handle CORS preflight requests
     if (req.method === 'OPTIONS') {
       return new Response(null, { headers: corsHeaders });
     }
@@ -34,6 +33,7 @@ serve(async (req) => {
 
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
       apiVersion: '2023-10-16',
+      httpClient: Stripe.createFetchHttpClient(),
     });
 
     // Vérifier la signature du webhook
@@ -43,10 +43,13 @@ serve(async (req) => {
       console.log('✅ Signature du webhook vérifiée');
       console.log('📦 Type d\'événement reçu:', event.type);
     } catch (err) {
-      console.error('❌ Échec de vérification de la signature du webhook:', err);
+      console.error('❌ Erreur de vérification de la signature:', err);
       return new Response(
         JSON.stringify({ error: err.message }), 
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
       );
     }
 

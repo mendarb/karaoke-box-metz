@@ -27,6 +27,17 @@ serve(async (req) => {
     const signature = req.headers.get('stripe-signature');
     console.log('📝 Stripe signature:', signature);
 
+    if (!signature) {
+      console.error('❌ No Stripe signature found in headers');
+      return new Response(
+        JSON.stringify({ error: 'No Stripe signature found' }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
     const body = await req.text();
     console.log('📦 Request body received:', body);
 
@@ -79,7 +90,7 @@ serve(async (req) => {
     try {
       event = stripe.webhooks.constructEvent(
         body,
-        signature || '',
+        signature,
         webhookSecret
       );
       console.log('✅ Webhook signature verified, event:', event.type);

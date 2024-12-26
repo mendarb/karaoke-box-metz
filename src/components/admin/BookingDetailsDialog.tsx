@@ -6,8 +6,9 @@ import {
 } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Calendar, Clock, Users, Euro, Mail, Phone, MessageSquare } from "lucide-react";
+import { Calendar, Clock, Users, Euro, Mail, Phone, MessageSquare, Download } from "lucide-react";
 import { BookingStatusBadge } from "./BookingStatusBadge";
+import { Button } from "@/components/ui/button";
 
 interface BookingDetailsDialogProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ interface BookingDetailsDialogProps {
     status: string;
     payment_status: string;
     isTestBooking?: boolean;
+    invoice_url?: string;
   };
 }
 
@@ -89,6 +91,20 @@ export const BookingDetailsDialog = ({ isOpen, onClose, booking }: BookingDetail
                 <MessageSquare className="mr-2 h-4 w-4 mt-0.5" />
                 {booking.message}
               </p>
+            </div>
+          )}
+
+          {booking.payment_status === 'paid' && !booking.isTestBooking && booking.invoice_url && (
+            <div className="space-y-2">
+              <h3 className="font-semibold">Documents</h3>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => window.open(booking.invoice_url, '_blank', 'noopener,noreferrer')}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Télécharger le reçu
+              </Button>
             </div>
           )}
         </div>

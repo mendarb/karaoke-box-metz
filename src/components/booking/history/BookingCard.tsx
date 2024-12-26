@@ -73,7 +73,7 @@ export const BookingCard = ({ booking }: BookingCardProps) => {
                 }}
               >
                 <Download className="mr-2 h-4 w-4" />
-                Télécharger la facture
+                Télécharger le reçu
               </Button>
             )}
           </div>

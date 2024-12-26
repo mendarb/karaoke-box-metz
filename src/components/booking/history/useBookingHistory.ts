@@ -12,15 +12,18 @@ export const useBookingHistory = () => {
         const { data: { session } } = await supabase.auth.getSession();
         
         if (!session?.user) {
+          console.log('No session found');
           throw new Error('No session found');
         }
+
+        console.log('Fetching bookings for user:', session.user.id);
 
         const { data, error } = await supabase
           .from('bookings')
           .select('*')
           .eq('user_id', session.user.id)
           .is('deleted_at', null)
-          .order('created_at', { ascending: false });
+          .order('date', { ascending: false });
 
         if (error) {
           console.error('Error fetching bookings:', error);

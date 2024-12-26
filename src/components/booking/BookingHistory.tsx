@@ -3,10 +3,12 @@ import { BookingCard } from "./history/BookingCard";
 import { useBookingHistory } from "./history/useBookingHistory";
 import { useToast } from "@/components/ui/use-toast";
 import { useEffect } from "react";
+import { useUserState } from "@/hooks/useUserState";
 
 export const BookingHistory = () => {
   const { data: bookings, isLoading, error } = useBookingHistory();
   const { toast } = useToast();
+  const { user } = useUserState();
 
   useEffect(() => {
     if (error) {
@@ -18,6 +20,14 @@ export const BookingHistory = () => {
       });
     }
   }, [error, toast]);
+
+  if (!user) {
+    return (
+      <div className="text-center p-8 text-gray-500">
+        Connectez-vous pour voir vos réservations
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

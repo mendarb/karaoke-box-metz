@@ -23,16 +23,7 @@ serve(async (req) => {
       throw new Error('Secret webhook non configuré');
     }
 
-    const isTestMode = req.headers.get('stripe-test-mode') === 'true';
-    const stripeKey = isTestMode 
-      ? Deno.env.get('STRIPE_TEST_SECRET_KEY')
-      : Deno.env.get('STRIPE_SECRET_KEY');
-
-    if (!stripeKey) {
-      throw new Error(`Clé API Stripe ${isTestMode ? 'test' : 'live'} non configurée`);
-    }
-
-    const stripe = new Stripe(stripeKey, {
+    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
       apiVersion: '2023-10-16',
     });
 
@@ -64,50 +55,26 @@ serve(async (req) => {
       try {
         // Rechercher d'abord par payment_intent_id
         console.log('🔍 Recherche de la réservation avec payment_intent_id:', session.payment_intent);
-        let booking;
-        let error;
-
-        const { data: bookingByPaymentIntent, error: paymentIntentError } = await supabase
+        
+        const { data: booking, error: bookingError } = await supabase
           .from('bookings')
           .select('*')
           .eq('payment_intent_id', session.payment_intent)
-          .maybeSingle();
+          .single();
 
-        if (bookingByPaymentIntent) {
-          console.log('✅ Réservation trouvée par payment_intent_id:', bookingByPaymentIntent);
-          booking = bookingByPaymentIntent;
-        } else {
-          console.log('⚠️ Réservation non trouvée par payment_intent_id, recherche par metadata...');
-          
-          // Essayer de trouver par l'ID dans les métadonnées
-          const bookingId = session.metadata?.bookingId;
-          if (!bookingId) {
-            throw new Error('ID de réservation non trouvé dans les métadonnées');
-          }
-
-          const { data: bookingByMetadata, error: metadataError } = await supabase
-            .from('bookings')
-            .select('*')
-            .eq('id', bookingId)
-            .maybeSingle();
-
-          if (metadataError || !bookingByMetadata) {
-            console.error('❌ Réservation non trouvée:', metadataError || 'Aucune réservation correspondante');
-            throw new Error('Réservation introuvable');
-          }
-
-          booking = bookingByMetadata;
-          console.log('✅ Réservation trouvée par metadata:', booking);
+        if (bookingError || !booking) {
+          console.error('❌ Réservation non trouvée par payment_intent_id:', bookingError);
+          throw new Error('Réservation introuvable');
         }
 
+        console.log('✅ Réservation trouvée:', booking);
+
         // Mise à jour du statut de la réservation
-        console.log('🔄 Mise à jour du statut de la réservation:', booking.id);
         const { error: updateError } = await supabase
           .from('bookings')
           .update({
             status: 'confirmed',
             payment_status: 'paid',
-            payment_intent_id: session.payment_intent as string,
             updated_at: new Date().toISOString()
           })
           .eq('id', booking.id);
@@ -128,7 +95,10 @@ serve(async (req) => {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
             },
-            body: JSON.stringify({ booking })
+            body: JSON.stringify({ 
+              booking,
+              type: 'confirmation'
+            })
           });
 
           if (!emailResponse.ok) {
@@ -136,6 +106,23 @@ serve(async (req) => {
           }
 
           console.log('✅ Email de confirmation envoyé');
+
+          // Envoi de la notification admin
+          const adminResponse = await fetch(`${supabaseUrl}/functions/v1/send-admin-notification`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+            },
+            body: JSON.stringify({ booking })
+          });
+
+          if (!adminResponse.ok) {
+            console.error('⚠️ Erreur lors de l\'envoi de la notification admin');
+          } else {
+            console.log('✅ Notification admin envoyée');
+          }
+
         } catch (emailError) {
           console.error('❌ Erreur lors de l\'envoi de l\'email:', emailError);
           // Ne pas bloquer le processus si l'email échoue

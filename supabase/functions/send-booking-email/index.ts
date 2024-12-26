@@ -14,10 +14,10 @@ serve(async (req) => {
 
   try {
     const { booking } = await req.json();
-    console.log('📧 Sending email for booking:', booking);
+    console.log('📧 Envoi d\'email pour la réservation:', booking);
 
     if (!booking || !booking.date || !booking.time_slot) {
-      throw new Error('Missing required booking data');
+      throw new Error('Données de réservation manquantes');
     }
 
     const bookingDate = new Date(booking.date);
@@ -28,7 +28,7 @@ serve(async (req) => {
 
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
     if (!RESEND_API_KEY) {
-      throw new Error('Missing Resend API key');
+      throw new Error('Clé API Resend manquante');
     }
 
     const emailContent = `
@@ -74,16 +74,16 @@ serve(async (req) => {
       </div>
     `;
 
-    console.log('📧 Sending email with Resend API');
+    console.log('📧 Envoi de l\'email avec Resend API');
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
         from: 'Karaoke Box <onboarding@resend.dev>',
-        to: booking.user_email,
+        to: [booking.user_email],
         subject: 'Votre réservation est confirmée ! - Karaoke Box Metz',
         html: emailContent,
       }),
@@ -91,12 +91,12 @@ serve(async (req) => {
 
     if (!res.ok) {
       const error = await res.text();
-      console.error('❌ Resend API error:', error);
-      throw new Error(`Failed to send email: ${error}`);
+      console.error('❌ Erreur Resend API:', error);
+      throw new Error(`Échec de l'envoi de l'email: ${error}`);
     }
 
     const data = await res.json();
-    console.log('✅ Email sent successfully:', data);
+    console.log('✅ Email envoyé avec succès:', data);
 
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -104,7 +104,7 @@ serve(async (req) => {
     });
 
   } catch (error: any) {
-    console.error('❌ Error in send-booking-email function:', error);
+    console.error('❌ Erreur dans la fonction send-booking-email:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       {

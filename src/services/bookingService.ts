@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { Booking } from "@/integrations/supabase/types/booking";
 
 export const generatePaymentLink = async (data: any) => {
   console.log('💰 Début de génération du lien de paiement:', {
@@ -56,6 +57,26 @@ export const generatePaymentLink = async (data: any) => {
     return url;
   } catch (error: any) {
     console.error('❌ Erreur lors de la génération du lien de paiement:', error);
+    throw error;
+  }
+};
+
+export const fetchBookings = async (): Promise<Booking[]> => {
+  try {
+    const { data: bookings, error } = await supabase
+      .from('bookings')
+      .select('*')
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching bookings:', error);
+      throw error;
+    }
+
+    return bookings || [];
+  } catch (error) {
+    console.error('Error in fetchBookings:', error);
     throw error;
   }
 };

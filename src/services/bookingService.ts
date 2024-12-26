@@ -1,20 +1,4 @@
 import { supabase } from "@/lib/supabase";
-import { Booking } from "@/integrations/supabase/types/booking";
-
-export const fetchBookings = async (): Promise<Booking[]> => {
-  const { data, error } = await supabase
-    .from('bookings')
-    .select('*')
-    .is('deleted_at', null)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching bookings:', error);
-    throw error;
-  }
-
-  return data || [];
-};
 
 export const generatePaymentLink = async (data: any) => {
   console.log('💰 Début de génération du lien de paiement:', {
@@ -27,7 +11,7 @@ export const generatePaymentLink = async (data: any) => {
   });
 
   try {
-    const response = await supabase.functions.invoke('create-checkout', {
+    const response = await supabase.functions.invoke('create-booking', {
       body: {
         userId: data.userId,
         userEmail: data.email,
@@ -35,8 +19,9 @@ export const generatePaymentLink = async (data: any) => {
         timeSlot: data.timeSlot,
         duration: data.duration,
         groupSize: data.groupSize,
-        price: data.calculatedPrice,
-        finalPrice: data.finalPrice || data.calculatedPrice,
+        price: data.finalPrice || data.calculatedPrice, // Utiliser le prix final s'il existe
+        originalPrice: data.calculatedPrice, // Garder une trace du prix original
+        finalPrice: data.finalPrice, // Envoyer le prix final
         userName: data.fullName,
         userPhone: data.phone,
         isTestMode: data.isTestMode,

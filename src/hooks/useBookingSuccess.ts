@@ -64,24 +64,23 @@ export const useBookingSuccess = () => {
         // Récupérer la réservation avec le payment_intent_id
         const { data: bookings, error: bookingError } = await supabase
           .from("bookings")
-          .select("*")
+          .select()
           .eq("payment_intent_id", stripeData.paymentIntentId)
-          .is("deleted_at", null);
+          .is("deleted_at", null)
+          .maybeSingle();
 
         if (bookingError) {
           console.error("❌ Erreur lors de la récupération de la réservation:", bookingError);
           throw bookingError;
         }
 
-        if (!bookings || bookings.length === 0) {
+        if (!bookings) {
           console.warn("⚠️ Aucune réservation trouvée avec le payment_intent_id:", stripeData.paymentIntentId);
           throw new Error("Aucune réservation trouvée");
         }
 
-        // Prendre la réservation la plus récente si plusieurs sont trouvées
-        const latestBooking = bookings[0];
-        console.log("✅ Réservation trouvée:", latestBooking);
-        setBooking(latestBooking);
+        console.log("✅ Réservation trouvée:", bookings);
+        setBooking(bookings);
 
       } catch (error: any) {
         console.error("❌ Erreur lors de la récupération de la réservation:", error);

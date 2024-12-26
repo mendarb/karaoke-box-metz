@@ -86,22 +86,6 @@ serve(async (req) => {
         throw new Error('Booking ID not found in session metadata');
       }
 
-      // Get invoice URL from Stripe
-      let invoiceUrl = null;
-      if (session.payment_intent) {
-        try {
-          const paymentIntent = await stripe.paymentIntents.retrieve(session.payment_intent as string);
-          if (paymentIntent.invoice) {
-            const invoice = await stripe.invoices.retrieve(paymentIntent.invoice as string);
-            invoiceUrl = invoice.hosted_invoice_url;
-            console.log('📄 Retrieved invoice URL:', invoiceUrl);
-          }
-        } catch (error) {
-          console.error('❌ Error retrieving invoice:', error);
-          // Continue without invoice URL
-        }
-      }
-
       // Update booking status
       const { data: updatedBooking, error: updateError } = await supabase
         .from('bookings')
@@ -109,7 +93,6 @@ serve(async (req) => {
           payment_status: 'paid',
           status: 'confirmed',
           payment_intent_id: session.payment_intent as string,
-          invoice_url: invoiceUrl,
           updated_at: new Date().toISOString(),
         })
         .eq('id', bookingId)

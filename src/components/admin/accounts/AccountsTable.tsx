@@ -17,7 +17,6 @@ interface UserProfile {
   id: string;
   first_name: string | null;
   last_name: string | null;
-  email: string;
   phone: string | null;
   created_at: string;
 }
@@ -30,6 +29,7 @@ export const AccountsTable = () => {
     queryKey: ['admin-profiles'],
     queryFn: async () => {
       try {
+        console.log('Fetching profiles...');
         const { data: profiles, error } = await supabase
           .from('profiles')
           .select('*')
@@ -49,21 +49,21 @@ export const AccountsTable = () => {
         return profiles || [];
       } catch (err) {
         console.error('Query error:', err);
-        throw err;
+        return [];
       }
     },
   });
 
   if (isLoadingProfiles) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="flex justify-center items-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
       </div>
     );
   }
 
   return (
-    <div className="rounded-md border">
+    <div>
       <Table>
         <TableHeader>
           <TableRow>
@@ -101,7 +101,6 @@ export const AccountsTable = () => {
                     variant="ghost"
                     size="sm"
                     onClick={() => {
-                      // TODO: Implémenter la modification du profil
                       console.log("Modifier le profil:", profile.id);
                     }}
                   >

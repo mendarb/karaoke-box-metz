@@ -10,8 +10,6 @@ export const useAdminBookingSubmit = (form: UseFormReturn<any>) => {
   const { toast } = useToast();
 
   const handleSubmit = async (data: any) => {
-    if (isLoading) return; // Prevent multiple submissions
-
     console.log('🎯 Début du processus de réservation admin:', {
       email: data.email,
       fullName: data.fullName,
@@ -20,7 +18,6 @@ export const useAdminBookingSubmit = (form: UseFormReturn<any>) => {
 
     try {
       setIsLoading(true);
-      setPaymentLink(null); // Reset payment link on new submission
 
       // Trouver ou créer l'utilisateur
       const userId = await findOrCreateUser(data.email, data.fullName, data.phone);
@@ -49,10 +46,9 @@ export const useAdminBookingSubmit = (form: UseFormReturn<any>) => {
       console.error('❌ Erreur dans le processus de réservation admin:', error);
       toast({
         title: "Erreur",
-        description: error.message || "Une erreur est survenue lors de la création de la réservation",
+        description: error.message,
         variant: "destructive",
       });
-      setPaymentLink(null); // Reset payment link on error
     } finally {
       setIsLoading(false);
     }

@@ -62,9 +62,9 @@ export const useBookingSuccess = () => {
         console.log("💳 Payment Intent ID récupéré:", stripeData.paymentIntentId);
 
         // Récupérer la réservation avec le payment_intent_id
-        const { data: bookings, error: bookingError } = await supabase
+        const { data: bookingData, error: bookingError } = await supabase
           .from("bookings")
-          .select()
+          .select("*")
           .eq("payment_intent_id", stripeData.paymentIntentId)
           .is("deleted_at", null)
           .maybeSingle();
@@ -74,22 +74,37 @@ export const useBookingSuccess = () => {
           throw bookingError;
         }
 
-        if (!bookings) {
+        if (!bookingData) {
           console.warn("⚠️ Aucune réservation trouvée avec le payment_intent_id:", stripeData.paymentIntentId);
-          throw new Error("Aucune réservation trouvée");
+          
+          // Essayer de récupérer la dernière réservation payée
+          const { data: latestBooking, error: latestError } = await supabase
+            .from("bookings")
+            .select("*")
+            .eq("payment_status", "paid")
+            .is("deleted_at", null)
+            .order("created_at", { ascending: false })
+            .maybeSingle();
+
+          if (latestError) {
+            throw latestError;
+          }
+
+          if (!latestBooking) {
+            throw new Error("Aucune réservation trouvée");
+          }
+
+          console.log("✅ Dernière réservation trouvée:", latestBooking);
+          setBooking(latestBooking);
+          return;
         }
 
-        console.log("✅ Réservation trouvée:", bookings);
-        setBooking(bookings);
+        console.log("✅ Réservation trouvée:", bookingData);
+        setBooking(bookingData);
 
       } catch (error: any) {
         console.error("❌ Erreur lors de la récupération de la réservation:", error);
         setError(error.message);
-        toast({
-          title: "Erreur",
-          description: "Impossible de récupérer les détails de votre réservation",
-          variant: "destructive",
-        });
       } finally {
         setIsLoading(false);
       }

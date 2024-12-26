@@ -42,7 +42,6 @@ export type Database = {
           duration: string
           group_size: string
           id: string
-          invoice_url: string | null
           is_test_booking: boolean | null
           message: string | null
           payment_intent_id: string | null
@@ -65,7 +64,6 @@ export type Database = {
           duration: string
           group_size: string
           id?: string
-          invoice_url?: string | null
           is_test_booking?: boolean | null
           message?: string | null
           payment_intent_id?: string | null
@@ -88,7 +86,6 @@ export type Database = {
           duration?: string
           group_size?: string
           id?: string
-          invoice_url?: string | null
           is_test_booking?: boolean | null
           message?: string | null
           payment_intent_id?: string | null

@@ -26,7 +26,11 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: "No Stripe signature found" }),
         { 
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { 
+            ...corsHeaders, 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`
+          },
           status: 400 
         }
       );
@@ -47,7 +51,11 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: "Webhook secret not configured" }),
         { 
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { 
+            ...corsHeaders, 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`
+          },
           status: 500 
         }
       );
@@ -74,13 +82,17 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: `Webhook signature verification failed: ${err.message}` }),
         { 
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { 
+            ...corsHeaders, 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`
+          },
           status: 400 
         }
       );
     }
 
-    // Initialize Supabase client
+    // Initialize Supabase client with service role key for admin access
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -98,7 +110,11 @@ serve(async (req) => {
         return new Response(
           JSON.stringify({ received: true, status: "pending" }),
           {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { 
+              ...corsHeaders, 
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`
+            },
             status: 200,
           }
         );
@@ -142,7 +158,7 @@ serve(async (req) => {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
+                "Authorization": `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
               },
               body: JSON.stringify({ booking }),
             }
@@ -161,7 +177,11 @@ serve(async (req) => {
         return new Response(
           JSON.stringify({ received: true, booking }),
           {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { 
+              ...corsHeaders, 
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`
+            },
             status: 200,
           }
         );
@@ -170,7 +190,11 @@ serve(async (req) => {
         return new Response(
           JSON.stringify({ error: error.message }),
           {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { 
+              ...corsHeaders, 
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`
+            },
             status: 500,
           }
         );
@@ -181,7 +205,11 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ received: true }),
       {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { 
+          ...corsHeaders, 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`
+        },
         status: 200,
       }
     );
@@ -190,7 +218,11 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ error: error.message }),
       {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { 
+          ...corsHeaders, 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`
+        },
         status: 500,
       }
     );

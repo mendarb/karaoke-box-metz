@@ -31,10 +31,10 @@ export const AccountsTable = () => {
     queryKey: ['admin-profiles'],
     queryFn: async () => {
       try {
-        const { data: session } = await supabase.auth.getSession();
-        console.log('Current session:', session);
+        const { data } = await supabase.auth.getSession();
+        console.log('Current session:', data.session);
 
-        if (!session?.user?.email) {
+        if (!data.session?.user?.email) {
           console.log("No session or email found");
           return [];
         }

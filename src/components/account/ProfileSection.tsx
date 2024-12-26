@@ -19,7 +19,7 @@ interface ProfileFormData {
 }
 
 export const ProfileSection = () => {
-  const { user, profile } = useUserState();
+  const { user } = useUserState();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [initialData, setInitialData] = useState<ProfileFormData>({
@@ -36,17 +36,42 @@ export const ProfileSection = () => {
     try {
       console.log('Updating profile with data:', data);
       
-      // Mettre à jour le profil
-      const { error: profileUpdateError } = await supabase
+      // Créer le profil s'il n'existe pas
+      const { data: existingProfile, error: checkError } = await supabase
         .from('profiles')
-        .update({
-          first_name: data.first_name,
-          last_name: data.last_name,
-          phone: data.phone,
-        })
-        .eq('id', user.id);
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle();
 
-      if (profileUpdateError) throw profileUpdateError;
+      if (checkError) {
+        throw checkError;
+      }
+
+      if (!existingProfile) {
+        // Créer un nouveau profil
+        const { error: createError } = await supabase
+          .from('profiles')
+          .insert([{
+            id: user.id,
+            first_name: data.first_name,
+            last_name: data.last_name,
+            phone: data.phone,
+          }]);
+
+        if (createError) throw createError;
+      } else {
+        // Mettre à jour le profil existant
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({
+            first_name: data.first_name,
+            last_name: data.last_name,
+            phone: data.phone,
+          })
+          .eq('id', user.id);
+
+        if (updateError) throw updateError;
+      }
 
       // Mettre à jour les réservations existantes avec les nouvelles informations
       const fullName = `${data.first_name} ${data.last_name}`.trim();
@@ -65,14 +90,14 @@ export const ProfileSection = () => {
         description: "Vos informations ont été mises à jour avec succès.",
       });
 
-      // Recharger les données du profil immédiatement après la mise à jour
-      const { data: updatedProfile, error: refreshError } = await supabase
+      // Recharger les données du profil
+      const { data: updatedProfile } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (!refreshError && updatedProfile) {
+      if (updatedProfile) {
         setInitialData({
           first_name: updatedProfile.first_name || "",
           last_name: updatedProfile.last_name || "",
@@ -102,7 +127,7 @@ export const ProfileSection = () => {
           .from('profiles')
           .select('*')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
 
         if (profileError) {
           console.error('Error loading profile:', profileError);

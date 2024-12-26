@@ -18,7 +18,7 @@ export const handleCheckoutSession = async (
       return { received: true, status: "pending" };
     }
 
-    // Get payment intent to retrieve invoice
+    // Get payment intent to retrieve receipt
     const stripeKey = session.livemode 
       ? Deno.env.get('STRIPE_SECRET_KEY')
       : Deno.env.get('STRIPE_TEST_SECRET_KEY');
@@ -34,33 +34,20 @@ export const handleCheckoutSession = async (
     const paymentIntentId = session.payment_intent as string;
     console.log('🔍 Retrieving payment intent:', paymentIntentId, 'Mode:', session.livemode ? 'LIVE' : 'TEST');
 
-    // Get invoice URL
-    let invoiceUrl = null;
+    // Get receipt URL
+    let receiptUrl = null;
     try {
-      // First, try to get the invoice directly from the session
-      if (session.invoice) {
-        const invoice = await stripe.invoices.retrieve(session.invoice as string);
-        invoiceUrl = invoice.invoice_pdf;
-        console.log('📄 Invoice URL retrieved from session:', invoiceUrl);
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+      if (paymentIntent.latest_charge) {
+        const charge = await stripe.charges.retrieve(paymentIntent.latest_charge as string);
+        receiptUrl = charge.receipt_url;
+        console.log('🧾 Receipt URL retrieved:', receiptUrl);
       } else {
-        // If no invoice in session, try to get it from the payment intent
-        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-        if (paymentIntent.latest_charge) {
-          const charge = await stripe.charges.retrieve(paymentIntent.latest_charge as string);
-          if (charge.invoice) {
-            const invoice = await stripe.invoices.retrieve(charge.invoice as string);
-            invoiceUrl = invoice.invoice_pdf;
-            console.log('📄 Invoice URL retrieved from payment intent:', invoiceUrl);
-          } else {
-            console.log('⚠️ No invoice found in charge:', charge.id);
-          }
-        } else {
-          console.log('⚠️ No charge found in payment intent:', paymentIntentId);
-        }
+        console.log('⚠️ No charge found in payment intent:', paymentIntentId);
       }
-    } catch (invoiceError) {
-      console.error('⚠️ Error retrieving invoice:', invoiceError);
-      // Continue execution even if invoice retrieval fails
+    } catch (receiptError) {
+      console.error('⚠️ Error retrieving receipt:', receiptError);
+      // Continue execution even if receipt retrieval fails
     }
 
     // Update booking status
@@ -75,7 +62,7 @@ export const handleCheckoutSession = async (
         payment_status: 'paid',
         status: 'confirmed',
         payment_intent_id: paymentIntentId,
-        invoice_url: invoiceUrl,
+        invoice_url: receiptUrl,
         updated_at: new Date().toISOString(),
       })
       .eq('id', bookingId)
@@ -91,7 +78,7 @@ export const handleCheckoutSession = async (
       id: booking.id,
       status: booking.status,
       paymentStatus: booking.payment_status,
-      invoiceUrl: booking.invoice_url
+      receiptUrl: booking.invoice_url
     });
 
     // Send confirmation email

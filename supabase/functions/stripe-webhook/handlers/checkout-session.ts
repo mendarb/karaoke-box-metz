@@ -17,6 +17,12 @@ export const handleCheckoutSession = async (
       return { received: true, status: "pending" };
     }
 
+    // Get invoice URL from Stripe
+    const stripe = new Stripe(Deno.env.get(session.livemode ? 'STRIPE_SECRET_KEY' : 'STRIPE_TEST_SECRET_KEY')!);
+    const paymentIntent = await stripe.paymentIntents.retrieve(session.payment_intent as string);
+    const invoice = await stripe.invoices.retrieve(paymentIntent.invoice as string);
+    const invoiceUrl = invoice.hosted_invoice_url;
+
     // Update booking status
     const bookingId = session.metadata?.bookingId;
     if (!bookingId) {
@@ -29,6 +35,7 @@ export const handleCheckoutSession = async (
         payment_status: 'paid',
         status: 'confirmed',
         payment_intent_id: session.payment_intent as string,
+        invoice_url: invoiceUrl,
         updated_at: new Date().toISOString(),
       })
       .eq('id', bookingId)

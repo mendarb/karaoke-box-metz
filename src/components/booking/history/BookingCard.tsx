@@ -3,8 +3,6 @@ import { fr } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { BookingStatusBadge } from "../../admin/BookingStatusBadge";
-import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/lib/supabase";
 import { Calendar, Clock, Users, Euro } from "lucide-react";
 
 interface BookingCardProps {
@@ -12,37 +10,8 @@ interface BookingCardProps {
 }
 
 export const BookingCard = ({ booking }: BookingCardProps) => {
-  const { toast } = useToast();
   const startHour = parseInt(booking.time_slot);
   const endHour = startHour + parseInt(booking.duration);
-
-  const handleDownloadInvoice = async () => {
-    try {
-      if (!booking.payment_intent_id) {
-        throw new Error('Identifiant de paiement non disponible');
-      }
-
-      const { data, error } = await supabase.functions.invoke('get-invoice', {
-        body: { 
-          bookingId: booking.id,
-          paymentIntentId: booking.payment_intent_id,
-          isTestMode: booking.is_test_booking
-        }
-      });
-
-      if (error) throw error;
-      if (!data?.url) throw new Error('URL de facture non disponible');
-
-      window.open(data.url, '_blank', 'noopener,noreferrer');
-    } catch (error: any) {
-      console.error('Error downloading invoice:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de récupérer la facture. Veuillez réessayer.",
-        variant: "destructive",
-      });
-    }
-  };
 
   // Ensure we're working with a proper Date object
   const bookingDate = new Date(booking.date);
@@ -91,11 +60,11 @@ export const BookingCard = ({ booking }: BookingCardProps) => {
           </div>
         )}
 
-        {booking.payment_status === 'paid' && booking.payment_intent_id && !booking.is_test_booking && (
+        {booking.payment_status === 'paid' && booking.invoice_url && !booking.is_test_booking && (
           <Button
             variant="outline"
             className="w-full"
-            onClick={handleDownloadInvoice}
+            onClick={() => window.open(booking.invoice_url, '_blank', 'noopener,noreferrer')}
           >
             Télécharger la facture
           </Button>

@@ -29,7 +29,9 @@ export const AccountsTable = () => {
     queryKey: ['admin-profiles'],
     queryFn: async () => {
       try {
-        console.log('Fetching profiles...');
+        const { data: session } = await supabase.auth.getSession();
+        console.log('Current session:', session);
+
         const { data: profiles, error } = await supabase
           .from('profiles')
           .select('*')
@@ -81,7 +83,7 @@ export const AccountsTable = () => {
               </TableCell>
             </TableRow>
           ) : (
-            profiles.map((profile) => (
+            profiles.map((profile: UserProfile) => (
               <TableRow key={profile.id}>
                 <TableCell>
                   {profile.first_name || profile.last_name ? (

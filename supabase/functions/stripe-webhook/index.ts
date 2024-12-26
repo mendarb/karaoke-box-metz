@@ -18,13 +18,25 @@ serve(async (req) => {
     const signature = req.headers.get('stripe-signature');
     if (!signature) {
       console.error('❌ Pas de signature Stripe dans les en-têtes');
-      throw new Error('No stripe signature found in headers');
+      return new Response(
+        JSON.stringify({ error: 'No stripe signature found in headers' }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
     if (!webhookSecret) {
       console.error('❌ Secret webhook non configuré');
-      throw new Error('Webhook secret not configured');
+      return new Response(
+        JSON.stringify({ error: 'Webhook secret not configured' }),
+        { 
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     // Récupérer le corps de la requête en tant que texte

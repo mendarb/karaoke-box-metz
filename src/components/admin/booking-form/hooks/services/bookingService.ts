@@ -11,7 +11,7 @@ export const generatePaymentLink = async (data: any) => {
   });
 
   try {
-    const response = await supabase.functions.invoke('create-checkout', {
+    const response = await supabase.functions.invoke('create-booking', {
       body: {
         userId: data.userId,
         userEmail: data.email,

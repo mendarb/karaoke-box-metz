@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { useUserState } from "@/hooks/useUserState";
 
 interface UserProfile {
   id: string;
@@ -24,14 +25,21 @@ interface UserProfile {
 export const AccountsTable = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { isAdmin } = useUserState();
 
-  const { data: profiles = [], isLoading: isLoadingProfiles } = useQuery({
+  const { data: profiles = [], isLoading: isLoadingProfiles, error } = useQuery({
     queryKey: ['admin-profiles'],
     queryFn: async () => {
       try {
         const { data: session } = await supabase.auth.getSession();
         console.log('Current session:', session);
 
+        if (!session?.user?.email) {
+          console.log("No session or email found");
+          return [];
+        }
+
+        console.log("Fetching profiles as admin:", isAdmin);
         const { data: profiles, error } = await supabase
           .from('profiles')
           .select('*')
@@ -54,7 +62,17 @@ export const AccountsTable = () => {
         return [];
       }
     },
+    enabled: isAdmin,
   });
+
+  if (error) {
+    console.error('Query error:', error);
+    return (
+      <div className="p-4 text-red-500">
+        Une erreur est survenue lors du chargement des profils.
+      </div>
+    );
+  }
 
   if (isLoadingProfiles) {
     return (

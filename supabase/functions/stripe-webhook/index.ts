@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 import Stripe from 'https://esm.sh/stripe@14.21.0';
-import { handleWebhook } from './webhook-handler.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,19 +12,14 @@ const corsHeaders = {
 serve(async (req) => {
   try {
     console.log('🎯 Webhook request received');
-    console.log('📋 Method:', req.method);
-    console.log('🔑 Headers:', Object.fromEntries(req.headers.entries()));
 
+    // Handle CORS
     if (req.method === 'OPTIONS') {
-      console.log('✨ Responding to OPTIONS request');
       return new Response(null, { headers: corsHeaders });
     }
 
-    // 1. Get and log the raw body
+    // 1. Get the raw body and signature
     const body = await req.text();
-    console.log('📦 Request body received:', body);
-
-    // 2. Get Stripe signature
     const signature = req.headers.get('stripe-signature');
     console.log('📝 Stripe signature:', signature);
 
@@ -40,36 +34,24 @@ serve(async (req) => {
       );
     }
 
-    // 3. Parse the event
+    // 2. Parse the event to determine test/live mode
     const rawEvent = JSON.parse(body);
     const isTestMode = !rawEvent.livemode;
     console.log('🔑 Mode:', isTestMode ? 'TEST' : 'LIVE');
 
-    // 4. Get appropriate webhook secret
+    // 3. Get appropriate webhook secret and Stripe key
     const webhookSecret = isTestMode 
       ? Deno.env.get('STRIPE_WEBHOOK_SECRET')
       : Deno.env.get('STRIPE_LIVE_WEBHOOK_SECRET');
 
-    if (!webhookSecret) {
-      console.error('❌ Webhook secret not configured for', isTestMode ? 'test' : 'live', 'mode');
-      return new Response(
-        JSON.stringify({ error: `Webhook secret not configured for ${isTestMode ? 'test' : 'live'} mode` }),
-        { 
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
-    // 5. Get appropriate Stripe key
     const stripeKey = isTestMode 
       ? Deno.env.get('STRIPE_TEST_SECRET_KEY')
       : Deno.env.get('STRIPE_SECRET_KEY');
 
-    if (!stripeKey) {
-      console.error('❌ Stripe key not configured for', isTestMode ? 'test' : 'live', 'mode');
+    if (!webhookSecret || !stripeKey) {
+      console.error('❌ Missing configuration for', isTestMode ? 'test' : 'live', 'mode');
       return new Response(
-        JSON.stringify({ error: `Stripe key not configured for ${isTestMode ? 'test' : 'live'} mode` }),
+        JSON.stringify({ error: 'Invalid configuration' }),
         { 
           status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -77,13 +59,13 @@ serve(async (req) => {
       );
     }
 
-    // 6. Initialize Stripe
+    // 4. Initialize Stripe
     const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
       httpClient: Stripe.createFetchHttpClient(),
     });
 
-    // 7. Verify webhook signature
+    // 5. Verify webhook signature
     let event: Stripe.Event;
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
@@ -99,29 +81,120 @@ serve(async (req) => {
       );
     }
 
-    // 8. Initialize Supabase client
+    // 6. Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // 9. Handle the event
-    const result = await handleWebhook(event, stripe, supabase);
+    // 7. Handle the event
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object as Stripe.Checkout.Session;
+      console.log('💳 Processing completed checkout session:', {
+        sessionId: session.id,
+        metadata: session.metadata,
+        paymentStatus: session.payment_status
+      });
 
+      if (session.payment_status !== 'paid') {
+        console.log('❌ Payment not completed yet:', session.payment_status);
+        return new Response(
+          JSON.stringify({ received: true, status: 'pending' }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200
+          }
+        );
+      }
+
+      try {
+        // Update booking status
+        const bookingId = session.metadata?.bookingId;
+        if (!bookingId) {
+          throw new Error('No booking ID in metadata');
+        }
+
+        const { data: booking, error: updateError } = await supabase
+          .from('bookings')
+          .update({
+            payment_status: 'paid',
+            status: 'confirmed',
+            payment_intent_id: session.payment_intent as string,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', bookingId)
+          .select()
+          .single();
+
+        if (updateError) {
+          console.error('❌ Error updating booking:', updateError);
+          throw updateError;
+        }
+
+        console.log('✅ Booking updated successfully:', {
+          bookingId: booking.id,
+          status: booking.status,
+          paymentStatus: booking.payment_status
+        });
+
+        // Send confirmation email
+        try {
+          const emailResponse = await fetch(
+            `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-booking-email`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+              },
+              body: JSON.stringify({ booking })
+            }
+          );
+
+          if (!emailResponse.ok) {
+            throw new Error(await emailResponse.text());
+          }
+
+          console.log('✅ Confirmation email sent');
+        } catch (emailError) {
+          console.error('❌ Error sending confirmation email:', emailError);
+          // Don't block the process if email fails
+        }
+
+        return new Response(
+          JSON.stringify({ received: true, booking }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200
+          }
+        );
+      } catch (error) {
+        console.error('❌ Error processing webhook:', error);
+        return new Response(
+          JSON.stringify({ error: error.message }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 500
+          }
+        );
+      }
+    }
+
+    // Return 200 for other events
     return new Response(
-      JSON.stringify(result),
-      {
+      JSON.stringify({ received: true }),
+      { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200
       }
     );
 
   } catch (error) {
-    console.error('❌ Error in webhook handler:', error);
+    console.error('❌ Unhandled error in webhook:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500 
+        status: 500
       }
     );
   }

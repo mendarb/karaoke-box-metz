@@ -67,7 +67,7 @@ export const useBookingSuccess = () => {
           .select("*")
           .eq("payment_intent_id", stripeData.paymentIntentId)
           .is("deleted_at", null)
-          .maybeSingle();
+          .single();
 
         if (bookingError) {
           console.error("❌ Erreur lors de la récupération de la réservation:", bookingError);
@@ -77,14 +77,16 @@ export const useBookingSuccess = () => {
         if (!bookingData) {
           console.warn("⚠️ Aucune réservation trouvée avec le payment_intent_id:", stripeData.paymentIntentId);
           
-          // Essayer de récupérer la dernière réservation payée
+          // Essayer de récupérer la dernière réservation payée et confirmée
           const { data: latestBooking, error: latestError } = await supabase
             .from("bookings")
             .select("*")
             .eq("payment_status", "paid")
+            .eq("status", "confirmed")
             .is("deleted_at", null)
             .order("created_at", { ascending: false })
-            .maybeSingle();
+            .limit(1)
+            .single();
 
           if (latestError) {
             throw latestError;
@@ -105,6 +107,11 @@ export const useBookingSuccess = () => {
       } catch (error: any) {
         console.error("❌ Erreur lors de la récupération de la réservation:", error);
         setError(error.message);
+        toast({
+          title: "Erreur",
+          description: "Impossible de récupérer les détails de votre réservation",
+          variant: "destructive",
+        });
       } finally {
         setIsLoading(false);
       }

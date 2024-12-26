@@ -37,21 +37,14 @@ serve(async (req) => {
 
     console.log('💳 Création de la session Stripe...');
 
+    // Utiliser le prix final après réduction
+    const finalAmount = Math.round((requestData.finalPrice || requestData.price) * 100);
+
     // Format price description with promo code if applicable
     let priceDescription = `${requestData.groupSize} personnes - ${requestData.duration}h`;
     if (requestData.promoCode && requestData.discountAmount) {
       priceDescription += ` (-${Math.round(requestData.discountAmount)}% avec ${requestData.promoCode})`;
     }
-
-    // Utiliser le prix final après réduction
-    const finalAmount = Math.round((requestData.finalPrice || requestData.price) * 100);
-
-    console.log('💰 Montant final pour Stripe:', {
-      originalPrice: requestData.price,
-      finalPrice: requestData.finalPrice,
-      finalAmount,
-      description: priceDescription
-    });
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],

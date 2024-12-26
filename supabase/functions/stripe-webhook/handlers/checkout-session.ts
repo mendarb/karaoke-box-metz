@@ -5,7 +5,7 @@ export const handleCheckoutSession = async (
   session: Stripe.Checkout.Session,
   supabase: ReturnType<typeof createClient>
 ) => {
-  console.log('💳 Processing checkout session:', {
+  console.log('💳 Traitement de la session de paiement:', {
     sessionId: session.id,
     metadata: session.metadata,
     paymentStatus: session.payment_status,
@@ -14,11 +14,11 @@ export const handleCheckoutSession = async (
 
   try {
     if (session.payment_status !== "paid") {
-      console.log("❌ Payment not completed yet:", session.payment_status);
+      console.log("❌ Paiement non complété:", session.payment_status);
       return { received: true, status: "pending" };
     }
 
-    // Create booking only after successful payment
+    // Créer la réservation uniquement après un paiement réussi
     const { data: booking, error: bookingError } = await supabase
       .from('bookings')
       .insert([{
@@ -42,17 +42,17 @@ export const handleCheckoutSession = async (
       .single();
 
     if (bookingError) {
-      console.error('❌ Error creating booking:', bookingError);
+      console.error('❌ Erreur lors de la création de la réservation:', bookingError);
       throw bookingError;
     }
 
-    console.log('✅ Booking created:', {
+    console.log('✅ Réservation créée:', {
       id: booking.id,
       status: booking.status,
       paymentStatus: booking.payment_status
     });
 
-    // Get receipt URL
+    // Récupérer l'URL du reçu
     let receiptUrl = null;
     try {
       const stripeKey = session.livemode 
@@ -60,7 +60,7 @@ export const handleCheckoutSession = async (
         : Deno.env.get('STRIPE_TEST_SECRET_KEY');
 
       if (!stripeKey) {
-        throw new Error(`${session.livemode ? 'Live' : 'Test'} mode Stripe API key not configured`);
+        throw new Error(`Clé API Stripe ${session.livemode ? 'live' : 'test'} non configurée`);
       }
 
       const stripe = new Stripe(stripeKey, {
@@ -72,23 +72,23 @@ export const handleCheckoutSession = async (
       if (paymentIntent.latest_charge) {
         const charge = await stripe.charges.retrieve(paymentIntent.latest_charge as string);
         receiptUrl = charge.receipt_url;
-        console.log('🧾 Receipt URL retrieved:', receiptUrl);
+        console.log('🧾 URL du reçu récupérée:', receiptUrl);
 
-        // Update booking with receipt URL
+        // Mettre à jour la réservation avec l'URL du reçu
         const { error: updateError } = await supabase
           .from('bookings')
           .update({ invoice_url: receiptUrl })
           .eq('id', booking.id);
 
         if (updateError) {
-          console.error('⚠️ Error updating booking with receipt URL:', updateError);
+          console.error('⚠️ Erreur lors de la mise à jour de l\'URL du reçu:', updateError);
         }
       }
     } catch (receiptError) {
-      console.error('⚠️ Error retrieving receipt:', receiptError);
+      console.error('⚠️ Erreur lors de la récupération du reçu:', receiptError);
     }
 
-    // Send confirmation email
+    // Envoyer l'email de confirmation
     try {
       const emailResponse = await fetch(
         `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-booking-email`,
@@ -106,14 +106,14 @@ export const handleCheckoutSession = async (
         throw new Error(await emailResponse.text());
       }
 
-      console.log('📧 Confirmation email sent');
+      console.log('📧 Email de confirmation envoyé');
     } catch (emailError) {
-      console.error('❌ Error sending confirmation email:', emailError);
+      console.error('❌ Erreur lors de l\'envoi de l\'email de confirmation:', emailError);
     }
 
     return { received: true, booking };
   } catch (error) {
-    console.error('❌ Error processing checkout session:', error);
+    console.error('❌ Erreur lors du traitement de la session de paiement:', error);
     throw error;
   }
 };

@@ -1,64 +1,8 @@
 import { supabase } from "@/lib/supabase";
 
-export const createBooking = async (data: any, userId: string | null) => {
-  console.log('📝 Creating new booking:', {
-    userId,
+export const generatePaymentLink = async (data: any) => {
+  console.log('💰 Début de génération du lien de paiement:', {
     email: data.email,
-    date: data.date,
-    timeSlot: data.timeSlot,
-    duration: data.duration,
-    groupSize: data.groupSize,
-    price: data.calculatedPrice,
-    finalPrice: data.finalPrice,
-    promoCode: data.promoCode,
-    discountAmount: data.discountAmount,
-    isTestMode: data.isTestMode
-  });
-
-  const { data: booking, error } = await supabase
-    .from('bookings')
-    .insert([{
-      user_id: userId,
-      user_email: data.email,
-      user_name: data.fullName,
-      user_phone: data.phone,
-      date: data.date,
-      time_slot: data.timeSlot,
-      duration: data.duration,
-      group_size: data.groupSize,
-      price: data.calculatedPrice,
-      message: data.message,
-      status: 'pending',
-      payment_status: 'awaiting_payment',
-      is_test_booking: data.isTestMode,
-      promo_code_id: data.promoCodeId,
-    }])
-    .select()
-    .single();
-
-  if (error) {
-    console.error('❌ Error creating booking:', error);
-    throw error;
-  }
-
-  console.log('✅ Booking created successfully:', {
-    bookingId: booking.id,
-    status: booking.status,
-    paymentStatus: booking.payment_status,
-    isTestMode: data.isTestMode,
-    promoDetails: {
-      promoCode: data.promoCode,
-      originalPrice: data.calculatedPrice,
-      finalPrice: data.finalPrice,
-      discountAmount: data.discountAmount
-    }
-  });
-
-  return booking;
-};
-
-export const generatePaymentLink = async (booking: any, data: any) => {
-  console.log('💰 Generating payment link for booking:', booking.id, {
     originalPrice: data.calculatedPrice,
     finalPrice: data.finalPrice,
     promoCode: data.promoCode,
@@ -69,8 +13,7 @@ export const generatePaymentLink = async (booking: any, data: any) => {
   try {
     const response = await supabase.functions.invoke('create-checkout', {
       body: {
-        bookingId: booking.id,
-        userId: booking.user_id,
+        userId: data.userId,
         userEmail: data.email,
         date: data.date,
         timeSlot: data.timeSlot,
@@ -78,46 +21,40 @@ export const generatePaymentLink = async (booking: any, data: any) => {
         groupSize: data.groupSize,
         price: data.calculatedPrice,
         finalPrice: data.finalPrice || data.calculatedPrice,
-        message: data.message,
         userName: data.fullName,
         userPhone: data.phone,
         isTestMode: data.isTestMode,
         promoCodeId: data.promoCodeId,
         promoCode: data.promoCode,
         discountAmount: data.discountAmount,
+        message: data.message
       },
     });
 
     if (response.error) {
-      console.error('❌ Error creating checkout session:', response.error);
-      throw new Error(response.error.message || 'Failed to create checkout session');
+      console.error('❌ Erreur lors de la création de la session de paiement:', response.error);
+      throw new Error(response.error.message || 'Échec de création de la session de paiement');
     }
 
     const { url } = response.data;
     
     if (!url) {
-      throw new Error('No checkout URL returned');
+      console.error('❌ Pas d\'URL de paiement retournée');
+      throw new Error('Pas d\'URL de paiement retournée');
     }
 
-    console.log('✅ Payment link generated:', {
+    console.log('✅ Lien de paiement généré avec succès:', {
       url,
+      originalPrice: data.calculatedPrice,
+      finalPrice: data.finalPrice,
+      promoCode: data.promoCode,
+      discountAmount: data.discountAmount,
       isTestMode: data.isTestMode
     });
 
     return url;
   } catch (error: any) {
-    console.error('Error creating checkout session:', error);
-    throw new Error(error.message || 'Failed to create checkout session');
+    console.error('❌ Erreur lors de la génération du lien de paiement:', error);
+    throw error;
   }
-};
-
-export const fetchBookings = async () => {
-  const { data, error } = await supabase
-    .from('bookings')
-    .select('*')
-    .is('deleted_at', null)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data;
 };

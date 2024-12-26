@@ -12,17 +12,19 @@ import { useUserState } from "@/hooks/useUserState";
 import { ProfileForm } from "./ProfileForm";
 
 interface ProfileFormData {
-  fullName: string;
+  first_name: string;
+  last_name: string;
   email: string;
   phone: string;
 }
 
 export const ProfileSection = () => {
-  const { user } = useUserState();
+  const { user, profile } = useUserState();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [initialData, setInitialData] = useState<ProfileFormData>({
-    fullName: "",
+    first_name: "",
+    last_name: "",
     email: user?.email || "",
     phone: "",
   });
@@ -32,21 +34,24 @@ export const ProfileSection = () => {
     
     setIsLoading(true);
     try {
-      // Mettre à jour les métadonnées de l'utilisateur
-      const { error: userUpdateError } = await supabase.auth.updateUser({
-        data: {
-          full_name: data.fullName,
+      // Mettre à jour le profil
+      const { error: profileUpdateError } = await supabase
+        .from('profiles')
+        .update({
+          first_name: data.first_name,
+          last_name: data.last_name,
           phone: data.phone,
-        }
-      });
+        })
+        .eq('id', user.id);
 
-      if (userUpdateError) throw userUpdateError;
+      if (profileUpdateError) throw profileUpdateError;
 
       // Mettre à jour les réservations existantes avec les nouvelles informations
+      const fullName = `${data.first_name} ${data.last_name}`.trim();
       const { error: bookingsUpdateError } = await supabase
         .from('bookings')
         .update({
-          user_name: data.fullName,
+          user_name: fullName,
           user_phone: data.phone,
         })
         .eq('user_id', user.id);
@@ -76,42 +81,20 @@ export const ProfileSection = () => {
     if (!user) return;
 
     try {
-      // Récupérer les métadonnées de l'utilisateur
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-      
-      if (currentUser?.user_metadata) {
-        setInitialData({
-          fullName: currentUser.user_metadata.full_name || "",
-          email: currentUser.email || "",
-          phone: currentUser.user_metadata.phone || "",
-        });
-        return;
-      }
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
 
-      // Si pas de métadonnées, essayer de récupérer depuis la dernière réservation
-      const { data: lastBooking } = await supabase
-        .from('bookings')
-        .select('user_name, user_phone')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      if (profileError) throw profileError;
 
-      if (lastBooking) {
-        setInitialData({
-          fullName: lastBooking.user_name || "",
-          email: user.email || "",
-          phone: lastBooking.user_phone || "",
-        });
-
-        // Synchroniser avec les métadonnées utilisateur
-        await supabase.auth.updateUser({
-          data: {
-            full_name: lastBooking.user_name,
-            phone: lastBooking.user_phone,
-          }
-        });
-      }
+      setInitialData({
+        first_name: profileData.first_name || "",
+        last_name: profileData.last_name || "",
+        email: user.email || "",
+        phone: profileData.phone || "",
+      });
     } catch (error) {
       console.error('Error loading profile data:', error);
       toast({
@@ -123,8 +106,15 @@ export const ProfileSection = () => {
   };
 
   useEffect(() => {
-    loadProfileData();
-  }, [user]);
+    if (profile) {
+      setInitialData({
+        first_name: profile.first_name || "",
+        last_name: profile.last_name || "",
+        email: user?.email || "",
+        phone: profile.phone || "",
+      });
+    }
+  }, [profile, user]);
 
   return (
     <Card>

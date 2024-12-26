@@ -13,7 +13,8 @@ import { Input } from "@/components/ui/input";
 import { Loader2, Mail } from "lucide-react";
 
 interface ProfileFormData {
-  fullName: string;
+  first_name: string;
+  last_name: string;
   email: string;
   phone: string;
 }
@@ -34,10 +35,24 @@ export const ProfileForm = ({ initialData, onSubmit, isLoading }: ProfileFormPro
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
-          name="fullName"
+          name="first_name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nom complet</FormLabel>
+              <FormLabel>Prénom</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="last_name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nom</FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>

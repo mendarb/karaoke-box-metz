@@ -2,9 +2,17 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Session, User } from "@supabase/supabase-js";
 
+interface UserProfile {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  phone: string | null;
+}
+
 interface UserState {
   session: Session | null;
   user: User | null;
+  profile: UserProfile | null;
   isAdmin: boolean;
   isLoading: boolean;
   sessionChecked: boolean;
@@ -12,12 +20,35 @@ interface UserState {
 
 export const useUserState = (): UserState => {
   const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [sessionChecked, setSessionChecked] = useState(false);
 
   useEffect(() => {
+    const loadUserProfile = async (userId: string) => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .single();
+
+        if (error) {
+          console.error('Error loading user profile:', error);
+          return;
+        }
+
+        setProfile(data);
+      } catch (error) {
+        console.error('Error in loadUserProfile:', error);
+      }
+    };
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      if (session?.user?.id) {
+        loadUserProfile(session.user.id);
+      }
       setIsLoading(false);
       setSessionChecked(true);
     });
@@ -26,6 +57,9 @@ export const useUserState = (): UserState => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      if (session?.user?.id) {
+        loadUserProfile(session.user.id);
+      }
       setIsLoading(false);
       setSessionChecked(true);
     });
@@ -39,6 +73,7 @@ export const useUserState = (): UserState => {
   return {
     session,
     user,
+    profile,
     isAdmin,
     isLoading,
     sessionChecked,

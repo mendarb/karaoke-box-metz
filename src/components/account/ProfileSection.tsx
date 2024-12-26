@@ -62,9 +62,6 @@ export const ProfileSection = () => {
         title: "Profil mis à jour",
         description: "Vos informations ont été mises à jour avec succès.",
       });
-
-      // Recharger les données du profil
-      loadProfileData();
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
@@ -77,36 +74,9 @@ export const ProfileSection = () => {
     }
   };
 
-  const loadProfileData = async () => {
-    if (!user) return;
-
-    try {
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
-      if (profileError) throw profileError;
-
-      setInitialData({
-        first_name: profileData.first_name || "",
-        last_name: profileData.last_name || "",
-        email: user.email || "",
-        phone: profileData.phone || "",
-      });
-    } catch (error) {
-      console.error('Error loading profile data:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger vos informations",
-        variant: "destructive",
-      });
-    }
-  };
-
   useEffect(() => {
     if (profile) {
+      console.log('Profile data loaded:', profile);
       setInitialData({
         first_name: profile.first_name || "",
         last_name: profile.last_name || "",

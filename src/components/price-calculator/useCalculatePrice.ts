@@ -40,7 +40,7 @@ export const useCalculatePrice = ({ settings }: CalculatePriceProps = {}) => {
       totalPrice += additionalHoursPrice;
     }
 
-    // Arrondir à 2 décimales maximum
+    // Arrondir à 2 décimales et forcer l'affichage des deux décimales
     const finalPrice = Number(totalPrice.toFixed(2));
     const pricePerPerson = Number((finalPrice / (size * hours)).toFixed(2));
 

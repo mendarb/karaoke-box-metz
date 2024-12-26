@@ -48,12 +48,22 @@ serve(async (req) => {
       priceDescription += ` (-${Math.round(requestData.discountAmount)}% avec ${requestData.promoCode})`;
     }
 
+    // Utiliser le prix final après réduction
+    const finalAmount = Math.round(requestData.finalPrice * 100);
+
+    console.log('💰 Montant final pour Stripe:', {
+      originalPrice: requestData.price,
+      finalPrice: requestData.finalPrice,
+      finalAmount,
+      description: priceDescription
+    });
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [{
         price_data: {
           currency: 'eur',
-          unit_amount: Math.round(requestData.finalPrice * 100),
+          unit_amount: finalAmount,
           product_data: {
             name: requestData.isTestMode ? '[TEST MODE] Karaoké BOX - MB EI' : 'Karaoké BOX - MB EI',
             description: priceDescription,

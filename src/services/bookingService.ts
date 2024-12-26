@@ -1,5 +1,4 @@
 import { supabase } from "@/lib/supabase";
-import { createCheckoutSession } from "@/services/checkoutService";
 
 export const createBooking = async (data: any, userId: string | null) => {
   console.log('📝 Creating new booking:', {

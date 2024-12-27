@@ -23,14 +23,14 @@ export const AccountsTable = () => {
       try {
         console.log("Début de la requête des profils");
         
-        const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers();
-        if (usersError) throw usersError;
-
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
           .select('*');
 
         if (profilesError) throw profilesError;
+
+        const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers();
+        if (usersError) throw usersError;
 
         // Combine user and profile data
         const combinedData = profiles.map(profile => {

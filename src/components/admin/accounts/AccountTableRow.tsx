@@ -9,6 +9,7 @@ interface UserProfile {
   last_name: string | null;
   phone: string | null;
   email: string | null;
+  created_at: string;
 }
 
 interface AccountTableRowProps {

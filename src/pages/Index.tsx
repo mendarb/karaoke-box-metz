@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, Suspense, lazy } from "react";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { Navbar } from "@/components/navigation/Navbar";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -9,8 +9,10 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { HeroSection } from "@/components/home/HeroSection";
 import { FeatureGrid } from "@/components/home/FeatureGrid";
-import { BookingSection } from "@/components/home/BookingSection";
-import { Footer } from "@/components/home/Footer";
+
+// Lazy load components that are not immediately visible
+const BookingSection = lazy(() => import("@/components/home/BookingSection"));
+const Footer = lazy(() => import("@/components/home/Footer"));
 
 const Index = () => {
   const isMobile = useIsMobile();
@@ -46,10 +48,12 @@ const Index = () => {
           </div>
 
           <div className="md:col-span-2 bg-white rounded-t-lg md:rounded-none">
-            <BookingSection 
-              user={user} 
-              onShowAuth={() => setShowAuthModal(true)} 
-            />
+            <Suspense fallback={<LoadingSpinner />}>
+              <BookingSection 
+                user={user} 
+                onShowAuth={() => setShowAuthModal(true)} 
+              />
+            </Suspense>
           </div>
         </div>
 
@@ -58,7 +62,9 @@ const Index = () => {
         </div>
       </main>
 
-      <Footer />
+      <Suspense fallback={null}>
+        <Footer />
+      </Suspense>
 
       <AuthModal 
         isOpen={showAuthModal} 

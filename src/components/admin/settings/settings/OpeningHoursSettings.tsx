@@ -1,7 +1,7 @@
-import { UseFormReturn } from "react-hook-form";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Clock } from "lucide-react";
 import { TimeSlotTable } from "./TimeSlotTable";
+import { UseFormReturn } from "react-hook-form";
 
 interface OpeningHoursSettingsProps {
   form: UseFormReturn<any>;
@@ -15,7 +15,7 @@ export const OpeningHoursSettings = ({ form }: OpeningHoursSettingsProps) => {
         <h2 className="font-medium">Horaires d'ouverture</h2>
       </div>
 
-      <Alert variant="info" className="bg-violet-50 border-violet-200">
+      <Alert variant="warning" className="bg-violet-50 border-violet-200">
         <AlertCircle className="h-4 w-4 text-violet-500" />
         <AlertDescription className="text-violet-700">
           Les créneaux doivent être au format 24h (ex: 17:00, 18:00)

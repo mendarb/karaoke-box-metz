@@ -1,13 +1,13 @@
 import React, { useEffect } from "react";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Loader2, Save } from "lucide-react";
 import { OpeningHoursSettings } from "./settings/OpeningHoursSettings";
 import { BookingWindowSettings } from "./settings/BookingWindowSettings";
 import { ExcludedDaysSettings } from "./settings/ExcludedDaysSettings";
 import { PricingSettings } from "./settings/PricingSettings";
 import { useBookingSettingsForm } from "./hooks/useBookingSettingsForm";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const BookingSettingsForm = () => {
   const { form, isLoading, onSubmit } = useBookingSettingsForm();
@@ -23,38 +23,27 @@ export const BookingSettingsForm = () => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card>
-            <CardContent className="pt-6">
+        <ScrollArea className="h-[calc(100vh-12rem)]">
+          <div className="space-y-6 p-1">
+            <div className="grid gap-6 md:grid-cols-2">
               <PricingSettings form={form} />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
               <BookingWindowSettings form={form} />
-            </CardContent>
-          </Card>
-        </div>
+            </div>
 
-        <Card>
-          <CardContent className="pt-6">
             <OpeningHoursSettings form={form} />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
             <ExcludedDaysSettings form={form} />
-          </CardContent>
-        </Card>
+          </div>
+        </ScrollArea>
 
-        <Button
-          type="submit"
-          className="w-full"
-        >
-          Sauvegarder les modifications
-        </Button>
+        <div className="sticky bottom-0 flex justify-end py-4 bg-background/80 backdrop-blur-sm border-t">
+          <Button
+            type="submit"
+            className="gap-2"
+          >
+            <Save className="h-4 w-4" />
+            Sauvegarder
+          </Button>
+        </div>
       </form>
     </Form>
   );

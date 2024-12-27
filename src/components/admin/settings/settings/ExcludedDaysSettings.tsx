@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/form";
 import { Calendar } from "@/components/ui/calendar";
 import { fr } from "date-fns/locale";
+import { CalendarOff } from "lucide-react";
 
 interface ExcludedDaysSettingsProps {
   form: UseFormReturn<any>;
@@ -15,8 +16,12 @@ interface ExcludedDaysSettingsProps {
 
 export const ExcludedDaysSettings = ({ form, defaultValue }: ExcludedDaysSettingsProps) => {
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-medium">Jours exclus</h3>
+    <div className="space-y-4 bg-card p-4 rounded-lg">
+      <div className="flex items-center gap-2 mb-4">
+        <CalendarOff className="h-5 w-5 text-violet-500" />
+        <h2 className="font-medium">Jours exclus</h2>
+      </div>
+
       <FormField
         control={form.control}
         name="excludedDays"
@@ -31,7 +36,7 @@ export const ExcludedDaysSettings = ({ form, defaultValue }: ExcludedDaysSetting
                 onSelect={(dates) => {
                   field.onChange(dates ? dates.map(date => date.getTime()) : []);
                 }}
-                className="rounded-md border"
+                className="rounded-md border-none"
                 locale={fr}
               />
             </FormControl>

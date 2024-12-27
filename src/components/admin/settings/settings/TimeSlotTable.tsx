@@ -3,9 +3,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, Minus } from "lucide-react";
+import { Plus, Minus, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { toast } from "@/components/ui/use-toast";
+import { Badge } from "@/components/ui/badge";
 
 interface TimeSlotTableProps {
   form: UseFormReturn<any>;
@@ -57,19 +58,16 @@ export const TimeSlotTable = ({ form }: TimeSlotTableProps) => {
     });
 
     form.setValue(`openingHours.${dayId}.slots`, sortedSlots);
-    console.log(`✅ Créneau ajouté pour ${dayId}:`, sortedSlots);
   };
 
   const handleRemoveSlot = (dayId: string, slot: string) => {
     const currentSlots = form.watch(`openingHours.${dayId}.slots`) || [];
     const updatedSlots = currentSlots.filter((s: string) => s !== slot);
     form.setValue(`openingHours.${dayId}.slots`, updatedSlots);
-    console.log(`❌ Créneau supprimé pour ${dayId}:`, slot);
   };
 
   const handleDayToggle = (dayId: string, isOpen: boolean) => {
     form.setValue(`openingHours.${dayId}.isOpen`, isOpen);
-    console.log(`🔄 Jour ${dayId} ${isOpen ? 'ouvert' : 'fermé'}`);
   };
 
   const getDefaultSlots = () => {
@@ -79,7 +77,6 @@ export const TimeSlotTable = ({ form }: TimeSlotTableProps) => {
   const handleResetDay = (dayId: string) => {
     form.setValue(`openingHours.${dayId}.slots`, getDefaultSlots());
     form.setValue(`openingHours.${dayId}.isOpen`, true);
-    console.log(`🔄 Réinitialisation des créneaux pour ${dayId}`);
   };
 
   return (
@@ -93,71 +90,75 @@ export const TimeSlotTable = ({ form }: TimeSlotTableProps) => {
         />
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-32">Jour</TableHead>
-            <TableHead className="w-24">Ouvert</TableHead>
-            <TableHead>Créneaux</TableHead>
-            <TableHead className="w-24">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {days.map((day) => (
-            <TableRow key={day.id}>
-              <TableCell className="font-medium">{day.name}</TableCell>
-              <TableCell>
-                <Switch
-                  checked={form.watch(`openingHours.${day.id}.isOpen`)}
-                  onCheckedChange={(checked) => handleDayToggle(day.id, checked)}
-                />
-              </TableCell>
-              <TableCell>
-                <div className="flex flex-wrap gap-2">
-                  {form.watch(`openingHours.${day.id}.slots`)?.map((slot: string) => (
-                    <div
-                      key={slot}
-                      className="flex items-center gap-1 bg-violet-100 px-2 py-1 rounded"
-                    >
-                      <span>{slot}</span>
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-32">Jour</TableHead>
+              <TableHead className="w-24">Ouvert</TableHead>
+              <TableHead>Créneaux</TableHead>
+              <TableHead className="w-24">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {days.map((day) => (
+              <TableRow key={day.id}>
+                <TableCell className="font-medium">{day.name}</TableCell>
+                <TableCell>
+                  <Switch
+                    checked={form.watch(`openingHours.${day.id}.isOpen`)}
+                    onCheckedChange={(checked) => handleDayToggle(day.id, checked)}
+                  />
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-wrap gap-1">
+                    {form.watch(`openingHours.${day.id}.slots`)?.map((slot: string) => (
+                      <Badge
+                        key={slot}
+                        variant="secondary"
+                        className="flex items-center gap-1 px-2 py-1"
+                      >
+                        {slot}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-4 w-4 hover:bg-violet-100 -mr-1"
+                          onClick={() => handleRemoveSlot(day.id, slot)}
+                        >
+                          <Minus className="h-3 w-3" />
+                        </Button>
+                      </Badge>
+                    ))}
+                    {form.watch(`openingHours.${day.id}.isOpen`) && (
                       <Button
                         type="button"
-                        variant="ghost"
+                        variant="outline"
                         size="icon"
-                        className="h-4 w-4 hover:bg-violet-200"
-                        onClick={() => handleRemoveSlot(day.id, slot)}
+                        className="h-7 w-7"
+                        onClick={() => handleAddSlot(day.id)}
                       >
-                        <Minus className="h-3 w-3" />
+                        <Plus className="h-4 w-4" />
                       </Button>
-                    </div>
-                  ))}
-                  {form.watch(`openingHours.${day.id}.isOpen`) && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="h-7 w-7"
-                      onClick={() => handleAddSlot(day.id)}
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              </TableCell>
-              <TableCell>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleResetDay(day.id)}
-                >
-                  Réinitialiser
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleResetDay(day.id)}
+                    className="h-8 w-8"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 };

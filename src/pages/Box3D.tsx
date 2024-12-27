@@ -14,7 +14,7 @@ const Box3D = () => {
         <div className="max-w-6xl mx-auto space-y-12">
           <div className="text-center space-y-4 mb-12">
             <h1 className="text-4xl md:text-5xl font-bold text-kbox-coral animate-fadeIn">
-              Notre Box Karaoké
+              K.Box Metz
             </h1>
           </div>
           
@@ -44,8 +44,8 @@ const Box3D = () => {
                   },
                   {
                     icon: <Music className="h-8 w-8 text-kbox-coral" />,
-                    title: "Son Premium",
-                    description: "Système audio professionnel"
+                    title: "Catalogue Musical",
+                    description: "Plus de 30 000 titres disponibles"
                   },
                   {
                     icon: <Users className="h-8 w-8 text-kbox-coral" />,

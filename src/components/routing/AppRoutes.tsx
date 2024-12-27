@@ -14,11 +14,13 @@ import { Error } from "@/pages/Error";
 import { DocumentationPage } from "@/components/admin/documentation/DocumentationPage";
 import { Accounts } from "@/pages/Accounts";
 import { EditAccountPage } from "@/components/admin/accounts/EditAccountPage";
+import Box3D from "@/pages/Box3D";
 
 export const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<Index />} />
+      <Route path="/box-3d" element={<Box3D />} />
       <Route path="/success" element={<Success />} />
       <Route path="/error" element={<Error />} />
       <Route path="/legal/terms" element={<Terms />} />

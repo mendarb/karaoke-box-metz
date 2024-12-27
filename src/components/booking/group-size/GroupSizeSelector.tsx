@@ -11,28 +11,33 @@ export const GroupSizeSelector = ({
   form,
   onGroupSizeChange,
 }: GroupSizeSelectorProps) => {
-  const groupSizes = ["2", "3", "4", "5", "6", "7", "8"];
+  const groupSizes = [
+    { label: "3 et moins", value: "3" },
+    { label: "4", value: "4" },
+    { label: "5", value: "5" },
+    { label: "6 et plus", value: "6" }
+  ];
+  
   const selectedSize = form.watch("groupSize");
 
   return (
-    <div className="grid grid-cols-3 sm:grid-cols-7 gap-3">
-      {groupSizes.map((size) => (
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      {groupSizes.map(({ label, value }) => (
         <Button
-          key={size}
+          key={value}
           type="button"
-          variant={selectedSize === size ? "default" : "outline"}
+          variant={selectedSize === value ? "default" : "outline"}
           className={cn(
             "relative h-20 font-semibold",
-            selectedSize === size && "bg-violet-600 hover:bg-violet-700"
+            selectedSize === value && "bg-violet-600 hover:bg-violet-700"
           )}
           onClick={() => {
-            form.setValue("groupSize", size);
-            onGroupSizeChange(size);
+            form.setValue("groupSize", value);
+            onGroupSizeChange(value);
           }}
         >
           <div className="text-center">
-            <div className="text-lg">{size}</div>
-            <div className="text-sm opacity-80">pers.</div>
+            <div className="text-lg">{label}</div>
           </div>
         </Button>
       ))}

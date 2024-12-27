@@ -1,6 +1,6 @@
 import { UseFormReturn } from "react-hook-form";
 import { Card, CardContent } from "@/components/ui/card";
-import { BookingCalendar } from "./calendar/BookingCalendar";
+import { BookingCalendar } from "./BookingCalendar";
 
 interface CalendarSectionProps {
   form: UseFormReturn<any>;
@@ -9,6 +9,7 @@ interface CalendarSectionProps {
   maxDate: Date;
   disabledDates: Date[];
   onDateSelect: (date: Date) => void;
+  defaultMonth: Date;
 }
 
 export const CalendarSection = ({
@@ -16,7 +17,8 @@ export const CalendarSection = ({
   minDate,
   maxDate,
   disabledDates,
-  onDateSelect
+  onDateSelect,
+  defaultMonth
 }: CalendarSectionProps) => {
   return (
     <Card className="border-none shadow-none bg-transparent">
@@ -27,6 +29,7 @@ export const CalendarSection = ({
           selectedDate={selectedDate}
           minDate={minDate}
           maxDate={maxDate}
+          defaultMonth={defaultMonth}
         />
       </CardContent>
     </Card>

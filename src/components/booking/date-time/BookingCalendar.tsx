@@ -8,6 +8,7 @@ interface BookingCalendarProps {
   disabledDates: Date[];
   minDate: Date;
   maxDate: Date;
+  defaultMonth: Date;
 }
 
 export const BookingCalendar = ({
@@ -16,6 +17,7 @@ export const BookingCalendar = ({
   disabledDates,
   minDate,
   maxDate,
+  defaultMonth,
 }: BookingCalendarProps) => {
   return (
     <Card className="w-full max-w-lg mx-auto">
@@ -33,6 +35,7 @@ export const BookingCalendar = ({
             )
           }
           locale={fr}
+          defaultMonth={defaultMonth}
           className="rounded-md border"
         />
       </div>

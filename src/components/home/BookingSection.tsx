@@ -6,7 +6,7 @@ interface BookingSectionProps {
   onShowAuth: () => void;
 }
 
-export const BookingSection = ({ user, onShowAuth }: BookingSectionProps) => {
+const BookingSection = ({ user, onShowAuth }: BookingSectionProps) => {
   return (
     <div className="bg-white h-full p-8 flex flex-col justify-center">
       {user ? (
@@ -36,3 +36,5 @@ export const BookingSection = ({ user, onShowAuth }: BookingSectionProps) => {
     </div>
   );
 };
+
+export default BookingSection;

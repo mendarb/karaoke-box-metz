@@ -5,7 +5,7 @@ interface BusinessHours {
   [key: string]: string;
 }
 
-export const Footer = () => {
+const Footer = () => {
   const businessHours: BusinessHours = {
     lundi: 'Fermé',
     mardi: 'Fermé',
@@ -71,3 +71,5 @@ export const Footer = () => {
     </footer>
   );
 };
+
+export default Footer;

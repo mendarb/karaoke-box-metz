@@ -2,6 +2,7 @@ import { User } from '@supabase/supabase-js';
 import { Mail, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
+import { useNavigate } from "react-router-dom";
 
 interface UserProfile {
   id: string;
@@ -17,6 +18,12 @@ interface AccountTableRowProps {
 }
 
 export const AccountTableRow = ({ profile }: AccountTableRowProps) => {
+  const navigate = useNavigate();
+
+  const handleEdit = () => {
+    navigate(`/admin/accounts/${profile.id}`);
+  };
+
   return (
     <TableRow key={profile.id}>
       <TableCell>
@@ -55,9 +62,7 @@ export const AccountTableRow = ({ profile }: AccountTableRowProps) => {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => {
-            console.log("Modifier le profil:", profile.id);
-          }}
+          onClick={handleEdit}
         >
           Modifier
         </Button>

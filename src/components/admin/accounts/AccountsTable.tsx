@@ -38,13 +38,25 @@ export const AccountsTable = () => {
 
         if (profilesError) throw profilesError;
 
-        // Format profiles with email from the profile data
+        // Get user emails from the Edge Function
+        const { data: emailsResponse, error: emailsError } = await supabase.functions.invoke(
+          'get-user-emails'
+        );
+
+        if (emailsError) {
+          console.error('Error fetching emails:', emailsError);
+          throw emailsError;
+        }
+
+        const userEmails = emailsResponse.userEmails;
+
+        // Format profiles with email from the Edge Function
         const formattedProfiles = (profiles || []).map((profile: any) => ({
           id: profile.id,
           first_name: profile.first_name,
           last_name: profile.last_name,
           phone: profile.phone,
-          email: null, // We'll update this in a separate admin function
+          email: userEmails[profile.id],
           created_at: profile.created_at
         }));
 

@@ -3,6 +3,8 @@ import { supabase } from "@/lib/supabase";
 import { DesktopNav } from "./DesktopNav";
 import { MobileNav } from "./MobileNav";
 import { Logo } from "./Logo";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface NavbarProps {
   onShowAuth: () => void;
@@ -10,9 +12,27 @@ interface NavbarProps {
 
 export const Navbar = ({ onShowAuth }: NavbarProps) => {
   const { user, isAdmin } = useUserState();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      toast({
+        title: "Déconnexion réussie",
+        description: "À bientôt !",
+      });
+      navigate('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de se déconnecter",
+        variant: "destructive",
+      });
+    }
   };
 
   return (

@@ -8,8 +8,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
 import { User } from "lucide-react";
-import { supabase } from "@/lib/supabase";
-import { useToast } from "@/components/ui/use-toast";
 
 interface UserNavProps {
   onSignOut: () => Promise<void>;
@@ -18,26 +16,6 @@ interface UserNavProps {
 
 export const UserNav = ({ onSignOut, isAdmin }: UserNavProps) => {
   const navigate = useNavigate();
-  const { toast } = useToast();
-
-  const handleSignOut = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      navigate('/');
-      toast({
-        title: "Déconnexion réussie",
-        description: "À bientôt !",
-      });
-    } catch (error) {
-      console.error('Error signing out:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de se déconnecter",
-        variant: "destructive",
-      });
-    }
-  };
 
   return (
     <DropdownMenu>
@@ -62,7 +40,7 @@ export const UserNav = ({ onSignOut, isAdmin }: UserNavProps) => {
           </>
         )}
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
+        <DropdownMenuItem onClick={onSignOut} className="text-red-600">
           Déconnexion
         </DropdownMenuItem>
       </DropdownMenuContent>

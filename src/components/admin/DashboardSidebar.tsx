@@ -1,4 +1,4 @@
-import { Home, Calendar, Settings, LogOut, ArrowLeft, BookOpen, Users } from "lucide-react";
+import { Home, Calendar, Settings, LogOut, ArrowLeft, BookOpen, Users, ChevronRight } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -28,59 +28,41 @@ export const DashboardSidebar = () => {
     return location.pathname === path;
   };
 
+  const menuItems = [
+    { path: "/admin", icon: Home, label: "Dashboard" },
+    { path: "/admin/calendar", icon: Calendar, label: "Calendrier" },
+    { path: "/admin/accounts", icon: Users, label: "Comptes" },
+    { path: "/admin/settings", icon: Settings, label: "Paramètres" },
+    { path: "/admin/documentation", icon: BookOpen, label: "Documentation" },
+  ];
+
   return (
     <div className={`h-full bg-card flex flex-col border-r relative ${isMobile ? 'min-h-screen' : ''}`}>
-      <div className="p-4 mb-4">
+      <div className="p-4 mb-4 border-b">
         <h2 className="text-lg font-semibold px-4">Karaoke Admin</h2>
       </div>
 
       <nav className="space-y-2 flex-1 p-4">
-        <Button 
-          variant={isActive("/admin") ? "secondary" : "ghost"} 
-          className="w-full justify-start" 
-          onClick={() => navigate("/admin")}
-        >
-          <Home className="mr-2 h-4 w-4" />
-          Dashboard
-        </Button>
-        <Button 
-          variant={isActive("/admin/calendar") ? "secondary" : "ghost"} 
-          className="w-full justify-start"
-          onClick={() => navigate("/admin/calendar")}
-        >
-          <Calendar className="mr-2 h-4 w-4" />
-          Calendrier
-        </Button>
-        <Button 
-          variant={isActive("/admin/accounts") ? "secondary" : "ghost"} 
-          className="w-full justify-start"
-          onClick={() => navigate("/admin/accounts")}
-        >
-          <Users className="mr-2 h-4 w-4" />
-          Comptes
-        </Button>
-        <Button 
-          variant={isActive("/admin/settings") ? "secondary" : "ghost"} 
-          className="w-full justify-start"
-          onClick={() => navigate("/admin/settings")}
-        >
-          <Settings className="mr-2 h-4 w-4" />
-          Paramètres
-        </Button>
-        <Button 
-          variant={isActive("/admin/documentation") ? "secondary" : "ghost"} 
-          className="w-full justify-start"
-          onClick={() => navigate("/admin/documentation")}
-        >
-          <BookOpen className="mr-2 h-4 w-4" />
-          Documentation
-        </Button>
+        {menuItems.map((item) => (
+          <Button 
+            key={item.path}
+            variant={isActive(item.path) ? "secondary" : "ghost"} 
+            className="w-full justify-between" 
+            onClick={() => navigate(item.path)}
+          >
+            <span className="flex items-center">
+              <item.icon className="mr-2 h-4 w-4" />
+              {item.label}
+            </span>
+            {isMobile && <ChevronRight className="h-4 w-4 opacity-50" />}
+          </Button>
+        ))}
       </nav>
 
-      <div className="border-t bg-card p-4">
+      <div className="border-t bg-card p-4 space-y-2">
         <Button
           variant="ghost"
-          className="w-full justify-start mb-2"
+          className="w-full justify-start"
           onClick={() => navigate("/")}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />

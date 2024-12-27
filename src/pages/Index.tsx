@@ -53,7 +53,7 @@ const Index = () => {
           </div>
         </div>
 
-        <div className="mt-8">
+        <div>
           <FeatureGrid />
         </div>
       </main>

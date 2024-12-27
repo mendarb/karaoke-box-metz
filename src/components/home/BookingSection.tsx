@@ -12,11 +12,11 @@ export const BookingSection = ({ user, onShowAuth }: BookingSectionProps) => {
       {user ? (
         <BookingForm />
       ) : (
-        <div className="flex flex-col justify-center items-center h-full max-w-md mx-auto space-y-6 py-12">
+        <div className="flex flex-col justify-center items-center h-full max-w-md mx-auto">
           <div className="rounded-full bg-violet-100 p-4">
             <LogIn className="h-8 w-8 text-violet-600" />
           </div>
-          <div className="text-center space-y-3">
+          <div className="text-center">
             <h2 className="text-2xl font-semibold text-gray-900">
               Connectez-vous pour réserver
             </h2>
@@ -26,7 +26,7 @@ export const BookingSection = ({ user, onShowAuth }: BookingSectionProps) => {
           </div>
           <button 
             onClick={onShowAuth}
-            className="bg-violet-600 text-white px-8 py-3 rounded-md hover:bg-violet-700 transition-colors duration-200 flex items-center gap-2 shadow-sm"
+            className="bg-violet-600 text-white px-8 py-3 rounded-md hover:bg-violet-700 transition-colors duration-200 flex items-center gap-2 shadow-sm mt-4"
           >
             <LogIn className="h-4 w-4" />
             Se connecter / S'inscrire

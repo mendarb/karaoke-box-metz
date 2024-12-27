@@ -11,13 +11,13 @@ const Box3D = () => {
       <main className="flex-grow container mx-auto py-8 px-4">
         <div className="max-w-5xl mx-auto">          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-            <div className="glass p-6 rounded-lg">
+            <div className="glass rounded-lg overflow-hidden">
               <ImageLightbox 
                 src="/lovable-uploads/cfa63d4d-3758-45b6-8316-13d7d026d109.png"
                 alt="K.Box Metz - Box Karaoké"
-                className="w-full h-auto rounded-lg"
+                className="w-full h-auto"
               />
-              <p className="text-sm text-gray-600 text-center mt-4">
+              <p className="text-sm text-gray-600 text-center py-4">
                 Représentation 3D de notre box karaoké à Metz (le résultat final peut légèrement différer)
               </p>
             </div>

@@ -26,7 +26,7 @@ export const ImageLightbox = ({ src, alt, className }: ImageLightboxProps) => {
       <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-transparent border-none">
         <div className="relative w-full h-full flex items-center justify-center">
           <button 
-            className="absolute -top-8 -right-8 p-2 rounded-full bg-black/70 text-white hover:bg-black/90 transition-colors z-50"
+            className="absolute top-2 right-2 p-2 rounded-full bg-black/70 text-white hover:bg-black/90 transition-colors z-50"
             onClick={handleClose}
           >
             <X className="h-6 w-6" />

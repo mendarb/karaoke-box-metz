@@ -12,6 +12,17 @@ import { useToast } from "@/components/ui/use-toast";
 import { useUserState } from "@/hooks/useUserState";
 import { AccountTableContent } from "./AccountTableContent";
 
+interface Profile {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  phone: string | null;
+  created_at: string;
+  users: {
+    email: string | null;
+  } | null;
+}
+
 export const AccountsTable = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -25,13 +36,17 @@ export const AccountsTable = () => {
         
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
-          .select('*, auth.users(email)');
+          .select('*, users:auth.users(email)');
 
         if (profilesError) throw profilesError;
 
-        const formattedProfiles = profiles.map(profile => ({
-          ...profile,
-          email: profile.users?.email
+        const formattedProfiles = (profiles || []).map((profile: Profile) => ({
+          id: profile.id,
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+          phone: profile.phone,
+          email: profile.users?.email,
+          created_at: profile.created_at
         }));
 
         console.log("Profils récupérés:", formattedProfiles);

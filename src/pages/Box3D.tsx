@@ -14,12 +14,8 @@ const Box3D = () => {
         <div className="max-w-6xl mx-auto space-y-12">
           <div className="text-center space-y-4 mb-12">
             <h1 className="text-4xl md:text-5xl font-bold text-kbox-coral animate-fadeIn">
-              Découvrez Notre Box Karaoké
+              Notre Box Karaoké
             </h1>
-            <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-              Une expérience unique dans un espace privatif moderne et confortable, 
-              équipé des dernières technologies pour des moments inoubliables.
-            </p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
@@ -54,7 +50,7 @@ const Box3D = () => {
                   {
                     icon: <Users className="h-8 w-8 text-kbox-coral" />,
                     title: "Entre Amis",
-                    description: "Capacité jusqu'à 15 personnes"
+                    description: "Capacité jusqu'à 10 personnes"
                   }
                 ].map((feature, index) => (
                   <Card key={index} className="p-4 text-center hover:shadow-md transition-shadow">

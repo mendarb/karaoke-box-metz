@@ -20,7 +20,7 @@ export const BoxFeatures = () => {
           'Éclairage d\'ambiance LED',
           'Boule disco pour une ambiance festive',
           'Table basse pour vos consommations',
-          'Climatisation',
+          'Catalogue de plus de 30 000 musiques',
           'Isolation phonique performante',
           'Service en salle disponible'
         ].map((feature, index) => (

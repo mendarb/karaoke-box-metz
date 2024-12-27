@@ -14,20 +14,20 @@ const Box3D = () => {
         <div className="max-w-6xl mx-auto space-y-12">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
             <div className="space-y-6">
-              <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <div className="overflow-hidden">
                 <ImageLightbox 
                   src="/lovable-uploads/cfa63d4d-3758-45b6-8316-13d7d026d109.png"
                   alt="K.Box Metz - Box Karaoké"
                   className="w-full h-auto"
                 />
-                <div className="p-4 bg-white/90 backdrop-blur-sm">
+                <div className="p-4 bg-white/90">
                   <p className="text-sm text-gray-600 text-center">
                     Représentation 3D de notre box karaoké à Metz
                     <br />
                     <span className="text-xs italic">(le résultat final peut légèrement différer)</span>
                   </p>
                 </div>
-              </Card>
+              </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
@@ -47,21 +47,21 @@ const Box3D = () => {
                     description: "Capacité jusqu'à 10 personnes"
                   }
                 ].map((feature, index) => (
-                  <Card key={index} className="p-4 text-center hover:shadow-md transition-shadow">
+                  <div key={index} className="p-4 text-center bg-white/90">
                     <div className="flex flex-col items-center space-y-2">
                       {feature.icon}
                       <h3 className="font-semibold text-kbox-coral">{feature.title}</h3>
                       <p className="text-sm text-gray-600">{feature.description}</p>
                     </div>
-                  </Card>
+                  </div>
                 ))}
               </div>
             </div>
 
             <div className="sticky top-4">
-              <Card className="backdrop-blur-sm bg-white/90 shadow-lg p-8 space-y-6">
+              <div className="bg-white/90 p-8 space-y-6">
                 <BoxFeatures />
-              </Card>
+              </div>
             </div>
           </div>
         </div>

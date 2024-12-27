@@ -34,7 +34,7 @@ export const BoxFeatures = () => {
         ))}
       </ul>
 
-      <div className="pt-4 border-t border-gray-200">
+      <div className="pt-4">
         <p className="text-sm text-gray-500 italic">
           Tous nos équipements sont régulièrement entretenus et mis à jour pour vous garantir une expérience optimale.
         </p>

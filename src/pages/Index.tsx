@@ -10,7 +10,6 @@ import { supabase } from "@/lib/supabase";
 import { HeroSection } from "@/components/home/HeroSection";
 import { FeatureGrid } from "@/components/home/FeatureGrid";
 
-// Lazy load components that are not immediately visible
 const BookingSection = lazy(() => import("@/components/home/BookingSection"));
 const Footer = lazy(() => import("@/components/home/Footer"));
 

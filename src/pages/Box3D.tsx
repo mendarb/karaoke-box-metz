@@ -1,6 +1,6 @@
 import { Navbar } from "@/components/navigation/Navbar";
 import { BoxFeatures } from "@/components/3d/BoxFeatures";
-import { Footer } from "@/components/home/Footer";
+import Footer from "@/components/home/Footer";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { Package, Music, Users } from "lucide-react";
 import { Card } from "@/components/ui/card";

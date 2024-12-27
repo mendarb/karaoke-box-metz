@@ -1,6 +1,7 @@
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
+import { useState } from "react";
 
 interface ImageLightboxProps {
   src: string;
@@ -9,13 +10,10 @@ interface ImageLightboxProps {
 }
 
 export const ImageLightbox = ({ src, alt, className }: ImageLightboxProps) => {
-  const handleClose = () => {
-    const closeButton = document.querySelector('[data-radix-dialog-close-button]') as HTMLButtonElement | null;
-    closeButton?.click();
-  };
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <img
           src={src}
@@ -27,7 +25,7 @@ export const ImageLightbox = ({ src, alt, className }: ImageLightboxProps) => {
         <div className="relative w-full h-full flex items-center justify-center">
           <button 
             className="absolute top-2 right-2 p-2 rounded-full bg-black/70 text-white hover:bg-black/90 transition-colors z-50"
-            onClick={handleClose}
+            onClick={() => setIsOpen(false)}
           >
             <X className="h-6 w-6" />
           </button>

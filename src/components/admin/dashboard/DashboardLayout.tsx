@@ -18,14 +18,14 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   if (isMobile) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="sticky top-0 z-40 flex items-center gap-2 border-b bg-background p-4">
+        <header className="sticky top-0 z-40 flex items-center gap-2 bg-background/80 backdrop-blur-sm p-4">
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="shrink-0">
-                <Menu className="h-4 w-4" />
+              <Button variant="ghost" size="icon" className="shrink-0">
+                <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="p-0 w-[240px]">
+            <SheetContent side="left" className="p-0 w-[280px]">
               <DashboardSidebar />
             </SheetContent>
           </Sheet>
@@ -33,15 +33,14 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             variant="ghost" 
             size="icon"
             onClick={() => navigate(-1)}
-            className="mr-2"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-5 w-5" />
           </Button>
           <h1 className="text-lg font-semibold">Dashboard Admin</h1>
-        </div>
-        <div className="p-4">
+        </header>
+        <main className="p-4">
           {children}
-        </div>
+        </main>
       </div>
     );
   }
@@ -49,12 +48,14 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   return (
     <div className="min-h-screen bg-background">
       <ResizablePanelGroup direction="horizontal">
-        <ResizablePanel defaultSize={20} minSize={15} maxSize={25}>
+        <ResizablePanel defaultSize={20} minSize={15} maxSize={25} className="bg-card">
           <DashboardSidebar />
         </ResizablePanel>
-        <ResizableHandle />
+        <ResizableHandle className="w-1.5 bg-border" />
         <ResizablePanel defaultSize={80}>
-          {children}
+          <main className="h-full overflow-auto">
+            {children}
+          </main>
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>

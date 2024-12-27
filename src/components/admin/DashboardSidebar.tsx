@@ -1,4 +1,4 @@
-import { Home, Calendar, Settings, LogOut, ArrowLeft, BookOpen, Users, ChevronRight } from "lucide-react";
+import { Home, Calendar, Settings, LogOut, ArrowLeft, BookOpen, Users } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -37,40 +37,37 @@ export const DashboardSidebar = () => {
   ];
 
   return (
-    <div className={`h-full bg-card flex flex-col border-r relative ${isMobile ? 'min-h-screen' : ''}`}>
-      <div className="p-4 mb-4 border-b">
-        <h2 className="text-lg font-semibold px-4">Karaoke Admin</h2>
+    <div className="h-full flex flex-col">
+      <div className="p-4">
+        <h2 className="text-lg font-semibold px-2">Karaoke Admin</h2>
       </div>
 
-      <nav className="space-y-2 flex-1 p-4">
+      <nav className="space-y-1 flex-1 p-2">
         {menuItems.map((item) => (
           <Button 
             key={item.path}
             variant={isActive(item.path) ? "secondary" : "ghost"} 
-            className="w-full justify-between" 
+            className="w-full justify-start" 
             onClick={() => navigate(item.path)}
           >
-            <span className="flex items-center">
-              <item.icon className="mr-2 h-4 w-4" />
-              {item.label}
-            </span>
-            {isMobile && <ChevronRight className="h-4 w-4 opacity-50" />}
+            <item.icon className="mr-2 h-4 w-4" />
+            {item.label}
           </Button>
         ))}
       </nav>
 
-      <div className="border-t bg-card p-4 space-y-2">
+      <div className="p-2 space-y-1">
         <Button
           variant="ghost"
           className="w-full justify-start"
           onClick={() => navigate("/")}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Retour au formulaire
+          Retour au site
         </Button>
         <Button 
           variant="ghost" 
-          className="w-full justify-start text-red-500" 
+          className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50" 
           onClick={handleLogout}
         >
           <LogOut className="mr-2 h-4 w-4" />

@@ -20,7 +20,7 @@ const Box3D = () => {
               className="w-full h-auto rounded-lg shadow-lg"
             />
             <p className="text-sm text-gray-600 text-center">
-              Notre box karaoké à Metz
+              Représentation 3D de notre box karaoké à Metz (le résultat final peut légèrement différer)
             </p>
           </div>
 

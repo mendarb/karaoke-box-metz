@@ -32,10 +32,11 @@ export const TimeSlots = ({
       
       const { data: bookings, error } = await supabase
         .from('bookings')
-        .select('*')
+        .select('time_slot, duration')
         .eq('date', formattedDate)
         .neq('status', 'cancelled')
-        .is('deleted_at', null);
+        .is('deleted_at', null)
+        .eq('payment_status', 'paid');
 
       if (error) {
         console.error('❌ Erreur lors du chargement des créneaux réservés:', error);
@@ -48,8 +49,9 @@ export const TimeSlots = ({
         const duration = parseInt(booking.duration);
         
         for (let hour = startHour; hour < startHour + duration; hour++) {
-          bookedSlots.add(`${hour}:00`);
-          console.log(`🚫 Créneau ${hour}:00 marqué comme réservé`);
+          const formattedHour = `${hour.toString().padStart(2, '0')}:00`;
+          bookedSlots.add(formattedHour);
+          console.log(`🚫 Créneau ${formattedHour} marqué comme réservé`);
         }
       });
 
@@ -71,8 +73,7 @@ export const TimeSlots = ({
     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
       {sortedSlots.map((slot) => {
         const isDisabled = disabledSlots.includes(slot);
-        const hour = parseInt(slot);
-        const formattedSlot = `${hour.toString().padStart(2, '0')}:00`;
+        const formattedSlot = slot;
 
         const slotButton = (
           <Button

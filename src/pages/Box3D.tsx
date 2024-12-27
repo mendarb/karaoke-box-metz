@@ -40,38 +40,59 @@ const Box3D = () => {
       <Navbar onShowAuth={() => {}} />
       
       <main className="flex-grow container mx-auto py-8 px-4">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
-          Découvrez notre Box Karaoké en 3D
+        <h1 className="text-2xl md:text-3xl font-bold mb-6">
+          Découvrez notre Box Karaoké
         </h1>
         
-        <p className="text-gray-600 mb-8">
-          Explorez notre espace karaoké en 3D. Utilisez votre souris pour faire pivoter la vue et la molette pour zoomer.
-        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+          <div>
+            <img 
+              src="/lovable-uploads/cfa63d4d-3758-45b6-8316-13d7d026d109.png"
+              alt="K.Box Metz - Box Karaoké"
+              className="w-full h-auto rounded-lg shadow-lg"
+            />
+            <p className="text-sm text-gray-600 mt-2 text-center">
+              Notre box karaoké à Metz
+            </p>
+          </div>
 
-        <div className="w-full h-[600px] bg-gray-100 rounded-lg shadow-lg overflow-hidden">
-          <Suspense fallback={<LoadingSpinner />}>
-            <Canvas>
-              <PerspectiveCamera makeDefault position={[10, 5, 10]} />
-              <OrbitControls enableZoom={true} maxDistance={20} minDistance={5} />
-              <Environment preset="city" />
-              <ambientLight intensity={0.5} />
-              <directionalLight position={[10, 10, 5]} intensity={1} />
-              <KaraokeBox />
-            </Canvas>
-          </Suspense>
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold">
+              Un espace privatif unique
+            </h2>
+            <p className="text-gray-600">
+              Découvrez notre box karaoké moderne et confortable, équipée des dernières technologies pour une expérience inoubliable :
+            </p>
+            <ul className="list-disc list-inside space-y-2 text-gray-600">
+              <li>Écran HD avec interface intuitive</li>
+              <li>Système audio professionnel</li>
+              <li>Banquettes confortables</li>
+              <li>Éclairage d'ambiance LED</li>
+              <li>Boule disco pour une ambiance festive</li>
+              <li>Table basse pour vos consommations</li>
+            </ul>
+          </div>
         </div>
 
-        <div className="mt-8 space-y-4 text-gray-600">
-          <p>
-            Cette visualisation 3D est une représentation temporaire de notre box karaoké.
-            Des photos réelles seront bientôt disponibles.
+        <div className="bg-gray-100 p-6 rounded-lg shadow-lg mb-8">
+          <h2 className="text-xl font-semibold mb-4">
+            Visualisation 3D Interactive
+          </h2>
+          <p className="text-gray-600 mb-4">
+            Explorez notre espace en 3D. Utilisez votre souris pour faire pivoter la vue et la molette pour zoomer.
           </p>
-          <ul className="list-disc list-inside space-y-2">
-            <li>Espace privatif confortable</li>
-            <li>Grand écran pour les paroles</li>
-            <li>Système audio professionnel</li>
-            <li>Places assises confortables</li>
-          </ul>
+          <div className="w-full h-[400px] bg-gray-200 rounded-lg overflow-hidden">
+            <Suspense fallback={<LoadingSpinner />}>
+              <Canvas>
+                <PerspectiveCamera makeDefault position={[10, 5, 10]} />
+                <OrbitControls enableZoom={true} maxDistance={20} minDistance={5} />
+                <Environment preset="city" />
+                <ambientLight intensity={0.5} />
+                <directionalLight position={[10, 10, 5]} intensity={1} />
+                <KaraokeBox />
+              </Canvas>
+            </Suspense>
+          </div>
         </div>
       </main>
     </div>

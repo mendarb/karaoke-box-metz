@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Mail, Phone, MapPin } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useUserState } from "@/hooks/useUserState";
+import { User } from '@supabase/supabase-js';
 
 interface UserProfile {
   id: string;
@@ -34,7 +35,7 @@ export const AccountsTable = () => {
       try {
         console.log("Début de la requête des profils");
         
-        const { data: users, error: usersError } = await supabase.auth.admin.listUsers();
+        const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers();
         if (usersError) throw usersError;
 
         const { data: profiles, error: profilesError } = await supabase
@@ -45,7 +46,7 @@ export const AccountsTable = () => {
 
         // Combine user and profile data
         const combinedData = profiles.map(profile => {
-          const user = users.users.find(u => u.id === profile.id);
+          const user = users.find((u: User) => u.id === profile.id);
           return {
             ...profile,
             email: user?.email

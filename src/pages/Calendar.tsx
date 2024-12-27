@@ -5,18 +5,21 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { BookingDetailsDialog } from "@/components/admin/BookingDetailsDialog";
 import { Booking } from "@/hooks/useBookings";
 import { useToast } from "@/components/ui/use-toast";
-import { DashboardSidebar } from "@/components/admin/DashboardSidebar";
 import { BookingsList } from "@/components/admin/calendar/BookingsList";
 import { useRealtimeBookings } from "@/hooks/useRealtimeBookings";
+import { DashboardLayout } from "@/components/admin/dashboard/DashboardLayout";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card } from "@/components/ui/card";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const Calendar = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   // Activer les mises à jour en temps réel
   useRealtimeBookings();
@@ -80,56 +83,52 @@ export const Calendar = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
-      </div>
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+        </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <ResizablePanelGroup direction="horizontal">
-        <ResizablePanel defaultSize={20} minSize={15} maxSize={25}>
-          <DashboardSidebar />
-        </ResizablePanel>
-        <ResizableHandle />
-        <ResizablePanel defaultSize={80}>
-          <div className="p-6">
-            <div className="flex items-center gap-2 mb-6">
-              <CalendarIcon className="h-6 w-6" />
-              <h1 className="text-2xl font-bold">Calendrier des réservations</h1>
-            </div>
+    <DashboardLayout title="Calendrier des réservations">
+      <div className="space-y-6">
+        <div className="flex items-center gap-2">
+          <CalendarIcon className="h-5 w-5 text-violet-500" />
+          <h2 className="text-lg font-semibold">Sélectionnez une date</h2>
+        </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-card rounded-lg shadow-lg p-6">
-                <CalendarComponent
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={setSelectedDate}
-                  locale={fr}
-                  modifiers={{
-                    booked: datesWithBookings,
-                  }}
-                  modifiersStyles={{
-                    booked: {
-                      fontWeight: 'bold',
-                      backgroundColor: '#9b87f5',
-                      color: 'white',
-                    }
-                  }}
-                  className="rounded-md border"
-                />
-              </div>
+        <div className={`grid gap-6 ${isMobile ? '' : 'md:grid-cols-2'}`}>
+          <Card className="p-4 shadow-none border-none bg-transparent">
+            <CalendarComponent
+              mode="single"
+              selected={selectedDate}
+              onSelect={setSelectedDate}
+              locale={fr}
+              modifiers={{
+                booked: datesWithBookings,
+              }}
+              modifiersStyles={{
+                booked: {
+                  fontWeight: 'bold',
+                  backgroundColor: '#9b87f5',
+                  color: 'white',
+                }
+              }}
+              className="rounded-md border-none"
+            />
+          </Card>
 
-              <BookingsList
-                bookings={bookingsForSelectedDate}
-                onViewDetails={setSelectedBooking}
-                selectedDate={selectedDate}
-              />
-            </div>
-          </div>
-        </ResizablePanel>
-      </ResizablePanelGroup>
+          <ScrollArea className={isMobile ? "h-[calc(100vh-24rem)]" : "h-[600px]"}>
+            <BookingsList
+              bookings={bookingsForSelectedDate}
+              onViewDetails={setSelectedBooking}
+              selectedDate={selectedDate}
+            />
+          </ScrollArea>
+        </div>
+      </div>
 
       {selectedBooking && (
         <BookingDetailsDialog
@@ -138,6 +137,6 @@ export const Calendar = () => {
           booking={selectedBooking}
         />
       )}
-    </div>
+    </DashboardLayout>
   );
 };

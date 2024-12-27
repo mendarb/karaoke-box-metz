@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/navigation/Navbar";
 import { BoxFeatures } from "@/components/3d/BoxFeatures";
+import { Footer } from "@/components/home/Footer";
 
 const Box3D = () => {
   return (
@@ -25,33 +26,9 @@ const Box3D = () => {
 
           <BoxFeatures />
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="space-y-4">
-            <img 
-              src="/lovable-uploads/d45fd1b9-de1b-40a3-ae6b-4072948883a6.png"
-              alt="K.Box Metz - Intérieur"
-              className="w-full h-auto rounded-lg shadow-lg"
-            />
-            <p className="text-sm text-gray-600 text-center">
-              Vue intérieure de notre box
-            </p>
-          </div>
-          
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Une expérience unique</h2>
-            <p className="text-gray-600">
-              Profitez d'un espace privatif moderne et confortable, parfait pour vos soirées karaoké entre amis ou en famille. Notre box est équipée des dernières technologies pour vous garantir une expérience inoubliable.
-            </p>
-            <ul className="list-disc list-inside space-y-2 text-gray-600">
-              <li>Système audio professionnel</li>
-              <li>Large sélection de chansons</li>
-              <li>Ambiance personnalisable</li>
-              <li>Service de boissons disponible</li>
-            </ul>
-          </div>
-        </div>
       </main>
+
+      <Footer />
     </div>
   );
 };

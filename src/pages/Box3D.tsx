@@ -12,12 +12,6 @@ const Box3D = () => {
       
       <main className="flex-grow container mx-auto py-12 px-4">
         <div className="max-w-6xl mx-auto space-y-12">
-          <div className="text-center space-y-4 mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-kbox-coral animate-fadeIn">
-              Un espace privatif unique
-            </h1>
-          </div>
-          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
             <div className="space-y-6">
               <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">

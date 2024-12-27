@@ -32,32 +32,21 @@ export const AccountsTable = () => {
       try {
         console.log("Début de la requête des profils");
         
-        // First get all profiles
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
           .select('*');
 
         if (profilesError) throw profilesError;
 
-        // Then get all users to map emails
-        const { data: users, error: usersError } = await supabase
-          .from('auth.users')
-          .select('id, email');
-
-        if (usersError) throw usersError;
-
-        // Map users emails to profiles
-        const formattedProfiles = (profiles || []).map((profile: any) => {
-          const user = users?.find(u => u.id === profile.id);
-          return {
-            id: profile.id,
-            first_name: profile.first_name,
-            last_name: profile.last_name,
-            phone: profile.phone,
-            email: user?.email || null,
-            created_at: profile.created_at
-          };
-        });
+        // Format profiles with email from the profile data
+        const formattedProfiles = (profiles || []).map((profile: any) => ({
+          id: profile.id,
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+          phone: profile.phone,
+          email: null, // We'll update this in a separate admin function
+          created_at: profile.created_at
+        }));
 
         console.log("Profils récupérés:", formattedProfiles);
         return formattedProfiles || [];

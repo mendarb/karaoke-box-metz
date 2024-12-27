@@ -13,6 +13,7 @@ import Success from "@/pages/Success";
 import { Error } from "@/pages/Error";
 import { DocumentationPage } from "@/components/admin/documentation/DocumentationPage";
 import { Accounts } from "@/pages/Accounts";
+import { EditAccountPage } from "@/components/admin/accounts/EditAccountPage";
 
 export const AppRoutes = () => {
   return (
@@ -54,6 +55,14 @@ export const AppRoutes = () => {
         element={
           <ProtectedRoute adminOnly>
             <Accounts />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/accounts/:id"
+        element={
+          <ProtectedRoute adminOnly>
+            <EditAccountPage />
           </ProtectedRoute>
         }
       />

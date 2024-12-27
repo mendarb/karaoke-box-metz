@@ -9,6 +9,11 @@ interface ImageLightboxProps {
 }
 
 export const ImageLightbox = ({ src, alt, className }: ImageLightboxProps) => {
+  const handleClose = () => {
+    const closeButton = document.querySelector('[data-radix-dialog-close-button]') as HTMLButtonElement | null;
+    closeButton?.click();
+  };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -21,7 +26,7 @@ export const ImageLightbox = ({ src, alt, className }: ImageLightboxProps) => {
       <DialogContent className="max-w-[90vw] h-[90vh] p-0 bg-transparent border-none flex items-center justify-center relative">
         <button 
           className="absolute top-2 right-2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
-          onClick={() => document.querySelector('[data-radix-dialog-close-button]')?.click()}
+          onClick={handleClose}
         >
           <X className="h-6 w-6" />
         </button>

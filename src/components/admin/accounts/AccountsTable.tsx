@@ -18,9 +18,7 @@ interface Profile {
   last_name: string | null;
   phone: string | null;
   created_at: string;
-  users: {
-    email: string | null;
-  } | null;
+  email: string | null;
 }
 
 export const AccountsTable = () => {
@@ -36,16 +34,23 @@ export const AccountsTable = () => {
         
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
-          .select('*, users:auth.users(email)');
+          .select(`
+            id,
+            first_name,
+            last_name,
+            phone,
+            created_at,
+            email:auth.users(email)
+          `);
 
         if (profilesError) throw profilesError;
 
-        const formattedProfiles = (profiles || []).map((profile: Profile) => ({
+        const formattedProfiles = (profiles || []).map((profile: any) => ({
           id: profile.id,
           first_name: profile.first_name,
           last_name: profile.last_name,
           phone: profile.phone,
-          email: profile.users?.email,
+          email: profile.email?.[0]?.email,
           created_at: profile.created_at
         }));
 

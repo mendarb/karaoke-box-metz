@@ -14,7 +14,7 @@ const Box3D = () => {
         <div className="max-w-6xl mx-auto space-y-12">
           <div className="text-center space-y-4 mb-12">
             <h1 className="text-4xl md:text-5xl font-bold text-kbox-coral animate-fadeIn">
-              K.Box Metz
+              Un espace privatif unique
             </h1>
           </div>
           

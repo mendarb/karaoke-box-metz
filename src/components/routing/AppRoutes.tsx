@@ -15,6 +15,7 @@ import { DocumentationPage } from "@/components/admin/documentation/Documentatio
 import { Accounts } from "@/pages/Accounts";
 import { EditAccountPage } from "@/components/admin/accounts/EditAccountPage";
 import Box3D from "@/pages/Box3D";
+import { ResetPassword } from "@/components/auth/ResetPassword";
 
 export const AppRoutes = () => {
   return (
@@ -26,6 +27,7 @@ export const AppRoutes = () => {
       <Route path="/legal/terms" element={<Terms />} />
       <Route path="/legal/privacy" element={<Privacy />} />
       <Route path="/legal/cancellation" element={<Cancellation />} />
+      <Route path="/account/reset-password" element={<ResetPassword />} />
       
       {/* Routes protégées pour l'admin */}
       <Route

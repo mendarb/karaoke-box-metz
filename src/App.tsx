@@ -6,6 +6,7 @@ import { BrowserRouter, useLocation } from "react-router-dom";
 import { AppRoutes } from "@/components/routing/AppRoutes";
 import { useEffect } from "react";
 import { initializeGoogleAnalytics, trackPageView } from "@/lib/analytics";
+import { GoogleVerification } from "@/components/seo/GoogleVerification";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -36,6 +37,7 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <GoogleVerification />
         <Toaster />
         <Sonner />
         <BrowserRouter>

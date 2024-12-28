@@ -1,23 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { getGoogleVerification } from '@/lib/seo';
 
 export const GoogleVerification = () => {
-  const [verificationCode, setVerificationCode] = useState<string | null>(null);
-
   useEffect(() => {
-    const fetchVerificationCode = async () => {
-      const code = await getGoogleVerification();
+    const addVerificationMeta = async () => {
+      const code = "imJKHLM3uqEPf9HXdTiJMiTg7IKjM_Ea-XY9x8RizOM";
       if (code) {
-        setVerificationCode(code);
+        const meta = document.createElement('meta');
+        meta.name = 'google-site-verification';
+        meta.content = code;
+        document.head.appendChild(meta);
       }
     };
 
-    fetchVerificationCode();
+    addVerificationMeta();
   }, []);
 
-  if (!verificationCode) return null;
-
-  return (
-    <meta name="google-site-verification" content={verificationCode} />
-  );
+  return null;
 };

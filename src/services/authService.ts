@@ -54,21 +54,20 @@ export const checkExistingUser = async (email: string) => {
       return { exists: true, error: null };
     }
 
-    // Vérifier ensuite dans la table auth.users via une réservation
-    const { data: userData, error: userError } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('id', email)
-      .limit(1)
-      .maybeSingle();
+    // Vérifier directement avec l'authentification Supabase
+    const { data: { users }, error: authError } = await supabase.auth.admin.listUsers({
+      filters: {
+        email: email
+      }
+    });
 
-    if (userError) {
-      console.error('Error checking profiles:', userError);
-      return { exists: false, error: userError };
+    if (authError) {
+      console.error('Error checking auth users:', authError);
+      return { exists: false, error: authError };
     }
 
-    if (userData?.id) {
-      console.log('User found in profiles:', userData.id);
+    if (users && users.length > 0) {
+      console.log('User found in auth:', users[0].id);
       return { exists: true, error: null };
     }
 

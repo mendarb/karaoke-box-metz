@@ -30,33 +30,39 @@ export const TimeSlots = ({
       const formattedDate = format(selectedDate, 'yyyy-MM-dd');
       console.log('🔍 Vérification des créneaux pour:', formattedDate);
       
-      const { data: bookings, error } = await supabase
-        .from('bookings')
-        .select('time_slot, duration')
-        .eq('date', formattedDate)
-        .neq('status', 'cancelled')
-        .is('deleted_at', null)
-        .eq('payment_status', 'paid');
+      try {
+        const { data: bookings, error } = await supabase
+          .from('bookings')
+          .select('time_slot, duration')
+          .eq('date', formattedDate)
+          .neq('status', 'cancelled')
+          .is('deleted_at', null)
+          .eq('payment_status', 'paid');
 
-      if (error) {
-        console.error('❌ Erreur lors du chargement des créneaux réservés:', error);
-        return;
-      }
-
-      const bookedSlots = new Set<string>();
-      bookings?.forEach(booking => {
-        const startHour = parseInt(booking.time_slot);
-        const duration = parseInt(booking.duration);
-        
-        for (let hour = startHour; hour < startHour + duration; hour++) {
-          const formattedHour = `${hour.toString().padStart(2, '0')}:00`;
-          bookedSlots.add(formattedHour);
-          console.log(`🚫 Créneau ${formattedHour} marqué comme réservé`);
+        if (error) {
+          console.error('❌ Erreur lors du chargement des créneaux réservés:', error);
+          return;
         }
-      });
 
-      setDisabledSlots(Array.from(bookedSlots));
-      console.log('✅ Créneaux indisponibles mis à jour:', Array.from(bookedSlots));
+        console.log('✅ Réservations trouvées:', bookings);
+
+        const bookedSlots = new Set<string>();
+        bookings?.forEach(booking => {
+          const startHour = parseInt(booking.time_slot);
+          const duration = parseInt(booking.duration);
+          
+          for (let hour = startHour; hour < startHour + duration; hour++) {
+            const formattedHour = `${hour.toString().padStart(2, '0')}:00`;
+            bookedSlots.add(formattedHour);
+            console.log(`🚫 Créneau ${formattedHour} marqué comme réservé`);
+          }
+        });
+
+        setDisabledSlots(Array.from(bookedSlots));
+        console.log('✅ Créneaux indisponibles mis à jour:', Array.from(bookedSlots));
+      } catch (error) {
+        console.error('❌ Erreur inattendue:', error);
+      }
     };
 
     loadBookedSlots();
@@ -73,7 +79,6 @@ export const TimeSlots = ({
     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
       {sortedSlots.map((slot) => {
         const isDisabled = disabledSlots.includes(slot);
-        const formattedSlot = slot;
 
         const slotButton = (
           <Button
@@ -92,7 +97,7 @@ export const TimeSlots = ({
             }}
           >
             <Clock className="h-4 w-4" />
-            {formattedSlot}
+            {slot}
           </Button>
         );
 

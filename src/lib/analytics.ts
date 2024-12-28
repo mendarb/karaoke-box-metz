@@ -3,6 +3,7 @@ import { supabase } from './supabase';
 declare global {
   interface Window {
     gtag: (...args: any[]) => void;
+    dataLayer: any[];
   }
 }
 

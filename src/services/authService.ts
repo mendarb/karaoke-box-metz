@@ -33,24 +33,49 @@ export const resetPassword = async (email: string) => {
 };
 
 export const checkExistingUser = async (email: string) => {
-  // Vérifier d'abord dans les réservations existantes
-  const { data: bookingData, error: bookingError } = await supabase
-    .from('bookings')
-    .select('user_id')
-    .eq('user_email', email)
-    .not('user_id', 'is', null)
-    .limit(1)
-    .maybeSingle();
+  try {
+    console.log('Checking existing user in bookings:', email);
+    // Vérifier d'abord dans les réservations existantes
+    const { data: bookingData, error: bookingError } = await supabase
+      .from('bookings')
+      .select('user_id')
+      .eq('user_email', email)
+      .not('user_id', 'is', null)
+      .limit(1)
+      .maybeSingle();
 
-  if (bookingError) {
-    console.error('Error checking bookings:', bookingError);
-    return { exists: false, error: bookingError };
+    if (bookingError) {
+      console.error('Error checking bookings:', bookingError);
+      return { exists: false, error: bookingError };
+    }
+
+    if (bookingData?.user_id) {
+      console.log('User found in bookings:', bookingData.user_id);
+      return { exists: true, error: null };
+    }
+
+    // Vérifier ensuite dans la table auth.users via une réservation
+    const { data: userData, error: userError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', email)
+      .limit(1)
+      .maybeSingle();
+
+    if (userError) {
+      console.error('Error checking profiles:', userError);
+      return { exists: false, error: userError };
+    }
+
+    if (userData?.id) {
+      console.log('User found in profiles:', userData.id);
+      return { exists: true, error: null };
+    }
+
+    console.log('No existing user found');
+    return { exists: false, error: null };
+  } catch (error) {
+    console.error('Error in checkExistingUser:', error);
+    return { exists: false, error };
   }
-
-  if (bookingData?.user_id) {
-    return { exists: true, error: null };
-  }
-
-  // Si aucune réservation n'est trouvée avec cet email, on considère que l'utilisateur n'existe pas
-  return { exists: false, error: null };
 };

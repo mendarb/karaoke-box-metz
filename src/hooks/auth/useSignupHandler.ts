@@ -24,6 +24,7 @@ export function useSignupHandler() {
         return { success: false, shouldSwitchToLogin: false };
       }
 
+      console.log("Checking if user exists:", email);
       const { exists, error: checkError } = await checkExistingUser(email);
 
       if (checkError) {
@@ -37,6 +38,7 @@ export function useSignupHandler() {
       }
 
       if (exists) {
+        console.log("User already exists:", email);
         toast({
           title: "Compte existant",
           description: "Un compte existe déjà avec cet email. Veuillez vous connecter ou réinitialiser votre mot de passe si vous l'avez oublié.",
@@ -44,6 +46,7 @@ export function useSignupHandler() {
         return { success: false, shouldSwitchToLogin: true };
       }
 
+      console.log("Creating new user account:", email);
       const { error: signUpError } = await signUp(
         email,
         password,
@@ -53,6 +56,16 @@ export function useSignupHandler() {
 
       if (signUpError) {
         console.error("Signup error:", signUpError);
+        
+        // Si l'erreur indique que l'utilisateur existe déjà
+        if (signUpError.message.includes("User already registered")) {
+          toast({
+            title: "Compte existant",
+            description: "Un compte existe déjà avec cet email. Veuillez vous connecter ou réinitialiser votre mot de passe si vous l'avez oublié.",
+          });
+          return { success: false, shouldSwitchToLogin: true };
+        }
+        
         toast({
           title: "Erreur",
           description: signUpError.message,

@@ -63,7 +63,7 @@ export const TimeSlots = ({
     },
     enabled: !!selectedDate,
     staleTime: 30000, // Garde les données en cache pendant 30 secondes
-    cacheTime: 60000, // Garde les données en cache pendant 1 minute
+    gcTime: 60000, // Remplace cacheTime - Garde les données en cache pendant 1 minute
   });
 
   // Trier les créneaux par heure

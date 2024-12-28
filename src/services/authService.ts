@@ -54,23 +54,21 @@ export const checkExistingUser = async (email: string) => {
       return { exists: true, error: null };
     }
 
-    // Vérifier directement avec l'authentification Supabase
-    const { data: { users }, error: authError } = await supabase.auth.admin.listUsers({
-      filters: {
-        email: email
-      }
+    // Si l'utilisateur n'est pas trouvé dans les réservations,
+    // on essaie de se connecter avec un mot de passe invalide pour voir si l'email existe
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password: 'dummy_password_to_check_existence',
     });
 
-    if (authError) {
-      console.error('Error checking auth users:', authError);
-      return { exists: false, error: authError };
-    }
-
-    if (users && users.length > 0) {
-      console.log('User found in auth:', users[0].id);
+    // Si l'erreur indique "Invalid login credentials", cela signifie que l'email existe
+    if (error?.message.includes('Invalid login credentials')) {
+      console.log('User exists in auth system');
       return { exists: true, error: null };
     }
 
+    // Si l'erreur est différente ou s'il n'y a pas d'erreur (ce qui ne devrait pas arriver),
+    // on considère que l'utilisateur n'existe pas
     console.log('No existing user found');
     return { exists: false, error: null };
   } catch (error) {

@@ -7,7 +7,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AdminBookingForm } from "../BookingForm";
 import { Plus, Trash2 } from "lucide-react";
 import { CleanupBookingsDialog } from "../actions/CleanupBookingsDialog";
-import { Card } from "@/components/ui/card";
 
 interface DashboardContentProps {
   bookings: Booking[];
@@ -22,17 +21,6 @@ export const DashboardContent = ({
 }: DashboardContentProps) => {
   const [isCleanupDialogOpen, setIsCleanupDialogOpen] = useState(false);
   const dummyOnStatusChange = async () => {};
-
-  // Calculer les statistiques des réservations
-  const totalRevenue = bookings.reduce((sum, booking) => {
-    if (booking.payment_status === 'paid') {
-      return sum + (booking.price || 0);
-    }
-    return sum;
-  }, 0);
-
-  const paidBookings = bookings.filter(booking => booking.payment_status === 'paid').length;
-  const pendingBookings = bookings.filter(booking => booking.payment_status === 'pending').length;
 
   return (
     <div className="p-4 md:p-6">
@@ -63,20 +51,8 @@ export const DashboardContent = ({
         </div>
       </div>
       
-      {/* Statistiques rapides */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <Card className="p-4">
-          <h3 className="text-sm font-medium text-muted-foreground">Revenu total</h3>
-          <p className="text-2xl font-bold">{totalRevenue}€</p>
-        </Card>
-        <Card className="p-4">
-          <h3 className="text-sm font-medium text-muted-foreground">Réservations payées</h3>
-          <p className="text-2xl font-bold">{paidBookings}</p>
-        </Card>
-        <Card className="p-4">
-          <h3 className="text-sm font-medium text-muted-foreground">Réservations en attente</h3>
-          <p className="text-2xl font-bold">{pendingBookings}</p>
-        </Card>
+      <div className="mb-8">
+        <DashboardStats bookings={bookings} />
       </div>
       
       <div className="bg-white rounded-lg shadow-lg p-2 md:p-6 overflow-x-auto">

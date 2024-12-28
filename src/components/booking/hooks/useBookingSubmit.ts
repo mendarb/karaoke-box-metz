@@ -3,7 +3,6 @@ import { supabase } from "@/lib/supabase";
 import { format } from "date-fns";
 import { useUserState } from "@/hooks/useUserState";
 import { UseFormReturn } from "react-hook-form";
-import { trackEvent } from "@/lib/analytics";
 
 export const useBookingSubmit = (
   form: UseFormReturn<any>,
@@ -114,17 +113,6 @@ export const useBookingSubmit = (
         console.error('❌ No checkout URL returned:', response);
         throw new Error('No checkout URL returned');
       }
-
-      // Tracker l'événement de début de réservation
-      trackEvent('begin_checkout', {
-        currency: 'EUR',
-        value: finalPrice,
-        items: [{
-          item_name: `Réservation ${duration}h - ${groupSize} personnes`,
-          price: finalPrice,
-          quantity: 1
-        }]
-      });
 
       console.log('✅ Booking created and payment link generated:', {
         bookingId: response.bookingId,

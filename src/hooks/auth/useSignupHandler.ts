@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { signUp, checkExistingUser } from "@/services/authService";
+import { signUp } from "@/services/authService";
 import { AuthResponse } from "@/types/auth";
 
 export function useSignupHandler() {
@@ -13,6 +13,12 @@ export function useSignupHandler() {
     fullName: string,
     phone: string
   ): Promise<AuthResponse> => {
+    // Prevent multiple submissions
+    if (isLoading) {
+      console.log("Signup already in progress, preventing duplicate submission");
+      return { success: false, shouldSwitchToLogin: false };
+    }
+
     setIsLoading(true);
     try {
       if (!fullName || !phone) {

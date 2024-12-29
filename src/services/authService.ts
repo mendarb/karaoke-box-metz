@@ -36,31 +36,21 @@ export const checkExistingUser = async (email: string) => {
   try {
     console.log('🔍 Vérification de l\'existence d\'un utilisateur:', email);
     
-    // Vérifier dans la table auth.users via une fonction signIn
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password: 'check_user_existence',
-    });
+    // Vérifier directement dans la table auth.users via une fonction admin
+    const { data: userData, error: userError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', email)
+      .maybeSingle();
 
-    // Si l'erreur indique "Invalid login credentials", cela signifie que l'email existe
-    if (error?.message.includes('Invalid login credentials')) {
-      console.log('✅ Un compte existe déjà avec cet email');
+    if (userError) {
+      console.error('❌ Erreur lors de la vérification du profil:', userError);
+    } else if (userData) {
+      console.log('✅ Profil trouvé:', userData);
       return { exists: true, error: null };
     }
 
-    // Si l'erreur est "Email not confirmed", cela signifie aussi que l'email existe
-    if (error?.message.includes('Email not confirmed')) {
-      console.log('✅ Un compte existe déjà avec cet email (non confirmé)');
-      return { exists: true, error: null };
-    }
-
-    // Si l'erreur indique que l'utilisateur n'existe pas
-    if (error?.message.includes('Invalid user credentials')) {
-      console.log('✅ Aucun compte existant avec cet email');
-      return { exists: false, error: null };
-    }
-
-    // Vérifier également dans les réservations existantes
+    // Vérifier dans les réservations existantes
     const { data: bookingData, error: bookingError } = await supabase
       .from('bookings')
       .select('user_id')
@@ -71,10 +61,7 @@ export const checkExistingUser = async (email: string) => {
 
     if (bookingError) {
       console.error('❌ Erreur lors de la vérification des réservations:', bookingError);
-      return { exists: false, error: bookingError };
-    }
-
-    if (bookingData?.user_id) {
+    } else if (bookingData?.user_id) {
       console.log('✅ Utilisateur trouvé dans les réservations:', bookingData.user_id);
       return { exists: true, error: null };
     }

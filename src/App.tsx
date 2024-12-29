@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { initializeGoogleAnalytics, trackPageView } from "@/lib/analytics";
 import { GoogleVerification } from "@/components/seo/GoogleVerification";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { SupportButton } from "@/components/support/SupportButton";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -65,6 +66,7 @@ const App = () => {
         <BrowserRouter>
           <PageTracker />
           <AppRoutes />
+          <SupportButton />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

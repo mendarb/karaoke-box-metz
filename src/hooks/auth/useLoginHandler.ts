@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { signIn } from "@/services/authService";
+import { supabase } from "@/lib/supabase";
 
 export function useLoginHandler() {
   const [isLoading, setIsLoading] = useState(false);
@@ -9,15 +10,43 @@ export function useLoginHandler() {
   const handleLogin = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
+      // Additional pre-login validation
+      if (!email || !password) {
+        toast({
+          title: "Erreur",
+          description: "Veuillez saisir un email et un mot de passe",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Check if user exists before attempting login
+      const { data, error: userError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', email)
+        .single();
+
+      if (userError || !data) {
+        toast({
+          title: "Compte introuvable",
+          description: "Aucun compte n'existe avec cet email. Veuillez vous inscrire.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
       const { error } = await signIn(email, password);
 
       if (error) {
-        console.error("Auth error:", error);
-        const errorMessage = error.message === "Invalid login credentials"
-          ? "Email ou mot de passe incorrect"
-          : error.message.includes("Email not confirmed")
-          ? "Veuillez confirmer votre email avant de vous connecter"
-          : error.message;
+        console.error("Auth error details:", error);
+        
+        const errorMessage = 
+          error.message === "Invalid login credentials" 
+            ? "Email ou mot de passe incorrect" 
+            : error.message.includes("Email not confirmed")
+            ? "Veuillez confirmer votre email avant de vous connecter"
+            : "Une erreur de connexion est survenue";
 
         toast({
           title: "Erreur de connexion",
@@ -33,7 +62,7 @@ export function useLoginHandler() {
       });
       return true;
     } catch (error: any) {
-      console.error("Auth error:", error);
+      console.error("Unexpected login error:", error);
       toast({
         title: "Erreur",
         description: "Une erreur inattendue s'est produite",

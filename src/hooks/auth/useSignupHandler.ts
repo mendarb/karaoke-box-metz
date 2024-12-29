@@ -24,28 +24,6 @@ export function useSignupHandler() {
         return { success: false, shouldSwitchToLogin: false };
       }
 
-      console.log("Checking if user exists:", email);
-      const { exists, error: checkError } = await checkExistingUser(email);
-
-      if (checkError) {
-        console.error("Error checking user:", checkError);
-        toast({
-          title: "Erreur",
-          description: "Une erreur est survenue lors de la vérification de l'email",
-          variant: "destructive",
-        });
-        return { success: false, shouldSwitchToLogin: false };
-      }
-
-      if (exists) {
-        console.log("User already exists:", email);
-        toast({
-          title: "Compte existant",
-          description: "Un compte existe déjà avec cet email. Veuillez vous connecter ou réinitialiser votre mot de passe si vous l'avez oublié.",
-        });
-        return { success: false, shouldSwitchToLogin: true };
-      }
-
       console.log("Creating new user account:", email);
       const { error: signUpError } = await signUp(
         email,
@@ -56,6 +34,17 @@ export function useSignupHandler() {
 
       if (signUpError) {
         console.error("Signup error:", signUpError);
+        
+        // Gérer l'erreur de rate limiting
+        if (signUpError.message.includes("security purposes")) {
+          const waitTime = signUpError.message.match(/\d+/)?.[0] || "30";
+          toast({
+            title: "Veuillez patienter",
+            description: `Pour des raisons de sécurité, veuillez attendre ${waitTime} secondes avant de réessayer.`,
+            variant: "default",
+          });
+          return { success: false, shouldSwitchToLogin: false };
+        }
         
         // Si l'erreur indique que l'utilisateur existe déjà
         if (signUpError.message.includes("User already registered")) {
@@ -68,7 +57,7 @@ export function useSignupHandler() {
         
         toast({
           title: "Erreur",
-          description: signUpError.message,
+          description: "Une erreur est survenue lors de l'inscription. Veuillez réessayer.",
           variant: "destructive",
         });
         return { success: false, shouldSwitchToLogin: false };

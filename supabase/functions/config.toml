@@ -1,0 +1,8 @@
+project_id = "lxkaosgjtqonrnlivzev"
+
+[global.env]
+RESEND_API_KEY = "{{env.RESEND_API_KEY}}"
+
+[[functions]]
+name = "send-support-email"
+verify_jwt = false

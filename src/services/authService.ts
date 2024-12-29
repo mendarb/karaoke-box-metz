@@ -36,20 +36,6 @@ export const checkExistingUser = async (email: string) => {
   try {
     console.log('🔍 Vérification de l\'existence d\'un utilisateur:', email);
     
-    // Vérifier directement dans la table auth.users via une fonction admin
-    const { data: userData, error: userError } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('id', email)
-      .maybeSingle();
-
-    if (userError) {
-      console.error('❌ Erreur lors de la vérification du profil:', userError);
-    } else if (userData) {
-      console.log('✅ Profil trouvé:', userData);
-      return { exists: true, error: null };
-    }
-
     // Vérifier dans les réservations existantes
     const { data: bookingData, error: bookingError } = await supabase
       .from('bookings')

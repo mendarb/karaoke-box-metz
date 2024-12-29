@@ -41,7 +41,17 @@ export function useSignupHandler() {
       if (signUpError) {
         console.error("Signup error:", signUpError);
         
-        // Gérer l'erreur de rate limiting
+        // Gérer l'erreur de limite de taux pour les emails
+        if (signUpError.message.includes("email rate limit exceeded")) {
+          toast({
+            title: "Trop de tentatives",
+            description: "Trop d'emails ont été envoyés à cette adresse. Veuillez patienter quelques minutes avant de réessayer.",
+            variant: "destructive",
+          });
+          return { success: false, shouldSwitchToLogin: false };
+        }
+        
+        // Gérer l'erreur de rate limiting générale
         if (signUpError.message.includes("security purposes")) {
           const waitTime = signUpError.message.match(/\d+/)?.[0] || "30";
           toast({

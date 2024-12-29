@@ -35,9 +35,9 @@ serve(async (req) => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "Karaoke Box Support <onboarding@resend.dev>",
-        to: ["contact@karaoke-box-metz.fr"],
-        subject: `Nouveau message de support de ${name}`,
+        from: 'Karaoke Box Support <onboarding@resend.dev>',
+        to: ['mendar.bouchali@gmail.com'], // During testing phase
+        subject: 'Nouveau message de support - Karaoke Box Metz',
         html: `
           <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
             <h2>Nouveau message de support</h2>

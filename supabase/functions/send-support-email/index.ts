@@ -35,7 +35,7 @@ const handler = async (req: Request): Promise<Response> => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "K.Box Support <support@karaoke-box-metz.fr>",
+        from: "Karaoke Box Support <onboarding@resend.dev>",
         to: ["contact@karaoke-box-metz.fr"],
         subject: `Nouveau message de support de ${name}`,
         html: `

@@ -1,37 +1,37 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface SupportRequest {
-  name: string;
-  email: string;
-  message: string;
-}
-
-const handler = async (req: Request): Promise<Response> => {
+serve(async (req) => {
   // Handle CORS preflight requests
-  if (req.method === "OPTIONS") {
+  if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
     if (!RESEND_API_KEY) {
-      throw new Error("Missing RESEND_API_KEY");
+      console.error('❌ Missing RESEND_API_KEY');
+      throw new Error('Missing RESEND_API_KEY');
     }
 
-    const { name, email, message }: SupportRequest = await req.json();
+    // Parse and validate request body
+    const { name, email, message } = await req.json();
+    
+    if (!name || !email || !message) {
+      console.error('❌ Missing required fields:', { name, email, message });
+      throw new Error('Missing required fields');
+    }
+
     console.log('📧 Sending support email from:', { name, email });
 
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
@@ -51,29 +51,28 @@ const handler = async (req: Request): Promise<Response> => {
       }),
     });
 
+    const data = await res.json();
+
     if (!res.ok) {
-      const error = await res.text();
-      console.error('❌ Error from Resend API:', error);
-      throw new Error(error);
+      console.error('❌ Error from Resend API:', data);
+      throw new Error(JSON.stringify(data));
     }
 
-    const data = await res.json();
-    console.log('✅ Email sent successfully:', data);
+    console.log('✅ Support email sent successfully:', data);
 
     return new Response(JSON.stringify(data), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
+
   } catch (error) {
-    console.error("Error sending support email:", error);
+    console.error('Error sending support email:', error);
     return new Response(
-      JSON.stringify({ error: "Failed to send support email" }),
+      JSON.stringify({ error: 'Failed to send support email' }),
       {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     );
   }
-};
-
-serve(handler);
+});

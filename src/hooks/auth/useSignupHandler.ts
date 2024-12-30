@@ -40,7 +40,6 @@ export function useSignupHandler() {
       if (signUpError) {
         console.error("Erreur d'inscription:", signUpError);
         
-        // Gestion spécifique pour un compte déjà existant
         if (signUpError.message.includes("User already registered")) {
           toast({
             title: "Compte existant",
@@ -50,7 +49,6 @@ export function useSignupHandler() {
           return { success: false, shouldSwitchToLogin: true };
         }
         
-        // Gestion de la limite de tentatives d'emails
         if (signUpError.message.includes("email rate limit exceeded")) {
           toast({
             title: "Trop de tentatives",
@@ -59,19 +57,7 @@ export function useSignupHandler() {
           });
           return { success: false, shouldSwitchToLogin: false };
         }
-        
-        // Gestion du délai de sécurité
-        if (signUpError.message.includes("security purposes")) {
-          const waitTime = signUpError.message.match(/\d+/)?.[0] || "30";
-          toast({
-            title: "Veuillez patienter",
-            description: `Pour des raisons de sécurité, veuillez attendre ${waitTime} secondes avant de réessayer.`,
-            variant: "default",
-          });
-          return { success: false, shouldSwitchToLogin: false };
-        }
 
-        // Erreur générique
         toast({
           title: "Erreur",
           description: "Une erreur est survenue lors de l'inscription. Veuillez réessayer.",
@@ -80,7 +66,6 @@ export function useSignupHandler() {
         return { success: false, shouldSwitchToLogin: false };
       }
 
-      // Succès uniquement si aucune erreur n'est survenue
       toast({
         title: "Compte créé avec succès",
         description: "Un email de confirmation vous a été envoyé. Veuillez vérifier votre boîte de réception.",

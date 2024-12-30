@@ -2,53 +2,12 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { signUp } from "@/services/authService";
 import { AuthResponse } from "@/types/auth";
-import { getSignupErrorType, getSignupErrorConfig } from "@/utils/auth/signupErrorHandler";
+import { validateSignupData } from "@/utils/auth/signupValidation";
+import { handleSignupError } from "@/utils/auth/signupErrorHandler";
 
 export function useSignupHandler() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-
-  const validateSignupData = (
-    email: string,
-    password: string,
-    fullName: string,
-    phone: string
-  ): boolean => {
-    if (!fullName || !phone) {
-      toast({
-        title: "Erreur",
-        description: "Veuillez remplir tous les champs obligatoires",
-        variant: "destructive",
-      });
-      return false;
-    }
-    return true;
-  };
-
-  const handleSignupSuccess = () => {
-    toast({
-      title: "Compte créé avec succès",
-      description: "Un email de confirmation vous a été envoyé. Veuillez vérifier votre boîte de réception.",
-    });
-    return { success: true, shouldSwitchToLogin: false };
-  };
-
-  const handleSignupError = (error: any) => {
-    console.error("Erreur d'inscription:", error);
-    const errorType = getSignupErrorType(error);
-    const errorConfig = getSignupErrorConfig(errorType);
-
-    toast({
-      title: errorConfig.title,
-      description: errorConfig.description,
-      variant: errorConfig.variant,
-    });
-
-    return { 
-      success: false, 
-      shouldSwitchToLogin: errorConfig.shouldSwitchToLogin 
-    };
-  };
 
   const handleSignup = async (
     email: string,
@@ -61,7 +20,13 @@ export function useSignupHandler() {
       return { success: false, shouldSwitchToLogin: false };
     }
 
-    if (!validateSignupData(email, password, fullName, phone)) {
+    const validation = validateSignupData(email, password, fullName, phone);
+    if (!validation.isValid) {
+      toast({
+        title: "Erreur",
+        description: validation.error,
+        variant: "destructive",
+      });
       return { success: false, shouldSwitchToLogin: false };
     }
 
@@ -76,12 +41,34 @@ export function useSignupHandler() {
       );
 
       if (signUpError) {
-        return handleSignupError(signUpError);
+        const errorConfig = handleSignupError(signUpError);
+        toast({
+          title: errorConfig.title,
+          description: errorConfig.description,
+          variant: "destructive",
+        });
+        return { 
+          success: false, 
+          shouldSwitchToLogin: errorConfig.shouldSwitchToLogin 
+        };
       }
 
-      return handleSignupSuccess();
+      toast({
+        title: "Compte créé avec succès",
+        description: "Un email de confirmation vous a été envoyé. Veuillez vérifier votre boîte de réception.",
+      });
+      return { success: true, shouldSwitchToLogin: false };
     } catch (error: any) {
-      return handleSignupError(error);
+      const errorConfig = handleSignupError(error);
+      toast({
+        title: errorConfig.title,
+        description: errorConfig.description,
+        variant: "destructive",
+      });
+      return { 
+        success: false, 
+        shouldSwitchToLogin: errorConfig.shouldSwitchToLogin 
+      };
     } finally {
       setIsLoading(false);
     }

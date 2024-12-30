@@ -1,16 +1,30 @@
 import { AuthError } from "@supabase/supabase-js";
-import { SignupErrorType, SIGNUP_ERROR_MESSAGES } from "@/types/auth/signupErrors";
 
-export const getSignupErrorType = (error: AuthError): SignupErrorType => {
-  if (error.message.includes("User already registered")) {
-    return "USER_EXISTS";
-  }
-  if (error.message.includes("email rate limit exceeded")) {
-    return "RATE_LIMIT";
-  }
-  return "GENERIC_ERROR";
-};
+export const handleSignupError = (error: AuthError | null) => {
+  if (!error) return null;
 
-export const getSignupErrorConfig = (errorType: SignupErrorType) => {
-  return SIGNUP_ERROR_MESSAGES[errorType];
+  // Cas spécifique pour un utilisateur déjà existant
+  if (error.message?.includes("User already registered")) {
+    return {
+      title: "Compte existant",
+      description: "Un compte existe déjà avec cet email. Veuillez vous connecter.",
+      shouldSwitchToLogin: true
+    };
+  }
+
+  // Cas de limite de tentatives dépassée
+  if (error.message?.includes("Too many requests")) {
+    return {
+      title: "Trop de tentatives",
+      description: "Veuillez patienter quelques minutes avant de réessayer.",
+      shouldSwitchToLogin: false
+    };
+  }
+
+  // Erreur par défaut
+  return {
+    title: "Erreur",
+    description: "Une erreur est survenue lors de l'inscription. Veuillez réessayer.",
+    shouldSwitchToLogin: false
+  };
 };

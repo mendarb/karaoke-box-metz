@@ -4,10 +4,25 @@ import { signUp } from "@/services/authService";
 import { AuthResponse } from "@/types/auth";
 import { validateSignupData } from "@/utils/auth/signupValidation";
 import { handleSignupError } from "@/utils/auth/signupErrorHandler";
+import { supabase } from "@/lib/supabase";
 
 export function useSignupHandler() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+
+  const checkExistingUser = async (email: string) => {
+    try {
+      const { data, error } = await supabase.auth.admin.getUserByEmail(email);
+      if (error) {
+        console.error("Erreur lors de la vérification de l'email:", error);
+        return false;
+      }
+      return data !== null;
+    } catch (error) {
+      console.error("Erreur lors de la vérification de l'email:", error);
+      return false;
+    }
+  };
 
   const handleSignup = async (
     email: string,
@@ -33,14 +48,30 @@ export function useSignupHandler() {
     setIsLoading(true);
     try {
       console.log("Tentative de création de compte:", email);
-      const { error: signUpError } = await signUp(
+      
+      // Vérifier si l'utilisateur existe déjà
+      const { data: { user }, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
-        fullName,
-        phone
-      );
+        options: {
+          data: {
+            full_name: fullName,
+            phone: phone,
+          },
+        },
+      });
 
       if (signUpError) {
+        // Si l'erreur indique que l'utilisateur existe déjà
+        if (signUpError.message?.includes("User already registered")) {
+          toast({
+            title: "Compte existant",
+            description: "Un compte existe déjà avec cet email. Veuillez vous connecter.",
+            variant: "destructive",
+          });
+          return { success: false, shouldSwitchToLogin: true };
+        }
+
         const errorConfig = handleSignupError(signUpError);
         toast({
           title: errorConfig.title,
@@ -53,11 +84,20 @@ export function useSignupHandler() {
         };
       }
 
-      toast({
-        title: "Compte créé avec succès",
-        description: "Un email de confirmation vous a été envoyé. Veuillez vérifier votre boîte de réception.",
-      });
-      return { success: true, shouldSwitchToLogin: false };
+      if (user) {
+        toast({
+          title: "Compte créé avec succès",
+          description: "Un email de confirmation vous a été envoyé. Veuillez vérifier votre boîte de réception.",
+        });
+        return { success: true, shouldSwitchToLogin: false };
+      } else {
+        toast({
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la création du compte.",
+          variant: "destructive",
+        });
+        return { success: false, shouldSwitchToLogin: false };
+      }
     } catch (error: any) {
       const errorConfig = handleSignupError(error);
       toast({

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { signUp } from "@/services/authService";
 import { AuthResponse } from "@/types/auth";
 import { validateSignupData } from "@/utils/auth/signupValidation";
 import { handleSignupError } from "@/utils/auth/signupErrorHandler";
@@ -9,20 +8,6 @@ import { supabase } from "@/lib/supabase";
 export function useSignupHandler() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-
-  const checkExistingUser = async (email: string) => {
-    try {
-      const { data, error } = await supabase.auth.admin.getUserByEmail(email);
-      if (error) {
-        console.error("Erreur lors de la vérification de l'email:", error);
-        return false;
-      }
-      return data !== null;
-    } catch (error) {
-      console.error("Erreur lors de la vérification de l'email:", error);
-      return false;
-    }
-  };
 
   const handleSignup = async (
     email: string,
@@ -49,8 +34,7 @@ export function useSignupHandler() {
     try {
       console.log("Tentative de création de compte:", email);
       
-      // Vérifier si l'utilisateur existe déjà
-      const { data: { user }, error: signUpError } = await supabase.auth.signUp({
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -84,7 +68,7 @@ export function useSignupHandler() {
         };
       }
 
-      if (user) {
+      if (data.user) {
         toast({
           title: "Compte créé avec succès",
           description: "Un email de confirmation vous a été envoyé. Veuillez vérifier votre boîte de réception.",

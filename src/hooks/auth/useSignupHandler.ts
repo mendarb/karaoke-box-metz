@@ -46,8 +46,9 @@ export function useSignupHandler() {
       });
 
       if (signUpError) {
-        // Si l'erreur indique que l'utilisateur existe déjà
+        // Vérifier spécifiquement si l'erreur indique que l'utilisateur existe déjà
         if (signUpError.message?.includes("User already registered")) {
+          console.log("Utilisateur déjà existant:", email);
           toast({
             title: "Compte existant",
             description: "Un compte existe déjà avec cet email. Veuillez vous connecter.",
@@ -68,13 +69,16 @@ export function useSignupHandler() {
         };
       }
 
-      if (data.user) {
+      // Vérifier si l'inscription a réussi
+      if (data?.user) {
+        console.log("Compte créé avec succès pour:", email);
         toast({
           title: "Compte créé avec succès",
           description: "Un email de confirmation vous a été envoyé. Veuillez vérifier votre boîte de réception.",
         });
         return { success: true, shouldSwitchToLogin: false };
       } else {
+        console.log("Échec de création du compte - pas d'utilisateur retourné");
         toast({
           title: "Erreur",
           description: "Une erreur est survenue lors de la création du compte.",
@@ -83,6 +87,7 @@ export function useSignupHandler() {
         return { success: false, shouldSwitchToLogin: false };
       }
     } catch (error: any) {
+      console.error("Erreur inattendue lors de l'inscription:", error);
       const errorConfig = handleSignupError(error);
       toast({
         title: errorConfig.title,

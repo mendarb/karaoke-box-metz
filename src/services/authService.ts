@@ -14,22 +14,6 @@ export const signUp = async (
   phone: string
 ) => {
   try {
-    // Vérifier d'abord si l'utilisateur existe
-    const { data: existingUser } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('id', email)
-      .maybeSingle();
-
-    if (existingUser) {
-      return {
-        error: {
-          message: "User already registered",
-          name: "AuthError"
-        }
-      };
-    }
-
     return await supabase.auth.signUp({
       email: email.trim(),
       password: password.trim(),

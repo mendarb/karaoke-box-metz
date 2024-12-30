@@ -13,9 +13,8 @@ export function useSignupHandler() {
     fullName: string,
     phone: string
   ): Promise<AuthResponse> => {
-    // Prevent multiple submissions
     if (isLoading) {
-      console.log("Signup already in progress, preventing duplicate submission");
+      console.log("Inscription en cours, évitement de la soumission multiple");
       return { success: false, shouldSwitchToLogin: false };
     }
 
@@ -30,7 +29,7 @@ export function useSignupHandler() {
         return { success: false, shouldSwitchToLogin: false };
       }
 
-      console.log("Creating new user account:", email);
+      console.log("Tentative de création de compte:", email);
       const { error: signUpError } = await signUp(
         email,
         password,
@@ -39,19 +38,26 @@ export function useSignupHandler() {
       );
 
       if (signUpError) {
-        console.error("Signup error:", signUpError);
+        console.error("Erreur d'inscription:", signUpError);
         
-        // Gérer l'erreur de limite de taux pour les emails
+        if (signUpError.message.includes("User already registered")) {
+          toast({
+            title: "Compte existant",
+            description: "Un compte existe déjà avec cet email. Veuillez vous connecter.",
+            variant: "default",
+          });
+          return { success: false, shouldSwitchToLogin: true };
+        }
+        
         if (signUpError.message.includes("email rate limit exceeded")) {
           toast({
             title: "Trop de tentatives",
-            description: "Trop d'emails ont été envoyés à cette adresse. Veuillez patienter quelques minutes avant de réessayer.",
+            description: "Trop d'emails ont été envoyés à cette adresse. Veuillez patienter quelques minutes.",
             variant: "destructive",
           });
           return { success: false, shouldSwitchToLogin: false };
         }
         
-        // Gérer l'erreur de rate limiting générale
         if (signUpError.message.includes("security purposes")) {
           const waitTime = signUpError.message.match(/\d+/)?.[0] || "30";
           toast({
@@ -61,16 +67,8 @@ export function useSignupHandler() {
           });
           return { success: false, shouldSwitchToLogin: false };
         }
-        
-        // Si l'erreur indique que l'utilisateur existe déjà
-        if (signUpError.message.includes("User already registered")) {
-          toast({
-            title: "Compte existant",
-            description: "Un compte existe déjà avec cet email. Veuillez vous connecter ou réinitialiser votre mot de passe si vous l'avez oublié.",
-          });
-          return { success: false, shouldSwitchToLogin: true };
-        }
-        
+
+        // Erreur générique
         toast({
           title: "Erreur",
           description: "Une erreur est survenue lors de l'inscription. Veuillez réessayer.",
@@ -85,7 +83,7 @@ export function useSignupHandler() {
       });
       return { success: true, shouldSwitchToLogin: false };
     } catch (error: any) {
-      console.error("Auth error:", error);
+      console.error("Erreur d'authentification:", error);
       toast({
         title: "Erreur",
         description: "Une erreur inattendue s'est produite",

@@ -38,15 +38,19 @@ export function useSignupHandler() {
     try {
       console.log("Vérification de l'existence de l'utilisateur:", email);
       
-      // Vérifier si l'utilisateur existe déjà dans auth.users
-      const { data: authUser, error: authError } = await supabase.auth.admin.getUserByEmail(email);
-      
-      if (authError && !authError.message.includes('User not found')) {
-        console.error("Erreur lors de la vérification de l'utilisateur:", authError);
-        throw authError;
+      // Vérifier si l'utilisateur existe déjà dans la table profiles
+      const { data: existingProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', email.toLowerCase())
+        .single();
+
+      if (profileError && !profileError.message?.includes('No rows found')) {
+        console.error("Erreur lors de la vérification du profil:", profileError);
+        throw profileError;
       }
 
-      if (authUser) {
+      if (existingProfile) {
         console.log("Email déjà utilisé:", email);
         toast({
           title: "Compte existant",

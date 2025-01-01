@@ -32,31 +32,44 @@ export function useSignupHandler() {
 
     setIsLoading(true);
     try {
-      console.log("Tentative de création de compte:", email);
+      console.log("Vérification de l'existence de l'email:", email);
       
-      // Si l'utilisateur n'existe pas, procéder à l'inscription
+      // Vérifier d'abord dans la table profiles
+      const { data: existingProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('email', email.trim())
+        .maybeSingle();
+
+      if (profileError) {
+        console.error("Erreur lors de la vérification du profil:", profileError);
+        throw profileError;
+      }
+
+      if (existingProfile?.email) {
+        console.log("Email déjà utilisé:", email);
+        toast({
+          title: "Compte existant",
+          description: "Un compte existe déjà avec cet email. Veuillez vous connecter.",
+          variant: "destructive",
+        });
+        return { success: false, shouldSwitchToLogin: true };
+      }
+
+      // Si l'email n'existe pas, procéder à l'inscription
+      console.log("Création du compte pour:", email);
       const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
+        email: email.trim(),
+        password: password.trim(),
         options: {
           data: {
-            full_name: fullName,
-            phone: phone,
+            full_name: fullName.trim(),
+            phone: phone.trim(),
           },
         },
       });
 
       if (signUpError) {
-        // Vérifier spécifiquement si l'erreur indique un utilisateur existant
-        if (signUpError.message.includes("User already registered")) {
-          toast({
-            title: "Compte existant",
-            description: "Un compte existe déjà avec cet email. Veuillez vous connecter.",
-            variant: "destructive",
-          });
-          return { success: false, shouldSwitchToLogin: true };
-        }
-
         const errorConfig = handleSignupError(signUpError);
         toast({
           title: errorConfig.title,

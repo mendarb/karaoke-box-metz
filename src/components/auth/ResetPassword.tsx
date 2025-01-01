@@ -3,26 +3,31 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { ErrorAlert } from "./reset-password/ErrorAlert";
+import { PasswordResetForm } from "./reset-password/PasswordResetForm";
 
 export const ResetPassword = () => {
   const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isValidatingToken, setIsValidatingToken] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
     const handleHashFragment = async () => {
       try {
+        setIsValidatingToken(true);
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const accessToken = hashParams.get("access_token");
+        const type = hashParams.get("type");
         
-        if (!accessToken) {
-          console.error("No access token found in URL");
-          setError("Lien de réinitialisation invalide ou expiré");
+        if (!accessToken || type !== "recovery") {
+          console.error("Invalid or missing access token");
+          setError("Le lien de réinitialisation est invalide ou a expiré. Veuillez demander un nouveau lien.");
           return;
         }
 
@@ -33,11 +38,13 @@ export const ResetPassword = () => {
 
         if (sessionError) {
           console.error("Session error:", sessionError);
-          setError("Erreur lors de la validation du lien de réinitialisation");
+          setError("Le lien de réinitialisation a expiré. Veuillez demander un nouveau lien.");
         }
       } catch (err) {
         console.error("Hash handling error:", err);
-        setError("Erreur lors du traitement du lien de réinitialisation");
+        setError("Une erreur est survenue lors de la validation du lien. Veuillez réessayer.");
+      } finally {
+        setIsValidatingToken(false);
       }
     };
 
@@ -75,52 +82,22 @@ export const ResetPassword = () => {
     }
   };
 
-  if (error) {
+  if (isValidatingToken) {
     return (
-      <div className="container max-w-md mx-auto p-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-red-600">Erreur</CardTitle>
-            <CardDescription>{error}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={() => navigate("/")} className="w-full">
-              Retour à l'accueil
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="container max-w-md mx-auto p-4 flex justify-center items-center min-h-[200px]">
+        <LoadingSpinner />
       </div>
     );
   }
 
-  return (
-    <div className="container max-w-md mx-auto p-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Réinitialisation du mot de passe</CardTitle>
-          <CardDescription>
-            Entrez votre nouveau mot de passe ci-dessous
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Input
-                type="password"
-                placeholder="Nouveau mot de passe"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                disabled={loading}
-                required
-                minLength={6}
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? <LoadingSpinner /> : "Mettre à jour le mot de passe"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
-  );
+  if (error) {
+    return <ErrorAlert error={error} />;
+  }
+
+  return <PasswordResetForm 
+    newPassword={newPassword}
+    setNewPassword={setNewPassword}
+    onSubmit={handleSubmit}
+    isLoading={loading}
+  />;
 };

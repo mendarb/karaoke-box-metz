@@ -15,13 +15,33 @@ export const ResetPassword = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const hash = window.location.hash;
-    console.log("URL Hash:", hash); // Debug log
-    
-    if (!hash || !hash.includes("access_token=")) {
-      setError("Lien de réinitialisation invalide ou expiré");
-      return;
-    }
+    const handleHashFragment = async () => {
+      try {
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get("access_token");
+        
+        if (!accessToken) {
+          console.error("No access token found in URL");
+          setError("Lien de réinitialisation invalide ou expiré");
+          return;
+        }
+
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: "",
+        });
+
+        if (sessionError) {
+          console.error("Session error:", sessionError);
+          setError("Erreur lors de la validation du lien de réinitialisation");
+        }
+      } catch (err) {
+        console.error("Hash handling error:", err);
+        setError("Erreur lors du traitement du lien de réinitialisation");
+      }
+    };
+
+    handleHashFragment();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {

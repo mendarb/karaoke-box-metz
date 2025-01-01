@@ -18,18 +18,24 @@ export const ResetPassword = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Vérifier les paramètres d'erreur dans l'URL
-    const hashParams = new URLSearchParams(location.hash.substring(1));
-    const errorCode = hashParams.get("error_code");
-    const errorDescription = hashParams.get("error_description");
+    const handlePasswordReset = async () => {
+      const hash = location.hash;
+      if (hash && hash.includes("access_token")) {
+        const accessToken = hash.split("access_token=")[1];
+        if (!accessToken) {
+          setError("Token de réinitialisation invalide");
+          return;
+        }
 
-    if (errorCode) {
-      let message = "Une erreur est survenue lors de la réinitialisation du mot de passe.";
-      if (errorCode === "otp_expired") {
-        message = "Le lien de réinitialisation a expiré. Veuillez demander un nouveau lien.";
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError || !session) {
+          setError("Session invalide. Veuillez réessayer.");
+          return;
+        }
       }
-      setError(message);
-    }
+    };
+
+    handlePasswordReset();
   }, [location]);
 
   const handleResetPassword = async (e: React.FormEvent) => {

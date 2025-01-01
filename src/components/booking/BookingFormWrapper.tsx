@@ -26,7 +26,7 @@ export const BookingFormWrapper = () => {
     availableHours,
   } = useBookingForm();
 
-  const { steps } = useBookingSteps();
+  const steps = useBookingSteps(currentStep);
 
   return (
     <div className="w-full max-w-2xl mx-auto p-4 md:p-6">

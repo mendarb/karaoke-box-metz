@@ -3,7 +3,7 @@ import { Step } from "../../BookingSteps";
 import { User2, Calendar, Users, CreditCard } from "lucide-react";
 import { useUserState } from "@/hooks/useUserState";
 
-export const useBookingSteps = (currentStep: number): Step[] => {
+export const useBookingSteps = (currentStep: number) => {
   const { user } = useUserState();
 
   // Si l'utilisateur est connecté, on ne montre pas l'étape des coordonnées

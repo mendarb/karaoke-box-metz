@@ -1,16 +1,16 @@
-import { useState } from "react";
-import { BookingSteps } from "./BookingSteps";
-import { BookingFormContent } from "./BookingFormContent";
-import { BookingFormLegal } from "./BookingFormLegal";
-import { BookingFormActions } from "./BookingFormActions";
+import { Form } from "@/components/ui/form";
 import { useBookingForm } from "./hooks/useBookingForm";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { useBookingSteps } from "./hooks/useBookingSteps";
+import { useBookingSubmit } from "./hooks/useBookingSubmit";
+import { BookingSteps } from "@/components/BookingSteps";
+import { BookingFormContent } from "./BookingFormContent";
+import { BookingFormActions } from "./BookingFormActions";
+import { useBookingMode } from "./hooks/useBookingMode";
+import { useBookingOverlap } from "@/hooks/useBookingOverlap";
+import { toast } from "@/hooks/use-toast";
+import { BookingFormValues } from "./types/bookingFormTypes";
 
 export const BookingFormWrapper = () => {
-  const [showLegal, setShowLegal] = useState(false);
-  const isMobile = useIsMobile();
   const {
     form,
     groupSize,
@@ -18,51 +18,114 @@ export const BookingFormWrapper = () => {
     duration,
     setDuration,
     currentStep,
+    setCurrentStep,
     calculatedPrice,
     isSubmitting,
+    setIsSubmitting,
+    availableHours,
     handlePriceCalculated,
     handleAvailabilityChange,
     handlePrevious,
-    availableHours,
   } = useBookingForm();
 
   const steps = useBookingSteps(currentStep);
+  const { isTestMode } = useBookingMode();
+  const { handleSubmit: submitBooking } = useBookingSubmit(
+    form, 
+    groupSize, 
+    duration, 
+    calculatedPrice, 
+    setIsSubmitting
+  );
+  const { checkOverlap } = useBookingOverlap();
+
+  const validateStep = (step: number) => {
+    const requiredFields: { [key: number]: Array<keyof BookingFormValues> } = {
+      1: ['email', 'fullName', 'phone'],
+      2: ['date', 'timeSlot'],
+      3: ['groupSize', 'duration'],
+      4: []
+    };
+
+    const fields = requiredFields[step];
+    if (!fields) return true;
+
+    let isValid = true;
+    const errors: string[] = [];
+
+    fields.forEach(field => {
+      const value = form.getValues(field);
+      if (!value) {
+        form.setError(field, {
+          type: 'required',
+          message: 'Ce champ est requis'
+        });
+        isValid = false;
+        errors.push(field);
+      }
+    });
+
+    if (!isValid) {
+      toast({
+        title: "Erreur de validation",
+        description: "Veuillez remplir tous les champs obligatoires",
+        variant: "destructive",
+      });
+    }
+
+    return isValid;
+  };
+
+  const onSubmit = async (data: BookingFormValues) => {
+    if (!validateStep(currentStep)) {
+      return;
+    }
+
+    if (currentStep < 4) {
+      setCurrentStep(currentStep + 1);
+      return;
+    }
+    
+    console.log('🔧 Payment mode:', isTestMode ? 'TEST' : 'LIVE', {
+      isTestMode
+    });
+    
+    form.setValue('isTestMode', isTestMode);
+    
+    const hasOverlap = await checkOverlap(data.date, data.timeSlot, duration);
+    if (hasOverlap) {
+      return;
+    }
+
+    await submitBooking({ ...data, isTestMode });
+  };
 
   return (
-    <div className="w-full max-w-2xl mx-auto p-4 md:p-6">
-      <BookingSteps steps={steps} currentStep={currentStep} />
-      
-      <div className="mt-8">
-        <BookingFormContent
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <BookingSteps steps={steps} currentStep={currentStep} />
+        
+        <div className="min-h-[300px]">
+          <BookingFormContent
+            currentStep={currentStep}
+            form={form}
+            groupSize={groupSize}
+            duration={duration}
+            calculatedPrice={calculatedPrice}
+            onGroupSizeChange={setGroupSize}
+            onDurationChange={setDuration}
+            onPriceCalculated={handlePriceCalculated}
+            onAvailabilityChange={handleAvailabilityChange}
+            availableHours={availableHours}
+          />
+        </div>
+
+        <BookingFormActions
           currentStep={currentStep}
-          form={form}
-          groupSize={groupSize}
-          duration={duration}
-          calculatedPrice={calculatedPrice}
-          onGroupSizeChange={setGroupSize}
-          onDurationChange={setDuration}
-          onPriceCalculated={handlePriceCalculated}
-          onAvailabilityChange={handleAvailabilityChange}
-          availableHours={availableHours}
+          isSubmitting={isSubmitting}
+          onPrevious={handlePrevious}
         />
-      </div>
-
-      <Dialog open={showLegal} onOpenChange={setShowLegal}>
-        <DialogContent className={`
-          sm:max-w-[600px]
-          ${isMobile ? 'max-h-[90vh] h-auto p-0 rounded-t-xl rounded-b-none fixed bottom-0 mb-0 overflow-hidden' : ''}
-        `}>
-          <div className={`${isMobile ? 'p-4 overflow-y-auto max-h-[calc(90vh-80px)]' : ''}`}>
-            <BookingFormLegal form={form} />
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <BookingFormActions 
-        currentStep={currentStep}
-        isSubmitting={isSubmitting}
-        onPrevious={handlePrevious}
-      />
-    </div>
+      </form>
+    </Form>
   );
 };

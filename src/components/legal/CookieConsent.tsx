@@ -9,13 +9,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useToast } from "@/hooks/use-toast";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useToast } from "@/components/ui/use-toast";
 
 export const CookieConsent = () => {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
-  const isMobile = useIsMobile();
 
   useEffect(() => {
     const consent = localStorage.getItem("cookie-consent");
@@ -44,20 +42,15 @@ export const CookieConsent = () => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className={`
-        sm:max-w-[600px]
-        ${isMobile ? 'max-h-[90vh] h-auto p-0 rounded-t-xl rounded-b-none fixed bottom-0 mb-0 overflow-hidden' : ''}
-      `}>
-        <DialogHeader className={isMobile ? 'p-4 border-b' : ''}>
+      <DialogContent className="sm:max-w-[600px]">
+        <DialogHeader>
           <DialogTitle className="text-xl">Paramètres de confidentialité</DialogTitle>
           <DialogDescription className="text-base">
-            Nous utilisons des cookies pour améliorer votre expérience
+            Nous utilisons des cookies pour améliorer votre expérience sur notre site
           </DialogDescription>
         </DialogHeader>
         
-        <ScrollArea className={`
-          ${isMobile ? 'p-4 overflow-y-auto max-h-[calc(90vh-160px)]' : 'max-h-[60vh] pr-4'}
-        `}>
+        <ScrollArea className="max-h-[60vh] pr-4">
           <div className="space-y-6">
             <section className="space-y-3">
               <h3 className="font-semibold text-lg">Cookies essentiels</h3>
@@ -90,30 +83,20 @@ export const CookieConsent = () => {
           </div>
         </ScrollArea>
 
-        <DialogFooter className={`
-          ${isMobile ? 'p-4 border-t mt-auto bg-white' : 'flex gap-2 sm:gap-0'}
-        `}>
-          <div className={`
-            ${isMobile ? 'grid grid-cols-2 gap-3 w-full' : 'flex gap-2 sm:gap-0'}
-          `}>
-            <Button
-              variant="outline"
-              onClick={handleReject}
-              className={`
-                ${isMobile ? 'w-full text-base py-6' : 'flex-1 sm:flex-none'}
-              `}
-            >
-              Refuser
-            </Button>
-            <Button
-              onClick={handleAccept}
-              className={`
-                ${isMobile ? 'w-full text-base py-6' : 'flex-1 sm:flex-none'}
-              `}
-            >
-              Tout accepter
-            </Button>
-          </div>
+        <DialogFooter className="flex gap-2 sm:gap-0">
+          <Button
+            variant="outline"
+            onClick={handleReject}
+            className="flex-1 sm:flex-none"
+          >
+            Refuser
+          </Button>
+          <Button
+            onClick={handleAccept}
+            className="flex-1 sm:flex-none"
+          >
+            Tout accepter
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

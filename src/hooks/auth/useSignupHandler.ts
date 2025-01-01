@@ -32,22 +32,17 @@ export function useSignupHandler() {
 
     setIsLoading(true);
     try {
-      console.log("Vérification de l'existence de l'email:", email);
+      console.log("Tentative de création de compte:", email);
       
-      // Vérifier d'abord dans la table profiles
+      // Vérifier d'abord si l'utilisateur existe dans auth.users via la table profiles
       const { data: existingProfile, error: profileError } = await supabase
         .from('profiles')
-        .select('email')
-        .eq('email', email.trim())
+        .select('id')
+        .eq('id', email)
         .maybeSingle();
 
-      if (profileError) {
-        console.error("Erreur lors de la vérification du profil:", profileError);
-        throw profileError;
-      }
-
-      if (existingProfile?.email) {
-        console.log("Email déjà utilisé:", email);
+      if (existingProfile || profileError?.code === 'PGRST116') {
+        console.log("Utilisateur déjà existant:", email);
         toast({
           title: "Compte existant",
           description: "Un compte existe déjà avec cet email. Veuillez vous connecter.",
@@ -56,15 +51,14 @@ export function useSignupHandler() {
         return { success: false, shouldSwitchToLogin: true };
       }
 
-      // Si l'email n'existe pas, procéder à l'inscription
-      console.log("Création du compte pour:", email);
+      // Si l'utilisateur n'existe pas, procéder à l'inscription
       const { data, error: signUpError } = await supabase.auth.signUp({
-        email: email.trim(),
-        password: password.trim(),
+        email,
+        password,
         options: {
           data: {
-            full_name: fullName.trim(),
-            phone: phone.trim(),
+            full_name: fullName,
+            phone: phone,
           },
         },
       });

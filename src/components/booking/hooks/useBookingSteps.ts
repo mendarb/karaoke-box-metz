@@ -1,16 +1,15 @@
 import React from "react";
+import { Step } from "../../BookingSteps";
 import { User2, Calendar, Users, CreditCard } from "lucide-react";
 import { useUserState } from "@/hooks/useUserState";
-import { BookingStep } from "../BookingSteps";
 
-export const useBookingSteps = (currentStep: number): BookingStep[] => {
+export const useBookingSteps = (currentStep: number): Step[] => {
   const { user } = useUserState();
 
   // Si l'utilisateur est connecté, on ne montre pas l'étape des coordonnées
   const steps = user ? [
     {
       id: 2,
-      name: "Date & Heure",
       title: "Date & Heure",
       description: "Choisissez votre créneau",
       icon: React.createElement(Calendar, { className: "h-5 w-5" }),
@@ -19,7 +18,6 @@ export const useBookingSteps = (currentStep: number): BookingStep[] => {
     },
     {
       id: 3,
-      name: "Groupe",
       title: "Groupe",
       description: "Taille du groupe et durée",
       icon: React.createElement(Users, { className: "h-5 w-5" }),
@@ -28,7 +26,6 @@ export const useBookingSteps = (currentStep: number): BookingStep[] => {
     },
     {
       id: 4,
-      name: "Paiement",
       title: "Paiement",
       description: "Informations complémentaires",
       icon: React.createElement(CreditCard, { className: "h-5 w-5" }),
@@ -38,7 +35,6 @@ export const useBookingSteps = (currentStep: number): BookingStep[] => {
   ] : [
     {
       id: 1,
-      name: "Coordonnées",
       title: "Coordonnées",
       description: "Vos coordonnées",
       icon: React.createElement(User2, { className: "h-5 w-5" }),
@@ -47,7 +43,6 @@ export const useBookingSteps = (currentStep: number): BookingStep[] => {
     },
     {
       id: 2,
-      name: "Date & Heure",
       title: "Date & Heure",
       description: "Choisissez votre créneau",
       icon: React.createElement(Calendar, { className: "h-5 w-5" }),
@@ -56,7 +51,6 @@ export const useBookingSteps = (currentStep: number): BookingStep[] => {
     },
     {
       id: 3,
-      name: "Groupe",
       title: "Groupe",
       description: "Taille du groupe et durée",
       icon: React.createElement(Users, { className: "h-5 w-5" }),
@@ -65,7 +59,6 @@ export const useBookingSteps = (currentStep: number): BookingStep[] => {
     },
     {
       id: 4,
-      name: "Paiement",
       title: "Paiement",
       description: "Informations complémentaires",
       icon: React.createElement(CreditCard, { className: "h-5 w-5" }),

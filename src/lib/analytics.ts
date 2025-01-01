@@ -18,21 +18,35 @@ export const initializeGoogleAnalytics = async () => {
       return;
     }
 
-    // Ajouter le script Google Analytics
-    const script = document.createElement('script');
-    script.async = true;
-    script.src = `https://www.googletagmanager.com/gtag/js?id=${secret}`;
-    document.head.appendChild(script);
+    // Supprimer l'ancien script s'il existe
+    const existingScript = document.querySelector('script[src*="googletagmanager"]');
+    if (existingScript) {
+      existingScript.remove();
+    }
 
-    // Initialiser gtag
+    // Configuration de base de gtag
     window.dataLayer = window.dataLayer || [];
     window.gtag = function() {
       window.dataLayer.push(arguments);
     };
     window.gtag('js', new Date());
+
+    // Configuration avancée pour gérer les problèmes de cookies
     window.gtag('config', secret, {
-      send_page_view: false // Nous gérerons manuellement les pages vues
+      send_page_view: false,
+      cookie_domain: 'reservation-kbox.netlify.app',
+      cookie_flags: 'SameSite=None;Secure',
+      anonymize_ip: true,
+      client_storage: 'none', // Désactive le stockage côté client si nécessaire
+      allow_google_signals: false, // Désactive les signaux Google
+      allow_ad_personalization_signals: false // Désactive la personnalisation des annonces
     });
+
+    // Ajouter le nouveau script
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${secret}`;
+    document.head.appendChild(script);
 
     return secret;
   } catch (error) {
@@ -41,10 +55,15 @@ export const initializeGoogleAnalytics = async () => {
 };
 
 export const trackPageView = (path: string) => {
-  if (window.gtag) {
-    window.gtag('event', 'page_view', {
-      page_path: path,
-    });
+  try {
+    if (window.gtag) {
+      window.gtag('event', 'page_view', {
+        page_path: path,
+        send_to: window.GA_MEASUREMENT_ID
+      });
+    }
+  } catch (error) {
+    console.error('Error tracking page view:', error);
   }
 };
 
@@ -52,7 +71,14 @@ export const trackEvent = (
   eventName: string,
   eventParams?: Record<string, any>
 ) => {
-  if (window.gtag) {
-    window.gtag('event', eventName, eventParams);
+  try {
+    if (window.gtag) {
+      window.gtag('event', eventName, {
+        ...eventParams,
+        send_to: window.GA_MEASUREMENT_ID
+      });
+    }
+  } catch (error) {
+    console.error('Error tracking event:', error);
   }
 };

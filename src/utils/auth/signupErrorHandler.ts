@@ -1,10 +1,15 @@
 import { AuthError } from "@supabase/supabase-js";
 
 export const handleSignupError = (error: AuthError | null) => {
-  if (!error) return null;
+  if (!error) return {
+    title: "Erreur",
+    description: "Une erreur inconnue est survenue",
+    shouldSwitchToLogin: false
+  };
 
   // Cas spécifique pour un utilisateur déjà existant
-  if (error.message?.includes("User already registered")) {
+  if (error.message?.includes("User already registered") || 
+      error.message?.includes("Email already registered")) {
     return {
       title: "Compte existant",
       description: "Un compte existe déjà avec cet email. Veuillez vous connecter.",

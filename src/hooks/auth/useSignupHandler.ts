@@ -32,16 +32,20 @@ export function useSignupHandler() {
 
     setIsLoading(true);
     try {
-      console.log("Tentative de création de compte:", email);
+      console.log("Vérification de l'existence de l'utilisateur:", email);
       
       // Vérifier d'abord si l'utilisateur existe dans auth.users via la table profiles
-      const { data: existingProfile, error: profileError } = await supabase
+      const { data: existingUser, error: userCheckError } = await supabase
         .from('profiles')
-        .select('id')
-        .eq('id', email)
+        .select('id, email')
+        .eq('email', email.toLowerCase())
         .maybeSingle();
 
-      if (existingProfile || profileError?.code === 'PGRST116') {
+      if (userCheckError) {
+        console.error("Erreur lors de la vérification de l'utilisateur:", userCheckError);
+      }
+
+      if (existingUser) {
         console.log("Utilisateur déjà existant:", email);
         toast({
           title: "Compte existant",
@@ -52,8 +56,9 @@ export function useSignupHandler() {
       }
 
       // Si l'utilisateur n'existe pas, procéder à l'inscription
+      console.log("Création du compte pour:", email);
       const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
+        email: email.toLowerCase(),
         password,
         options: {
           data: {

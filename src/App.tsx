@@ -17,7 +17,7 @@ const queryClient = new QueryClient({
       retry: 1,
       refetchOnWindowFocus: false,
       staleTime: 30000, // Augmenter le staleTime à 30 secondes
-      cacheTime: 3600000, // Cache d'une heure
+      gcTime: 3600000, // Cache d'une heure (anciennement cacheTime)
       refetchOnMount: false,
     },
   },

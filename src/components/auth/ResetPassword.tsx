@@ -1,87 +1,106 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { useToast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { ErrorAlert } from "./reset-password/ErrorAlert";
-import { PasswordResetForm } from "./reset-password/PasswordResetForm";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/use-toast";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export const ResetPassword = () => {
   const [newPassword, setNewPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
   const navigate = useNavigate();
-  const location = useLocation();
+  const { toast } = useToast();
 
   useEffect(() => {
-    const handlePasswordReset = async () => {
-      const hashParams = new URLSearchParams(location.hash.substring(1));
-      const type = hashParams.get("type");
-      const accessToken = hashParams.get("access_token");
-
-      if (type === "recovery" && !accessToken) {
-        setError("Token de réinitialisation manquant");
-        return;
-      }
-
-      if (type === "recovery") {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError || !session) {
-          setError("Session invalide. Veuillez réessayer.");
-          return;
-        }
-      }
-    };
-
-    handlePasswordReset();
-  }, [location]);
+    const hash = window.location.hash;
+    console.log("URL Hash:", hash); // Debug log
+    
+    if (!hash || !hash.includes("access_token=")) {
+      setError("Lien de réinitialisation invalide ou expiré");
+      return;
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setLoading(true);
     setError(null);
-
-    if (newPassword.length < 6) {
-      setError("Le mot de passe doit contenir au moins 6 caractères");
-      setIsLoading(false);
-      return;
-    }
 
     try {
       const { error } = await supabase.auth.updateUser({
-        password: newPassword,
+        password: newPassword
       });
 
       if (error) throw error;
 
       toast({
-        title: "Succès",
-        description: "Votre mot de passe a été mis à jour",
+        title: "Mot de passe mis à jour",
+        description: "Votre mot de passe a été modifié avec succès",
       });
-      
+
       navigate("/");
-    } catch (error: any) {
-      setError(error.message);
+    } catch (err: any) {
+      console.error("Error resetting password:", err);
+      setError(err.message || "Une erreur est survenue lors de la réinitialisation du mot de passe");
       toast({
         title: "Erreur",
-        description: "Impossible de mettre à jour le mot de passe",
+        description: err.message || "Une erreur est survenue lors de la réinitialisation du mot de passe",
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   if (error) {
-    return <ErrorAlert error={error} />;
+    return (
+      <div className="container max-w-md mx-auto p-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-red-600">Erreur</CardTitle>
+            <CardDescription>{error}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => navigate("/")} className="w-full">
+              Retour à l'accueil
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (
-    <PasswordResetForm
-      newPassword={newPassword}
-      setNewPassword={setNewPassword}
-      onSubmit={handleSubmit}
-      isLoading={isLoading}
-    />
+    <div className="container max-w-md mx-auto p-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Réinitialisation du mot de passe</CardTitle>
+          <CardDescription>
+            Entrez votre nouveau mot de passe ci-dessous
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Input
+                type="password"
+                placeholder="Nouveau mot de passe"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                disabled={loading}
+                required
+                minLength={6}
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? <LoadingSpinner /> : "Mettre à jour le mot de passe"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 };

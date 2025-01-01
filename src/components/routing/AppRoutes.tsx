@@ -10,6 +10,7 @@ import Cancellation from "@/pages/legal/Cancellation";
 import { AccountPage } from "@/components/account/AccountPage";
 import { MyBookings } from "@/pages/MyBookings";
 import { ProtectedRoute } from "./ProtectedRoute";
+import { AdminRoutes } from "./route-groups/AdminRoutes";
 
 export const AppRoutes = () => {
   return (
@@ -41,6 +42,9 @@ export const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+
+      {/* Admin Routes */}
+      <AdminRoutes />
     </Routes>
   );
 };

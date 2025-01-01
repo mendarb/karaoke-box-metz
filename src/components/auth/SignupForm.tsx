@@ -2,7 +2,6 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useAuthHandlers } from "@/hooks/useAuthHandlers"
 import { useToast } from "@/components/ui/use-toast"
 import { supabase } from "@/lib/supabase"
 
@@ -24,14 +23,22 @@ export function SignupForm({ onToggleMode, onSuccess }: SignupFormProps) {
     setIsLoading(true)
 
     try {
-      // Vérifier si l'email existe déjà
-      const { data: existingProfile } = await supabase
+      console.log("Vérification de l'email:", email.toLowerCase())
+      
+      // Vérifier si l'email existe déjà dans profiles
+      const { data: existingProfile, error: profileError } = await supabase
         .from('profiles')
-        .select('id')
+        .select('email')
         .eq('email', email.toLowerCase())
         .single()
 
+      if (profileError && profileError.code !== 'PGRST116') {
+        console.error("Erreur lors de la vérification du profil:", profileError)
+        throw new Error("Erreur lors de la vérification de l'email")
+      }
+
       if (existingProfile) {
+        console.log("Email déjà utilisé:", email)
         toast({
           title: "Email déjà utilisé",
           description: "Un compte existe déjà avec cet email. Veuillez vous connecter.",
@@ -41,6 +48,8 @@ export function SignupForm({ onToggleMode, onSuccess }: SignupFormProps) {
         return
       }
 
+      // Procéder à l'inscription si l'email n'existe pas
+      console.log("Création du compte...")
       const { error: signUpError } = await supabase.auth.signUp({
         email: email.toLowerCase(),
         password,
@@ -53,6 +62,7 @@ export function SignupForm({ onToggleMode, onSuccess }: SignupFormProps) {
       })
 
       if (signUpError) {
+        console.error("Erreur lors de l'inscription:", signUpError)
         if (signUpError.message.includes("User already registered")) {
           toast({
             title: "Email déjà utilisé",

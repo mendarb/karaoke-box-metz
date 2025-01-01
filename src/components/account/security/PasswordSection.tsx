@@ -12,7 +12,6 @@ export const PasswordSection = () => {
     const currentTime = Date.now();
     const timeSinceLastRequest = currentTime - lastRequestTime;
     
-    // Empêcher les requêtes trop fréquentes (60 secondes minimum entre chaque demande)
     if (timeSinceLastRequest < 60000) {
       const remainingTime = Math.ceil((60000 - timeSinceLastRequest) / 1000);
       toast({
@@ -37,7 +36,7 @@ export const PasswordSection = () => {
       }
 
       const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-        redirectTo: `${window.location.origin}/account/reset-password#`,
+        redirectTo: `${window.location.origin}/reset-password`,
       });
 
       if (error) {

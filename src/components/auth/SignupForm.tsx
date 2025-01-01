@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useAuthHandlers } from "@/hooks/useAuthHandlers"
+import { useToast } from "@/components/ui/use-toast"
+import { supabase } from "@/lib/supabase"
 
 interface SignupFormProps {
   onToggleMode: () => void;
@@ -14,15 +16,77 @@ export function SignupForm({ onToggleMode, onSuccess }: SignupFormProps) {
   const [password, setPassword] = useState("")
   const [fullName, setFullName] = useState("")
   const [phone, setPhone] = useState("")
-  const { handleSignup, isLoading } = useAuthHandlers()
+  const [isLoading, setIsLoading] = useState(false)
+  const { toast } = useToast()
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const { success, shouldSwitchToLogin } = await handleSignup(email, password, fullName, phone)
-    if (shouldSwitchToLogin) {
-      onToggleMode()
-    } else if (success && onSuccess) {
-      onSuccess()
+    setIsLoading(true)
+
+    try {
+      // Vérifier si l'email existe déjà
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', email.toLowerCase())
+        .single()
+
+      if (existingProfile) {
+        toast({
+          title: "Email déjà utilisé",
+          description: "Un compte existe déjà avec cet email. Veuillez vous connecter.",
+          variant: "destructive",
+        })
+        onToggleMode()
+        return
+      }
+
+      const { error: signUpError } = await supabase.auth.signUp({
+        email: email.toLowerCase(),
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            phone,
+          },
+        },
+      })
+
+      if (signUpError) {
+        if (signUpError.message.includes("User already registered")) {
+          toast({
+            title: "Email déjà utilisé",
+            description: "Un compte existe déjà avec cet email. Veuillez vous connecter.",
+            variant: "destructive",
+          })
+          onToggleMode()
+        } else {
+          toast({
+            title: "Erreur",
+            description: "Une erreur est survenue lors de l'inscription.",
+            variant: "destructive",
+          })
+        }
+        return
+      }
+
+      toast({
+        title: "Inscription réussie",
+        description: "Un email de confirmation vous a été envoyé.",
+      })
+
+      if (onSuccess) {
+        onSuccess()
+      }
+    } catch (error) {
+      console.error("Erreur lors de l'inscription:", error)
+      toast({
+        title: "Erreur",
+        description: "Une erreur inattendue s'est produite.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
     }
   }
 

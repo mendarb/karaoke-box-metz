@@ -4,7 +4,7 @@ import Stripe from "https://esm.sh/stripe@14.21.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, stripe-signature',
 };
 
 serve(async (req) => {
@@ -33,14 +33,12 @@ serve(async (req) => {
       throw new Error('ID utilisateur requis');
     }
 
-    // Validate price
     const price = parseFloat(requestBody.price);
     if (isNaN(price) || price < 0) {
       console.error('❌ Prix invalide:', price);
       throw new Error('Prix invalide');
     }
 
-    // Créer la session Stripe
     const stripeKey = requestBody.isTestMode ? 
       Deno.env.get('STRIPE_TEST_SECRET_KEY')! : 
       Deno.env.get('STRIPE_SECRET_KEY')!;
@@ -56,6 +54,10 @@ serve(async (req) => {
 
     console.log('💳 Création de la session Stripe...');
 
+    // Récupérer l'origine de la requête pour la redirection
+    const origin = req.headers.get('origin') || 'https://k-box.fr';
+    console.log('🌐 URL d\'origine pour la redirection:', origin);
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [{
@@ -70,8 +72,8 @@ serve(async (req) => {
         quantity: 1,
       }],
       mode: 'payment',
-      success_url: `https://reservation-kbox.netlify.app/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `https://reservation-kbox.netlify.app`,
+      success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}`,
       customer_email: requestBody.email,
       metadata: {
         userId: requestBody.userId,
@@ -95,7 +97,9 @@ serve(async (req) => {
       paymentIntentId: session.payment_intent,
       userId: requestBody.userId,
       price: price,
-      metadata: session.metadata
+      metadata: session.metadata,
+      successUrl: session.success_url,
+      cancelUrl: session.cancel_url
     });
 
     if (!session.url) {

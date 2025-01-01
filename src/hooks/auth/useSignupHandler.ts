@@ -35,13 +35,20 @@ export function useSignupHandler() {
       console.log("Tentative de création de compte:", email);
       
       // Vérifier d'abord si l'utilisateur existe dans auth.users via la table profiles
-      const { data: existingProfile, error: profileError } = await supabase
+      const { data: existingProfile } = await supabase
         .from('profiles')
         .select('id')
         .eq('id', email)
         .maybeSingle();
 
-      if (existingProfile || profileError?.code === 'PGRST116') {
+      // Vérifier aussi dans la table bookings pour les utilisateurs existants
+      const { data: existingBooking } = await supabase
+        .from('bookings')
+        .select('user_email')
+        .eq('user_email', email)
+        .maybeSingle();
+
+      if (existingProfile || existingBooking) {
         console.log("Utilisateur déjà existant:", email);
         toast({
           title: "Compte existant",
@@ -64,6 +71,16 @@ export function useSignupHandler() {
       });
 
       if (signUpError) {
+        // Vérifier spécifiquement si l'erreur indique un utilisateur existant
+        if (signUpError.message.includes("User already registered")) {
+          toast({
+            title: "Compte existant",
+            description: "Un compte existe déjà avec cet email. Veuillez vous connecter.",
+            variant: "destructive",
+          });
+          return { success: false, shouldSwitchToLogin: true };
+        }
+
         const errorConfig = handleSignupError(signUpError);
         toast({
           title: errorConfig.title,

@@ -36,21 +36,17 @@ export function useSignupHandler() {
 
     setIsLoading(true);
     try {
-      console.log("Vérification de l'email:", email);
+      console.log("Vérification de l'existence de l'utilisateur:", email);
       
-      // Vérifier si l'utilisateur existe dans la table profiles
-      const { data: existingProfile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', email.toLowerCase())
-        .maybeSingle();
-
-      if (profileError) {
-        console.error("Erreur lors de la vérification du profil:", profileError);
-        throw profileError;
+      // Vérifier si l'utilisateur existe déjà dans auth.users
+      const { data: authUser, error: authError } = await supabase.auth.admin.getUserByEmail(email);
+      
+      if (authError && !authError.message.includes('User not found')) {
+        console.error("Erreur lors de la vérification de l'utilisateur:", authError);
+        throw authError;
       }
 
-      if (existingProfile) {
+      if (authUser) {
         console.log("Email déjà utilisé:", email);
         toast({
           title: "Compte existant",
@@ -61,7 +57,7 @@ export function useSignupHandler() {
       }
 
       // Si l'email n'existe pas, procéder à l'inscription
-      console.log("Création du compte...");
+      console.log("Création du compte pour:", email);
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: email.toLowerCase(),
         password,
@@ -87,7 +83,7 @@ export function useSignupHandler() {
       }
 
       if (data?.user) {
-        console.log("Compte créé avec succès");
+        console.log("Compte créé avec succès pour:", email);
         toast({
           title: "Compte créé avec succès",
           description: "Un email de confirmation vous a été envoyé. Veuillez vérifier votre boîte de réception.",

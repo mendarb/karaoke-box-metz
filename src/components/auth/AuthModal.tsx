@@ -7,6 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { AuthForm } from "./AuthForm"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 export function AuthModal({
   isOpen,
@@ -16,11 +17,15 @@ export function AuthModal({
   onClose: () => void
 }) {
   const [isLogin, setIsLogin] = useState(true)
+  const isMobile = useIsMobile()
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[400px] p-6">
-        <DialogHeader className="space-y-3">
+      <DialogContent className={`
+        sm:max-w-[400px]
+        ${isMobile ? 'p-0 rounded-t-xl rounded-b-none h-[85vh] mt-auto translate-y-0' : 'p-6'}
+      `}>
+        <DialogHeader className={`space-y-3 ${isMobile ? 'p-4 border-b' : ''}`}>
           <DialogTitle className="text-xl">
             {isLogin ? "Connexion" : "Créer un compte"}
           </DialogTitle>
@@ -31,11 +36,13 @@ export function AuthModal({
             }
           </DialogDescription>
         </DialogHeader>
-        <AuthForm 
-          onClose={onClose}
-          isLogin={isLogin}
-          onToggleMode={() => setIsLogin(!isLogin)}
-        />
+        <div className={isMobile ? 'p-4' : ''}>
+          <AuthForm 
+            onClose={onClose}
+            isLogin={isLogin}
+            onToggleMode={() => setIsLogin(!isLogin)}
+          />
+        </div>
       </DialogContent>
     </Dialog>
   )

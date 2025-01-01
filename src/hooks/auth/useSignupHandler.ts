@@ -34,10 +34,15 @@ export function useSignupHandler() {
     try {
       console.log("Tentative de création de compte:", email);
       
-      // Vérifier d'abord si l'utilisateur existe dans auth.users
-      const { data: { user: existingUser }, error: authError } = await supabase.auth.admin.getUserByEmail(email);
-      
-      if (existingUser || authError?.message?.includes("User already registered")) {
+      // Vérifier d'abord si l'utilisateur existe en essayant de se connecter
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password: "dummy-password-for-check", // N'importe quel mot de passe pour vérifier l'existence
+      });
+
+      // Si pas d'erreur ou si l'erreur n'est pas "Invalid login credentials",
+      // cela signifie que l'utilisateur existe
+      if (!signInError || signInError.message !== "Invalid login credentials") {
         console.log("Utilisateur déjà existant:", email);
         toast({
           title: "Compte existant",

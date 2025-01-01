@@ -19,14 +19,16 @@ export const ResetPassword = () => {
 
   useEffect(() => {
     const handlePasswordReset = async () => {
-      const hash = location.hash;
-      if (hash && hash.includes("access_token")) {
-        const accessToken = hash.split("access_token=")[1];
-        if (!accessToken) {
-          setError("Token de réinitialisation invalide");
-          return;
-        }
+      const hashParams = new URLSearchParams(location.hash.substring(1));
+      const type = hashParams.get("type");
+      const accessToken = hashParams.get("access_token");
 
+      if (type === "recovery" && !accessToken) {
+        setError("Token de réinitialisation manquant");
+        return;
+      }
+
+      if (type === "recovery") {
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         if (sessionError || !session) {
           setError("Session invalide. Veuillez réessayer.");

@@ -70,8 +70,8 @@ serve(async (req) => {
         quantity: 1,
       }],
       mode: 'payment',
-      success_url: `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get('origin')}`,
+      success_url: `https://reservation-kbox.netlify.app/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `https://reservation-kbox.netlify.app`,
       customer_email: requestBody.email,
       metadata: {
         userId: requestBody.userId,

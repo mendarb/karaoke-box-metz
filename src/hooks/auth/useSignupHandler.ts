@@ -34,13 +34,14 @@ export function useSignupHandler() {
     try {
       console.log("Tentative de création de compte:", email);
       
-      // Vérifier d'abord si l'utilisateur existe
-      const { data: existingUser, error: existingUserError } = await supabase.auth.signInWithPassword({
-        email,
-        password: "dummy-password" // On utilise un mot de passe factice car on veut juste vérifier si l'email existe
-      });
+      // Vérifier d'abord si l'utilisateur existe dans auth.users via la table profiles
+      const { data: existingProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', email)
+        .maybeSingle();
 
-      if (existingUser?.user) {
+      if (existingProfile || profileError?.code === 'PGRST116') {
         console.log("Utilisateur déjà existant:", email);
         toast({
           title: "Compte existant",

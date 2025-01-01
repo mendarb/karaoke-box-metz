@@ -34,24 +34,30 @@ export function useSignupHandler() {
     try {
       console.log("Tentative de création de compte:", email);
       
-      // Vérifier d'abord si l'utilisateur existe dans auth.users via la table profiles
-      const { data: existingProfile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', email)
-        .maybeSingle();
+      // Vérifier d'abord si l'utilisateur existe dans auth.users
+      const { data: { user: existingUser }, error: authError } = await supabase.auth.admin.getUserByEmail(email);
+      
+      if (existingUser || authError?.message?.includes("User already registered")) {
+        console.log("Utilisateur déjà existant:", email);
+        toast({
+          title: "Compte existant",
+          description: "Un compte existe déjà avec cet email. Veuillez vous connecter.",
+          variant: "destructive",
+        });
+        return { success: false, shouldSwitchToLogin: true };
+      }
 
-      // Vérifier aussi dans la table bookings pour les utilisateurs existants
+      // Vérifier dans la table bookings pour les utilisateurs existants
       const { data: existingBooking } = await supabase
         .from('bookings')
         .select('user_email')
         .eq('user_email', email)
         .maybeSingle();
 
-      if (existingProfile || existingBooking) {
-        console.log("Utilisateur déjà existant:", email);
+      if (existingBooking) {
+        console.log("Email déjà utilisé pour une réservation:", email);
         toast({
-          title: "Compte existant",
+          title: "Email déjà utilisé",
           description: "Un compte existe déjà avec cet email. Veuillez vous connecter.",
           variant: "destructive",
         });

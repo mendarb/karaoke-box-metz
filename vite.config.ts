@@ -12,11 +12,17 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
     host: '0.0.0.0',
     strictPort: true,
+    hmr: {
+      clientPort: 443,
+      host: 'reservation-kbox.netlify.app'
+    }
   },
   build: {
     rollupOptions: {
       output: {
-        manualChunks: undefined,
+        manualChunks: {
+          vendor: ['/src/components/home/BookingSection.tsx'],
+        },
       },
     },
   },

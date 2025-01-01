@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export const CookieConsent = () => {
@@ -46,7 +46,7 @@ export const CookieConsent = () => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className={`
         sm:max-w-[600px]
-        ${isMobile ? 'h-[90vh] p-0 rounded-t-xl rounded-b-none fixed bottom-0 mb-0' : ''}
+        ${isMobile ? 'max-h-[90vh] h-auto p-0 rounded-t-xl rounded-b-none fixed bottom-0 mb-0 overflow-hidden' : ''}
       `}>
         <DialogHeader className={isMobile ? 'p-4 border-b' : ''}>
           <DialogTitle className="text-xl">Paramètres de confidentialité</DialogTitle>
@@ -56,7 +56,7 @@ export const CookieConsent = () => {
         </DialogHeader>
         
         <ScrollArea className={`
-          ${isMobile ? 'p-4 overflow-y-auto flex-1' : 'max-h-[60vh] pr-4'}
+          ${isMobile ? 'p-4 overflow-y-auto max-h-[calc(90vh-160px)]' : 'max-h-[60vh] pr-4'}
         `}>
           <div className="space-y-6">
             <section className="space-y-3">
@@ -91,7 +91,7 @@ export const CookieConsent = () => {
         </ScrollArea>
 
         <DialogFooter className={`
-          ${isMobile ? 'p-4 border-t mt-auto' : 'flex gap-2 sm:gap-0'}
+          ${isMobile ? 'p-4 border-t mt-auto bg-white' : 'flex gap-2 sm:gap-0'}
         `}>
           <div className={`
             ${isMobile ? 'grid grid-cols-2 gap-3 w-full' : 'flex gap-2 sm:gap-0'}

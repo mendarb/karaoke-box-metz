@@ -23,7 +23,7 @@ export function AuthModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className={`
         sm:max-w-[400px] 
-        ${isMobile ? 'h-[90vh] p-0 rounded-t-xl rounded-b-none fixed bottom-0 mb-0' : ''}
+        ${isMobile ? 'max-h-[90vh] h-auto p-0 rounded-t-xl rounded-b-none fixed bottom-0 mb-0 overflow-hidden' : ''}
       `}>
         <DialogHeader className={`${isMobile ? 'p-4 border-b' : ''}`}>
           <DialogTitle className="text-xl">
@@ -36,7 +36,9 @@ export function AuthModal({
             }
           </DialogDescription>
         </DialogHeader>
-        <div className={isMobile ? 'p-4 overflow-y-auto flex-1' : ''}>
+        <div className={`
+          ${isMobile ? 'p-4 overflow-y-auto max-h-[calc(90vh-80px)]' : ''}
+        `}>
           <AuthForm 
             onClose={onClose}
             isLogin={isLogin}

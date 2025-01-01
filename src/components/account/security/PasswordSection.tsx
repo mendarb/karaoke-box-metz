@@ -35,7 +35,9 @@ export const PasswordSection = () => {
         return;
       }
 
-      const { error } = await supabase.auth.resetPasswordForEmail(user.email);
+      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
 
       if (error) {
         if (error.status === 429) {

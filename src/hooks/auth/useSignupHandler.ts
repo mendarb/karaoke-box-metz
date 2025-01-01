@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { validateSignupData } from "@/utils/auth/signupValidation";
 import { handleSignupError } from "@/utils/auth/signupErrorHandler";
-import { supabase } from "@/lib/supabase";
+import { checkExistingUser, handleExistingUser } from "@/services/userVerificationService";
+import { createUserAccount, handleSuccessfulSignup } from "@/services/signupService";
 
 interface SignupResponse {
   success: boolean;
@@ -36,63 +37,14 @@ export function useSignupHandler() {
 
     setIsLoading(true);
     try {
-      console.log("Vérification de l'existence de l'utilisateur:", email);
-      
-      // Vérifier si l'utilisateur existe déjà dans la table profiles
-      const { data: existingProfile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', email.toLowerCase())
-        .single();
-
-      if (profileError && !profileError.message?.includes('No rows found')) {
-        console.error("Erreur lors de la vérification du profil:", profileError);
-        throw profileError;
-      }
-
+      const existingProfile = await checkExistingUser(email);
       if (existingProfile) {
-        console.log("Email déjà utilisé:", email);
-        toast({
-          title: "Compte existant",
-          description: "Un compte existe déjà avec cet email. Veuillez vous connecter.",
-          variant: "destructive",
-        });
-        return { success: false, shouldSwitchToLogin: true };
+        return handleExistingUser(email);
       }
 
-      // Si l'email n'existe pas, procéder à l'inscription
-      console.log("Création du compte pour:", email);
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email: email.toLowerCase(),
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-            phone: phone,
-          },
-        },
-      });
-
-      if (signUpError) {
-        const errorConfig = handleSignupError(signUpError);
-        toast({
-          title: errorConfig.title,
-          description: errorConfig.description,
-          variant: "destructive",
-        });
-        return { 
-          success: false, 
-          shouldSwitchToLogin: errorConfig.shouldSwitchToLogin 
-        };
-      }
-
+      const data = await createUserAccount(email, password, fullName, phone);
       if (data?.user) {
-        console.log("Compte créé avec succès pour:", email);
-        toast({
-          title: "Compte créé avec succès",
-          description: "Un email de confirmation vous a été envoyé. Veuillez vérifier votre boîte de réception.",
-        });
-        return { success: true, shouldSwitchToLogin: false };
+        return handleSuccessfulSignup(email);
       }
 
       toast({

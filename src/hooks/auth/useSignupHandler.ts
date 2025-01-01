@@ -34,6 +34,23 @@ export function useSignupHandler() {
     try {
       console.log("Tentative de création de compte:", email);
       
+      // Vérifier d'abord si l'utilisateur existe
+      const { data: existingUser, error: existingUserError } = await supabase.auth.signInWithPassword({
+        email,
+        password: "dummy-password" // On utilise un mot de passe factice car on veut juste vérifier si l'email existe
+      });
+
+      if (existingUser?.user) {
+        console.log("Utilisateur déjà existant:", email);
+        toast({
+          title: "Compte existant",
+          description: "Un compte existe déjà avec cet email. Veuillez vous connecter.",
+          variant: "destructive",
+        });
+        return { success: false, shouldSwitchToLogin: true };
+      }
+
+      // Si l'utilisateur n'existe pas, procéder à l'inscription
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
@@ -46,17 +63,6 @@ export function useSignupHandler() {
       });
 
       if (signUpError) {
-        // Vérifier spécifiquement si l'erreur indique que l'utilisateur existe déjà
-        if (signUpError.message?.includes("User already registered")) {
-          console.log("Utilisateur déjà existant:", email);
-          toast({
-            title: "Compte existant",
-            description: "Un compte existe déjà avec cet email. Veuillez vous connecter.",
-            variant: "destructive",
-          });
-          return { success: false, shouldSwitchToLogin: true };
-        }
-
         const errorConfig = handleSignupError(signUpError);
         toast({
           title: errorConfig.title,
@@ -69,7 +75,6 @@ export function useSignupHandler() {
         };
       }
 
-      // Vérifier si l'inscription a réussi
       if (data?.user) {
         console.log("Compte créé avec succès pour:", email);
         toast({

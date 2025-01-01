@@ -34,23 +34,6 @@ export function useSignupHandler() {
     try {
       console.log("Tentative de création de compte:", email);
       
-      // Vérifier dans la table bookings pour les utilisateurs existants
-      const { data: existingBooking } = await supabase
-        .from('bookings')
-        .select('user_email')
-        .eq('user_email', email)
-        .maybeSingle();
-
-      if (existingBooking) {
-        console.log("Email déjà utilisé pour une réservation:", email);
-        toast({
-          title: "Email déjà utilisé",
-          description: "Un compte existe déjà avec cet email. Veuillez vous connecter.",
-          variant: "destructive",
-        });
-        return { success: false, shouldSwitchToLogin: true };
-      }
-
       // Si l'utilisateur n'existe pas, procéder à l'inscription
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,

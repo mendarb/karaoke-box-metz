@@ -22,10 +22,10 @@ export function AuthModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className={`
-        sm:max-w-[400px]
-        ${isMobile ? 'p-0 rounded-t-xl rounded-b-none h-[85vh] mt-auto translate-y-0' : 'p-6'}
+        sm:max-w-[400px] 
+        ${isMobile ? 'h-[90vh] p-0 rounded-t-xl rounded-b-none fixed bottom-0 mb-0' : ''}
       `}>
-        <DialogHeader className={`space-y-3 ${isMobile ? 'p-4 border-b' : ''}`}>
+        <DialogHeader className={`${isMobile ? 'p-4 border-b' : ''}`}>
           <DialogTitle className="text-xl">
             {isLogin ? "Connexion" : "Créer un compte"}
           </DialogTitle>
@@ -36,7 +36,7 @@ export function AuthModal({
             }
           </DialogDescription>
         </DialogHeader>
-        <div className={isMobile ? 'p-4' : ''}>
+        <div className={isMobile ? 'p-4 overflow-y-auto flex-1' : ''}>
           <AuthForm 
             onClose={onClose}
             isLogin={isLogin}

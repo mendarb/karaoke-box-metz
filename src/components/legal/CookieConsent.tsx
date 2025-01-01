@@ -46,7 +46,7 @@ export const CookieConsent = () => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className={`
         sm:max-w-[600px]
-        ${isMobile ? 'p-0 rounded-t-xl rounded-b-none h-[85vh] mt-auto translate-y-0' : ''}
+        ${isMobile ? 'h-[90vh] p-0 rounded-t-xl rounded-b-none fixed bottom-0 mb-0' : ''}
       `}>
         <DialogHeader className={isMobile ? 'p-4 border-b' : ''}>
           <DialogTitle className="text-xl">Paramètres de confidentialité</DialogTitle>
@@ -56,7 +56,7 @@ export const CookieConsent = () => {
         </DialogHeader>
         
         <ScrollArea className={`
-          ${isMobile ? 'p-4 flex-1' : 'max-h-[60vh] pr-4'}
+          ${isMobile ? 'p-4 overflow-y-auto flex-1' : 'max-h-[60vh] pr-4'}
         `}>
           <div className="space-y-6">
             <section className="space-y-3">

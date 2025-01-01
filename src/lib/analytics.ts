@@ -4,6 +4,7 @@ declare global {
   interface Window {
     gtag: (...args: any[]) => void;
     dataLayer: any[];
+    GA_MEASUREMENT_ID?: string;
   }
 }
 
@@ -30,11 +31,12 @@ export const initializeGoogleAnalytics = async () => {
       window.dataLayer.push(arguments);
     };
     window.gtag('js', new Date());
+    window.GA_MEASUREMENT_ID = secret;
 
     // Configuration avancée pour gérer les problèmes de cookies
     window.gtag('config', secret, {
       send_page_view: false,
-      cookie_domain: 'reservation-kbox.netlify.app',
+      cookie_domain: 'kbox-metz.fr',
       cookie_flags: 'SameSite=None;Secure',
       anonymize_ip: true,
       client_storage: 'none', // Désactive le stockage côté client si nécessaire
@@ -56,7 +58,7 @@ export const initializeGoogleAnalytics = async () => {
 
 export const trackPageView = (path: string) => {
   try {
-    if (window.gtag) {
+    if (window.gtag && window.GA_MEASUREMENT_ID) {
       window.gtag('event', 'page_view', {
         page_path: path,
         send_to: window.GA_MEASUREMENT_ID
@@ -72,7 +74,7 @@ export const trackEvent = (
   eventParams?: Record<string, any>
 ) => {
   try {
-    if (window.gtag) {
+    if (window.gtag && window.GA_MEASUREMENT_ID) {
       window.gtag('event', eventName, {
         ...eventParams,
         send_to: window.GA_MEASUREMENT_ID

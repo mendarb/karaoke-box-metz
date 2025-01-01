@@ -34,24 +34,6 @@ export function useSignupHandler() {
     try {
       console.log("Tentative de création de compte:", email);
       
-      // Vérifier d'abord si l'utilisateur existe en essayant de se connecter
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password: "dummy-password-for-check", // N'importe quel mot de passe pour vérifier l'existence
-      });
-
-      // Si pas d'erreur ou si l'erreur n'est pas "Invalid login credentials",
-      // cela signifie que l'utilisateur existe
-      if (!signInError || signInError.message !== "Invalid login credentials") {
-        console.log("Utilisateur déjà existant:", email);
-        toast({
-          title: "Compte existant",
-          description: "Un compte existe déjà avec cet email. Veuillez vous connecter.",
-          variant: "destructive",
-        });
-        return { success: false, shouldSwitchToLogin: true };
-      }
-
       // Vérifier dans la table bookings pour les utilisateurs existants
       const { data: existingBooking } = await supabase
         .from('bookings')

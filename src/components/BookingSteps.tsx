@@ -1,46 +1,68 @@
-import { User2, Calendar, Users, CreditCard } from "lucide-react";
-import React from "react";
+import { Check, ChevronRight, User, Calendar, Users, Settings } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
-export interface Step {
-  id?: number;
+export type BookingStep = {
+  id: number;
+  name: string;
   title: string;
-  description?: string;
+  description: string;
   icon: React.ReactNode;
-  completed?: boolean;
-  current?: boolean;
-}
+  completed: boolean;
+  current: boolean;
+};
 
-interface BookingStepsProps {
-  steps: Step[];
+export const BookingSteps = ({
+  steps,
+  currentStep,
+}: {
+  steps: BookingStep[];
   currentStep: number;
-}
+}) => {
+  const isMobile = useIsMobile();
 
-export const BookingSteps = ({ steps, currentStep }: BookingStepsProps) => {
+  const getStepIcon = (stepId: number) => {
+    switch (stepId) {
+      case 1:
+        return <User className="h-5 w-5" />;
+      case 2:
+        return <Calendar className="h-5 w-5" />;
+      case 3:
+        return <Users className="h-5 w-5" />;
+      case 4:
+        return <Settings className="h-5 w-5" />;
+      default:
+        return null;
+    }
+  };
+
   return (
-    <div className="w-full mb-8">
-      <div className="flex justify-between">
-        {steps.map((step, index) => (
-          <div
-            key={index}
-            className={`flex flex-col items-center w-full ${
-              index !== steps.length - 1 ? "border-r border-gray-200" : ""
-            } ${step.current ? "opacity-100" : "opacity-50"}`}
-          >
-            <div
-              className={`rounded-full p-3 mb-2 ${
-                step.current
-                  ? "bg-violet-100 text-violet-600"
-                  : "bg-gray-100 text-gray-400"
-              }`}
-            >
-              {step.icon}
-            </div>
-            <span className="text-sm font-medium hidden sm:block">
-              {step.title}
-            </span>
-          </div>
-        ))}
-      </div>
+    <div className={`${isMobile ? 'fixed bottom-0 left-0 right-0 z-50 pb-4 pt-2 glass' : 'pb-8'}`}>
+      <nav aria-label="Progress" className={`${isMobile ? 'px-4' : ''}`}>
+        <ol role="list" className="flex justify-around space-x-2 md:space-x-4">
+          {steps.map((step) => (
+            <li key={step.id} className="flex-1">
+              <div className="flex flex-col items-center">
+                <span
+                  className={`flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 ${
+                    step.completed
+                      ? "bg-violet-600 text-white"
+                      : step.current
+                      ? "border-2 border-violet-600 text-violet-600"
+                      : "border-2 border-gray-300 text-gray-400"
+                  }`}
+                  title={step.name}
+                >
+                  {step.completed ? (
+                    <Check className="h-5 w-5" />
+                  ) : (
+                    step.icon
+                  )}
+                </span>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </nav>
     </div>
   );
 };

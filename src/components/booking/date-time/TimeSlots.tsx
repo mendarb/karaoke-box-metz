@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Clock } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { format } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
@@ -23,7 +23,7 @@ export const TimeSlots = ({
 }: TimeSlotsProps) => {
   const selectedTimeSlot = form.watch("timeSlot");
 
-  // Utiliser React Query pour la mise en cache et l'optimisation des performances
+  // Optimiser la requête avec React Query
   const { data: disabledSlots = [], isLoading: isLoadingSlots } = useQuery({
     queryKey: ['booked-slots', selectedDate?.toISOString()],
     queryFn: async () => {
@@ -45,33 +45,31 @@ export const TimeSlots = ({
         throw error;
       }
 
-      console.log('✅ Réservations trouvées:', bookings);
-
       const bookedSlots = new Set<string>();
       bookings?.forEach(booking => {
         const startHour = parseInt(booking.time_slot);
         const duration = parseInt(booking.duration);
         
         for (let hour = startHour; hour < startHour + duration; hour++) {
-          const formattedHour = `${hour.toString().padStart(2, '0')}:00`;
-          bookedSlots.add(formattedHour);
-          console.log(`🚫 Créneau ${formattedHour} marqué comme réservé`);
+          bookedSlots.add(`${hour.toString().padStart(2, '0')}:00`);
         }
       });
 
       return Array.from(bookedSlots);
     },
     enabled: !!selectedDate,
-    staleTime: 30000, // Garde les données en cache pendant 30 secondes
-    gcTime: 60000, // Remplace cacheTime - Garde les données en cache pendant 1 minute
+    staleTime: 30000, // Cache de 30 secondes
+    cacheTime: 300000, // Cache de 5 minutes
   });
 
-  // Trier les créneaux par heure
-  const sortedSlots = [...availableSlots].sort((a, b) => {
-    const hourA = parseInt(a.split(':')[0]);
-    const hourB = parseInt(b.split(':')[0]);
-    return hourA - hourB;
-  });
+  // Mémoriser les créneaux triés
+  const sortedSlots = useMemo(() => {
+    return [...availableSlots].sort((a, b) => {
+      const hourA = parseInt(a.split(':')[0]);
+      const hourB = parseInt(b.split(':')[0]);
+      return hourA - hourB;
+    });
+  }, [availableSlots]);
 
   if (isLoadingSlots || isLoading) {
     return (
@@ -104,7 +102,6 @@ export const TimeSlots = ({
             disabled={isDisabled || isLoading}
             onClick={() => {
               form.setValue("timeSlot", slot);
-              console.log('✅ Créneau sélectionné:', slot);
             }}
           >
             <Clock className="h-4 w-4" />

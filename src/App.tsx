@@ -4,23 +4,25 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, useLocation } from "react-router-dom";
 import { AppRoutes } from "@/components/routing/AppRoutes";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { initializeGoogleAnalytics, trackPageView } from "@/lib/analytics";
 import { GoogleVerification } from "@/components/seo/GoogleVerification";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { SupportButton } from "@/components/support/SupportButton";
 
+// Optimiser la configuration du QueryClient
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
-      staleTime: 5000,
+      staleTime: 30000, // Augmenter le staleTime à 30 secondes
+      cacheTime: 3600000, // Cache d'une heure
+      refetchOnMount: false,
     },
   },
 });
 
-// Composant pour suivre les changements de page
 const PageTracker = () => {
   const location = useLocation();
 
@@ -35,10 +37,19 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    initializeGoogleAnalytics();
+    // Initialiser GA de manière asynchrone
+    const initGA = async () => {
+      try {
+        await initializeGoogleAnalytics();
+      } catch (error) {
+        console.error('Erreur lors de l\'initialisation de GA:', error);
+      }
+    };
     
-    // Simuler un temps minimum de chargement pour éviter un flash
-    const minLoadingTime = 1000; // 1 seconde minimum
+    initGA();
+    
+    // Réduire le temps de chargement minimum
+    const minLoadingTime = 500; // Réduire à 500ms
     const loadingTimeout = setTimeout(() => {
       setIsLoading(false);
     }, minLoadingTime);
@@ -61,12 +72,14 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <TooltipProvider>
-          <GoogleVerification />
-          <Toaster />
-          <Sonner />
-          <PageTracker />
-          <AppRoutes />
-          <SupportButton />
+          <Suspense fallback={<LoadingSpinner />}>
+            <GoogleVerification />
+            <Toaster />
+            <Sonner />
+            <PageTracker />
+            <AppRoutes />
+            <SupportButton />
+          </Suspense>
         </TooltipProvider>
       </BrowserRouter>
     </QueryClientProvider>

@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { signIn } from "@/services/authService";
+import { AuthResponse } from "@/types/auth";
 
 export function useLoginHandler() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleLogin = async (email: string, password: string): Promise<boolean> => {
+  const handleLogin = async (email: string, password: string): Promise<AuthResponse> => {
     setIsLoading(true);
     try {
       // Basic validation
@@ -16,7 +17,7 @@ export function useLoginHandler() {
           description: "Veuillez saisir un email et un mot de passe",
           variant: "destructive",
         });
-        return false;
+        return { success: false, shouldSwitchToLogin: false };
       }
 
       const { error } = await signIn(email, password);
@@ -36,14 +37,14 @@ export function useLoginHandler() {
           description: errorMessage,
           variant: "destructive",
         });
-        return false;
+        return { success: false, shouldSwitchToLogin: false };
       }
 
       toast({
         title: "Connexion réussie",
         description: "Vous êtes maintenant connecté",
       });
-      return true;
+      return { success: true, shouldSwitchToLogin: false };
     } catch (error: any) {
       console.error("Unexpected login error:", error);
       toast({
@@ -51,7 +52,7 @@ export function useLoginHandler() {
         description: "Une erreur inattendue s'est produite",
         variant: "destructive",
       });
-      return false;
+      return { success: false, shouldSwitchToLogin: false };
     } finally {
       setIsLoading(false);
     }

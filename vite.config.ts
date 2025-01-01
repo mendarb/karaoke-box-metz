@@ -16,9 +16,7 @@ export default defineConfig(({ mode }) => ({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['/src/components/home/BookingSection.tsx'],
-        },
+        manualChunks: undefined // Disable manual chunking to avoid loading issues
       },
     },
   },

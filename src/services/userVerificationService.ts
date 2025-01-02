@@ -4,18 +4,23 @@ import { toast } from "@/hooks/use-toast";
 export const checkExistingUser = async (email: string) => {
   console.log("Vérification de l'existence de l'utilisateur:", email);
   
-  const { data: existingProfile, error: profileError } = await supabase
-    .from('profiles')
-    .select('id')
-    .eq('email', email.toLowerCase())
-    .single();
+  try {
+    const { data: existingProfile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, email')
+      .eq('email', email.toLowerCase())
+      .maybeSingle();
 
-  if (profileError && !profileError.message?.includes('No rows found')) {
-    console.error("Erreur lors de la vérification du profil:", profileError);
-    throw profileError;
+    if (profileError) {
+      console.error("Erreur lors de la vérification du profil:", profileError);
+      throw profileError;
+    }
+
+    return existingProfile;
+  } catch (error) {
+    console.error("Erreur lors de la vérification du profil:", error);
+    return null;
   }
-
-  return existingProfile;
 };
 
 export const handleExistingUser = (email: string) => {

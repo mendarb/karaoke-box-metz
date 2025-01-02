@@ -1,4 +1,4 @@
-import { Home, Calendar, Settings, LogOut, ArrowLeft, BookOpen, Users } from "lucide-react";
+import { Home, Calendar, Settings, LogOut, ArrowLeft, BookOpen, Users, Menu } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
 
 export const DashboardSidebar = () => {
   const navigate = useNavigate();
@@ -88,7 +87,11 @@ export const DashboardSidebar = () => {
     return (
       <Sheet>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="sm" className="fixed top-4 left-4 z-50">
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className="fixed top-4 left-4 z-50 h-8 w-8"
+          >
             <Menu className="h-4 w-4" />
           </Button>
         </SheetTrigger>
@@ -100,7 +103,7 @@ export const DashboardSidebar = () => {
   }
 
   return (
-    <div className="hidden md:block w-56 border-r bg-white">
+    <div className="hidden md:block fixed top-0 left-0 w-56 h-full border-r bg-white">
       <SidebarContent />
     </div>
   );

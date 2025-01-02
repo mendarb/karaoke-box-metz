@@ -1,33 +1,31 @@
+import { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
-import { useUserState } from "@/hooks/useUserState";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { useAuthSession } from "@/hooks/useAuthSession";
+import { useAdminCheck } from "@/hooks/useAdminCheck";
+import { Navbar } from "@/components/navigation/Navbar";
 
 interface ProtectedRouteProps {
-  children: React.ReactNode;
+  children: ReactNode;
   adminOnly?: boolean;
+  hideNavbar?: boolean;
 }
 
-export const ProtectedRoute = ({
-  children,
-  adminOnly = false,
-}: ProtectedRouteProps) => {
-  const { isLoading, sessionChecked, user, isAdmin } = useUserState();
+export const ProtectedRoute = ({ children, adminOnly = false, hideNavbar = false }: ProtectedRouteProps) => {
+  const { session } = useAuthSession();
+  const { isAdmin } = useAdminCheck();
 
-  if (!sessionChecked || isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <LoadingSpinner />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <Navigate to="/" replace />;
+  if (!session) {
+    return <Navigate to="/" />;
   }
 
   if (adminOnly && !isAdmin) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/" />;
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {!hideNavbar && <Navbar />}
+      {children}
+    </>
+  );
 };

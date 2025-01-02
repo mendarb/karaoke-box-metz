@@ -10,20 +10,8 @@ declare global {
 
 export const initializeGoogleAnalytics = async () => {
   try {
-    const { data: { secret } } = await supabase.functions.invoke('get-secret', {
-      body: { name: 'GA_MEASUREMENT_ID' }
-    });
-
-    if (!secret) {
-      console.error('Google Analytics Measurement ID not found');
-      return;
-    }
-
-    // Supprimer l'ancien script s'il existe
-    const existingScript = document.querySelector('script[src*="googletagmanager"]');
-    if (existingScript) {
-      existingScript.remove();
-    }
+    // Utilisation directe du nouvel ID GA
+    const measurementId = 'G-NYBP6KX13X';
 
     // Configuration de base de gtag
     window.dataLayer = window.dataLayer || [];
@@ -31,26 +19,20 @@ export const initializeGoogleAnalytics = async () => {
       window.dataLayer.push(arguments);
     };
     window.gtag('js', new Date());
-    window.GA_MEASUREMENT_ID = secret;
+    window.GA_MEASUREMENT_ID = measurementId;
 
-    // Configuration avancée pour gérer les problèmes de cookies
-    window.gtag('config', secret, {
+    // Configuration avancée
+    window.gtag('config', measurementId, {
       send_page_view: false,
-      cookie_domain: 'kbox-metz.fr',
+      cookie_domain: 'reservation-kbox.netlify.app',
       cookie_flags: 'SameSite=None;Secure',
       anonymize_ip: true,
-      client_storage: 'none', // Désactive le stockage côté client si nécessaire
-      allow_google_signals: false, // Désactive les signaux Google
-      allow_ad_personalization_signals: false // Désactive la personnalisation des annonces
+      client_storage: 'none',
+      allow_google_signals: false,
+      allow_ad_personalization_signals: false
     });
 
-    // Ajouter le nouveau script
-    const script = document.createElement('script');
-    script.async = true;
-    script.src = `https://www.googletagmanager.com/gtag/js?id=${secret}`;
-    document.head.appendChild(script);
-
-    return secret;
+    return measurementId;
   } catch (error) {
     console.error('Error initializing Google Analytics:', error);
   }

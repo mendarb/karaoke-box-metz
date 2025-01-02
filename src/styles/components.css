@@ -2,15 +2,15 @@
 
 @layer components {
   .mobile-card {
-    @apply w-full rounded-lg bg-white shadow-sm p-4 mb-4 
+    @apply w-full bg-white p-4 mb-4 
            transition-all duration-200 ease-in-out
-           hover:shadow-md active:scale-[0.99]
+           active:scale-[0.99]
            sm:p-6;
   }
 
   .bottom-sheet {
     @apply fixed bottom-0 left-0 right-0 
-           bg-white rounded-t-[20px] shadow-lg 
+           bg-white shadow-lg 
            transform transition-transform duration-300 ease-out
            p-4 pb-safe z-50;
   }
@@ -30,18 +30,18 @@
 
   .mobile-nav-item {
     @apply flex flex-col items-center justify-center
-           p-2 rounded-lg transition-colors
+           p-2 transition-colors
            text-gray-600 hover:text-kbox-coral;
   }
 
   .mobile-input {
-    @apply w-full px-4 py-3 rounded-lg border border-gray-200
+    @apply w-full px-4 py-3 border border-gray-200
            focus:ring-2 focus:ring-kbox-coral focus:border-transparent
            text-base;
   }
 
   .mobile-button {
-    @apply w-full py-3 px-4 rounded-lg font-medium
+    @apply w-full py-3 px-4 font-medium
            transition-all duration-200 
            active:scale-[0.98] disabled:opacity-50
            focus:outline-none focus:ring-2 focus:ring-offset-2;

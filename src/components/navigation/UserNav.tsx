@@ -20,8 +20,8 @@ export const UserNav = ({ onSignOut, isAdmin }: UserNavProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-          <User className="h-4 w-4" />
+        <Button variant="outline" className="relative h-8 w-8 rounded-full border-gray-200">
+          <User className="h-4 w-4 text-gray-600" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
@@ -40,7 +40,10 @@ export const UserNav = ({ onSignOut, isAdmin }: UserNavProps) => {
           </>
         )}
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={onSignOut} className="text-red-600">
+        <DropdownMenuItem 
+          onClick={onSignOut} 
+          className="text-red-600 focus:bg-red-50 focus:text-red-600"
+        >
           Déconnexion
         </DropdownMenuItem>
       </DropdownMenuContent>

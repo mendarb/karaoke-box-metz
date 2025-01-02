@@ -8,9 +8,15 @@ interface ProtectedRouteProps {
   children: ReactNode;
   adminOnly?: boolean;
   hideNavbar?: boolean;
+  onShowAuth?: () => void;
 }
 
-export const ProtectedRoute = ({ children, adminOnly = false, hideNavbar = false }: ProtectedRouteProps) => {
+export const ProtectedRoute = ({ 
+  children, 
+  adminOnly = false, 
+  hideNavbar = false,
+  onShowAuth = () => {} 
+}: ProtectedRouteProps) => {
   const { session } = useAuthSession();
   const { isAdmin } = useAdminCheck();
 
@@ -24,7 +30,7 @@ export const ProtectedRoute = ({ children, adminOnly = false, hideNavbar = false
 
   return (
     <>
-      {!hideNavbar && <Navbar />}
+      {!hideNavbar && <Navbar onShowAuth={onShowAuth} />}
       {children}
     </>
   );

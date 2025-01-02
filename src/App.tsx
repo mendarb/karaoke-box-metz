@@ -10,8 +10,9 @@ import { initializeGoogleAnalytics, trackPageView } from "@/lib/analytics";
 import { GoogleVerification } from "@/components/seo/GoogleVerification";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { SupportButton } from "@/components/support/SupportButton";
+import { Navbar } from "@/components/navigation/Navbar";
+import { AuthModal } from "@/components/auth/AuthModal";
 
-// Optimiser la configuration du QueryClient
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -36,6 +37,7 @@ const PageTracker = () => {
 
 const App = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   useEffect(() => {
     const initGA = async () => {
@@ -67,11 +69,16 @@ const App = () => {
           <TooltipProvider>
             <Suspense fallback={<LoadingSpinner fullScreen />}>
               <GoogleVerification />
+              <Navbar onShowAuth={() => setShowAuthModal(true)} />
               <Toaster />
               <Sonner />
               <PageTracker />
               <AppRoutes />
               <SupportButton />
+              <AuthModal 
+                isOpen={showAuthModal} 
+                onClose={() => setShowAuthModal(false)} 
+              />
             </Suspense>
           </TooltipProvider>
         </BrowserRouter>

@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { SignupData, SignupResult } from "@/types/auth";
 import { handleSignupError } from "@/utils/auth/signupErrorHandler";
+import { toast } from "@/components/ui/use-toast";
 
 export const signupUser = async (data: SignupData): Promise<SignupResult> => {
   try {
@@ -15,7 +16,20 @@ export const signupUser = async (data: SignupData): Promise<SignupResult> => {
       },
     });
 
-    if (signUpError) throw signUpError;
+    if (signUpError) {
+      if (signUpError.message.includes("User already registered")) {
+        toast({
+          title: "Compte existant",
+          description: "Un compte existe déjà avec cet email. Veuillez vous connecter.",
+        });
+        return {
+          success: false,
+          message: "Un compte existe déjà avec cet email. Veuillez vous connecter.",
+          shouldSwitchToLogin: true
+        };
+      }
+      throw signUpError;
+    }
 
     // Envoyer l'email de bienvenue
     try {

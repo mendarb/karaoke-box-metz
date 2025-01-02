@@ -22,17 +22,17 @@ export const UserNav = ({ onSignOut, isAdmin }: UserNavProps) => {
       <DropdownMenuTrigger asChild>
         <Button 
           variant="outline" 
-          className="relative w-10 h-10 rounded-full border-gray-300 hover:bg-gray-100"
+          className="relative w-8 h-8 rounded-full border-gray-300 hover:bg-gray-100 p-0"
         >
-          <User className="h-5 w-5 text-gray-700" />
+          <User className="h-4 w-4 text-gray-700" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
-        <DropdownMenuItem onClick={() => navigate('/account')}>
-          Mon compte
-        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => navigate('/my-bookings')}>
           Mes réservations
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate('/account')}>
+          Mon compte
         </DropdownMenuItem>
         {isAdmin && (
           <>

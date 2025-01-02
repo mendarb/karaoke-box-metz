@@ -4,7 +4,7 @@ import { DesktopNav } from "./DesktopNav";
 import { MobileNav } from "./MobileNav";
 import { Logo } from "./Logo";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 interface NavbarProps {
   onShowAuth: () => void;
@@ -39,7 +39,9 @@ export const Navbar = ({ onShowAuth }: NavbarProps) => {
     <nav className="sticky top-0 z-50 w-full border-b bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
-          <Logo />
+          <Link to="/" className="flex items-center">
+            <Logo />
+          </Link>
           <DesktopNav
             user={user}
             isAdmin={isAdmin}

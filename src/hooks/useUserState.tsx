@@ -44,23 +44,26 @@ export const useUserState = (): UserState => {
       }
     };
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("Session in useUserState:", session);
+    const initSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log("Initial session:", session);
       setSession(session);
       if (session?.user?.id) {
-        loadUserProfile(session.user.id);
+        await loadUserProfile(session.user.id);
       }
       setIsLoading(false);
       setSessionChecked(true);
-    });
+    };
+
+    initSession();
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("Auth state changed:", _event, session);
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event, session);
       setSession(session);
       if (session?.user?.id) {
-        loadUserProfile(session.user.id);
+        await loadUserProfile(session.user.id);
       } else {
         setProfile(null);
       }
@@ -74,7 +77,12 @@ export const useUserState = (): UserState => {
   const isAdmin = session?.user?.email === "mendar.bouchali@gmail.com";
   const user = session?.user || null;
 
-  console.log("isAdmin:", isAdmin, "user email:", session?.user?.email);
+  console.log("Current session state:", {
+    isAdmin,
+    userEmail: session?.user?.email,
+    sessionExists: !!session,
+    userExists: !!user
+  });
 
   return {
     session,

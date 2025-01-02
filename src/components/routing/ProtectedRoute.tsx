@@ -21,11 +21,11 @@ export const ProtectedRoute = ({
   const { isAdmin } = useAdminCheck();
 
   if (!session) {
-    return <Navigate to="/" />;
+    return <Navigate to="/" replace />;
   }
 
   if (adminOnly && !isAdmin) {
-    return <Navigate to="/" />;
+    return <Navigate to="/" replace />;
   }
 
   return (

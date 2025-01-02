@@ -21,11 +21,7 @@ export const useSignupHandler = () => {
       
       if (existingUser) {
         const result = handleExistingUser(email);
-        return {
-          success: false,
-          shouldSwitchToLogin: true,
-          message: result.message
-        };
+        return result;
       }
 
       const result = await signupUser({

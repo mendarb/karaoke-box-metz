@@ -46,7 +46,7 @@ const Index = () => {
             <HeroSection />
           </div>
 
-          <div className="md:col-span-2 bg-white rounded-t-lg md:rounded-none">
+          <div className="md:col-span-2 bg-white">
             <Suspense fallback={
               <div className="flex items-center justify-center h-full min-h-[500px]">
                 <LoadingSpinner />

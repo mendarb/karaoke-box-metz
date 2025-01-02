@@ -57,10 +57,10 @@ export const SupportButton = () => {
     <>
       <Button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 rounded-full p-4 bg-violet-600 hover:bg-violet-700 shadow-lg"
+        className="fixed bottom-4 right-4 rounded-full w-12 h-12 bg-violet-600 hover:bg-violet-700 shadow-lg"
         size="icon"
       >
-        <LifeBuoy className="h-6 w-6" />
+        <LifeBuoy className="h-5 w-5" />
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>

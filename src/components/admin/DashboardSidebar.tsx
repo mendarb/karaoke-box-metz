@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Menu } from "lucide-react";
 
 export const DashboardSidebar = () => {
   const navigate = useNavigate();
@@ -37,11 +39,11 @@ export const DashboardSidebar = () => {
     { path: "/admin/documentation", icon: BookOpen, label: "Documentation" },
   ];
 
-  return (
+  const SidebarContent = () => (
     <ScrollArea className="h-full">
       <div className="flex flex-col h-full min-h-[calc(100vh-4rem)]">
-        <div className="p-4 border-b">
-          <h2 className="text-lg font-semibold">Karaoke Admin</h2>
+        <div className="p-3 border-b">
+          <h2 className="text-base font-semibold">Karaoke Admin</h2>
         </div>
 
         <nav className="flex-1 p-2">
@@ -50,7 +52,7 @@ export const DashboardSidebar = () => {
               <Button 
                 key={item.path}
                 variant={isActive(item.path) ? "secondary" : "ghost"} 
-                className="w-full justify-start" 
+                className="w-full justify-start h-9 text-sm" 
                 onClick={() => navigate(item.path)}
               >
                 <item.icon className="mr-2 h-4 w-4" />
@@ -63,7 +65,7 @@ export const DashboardSidebar = () => {
         <div className="p-2 border-t space-y-1">
           <Button
             variant="ghost"
-            className="w-full justify-start"
+            className="w-full justify-start h-9 text-sm"
             onClick={() => navigate("/")}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -71,7 +73,7 @@ export const DashboardSidebar = () => {
           </Button>
           <Button 
             variant="ghost" 
-            className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50" 
+            className="w-full justify-start h-9 text-sm text-red-500 hover:text-red-600 hover:bg-red-50" 
             onClick={handleLogout}
           >
             <LogOut className="mr-2 h-4 w-4" />
@@ -80,5 +82,26 @@ export const DashboardSidebar = () => {
         </div>
       </div>
     </ScrollArea>
+  );
+
+  if (isMobile) {
+    return (
+      <Sheet>
+        <SheetTrigger asChild>
+          <Button variant="ghost" size="sm" className="fixed top-4 left-4 z-50">
+            <Menu className="h-4 w-4" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="p-0 w-64">
+          <SidebarContent />
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  return (
+    <div className="hidden md:block w-56 border-r bg-white">
+      <SidebarContent />
+    </div>
   );
 };

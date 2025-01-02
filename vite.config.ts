@@ -17,19 +17,27 @@ export default defineConfig(({ mode }) => ({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-          ui: ['@/components/ui'],
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'vendor-react';
+            }
+            return 'vendor';
+          }
+          if (id.includes('src/components/ui')) {
+            return 'ui';
+          }
         }
       },
     },
-    minify: 'terser',
-    terserOptions: {
+    sourcemap: true,
+    minify: mode === 'production' ? 'terser' : false,
+    terserOptions: mode === 'production' ? {
       compress: {
         drop_console: true,
         drop_debugger: true
       }
-    }
+    } : undefined
   },
   plugins: [
     react(),

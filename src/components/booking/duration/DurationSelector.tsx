@@ -28,34 +28,32 @@ export const DurationSelector = ({
 
   return (
     <Card className="border-none shadow-none bg-transparent">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-xl md:text-2xl text-gray-900">
+      <CardHeader className="pb-2 px-0 space-y-1">
+        <CardTitle className="text-xl text-gray-900">
           Quelle durée souhaitez-vous ?
         </CardTitle>
-        <CardDescription className="text-base text-gray-600">
-          Choisissez la durée de votre session. Plus la durée est longue, 
-          plus le prix par personne est avantageux.
+        <CardDescription className="text-sm text-gray-600">
+          Choisissez la durée de votre session.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-0">
         {availableHours < 4 && (
-          <Alert variant="warning" className="mb-4">
+          <Alert variant="warning" className="mb-3 py-2">
             <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              En raison des réservations existantes, certaines durées ne sont pas disponibles 
-              pour le créneau sélectionné.
+            <AlertDescription className="text-xs">
+              Certaines durées ne sont pas disponibles pour ce créneau.
             </AlertDescription>
           </Alert>
         )}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 gap-2">
           {filteredDurations.map(({ label, value }) => (
             <Button
               key={value}
               type="button"
               variant={selectedDuration === value ? "default" : "outline"}
               className={cn(
-                "relative h-20 font-semibold transition-all",
-                selectedDuration === value ? "bg-violet-600 hover:bg-violet-700 scale-105" : "hover:bg-violet-50",
+                "relative h-16 font-medium transition-all",
+                selectedDuration === value ? "bg-violet-600 hover:bg-violet-700" : "hover:bg-violet-50",
                 "flex flex-col items-center justify-center text-center"
               )}
               onClick={() => {
@@ -63,8 +61,8 @@ export const DurationSelector = ({
                 onDurationChange(value);
               }}
             >
-              <div className="text-lg">{label}</div>
-              <div className="text-sm opacity-75">
+              <div className="text-base">{label}</div>
+              <div className="text-xs opacity-75">
                 de karaoké
               </div>
             </Button>

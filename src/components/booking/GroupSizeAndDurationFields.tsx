@@ -37,13 +37,6 @@ export const GroupSizeAndDurationFields = ({
       setCurrentPrice(calculatedPrice);
       setPricePerPerson(pricePerPersonPerHour);
       onPriceCalculated(calculatedPrice);
-      
-      console.log('💰 Prix calculé:', {
-        groupSize: size,
-        duration: dur,
-        totalPrice: calculatedPrice,
-        pricePerPerson: pricePerPersonPerHour
-      });
     }
   };
 
@@ -74,7 +67,7 @@ export const GroupSizeAndDurationFields = ({
   }, [groupSize, duration, settings]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <GroupSizeSelector 
         form={form} 
         onGroupSizeChange={handleGroupSizeChange} 

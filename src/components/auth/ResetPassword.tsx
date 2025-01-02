@@ -31,16 +31,27 @@ export const ResetPassword = () => {
           return;
         }
 
-        const { data, error: sessionError } = await supabase.auth.setSession({
+        // On attend que la session soit complètement établie
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const { data: { session }, error: sessionError } = await supabase.auth.setSession({
           access_token: accessToken,
           refresh_token: refreshToken || "",
         });
 
-        console.log("Session set result:", { success: !!data.session, error: sessionError });
+        console.log("Session set result:", { success: !!session, error: sessionError });
 
-        if (sessionError) {
+        if (sessionError || !session) {
           console.error("Session error:", sessionError);
           setError("Le lien de réinitialisation a expiré. Veuillez demander un nouveau lien.");
+          return;
+        }
+
+        // Vérifie que la session est bien établie
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        if (!currentSession) {
+          console.error("No session after setting it");
+          setError("Erreur lors de l'authentification. Veuillez réessayer.");
           return;
         }
       } catch (err) {
@@ -60,6 +71,12 @@ export const ResetPassword = () => {
     setError(null);
 
     try {
+      // Vérifie que la session est toujours valide
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("Session expirée. Veuillez demander un nouveau lien.");
+      }
+
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       });
@@ -73,6 +90,12 @@ export const ResetPassword = () => {
         title: "Mot de passe mis à jour",
         description: "Votre mot de passe a été modifié avec succès",
       });
+
+      // On attend que la session soit mise à jour
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // On déconnecte l'utilisateur pour qu'il se reconnecte avec son nouveau mot de passe
+      await supabase.auth.signOut();
 
       // Petit délai pour laisser le toast s'afficher
       setTimeout(() => {

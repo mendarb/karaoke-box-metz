@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button";
 export const HeroSection = () => {
   return (
     <div 
-      className="relative h-[70vh] bg-kbox-coral flex items-center justify-center text-white"
+      className="relative h-[60vh] bg-kbox-coral flex items-center text-white"
     >
-      <div className="relative z-10 text-center space-y-4 max-w-3xl mx-auto px-4">
-        <div className="space-y-2">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold">
-            À Metz, découvrez K.Box
+      <div className="relative z-10 md:text-left text-center space-y-3 max-w-3xl mx-auto px-4">
+        <div className="space-y-1.5">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold flex flex-col md:flex-row items-center md:items-start gap-2">
+            <span className="bg-white/20 text-white px-3 py-1 rounded-full text-lg md:text-xl">METZ</span>
+            <span>Découvrez K.Box</span>
           </h1>
           <p className="text-xl md:text-2xl lg:text-3xl font-medium text-white/90">
             La première box karaoké privative

@@ -68,17 +68,23 @@ export const GroupSizeAndDurationFields = ({
 
   return (
     <div className="space-y-4 md:space-y-6 animate-fadeIn">
-      <GroupSizeSelector 
-        form={form} 
-        onGroupSizeChange={handleGroupSizeChange} 
-      />
-      <DurationSelector 
-        form={form} 
-        onDurationChange={handleDurationChange}
-        availableHours={availableHours}
-      />
+      <div className="mobile-card">
+        <GroupSizeSelector 
+          form={form} 
+          onGroupSizeChange={handleGroupSizeChange} 
+        />
+      </div>
+      
+      <div className="mobile-card">
+        <DurationSelector 
+          form={form} 
+          onDurationChange={handleDurationChange}
+          availableHours={availableHours}
+        />
+      </div>
+
       {groupSize && duration && currentPrice > 0 && (
-        <div className="mt-4">
+        <div className="mobile-card">
           <PriceDisplay
             groupSize={groupSize}
             duration={duration}

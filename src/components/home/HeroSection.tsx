@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 export const HeroSection = () => {
   return (
     <div 
-      className="relative h-[90vh] bg-kbox-coral flex items-center justify-center text-white"
+      className="relative h-[70vh] bg-kbox-coral flex items-center justify-center text-white"
     >
-      <div className="relative z-10 text-center space-y-6 max-w-3xl mx-auto px-4">
+      <div className="relative z-10 text-center space-y-4 max-w-3xl mx-auto px-4">
         <div className="space-y-2">
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold">
             À Metz, découvrez K.Box

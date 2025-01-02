@@ -18,7 +18,7 @@ export const HeroSection = () => {
           to="/box-3d" 
           className="inline-block bg-white/20 hover:bg-white/30 transition-colors text-white px-4 py-2 md:px-6 md:py-3 w-full text-center border border-white text-sm md:text-base"
         >
-          Découvrir notre box en 3D
+          Visite virtuelle 3D de notre box
         </Link>
       </div>
     </div>

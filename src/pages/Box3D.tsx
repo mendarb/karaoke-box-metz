@@ -3,17 +3,16 @@ import { BoxFeatures } from "@/components/3d/BoxFeatures";
 import Footer from "@/components/home/Footer";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { Package, Music, Users } from "lucide-react";
-import { Card } from "@/components/ui/card";
 
 const Box3D = () => {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-secondary to-white">
       <Navbar onShowAuth={() => {}} />
       
-      <main className="flex-grow container mx-auto py-12 px-4">
-        <div className="max-w-6xl mx-auto space-y-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-            <div className="space-y-6">
+      <main className="flex-grow">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-6 px-4 md:px-8 py-12">
               <div className="overflow-hidden">
                 <ImageLightbox 
                   src="/lovable-uploads/cfa63d4d-3758-45b6-8316-13d7d026d109.png"
@@ -22,7 +21,7 @@ const Box3D = () => {
                 />
                 <div className="p-4 bg-white/90">
                   <p className="text-sm text-gray-600 text-center">
-                    Représentation 3D de notre box karaoké à Metz
+                    Visite virtuelle 3D de notre box karaoké à Metz
                     <br />
                     <span className="text-xs italic">(le résultat final peut légèrement différer)</span>
                   </p>
@@ -58,8 +57,8 @@ const Box3D = () => {
               </div>
             </div>
 
-            <div className="sticky top-4">
-              <div className="bg-white/90 p-8 space-y-6">
+            <div className="sticky top-4 px-4 md:px-8 py-12">
+              <div className="bg-white/90 p-8">
                 <BoxFeatures />
               </div>
             </div>

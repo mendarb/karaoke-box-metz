@@ -17,9 +17,9 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-white py-12">
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <footer className="bg-white">
+      <div className="md:container mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 px-4 md:px-8 py-12">
           <div>
             <h3 className="text-sm font-semibold mb-4 text-kbox-coral">Informations légales</h3>
             <LegalLinks />
@@ -62,7 +62,7 @@ const Footer = () => {
             </div>
           </div>
         </div>
-        <div className="mt-8 pt-8 border-t border-gray-100">
+        <div className="border-t border-gray-100 px-4 md:px-8 py-8">
           <p className="text-center text-gray-500 text-sm">
             © {new Date().getFullYear()} K.Box - Karaoké Privatif. Tous droits réservés.
           </p>

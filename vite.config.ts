@@ -29,23 +29,16 @@ export default defineConfig(({ mode }) => ({
     },
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor': ['react', 'react-dom'],
-          'router': ['react-router-dom'],
-          'query': ['@tanstack/react-query'],
-          'ui': [
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-label',
-            '@radix-ui/react-slot',
-            'class-variance-authority',
-            'clsx',
-            'tailwind-merge',
-          ],
-          'components': [
-            '@/components/home/Footer',
-            '@/components/home/HeroSection',
-            '@/components/home/FeatureGrid',
-          ],
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            if (id.includes('react')) return 'vendor-react';
+            if (id.includes('react-router')) return 'vendor-router';
+            if (id.includes('@tanstack/react-query')) return 'vendor-query';
+            if (id.includes('@radix-ui')) return 'vendor-ui';
+            return 'vendor';
+          }
+          if (id.includes('components/home')) return 'home';
+          if (id.includes('components/ui')) return 'ui';
         },
         assetFileNames: (assetInfo) => {
           if (!assetInfo.name) return 'assets/[name]-[hash][extname]';

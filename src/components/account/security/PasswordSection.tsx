@@ -40,6 +40,7 @@ export const PasswordSection = () => {
       });
 
       if (error) {
+        console.error("Reset password error:", error);
         if (error.status === 429) {
           toast({
             title: "Trop de tentatives",

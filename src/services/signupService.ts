@@ -25,11 +25,6 @@ export const signupUser = async (data: SignupData): Promise<SignupResult> => {
     };
   } catch (error) {
     console.error("Erreur lors de l'inscription:", error);
-    const errorResult = handleSignupError(error);
-    return {
-      success: false,
-      message: errorResult.message,
-      shouldSwitchToLogin: false
-    };
+    return handleSignupError(error);
   }
 };

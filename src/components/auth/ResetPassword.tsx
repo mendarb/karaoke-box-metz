@@ -1,135 +1,150 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
-import { useToast } from "@/hooks/use-toast";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { ErrorAlert } from "./reset-password/ErrorAlert";
-import { PasswordResetForm } from "./reset-password/PasswordResetForm";
 
 export const ResetPassword = () => {
+  const [searchParams] = useSearchParams();
   const [newPassword, setNewPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isValidatingToken, setIsValidatingToken] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    const handleHashFragment = async () => {
+    const setupSession = async () => {
       try {
-        setIsValidatingToken(true);
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const accessToken = hashParams.get("access_token");
-        const refreshToken = hashParams.get("refresh_token");
-        const type = hashParams.get("type");
-        
-        console.log("Reset password params:", { type, hasAccessToken: !!accessToken, hasRefreshToken: !!refreshToken });
-        
+        const accessToken = searchParams.get("access_token");
+        const refreshToken = searchParams.get("refresh_token");
+        const type = searchParams.get("type");
+
+        console.log("Reset password params:", { 
+          hasAccessToken: !!accessToken, 
+          hasRefreshToken: !!refreshToken, 
+          type 
+        });
+
         if (!accessToken || type !== "recovery") {
-          console.error("Invalid token data:", { type, hasAccessToken: !!accessToken });
-          setError("Le lien de réinitialisation est invalide ou a expiré. Veuillez demander un nouveau lien.");
+          console.error("Invalid recovery link parameters");
+          setError("Le lien de réinitialisation est invalide. Veuillez demander un nouveau lien.");
           return;
         }
 
-        // On attend que la session soit complètement établie
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Clear any existing session
+        await supabase.auth.signOut();
+
+        // Wait a bit before setting up the new session
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
         const { data: { session }, error: sessionError } = await supabase.auth.setSession({
           access_token: accessToken,
           refresh_token: refreshToken || "",
         });
 
-        console.log("Session set result:", { success: !!session, error: sessionError });
+        console.log("Session setup result:", { 
+          success: !!session, 
+          error: sessionError?.message 
+        });
 
         if (sessionError || !session) {
-          console.error("Session error:", sessionError);
+          console.error("Session setup failed:", sessionError);
           setError("Le lien de réinitialisation a expiré. Veuillez demander un nouveau lien.");
           return;
         }
 
-        // Vérifie que la session est bien établie
+        // Double check the session is properly established
         const { data: { session: currentSession } } = await supabase.auth.getSession();
         if (!currentSession) {
-          console.error("No session after setting it");
+          console.error("Session verification failed");
           setError("Erreur lors de l'authentification. Veuillez réessayer.");
           return;
         }
+
       } catch (err) {
-        console.error("Hash handling error:", err);
-        setError("Une erreur est survenue lors de la validation du lien. Veuillez réessayer.");
-      } finally {
-        setIsValidatingToken(false);
+        console.error("Error in setupSession:", err);
+        setError("Une erreur est survenue. Veuillez réessayer.");
       }
     };
 
-    handleHashFragment();
-  }, []);
+    setupSession();
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setIsLoading(true);
     setError(null);
 
     try {
-      // Vérifie que la session est toujours valide
+      // Verify session is still valid
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         throw new Error("Session expirée. Veuillez demander un nouveau lien.");
       }
 
-      const { error } = await supabase.auth.updateUser({
+      const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword
       });
 
-      if (error) {
-        console.error("Password update error:", error);
-        throw error;
+      if (updateError) {
+        throw updateError;
       }
 
+      // Show success message
       toast({
         title: "Mot de passe mis à jour",
         description: "Votre mot de passe a été modifié avec succès",
       });
 
-      // On attend que la session soit mise à jour
+      // Wait for session update
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // On déconnecte l'utilisateur pour qu'il se reconnecte avec son nouveau mot de passe
+      // Sign out and redirect
       await supabase.auth.signOut();
 
-      // Petit délai pour laisser le toast s'afficher
+      // Wait for toast to be visible
       setTimeout(() => {
         navigate("/");
-      }, 1500);
+      }, 2000);
+
     } catch (err: any) {
-      console.error("Error resetting password:", err);
-      setError(err.message || "Une erreur est survenue lors de la réinitialisation du mot de passe");
-      toast({
-        title: "Erreur",
-        description: err.message || "Une erreur est survenue lors de la réinitialisation du mot de passe",
-        variant: "destructive",
-      });
+      console.error("Password update error:", err);
+      setError(err.message || "Une erreur est survenue lors de la mise à jour du mot de passe");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  if (isValidatingToken) {
-    return (
-      <div className="container max-w-md mx-auto p-4 flex justify-center items-center min-h-[200px]">
-        <LoadingSpinner />
-      </div>
-    );
-  }
+  return (
+    <div className="container max-w-md mx-auto mt-8 p-4">
+      <h1 className="text-2xl font-bold mb-4">Réinitialisation du mot de passe</h1>
+      
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+        </div>
+      )}
 
-  if (error) {
-    return <ErrorAlert error={error} />;
-  }
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label htmlFor="password" className="block text-sm font-medium mb-1">
+            Nouveau mot de passe
+          </label>
+          <Input
+            id="password"
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            required
+            minLength={6}
+          />
+        </div>
 
-  return <PasswordResetForm 
-    newPassword={newPassword}
-    setNewPassword={setNewPassword}
-    onSubmit={handleSubmit}
-    isLoading={loading}
-  />;
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading ? "Chargement..." : "Mettre à jour le mot de passe"}
+        </Button>
+      </form>
+    </div>
+  );
 };

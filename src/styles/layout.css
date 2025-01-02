@@ -9,7 +9,7 @@
   }
   
   .container > * {
-    @apply px-[30px];
+    @apply px-0;
   }
 }
 

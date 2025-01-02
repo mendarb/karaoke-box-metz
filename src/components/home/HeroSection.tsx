@@ -7,9 +7,14 @@ export const HeroSection = () => {
       className="relative h-[90vh] bg-kbox-coral flex items-center justify-center text-white"
     >
       <div className="relative z-10 text-center space-y-6 max-w-3xl mx-auto px-4">
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold">
-          Votre Box Karaoké Privative à Metz
-        </h1>
+        <div className="space-y-2">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold">
+            À Metz, découvrez K.Box
+          </h1>
+          <p className="text-xl md:text-2xl lg:text-3xl font-medium text-white/90">
+            La première box karaoké privative
+          </p>
+        </div>
         <p className="text-lg md:text-xl">
           Une expérience unique pour chanter en toute intimité
         </p>

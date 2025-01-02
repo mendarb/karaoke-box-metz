@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { checkExistingUser, handleExistingUser } from "@/services/userVerificationService";
 import { signupUser } from "@/services/signupService";
+import { SignupResult } from "@/types/auth";
 
 export const useSignupHandler = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -12,14 +13,19 @@ export const useSignupHandler = () => {
     password: string,
     fullName: string,
     phone: string
-  ) => {
+  ): Promise<SignupResult> => {
     setIsLoading(true);
     
     try {
       const existingUser = await checkExistingUser(email);
       
       if (existingUser) {
-        return handleExistingUser(email);
+        const result = handleExistingUser(email);
+        return {
+          success: false,
+          shouldSwitchToLogin: true,
+          message: result.message
+        };
       }
 
       const result = await signupUser({
@@ -50,7 +56,11 @@ export const useSignupHandler = () => {
         description: "Une erreur est survenue lors de l'inscription.",
         variant: "destructive",
       });
-      return { success: false, message: "Erreur lors de l'inscription" };
+      return { 
+        success: false, 
+        message: "Erreur lors de l'inscription",
+        shouldSwitchToLogin: false
+      };
     } finally {
       setIsLoading(false);
     }

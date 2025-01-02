@@ -10,7 +10,6 @@ export function useLoginHandler() {
   const handleLogin = async (email: string, password: string): Promise<AuthResponse> => {
     setIsLoading(true);
     try {
-      // Basic validation
       if (!email || !password) {
         toast({
           title: "Erreur",

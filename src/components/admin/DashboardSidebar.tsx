@@ -88,7 +88,11 @@ export const DashboardSidebar = () => {
     return (
       <Sheet>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="sm" className="fixed top-4 left-4 z-50">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="fixed top-4 left-4 z-50 bg-white shadow-sm"
+          >
             <Menu className="h-4 w-4" />
           </Button>
         </SheetTrigger>

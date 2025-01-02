@@ -11,13 +11,8 @@ if (!container) {
 
 const root = createRoot(container)
 
-// Render without StrictMode in production for better performance
-if (import.meta.env.DEV) {
-  root.render(
-    <StrictMode>
-      <App />
-    </StrictMode>
-  )
-} else {
-  root.render(<App />)
-}
+root.render(
+  <StrictMode>
+    <App />
+  </StrictMode>
+)

@@ -19,13 +19,12 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     minify: 'terser',
-    sourcemap: false,
+    sourcemap: true,
     chunkSizeWarningLimit: 800,
     terserOptions: {
       compress: {
-        drop_console: false,
+        drop_console: true,
         drop_debugger: true,
-        pure_funcs: ['console.debug', 'console.trace'],
       },
     },
     rollupOptions: {

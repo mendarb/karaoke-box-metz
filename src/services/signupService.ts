@@ -1,34 +1,29 @@
 import { supabase } from "@/lib/supabase";
-import { toast } from "@/hooks/use-toast";
+import { SignupData } from "@/types/auth";
+import { handleSignupError } from "@/utils/auth/signupErrorHandler";
 
-export const createUserAccount = async (
-  email: string,
-  password: string,
-  fullName: string,
-  phone: string
-) => {
-  console.log("Création du compte pour:", email);
-  const { data, error: signUpError } = await supabase.auth.signUp({
-    email: email.toLowerCase(),
-    password,
-    options: {
-      data: {
-        full_name: fullName,
-        phone: phone,
+export const signupUser = async (data: SignupData) => {
+  try {
+    const { data: authData, error: signUpError } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: {
+        data: {
+          full_name: data.fullName,
+          phone: data.phone,
+        },
       },
-    },
-  });
+    });
 
-  if (signUpError) throw signUpError;
+    if (signUpError) throw signUpError;
 
-  return data;
-};
-
-export const handleSuccessfulSignup = (email: string) => {
-  console.log("Compte créé avec succès pour:", email);
-  toast({
-    title: "Compte créé avec succès",
-    description: "Un email de confirmation vous a été envoyé. Veuillez vérifier votre boîte de réception.",
-  });
-  return { success: true, shouldSwitchToLogin: false };
+    return {
+      success: true,
+      message: "Inscription réussie ! Vérifiez votre email pour confirmer votre compte.",
+      data: authData,
+    };
+  } catch (error) {
+    console.error("Erreur lors de l'inscription:", error);
+    return handleSignupError(error);
+  }
 };

@@ -1,16 +1,9 @@
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { validateSignupData } from "@/utils/auth/signupValidation";
-import { handleSignupError } from "@/utils/auth/signupErrorHandler";
+import { useToast } from "@/components/ui/use-toast";
 import { checkExistingUser, handleExistingUser } from "@/services/userVerificationService";
-import { createUserAccount, handleSuccessfulSignup } from "@/services/signupService";
+import { signupUser } from "@/services/signupService";
 
-interface SignupResponse {
-  success: boolean;
-  shouldSwitchToLogin: boolean;
-}
-
-export function useSignupHandler() {
+export const useSignupHandler = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -19,56 +12,49 @@ export function useSignupHandler() {
     password: string,
     fullName: string,
     phone: string
-  ): Promise<SignupResponse> => {
-    if (isLoading) {
-      console.log("Inscription en cours, évitement de la soumission multiple");
-      return { success: false, shouldSwitchToLogin: false };
-    }
-
-    const validation = validateSignupData(email, password, fullName, phone);
-    if (!validation.isValid) {
-      toast({
-        title: "Erreur",
-        description: validation.error,
-        variant: "destructive",
-      });
-      return { success: false, shouldSwitchToLogin: false };
-    }
-
+  ) => {
     setIsLoading(true);
+    
     try {
-      const existingProfile = await checkExistingUser(email);
-      if (existingProfile) {
+      const existingUser = await checkExistingUser(email);
+      
+      if (existingUser) {
         return handleExistingUser(email);
       }
 
-      const data = await createUserAccount(email, password, fullName, phone);
-      if (data?.user) {
-        return handleSuccessfulSignup(email);
+      const result = await signupUser({
+        email,
+        password,
+        fullName,
+        phone,
+      });
+
+      if (result.success) {
+        toast({
+          title: "Inscription réussie",
+          description: result.message,
+        });
+      } else {
+        toast({
+          title: "Erreur",
+          description: result.message,
+          variant: "destructive",
+        });
       }
 
+      return result;
+    } catch (error) {
+      console.error("Erreur lors de l'inscription:", error);
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de la création du compte.",
+        description: "Une erreur est survenue lors de l'inscription.",
         variant: "destructive",
       });
-      return { success: false, shouldSwitchToLogin: false };
-    } catch (error: any) {
-      console.error("Erreur lors de l'inscription:", error);
-      const errorConfig = handleSignupError(error);
-      toast({
-        title: errorConfig.title,
-        description: errorConfig.description,
-        variant: "destructive",
-      });
-      return { 
-        success: false, 
-        shouldSwitchToLogin: errorConfig.shouldSwitchToLogin 
-      };
+      return { success: false, message: "Erreur lors de l'inscription" };
     } finally {
       setIsLoading(false);
     }
   };
 
   return { handleSignup, isLoading };
-}
+};

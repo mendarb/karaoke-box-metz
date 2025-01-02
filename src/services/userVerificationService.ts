@@ -1,5 +1,4 @@
 import { supabase } from "@/lib/supabase";
-import { toast } from "@/hooks/use-toast";
 
 export const checkExistingUser = async (email: string) => {
   console.log("Vérification de l'existence de l'utilisateur:", email);
@@ -7,7 +6,7 @@ export const checkExistingUser = async (email: string) => {
   try {
     const { data: existingProfile, error: profileError } = await supabase
       .from('profiles')
-      .select('id, email')
+      .select('id')
       .eq('email', email.toLowerCase())
       .maybeSingle();
 
@@ -19,16 +18,14 @@ export const checkExistingUser = async (email: string) => {
     return existingProfile;
   } catch (error) {
     console.error("Erreur lors de la vérification du profil:", error);
-    return null;
+    throw error;
   }
 };
 
 export const handleExistingUser = (email: string) => {
-  console.log("Email déjà utilisé:", email);
-  toast({
-    title: "Compte existant",
-    description: "Un compte existe déjà avec cet email. Veuillez vous connecter.",
-    variant: "destructive",
-  });
-  return { success: false, shouldSwitchToLogin: true };
+  return {
+    success: false,
+    shouldSwitchToLogin: true,
+    message: `Un compte existe déjà avec l'email ${email}. Veuillez vous connecter.`,
+  };
 };

@@ -1,11 +1,13 @@
-export interface AuthResponse {
-  success: boolean;
-  shouldSwitchToLogin: boolean;
+export interface SignupData {
+  email: string;
+  password: string;
+  fullName: string;
+  phone: string;
 }
 
-export interface AuthHandlers {
-  handleLogin: (email: string, password: string) => Promise<AuthResponse>;
-  handleSignup: (email: string, password: string, fullName: string, phone: string) => Promise<AuthResponse>;
-  handleResetPassword: (email: string) => Promise<AuthResponse>;
-  isLoading: boolean;
+export interface SignupResult {
+  success: boolean;
+  message: string;
+  data?: any;
+  shouldSwitchToLogin?: boolean;
 }

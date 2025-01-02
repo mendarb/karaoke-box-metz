@@ -12,15 +12,20 @@ interface DesktopNavProps {
 export const DesktopNav = ({ user, isAdmin, onSignOut, onShowAuth }: DesktopNavProps) => {
   return (
     <div className="hidden md:flex items-center gap-4">
-      {user && (
-        <Link to="/my-bookings">
-          <Button variant="ghost">
-            Mes réservations
-          </Button>
-        </Link>
-      )}
       {user ? (
-        <UserNav onSignOut={onSignOut} isAdmin={isAdmin} />
+        <>
+          <Link to="/my-bookings">
+            <Button variant="ghost">
+              Mes réservations
+            </Button>
+          </Link>
+          <Link to="/account">
+            <Button variant="ghost">
+              Mon compte
+            </Button>
+          </Link>
+          <UserNav onSignOut={onSignOut} isAdmin={isAdmin} />
+        </>
       ) : (
         <Button
           variant="outline"

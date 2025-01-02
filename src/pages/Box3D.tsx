@@ -1,10 +1,9 @@
 import { Navbar } from "@/components/navigation/Navbar";
 import { BoxFeatures } from "@/components/3d/BoxFeatures";
+import Footer from "@/components/home/Footer";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { Package, Music, Users } from "lucide-react";
-import { lazy, Suspense } from "react";
-
-const Footer = lazy(() => import("@/components/home/Footer"));
+import { Card } from "@/components/ui/card";
 
 const Box3D = () => {
   return (
@@ -68,9 +67,7 @@ const Box3D = () => {
         </div>
       </main>
 
-      <Suspense fallback={null}>
-        <Footer />
-      </Suspense>
+      <Footer />
     </div>
   );
 };

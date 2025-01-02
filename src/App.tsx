@@ -1,24 +1,23 @@
-import { Suspense, lazy, useEffect } from "react";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, useLocation } from "react-router-dom";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { AppRoutes } from "@/components/routing/AppRoutes";
+import { useEffect, useState, Suspense } from "react";
 import { initializeGoogleAnalytics, trackPageView } from "@/lib/analytics";
+import { GoogleVerification } from "@/components/seo/GoogleVerification";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { SupportButton } from "@/components/support/SupportButton";
 
-// Lazy load components
-const Toaster = lazy(() => import("@/components/ui/toaster").then(mod => ({ default: mod.Toaster })));
-const Sonner = lazy(() => import("@/components/ui/sonner").then(mod => ({ default: mod.Toaster })));
-const AppRoutes = lazy(() => import("@/components/routing/AppRoutes").then(mod => ({ default: mod.AppRoutes })));
-const GoogleVerification = lazy(() => import("@/components/seo/GoogleVerification").then(mod => ({ default: mod.GoogleVerification })));
-const SupportButton = lazy(() => import("@/components/support/SupportButton").then(mod => ({ default: mod.SupportButton })));
-
+// Optimiser la configuration du QueryClient
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
-      staleTime: 30000,
-      gcTime: 3600000,
+      staleTime: 30000, // 30 secondes
+      gcTime: 3600000, // Cache d'une heure (remplace cacheTime)
       refetchOnMount: false,
     },
   },
@@ -26,16 +25,41 @@ const queryClient = new QueryClient({
 
 const PageTracker = () => {
   const location = useLocation();
+
   useEffect(() => {
     trackPageView(location.pathname + location.search);
   }, [location]);
+
   return null;
 };
 
 const App = () => {
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
-    initializeGoogleAnalytics().catch(console.error);
+    // Initialiser GA de manière asynchrone
+    const initGA = async () => {
+      try {
+        await initializeGoogleAnalytics();
+      } catch (error) {
+        console.error('Erreur lors de l\'initialisation de GA:', error);
+      }
+    };
+    
+    initGA();
+    
+    // Réduire le temps de chargement minimum
+    const minLoadingTime = 500; // Réduire à 500ms
+    const loadingTimeout = setTimeout(() => {
+      setIsLoading(false);
+    }, minLoadingTime);
+
+    return () => clearTimeout(loadingTimeout);
   }, []);
+
+  if (isLoading) {
+    return <LoadingSpinner fullScreen />;
+  }
 
   return (
     <QueryClientProvider client={queryClient}>

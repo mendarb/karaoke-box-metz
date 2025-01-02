@@ -10,7 +10,7 @@ declare global {
 
 export const initializeGoogleAnalytics = async () => {
   try {
-    // Use hardcoded measurement ID instead of fetching from secrets
+    // Utilisation directe du nouvel ID GA
     const measurementId = 'G-NYBP6KX13X';
 
     // Configuration de base de gtag
@@ -32,7 +32,6 @@ export const initializeGoogleAnalytics = async () => {
       allow_ad_personalization_signals: false
     });
 
-    console.log('✅ Google Analytics initialized successfully');
     return measurementId;
   } catch (error) {
     console.error('Error initializing Google Analytics:', error);

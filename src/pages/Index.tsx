@@ -9,8 +9,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { HeroSection } from "@/components/home/HeroSection";
 import { FeatureGrid } from "@/components/home/FeatureGrid";
-import BookingSection from "@/components/home/BookingSection";
 
+const BookingSection = lazy(() => import("@/components/home/BookingSection"));
 const Footer = lazy(() => import("@/components/home/Footer"));
 
 const Index = () => {
@@ -47,10 +47,16 @@ const Index = () => {
           </div>
 
           <div className="md:col-span-2 bg-white rounded-t-lg md:rounded-none">
-            <BookingSection 
-              user={user} 
-              onShowAuth={() => setShowAuthModal(true)} 
-            />
+            <Suspense fallback={
+              <div className="flex items-center justify-center h-full min-h-[500px]">
+                <LoadingSpinner />
+              </div>
+            }>
+              <BookingSection 
+                user={user} 
+                onShowAuth={() => setShowAuthModal(true)} 
+              />
+            </Suspense>
           </div>
         </div>
 

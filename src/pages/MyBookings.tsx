@@ -1,12 +1,15 @@
-import { AccountLayout } from "@/components/account/AccountLayout";
 import { BookingHistory } from "@/components/booking/BookingHistory";
+import { AccountLayout } from "@/components/account/AccountLayout";
 
-export const MyBookings = () => {
+const MyBookings = () => {
   return (
     <AccountLayout>
-      <div className="space-y-8">
+      <div className="space-y-6 px-4 md:px-0">
+        <h1 className="text-2xl font-bold text-gray-900">Mes réservations</h1>
         <BookingHistory />
       </div>
     </AccountLayout>
   );
 };
+
+export default MyBookings;

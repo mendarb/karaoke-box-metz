@@ -20,8 +20,11 @@ export const UserNav = ({ onSignOut, isAdmin }: UserNavProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="relative h-8 w-8 rounded-full border-gray-200">
-          <User className="h-4 w-4 text-gray-600" />
+        <Button 
+          variant="outline" 
+          className="relative h-10 w-10 rounded-full border-gray-300 hover:bg-gray-100"
+        >
+          <User className="h-5 w-5 text-gray-700" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>

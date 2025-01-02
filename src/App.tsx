@@ -69,11 +69,15 @@ const App = () => {
           <TooltipProvider>
             <Suspense fallback={<LoadingSpinner fullScreen />}>
               <GoogleVerification />
-              <Navbar onShowAuth={() => setShowAuthModal(true)} />
+              <div className="flex flex-col min-h-screen">
+                <Navbar onShowAuth={() => setShowAuthModal(true)} />
+                <main className="flex-grow">
+                  <AppRoutes />
+                </main>
+              </div>
               <Toaster />
               <Sonner />
               <PageTracker />
-              <AppRoutes />
               <SupportButton />
               <AuthModal 
                 isOpen={showAuthModal} 

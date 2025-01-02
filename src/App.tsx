@@ -1,3 +1,4 @@
+import React from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,8 +17,8 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
-      staleTime: 30000, // 30 secondes
-      gcTime: 3600000, // Cache d'une heure (remplace cacheTime)
+      staleTime: 30000,
+      gcTime: 3600000,
       refetchOnMount: false,
     },
   },
@@ -37,7 +38,6 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Initialiser GA de manière asynchrone
     const initGA = async () => {
       try {
         await initializeGoogleAnalytics();
@@ -48,8 +48,7 @@ const App = () => {
     
     initGA();
     
-    // Réduire le temps de chargement minimum
-    const minLoadingTime = 500; // Réduire à 500ms
+    const minLoadingTime = 500;
     const loadingTimeout = setTimeout(() => {
       setIsLoading(false);
     }, minLoadingTime);
@@ -62,20 +61,22 @@ const App = () => {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <TooltipProvider>
-          <Suspense fallback={<LoadingSpinner fullScreen />}>
-            <GoogleVerification />
-            <Toaster />
-            <Sonner />
-            <PageTracker />
-            <AppRoutes />
-            <SupportButton />
-          </Suspense>
-        </TooltipProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
+    <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <TooltipProvider>
+            <Suspense fallback={<LoadingSpinner fullScreen />}>
+              <GoogleVerification />
+              <Toaster />
+              <Sonner />
+              <PageTracker />
+              <AppRoutes />
+              <SupportButton />
+            </Suspense>
+          </TooltipProvider>
+        </BrowserRouter>
+      </QueryClientProvider>
+    </React.StrictMode>
   );
 };
 

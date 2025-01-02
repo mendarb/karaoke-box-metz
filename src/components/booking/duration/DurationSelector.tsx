@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Clock } from "lucide-react";
 
 interface DurationSelectorProps {
   form: UseFormReturn<any>;
@@ -29,11 +29,14 @@ export const DurationSelector = ({
   return (
     <Card className="border-none shadow-none bg-transparent">
       <CardHeader className="pb-2 px-0 space-y-1">
-        <CardTitle className="text-xl text-gray-900">
-          Quelle durée souhaitez-vous ?
-        </CardTitle>
+        <div className="flex items-center gap-2">
+          <Clock className="h-5 w-5 text-violet-600" />
+          <CardTitle className="text-lg md:text-xl text-gray-900">
+            Quelle durée souhaitez-vous ?
+          </CardTitle>
+        </div>
         <CardDescription className="text-sm text-gray-600">
-          Choisissez la durée de votre session.
+          Choisissez la durée de votre session
         </CardDescription>
       </CardHeader>
       <CardContent className="p-0">
@@ -41,7 +44,7 @@ export const DurationSelector = ({
           <Alert variant="warning" className="mb-3 py-2">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription className="text-xs">
-              Certaines durées ne sont pas disponibles pour ce créneau.
+              Certaines durées ne sont pas disponibles pour ce créneau
             </AlertDescription>
           </Alert>
         )}
@@ -52,9 +55,10 @@ export const DurationSelector = ({
               type="button"
               variant={selectedDuration === value ? "default" : "outline"}
               className={cn(
-                "relative h-16 font-medium transition-all",
-                selectedDuration === value ? "bg-violet-600 hover:bg-violet-700" : "hover:bg-violet-50",
-                "flex flex-col items-center justify-center text-center"
+                "relative h-14 md:h-16 font-medium transition-all",
+                selectedDuration === value ? "bg-violet-600 hover:bg-violet-700 scale-[1.02]" : "hover:bg-violet-50",
+                "flex flex-col items-center justify-center text-center",
+                "transform hover:scale-[1.02] active:scale-[0.98] transition-transform duration-200"
               )}
               onClick={() => {
                 form.setValue("duration", value);

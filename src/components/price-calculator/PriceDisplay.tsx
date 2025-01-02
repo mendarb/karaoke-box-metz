@@ -1,45 +1,39 @@
+import { Card, CardContent } from "@/components/ui/card";
 import { Euro } from "lucide-react";
 
 interface PriceDisplayProps {
-  groupSize?: string;
-  duration?: string;
+  groupSize: string;
+  duration: string;
   price: number;
   pricePerPersonPerHour: number;
 }
 
-export const PriceDisplay = ({ 
+export const PriceDisplay = ({
   groupSize,
   duration,
   price,
   pricePerPersonPerHour
 }: PriceDisplayProps) => {
-  if (!price) {
-    return (
-      <div className="text-center text-gray-500">
-        Sélectionnez le nombre de personnes et la durée pour voir le prix
-      </div>
-    );
-  }
-
-  // Formater le prix par personne avec maximum 2 décimales et forcer l'affichage des deux décimales
-  const formattedPricePerPerson = pricePerPersonPerHour.toFixed(2);
-
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="text-gray-600">
-          Prix par personne et par heure
+    <Card className="bg-violet-50 border-violet-100">
+      <CardContent className="p-4 space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Euro className="h-5 w-5 text-violet-600" />
+            <span className="text-sm font-medium text-violet-900">Prix total</span>
+          </div>
+          <span className="text-xl font-bold text-violet-900">{price}€</span>
         </div>
-        <div>{formattedPricePerPerson}€</div>
-      </div>
-      
-      <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-        <div className="flex items-center gap-2">
-          <Euro className="w-5 h-5 text-violet-600" />
-          <span className="font-semibold text-lg">Prix total</span>
+        
+        <div className="text-xs text-violet-600 flex justify-between items-center">
+          <span>Prix par personne et par heure</span>
+          <span className="font-medium">{pricePerPersonPerHour.toFixed(2)}€</span>
         </div>
-        <div className="text-xl font-bold text-violet-600">{price.toFixed(2)}€</div>
-      </div>
-    </div>
+        
+        <div className="text-xs text-violet-600/80 pt-1">
+          Pour {groupSize} personne{parseInt(groupSize) > 1 ? 's' : ''}, {duration} heure{parseInt(duration) > 1 ? 's' : ''} de karaoké
+        </div>
+      </CardContent>
+    </Card>
   );
 };

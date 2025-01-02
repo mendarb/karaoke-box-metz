@@ -2,6 +2,7 @@ import { UseFormReturn } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Users, Clock } from "lucide-react";
 
 interface GroupSizeSelectorProps {
   form: UseFormReturn<any>;
@@ -24,11 +25,14 @@ export const GroupSizeSelector = ({
   return (
     <Card className="border-none shadow-none bg-transparent">
       <CardHeader className="pb-2 px-0 space-y-1">
-        <CardTitle className="text-xl text-gray-900">
-          Combien serez-vous ?
-        </CardTitle>
+        <div className="flex items-center gap-2">
+          <Users className="h-5 w-5 text-violet-600" />
+          <CardTitle className="text-lg md:text-xl text-gray-900">
+            Combien serez-vous ?
+          </CardTitle>
+        </div>
         <CardDescription className="text-sm text-gray-600">
-          Sélectionnez le nombre de personnes pour votre session karaoké.
+          Sélectionnez le nombre de personnes
         </CardDescription>
       </CardHeader>
       <CardContent className="p-0">
@@ -39,9 +43,10 @@ export const GroupSizeSelector = ({
               type="button"
               variant={selectedSize === value ? "default" : "outline"}
               className={cn(
-                "relative h-16 font-medium transition-all",
-                selectedSize === value ? "bg-violet-600 hover:bg-violet-700" : "hover:bg-violet-50",
-                "flex flex-col items-center justify-center text-center"
+                "relative h-14 md:h-16 font-medium transition-all",
+                selectedSize === value ? "bg-violet-600 hover:bg-violet-700 scale-[1.02]" : "hover:bg-violet-50",
+                "flex flex-col items-center justify-center text-center",
+                "transform hover:scale-[1.02] active:scale-[0.98] transition-transform duration-200"
               )}
               onClick={() => {
                 form.setValue("groupSize", value);

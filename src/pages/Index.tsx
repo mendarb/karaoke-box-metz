@@ -1,6 +1,5 @@
 import { useState, Suspense, lazy } from "react";
 import { AuthModal } from "@/components/auth/AuthModal";
-import { Navbar } from "@/components/navigation/Navbar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useUserState } from "@/hooks/useUserState";
@@ -38,8 +37,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-kbox-coral">
-      <Navbar onShowAuth={() => setShowAuthModal(true)} />
-      
       <main className="flex-grow container mx-auto pb-20 md:pb-0">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-0 min-h-[500px]">
           <div className="md:col-span-1">

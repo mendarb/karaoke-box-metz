@@ -13,7 +13,7 @@ export const AdminRoutes = () => {
       <Route
         path="/admin"
         element={
-          <ProtectedRoute adminOnly hideNavbar>
+          <ProtectedRoute adminOnly>
             <AdminDashboard />
           </ProtectedRoute>
         }
@@ -21,7 +21,7 @@ export const AdminRoutes = () => {
       <Route
         path="/admin/calendar"
         element={
-          <ProtectedRoute adminOnly hideNavbar>
+          <ProtectedRoute adminOnly>
             <Calendar />
           </ProtectedRoute>
         }
@@ -29,7 +29,7 @@ export const AdminRoutes = () => {
       <Route
         path="/admin/settings"
         element={
-          <ProtectedRoute adminOnly hideNavbar>
+          <ProtectedRoute adminOnly>
             <Settings />
           </ProtectedRoute>
         }
@@ -37,7 +37,7 @@ export const AdminRoutes = () => {
       <Route
         path="/admin/accounts"
         element={
-          <ProtectedRoute adminOnly hideNavbar>
+          <ProtectedRoute adminOnly>
             <Accounts />
           </ProtectedRoute>
         }
@@ -45,7 +45,7 @@ export const AdminRoutes = () => {
       <Route
         path="/admin/accounts/:id"
         element={
-          <ProtectedRoute adminOnly hideNavbar>
+          <ProtectedRoute adminOnly>
             <EditAccountPage />
           </ProtectedRoute>
         }
@@ -53,7 +53,7 @@ export const AdminRoutes = () => {
       <Route
         path="/admin/documentation"
         element={
-          <ProtectedRoute adminOnly hideNavbar>
+          <ProtectedRoute adminOnly>
             <DocumentationPage />
           </ProtectedRoute>
         }

@@ -5,21 +5,21 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { initializeGoogleAnalytics, trackPageView } from "@/lib/analytics";
 
-// Lazy load components
+// Lazy load components with explicit loading states
 const Toaster = lazy(() => import("@/components/ui/toaster").then(mod => ({ default: mod.Toaster })));
 const Sonner = lazy(() => import("@/components/ui/sonner").then(mod => ({ default: mod.Toaster })));
 const AppRoutes = lazy(() => import("@/components/routing/AppRoutes").then(mod => ({ default: mod.AppRoutes })));
 const GoogleVerification = lazy(() => import("@/components/seo/GoogleVerification").then(mod => ({ default: mod.GoogleVerification })));
 const SupportButton = lazy(() => import("@/components/support/SupportButton").then(mod => ({ default: mod.SupportButton })));
 
-// Optimized QueryClient configuration
+// Optimized QueryClient with faster initial load
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
-      staleTime: 30000,
-      gcTime: 3600000,
+      staleTime: 5000, // Reduced stale time for faster initial load
+      gcTime: 300000, // Reduced cache time
       refetchOnMount: false,
     },
   },
@@ -37,11 +37,15 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Initialize app with a shorter timeout
     const initApp = async () => {
       try {
-        await initializeGoogleAnalytics();
+        await Promise.race([
+          initializeGoogleAnalytics(),
+          new Promise(resolve => setTimeout(resolve, 2000)) // Timeout after 2s
+        ]);
       } catch (error) {
-        console.error('Erreur lors de l\'initialisation de GA:', error);
+        console.error('Error initializing:', error);
       } finally {
         setIsLoading(false);
       }

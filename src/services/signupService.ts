@@ -17,6 +17,20 @@ export const signupUser = async (data: SignupData): Promise<SignupResult> => {
 
     if (signUpError) throw signUpError;
 
+    // Envoyer l'email de bienvenue
+    try {
+      await supabase.functions.invoke('send-welcome-email', {
+        body: {
+          to: data.email,
+          fullName: data.fullName,
+        }
+      });
+      console.log('✉️ Email de bienvenue envoyé à:', data.email);
+    } catch (emailError) {
+      console.error("Erreur lors de l'envoi de l'email de bienvenue:", emailError);
+      // On ne bloque pas l'inscription si l'envoi de l'email échoue
+    }
+
     return {
       success: true,
       message: "Inscription réussie ! Vérifiez votre email pour confirmer votre compte.",

@@ -21,7 +21,7 @@ const Box3D = () => {
                 />
                 <div className="p-4 bg-white/90">
                   <p className="text-sm text-gray-600 text-center">
-                    Visite virtuelle 3D de notre box karaoké à Metz
+                    Rendu 3D de notre box karaoké à Metz
                     <br />
                     <span className="text-xs italic">(le résultat final peut légèrement différer)</span>
                   </p>

@@ -8,7 +8,7 @@ import Terms from "@/pages/legal/Terms";
 import Privacy from "@/pages/legal/Privacy";
 import Cancellation from "@/pages/legal/Cancellation";
 import { AccountPage } from "@/components/account/AccountPage";
-import { MyBookings } from "@/pages/MyBookings";
+import MyBookings from "@/pages/MyBookings";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { Calendar } from "@/pages/Calendar";

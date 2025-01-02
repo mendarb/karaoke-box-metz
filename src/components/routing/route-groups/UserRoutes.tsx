@@ -1,6 +1,6 @@
 import { Route } from "react-router-dom";
 import { AccountPage } from "@/components/account/AccountPage";
-import { MyBookings } from "@/pages/MyBookings";
+import MyBookings from "@/pages/MyBookings";
 import { ProtectedRoute } from "../ProtectedRoute";
 
 export const UserRoutes = () => {

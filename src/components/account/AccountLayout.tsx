@@ -18,11 +18,7 @@ export const AccountLayout = ({ children }: { children: React.ReactNode }) => {
   }, [user, isLoading, navigate]);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner />
-      </div>
-    );
+    return <LoadingSpinner fullScreen />;
   }
 
   return (

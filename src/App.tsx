@@ -58,21 +58,14 @@ const App = () => {
   }, []);
 
   if (isLoading) {
-    return (
-      <div className="h-screen w-screen flex items-center justify-center bg-kbox-coral">
-        <div className="text-center">
-          <LoadingSpinner className="w-12 h-12 mb-4" />
-          <p className="text-white text-sm">Chargement de K.Box...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner fullScreen />;
   }
 
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <TooltipProvider>
-          <Suspense fallback={<LoadingSpinner />}>
+          <Suspense fallback={<LoadingSpinner fullScreen />}>
             <GoogleVerification />
             <Toaster />
             <Sonner />

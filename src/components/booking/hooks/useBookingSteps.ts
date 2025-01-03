@@ -1,6 +1,7 @@
 import { User2, Calendar, Users, CreditCard } from "lucide-react";
+import { Step } from "@/components/BookingSteps";
 
-export const useBookingSteps = (currentStep: number) => {
+export const useBookingSteps = (currentStep: number): Step[] => {
   return [
     {
       id: 1,

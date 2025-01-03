@@ -8,9 +8,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { HeroSection } from "@/components/home/HeroSection";
 import { FeatureGrid } from "@/components/home/FeatureGrid";
-
-const BookingSection = lazy(() => import("@/components/home/BookingSection"));
-const Footer = lazy(() => import("@/components/home/Footer"));
+import BookingSection from "@/components/home/BookingSection";
+import Footer from "@/components/home/Footer";
 
 const Index = () => {
   const isMobile = useIsMobile();
@@ -62,9 +61,7 @@ const Index = () => {
         </div>
       </main>
 
-      <Suspense fallback={null}>
-        <Footer />
-      </Suspense>
+      <Footer />
 
       <AuthModal 
         isOpen={showAuthModal} 

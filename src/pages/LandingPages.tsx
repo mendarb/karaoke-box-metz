@@ -1,4 +1,4 @@
-import { DashboardLayout } from "@/components/admin/dashboard/DashboardLayout";
+import { DashboardLayout } from "@/components/admin/DashboardLayout";
 import { LandingPagesTable } from "@/components/admin/landing-pages/LandingPagesTable";
 
 export const LandingPages = () => {

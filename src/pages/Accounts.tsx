@@ -1,4 +1,4 @@
-import { DashboardLayout } from "@/components/admin/dashboard/DashboardLayout";
+import { DashboardLayout } from "@/components/admin/DashboardLayout";
 import { AccountsTable } from "@/components/admin/accounts/AccountsTable";
 
 export const Accounts = () => {

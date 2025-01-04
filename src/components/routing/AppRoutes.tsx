@@ -17,6 +17,7 @@ import { Accounts } from "@/pages/Accounts";
 import { EditAccountPage } from "@/components/admin/accounts/EditAccountPage";
 import { DocumentationPage } from "@/components/admin/documentation/DocumentationPage";
 import { LandingPage } from "@/pages/LandingPage";
+import { LandingPages } from "@/pages/LandingPages";
 
 export const AppRoutes = () => {
   return (
@@ -97,6 +98,14 @@ export const AppRoutes = () => {
         element={
           <ProtectedRoute adminOnly>
             <DocumentationPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/landing-pages"
+        element={
+          <ProtectedRoute adminOnly>
+            <LandingPages />
           </ProtectedRoute>
         }
       />

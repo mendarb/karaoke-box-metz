@@ -47,7 +47,7 @@ export const FullCalendar = ({ bookings, isLoading }: FullCalendarProps) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 md:p-6 max-w-[1600px] mx-auto">
       {Object.entries(groupedBookings).map(([date, dayBookings]) => (
         <Card key={date} className="p-4">
           <h3 className="font-semibold mb-4 text-lg border-b pb-2">{date}</h3>
@@ -55,7 +55,7 @@ export const FullCalendar = ({ bookings, isLoading }: FullCalendarProps) => {
             {dayBookings.map((booking) => (
               <div
                 key={booking.id}
-                className="flex items-center justify-between p-4 bg-white rounded-lg border hover:shadow-md transition-shadow"
+                className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-white rounded-lg border hover:shadow-md transition-shadow gap-4"
               >
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
@@ -78,7 +78,7 @@ export const FullCalendar = ({ bookings, isLoading }: FullCalendarProps) => {
                   </div>
                 </div>
 
-                <div className="flex flex-col items-end space-y-2">
+                <div className="flex flex-row md:flex-col items-center md:items-end space-x-2 md:space-x-0 md:space-y-2">
                   <Badge variant={getStatusVariant(booking.status)}>
                     {booking.status}
                   </Badge>

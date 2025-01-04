@@ -24,12 +24,13 @@ export const DashboardContent = ({
   const dummyOnStatusChange = async () => {};
 
   return (
-    <div className="p-4 md:p-6">
-      <div className="flex justify-between items-center mb-6">
+    <div className="p-4 md:p-6 max-w-[1600px] mx-auto">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <h1 className="text-2xl font-bold">Tableau de bord administrateur</h1>
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full md:w-auto">
           <Button
             variant="destructive"
+            className="flex-1 md:flex-none"
             onClick={() => setIsCleanupDialogOpen(true)}
           >
             <Trash2 className="mr-2 h-4 w-4" />
@@ -37,7 +38,7 @@ export const DashboardContent = ({
           </Button>
           <Dialog open={isBookingDialogOpen} onOpenChange={setIsBookingDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="flex-1 md:flex-none">
                 <Plus className="mr-2 h-4 w-4" />
                 Nouvelle réservation
               </Button>

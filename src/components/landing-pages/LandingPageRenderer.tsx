@@ -8,7 +8,9 @@ interface LandingPageRendererProps {
 }
 
 export const LandingPageRenderer = ({ page }: LandingPageRendererProps) => {
-  const templates = {
+  console.log("Rendering landing page with template:", page.template_type);
+
+  const templates: Record<string, React.ComponentType<{ page: LandingPage }>> = {
     basic: BasicTemplate,
     hero: HeroTemplate,
   };

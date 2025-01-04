@@ -4,12 +4,12 @@ import { useUserState } from "./useUserState";
 import { useToast } from "@/components/ui/use-toast";
 
 export const useAdminCheck = () => {
-  const { isAdmin, isLoading } = useUserState();
+  const { isAdmin, isLoading, sessionChecked } = useUserState();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!isLoading && !isAdmin) {
+    if (!isLoading && sessionChecked && !isAdmin) {
       toast({
         title: "Accès refusé",
         description: "Vous n'avez pas les droits d'accès à cette page",
@@ -17,7 +17,7 @@ export const useAdminCheck = () => {
       });
       navigate("/");
     }
-  }, [isAdmin, isLoading, navigate, toast]);
+  }, [isAdmin, isLoading, sessionChecked, navigate, toast]);
 
   return { isAdmin, isLoading };
 };

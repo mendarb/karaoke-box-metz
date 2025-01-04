@@ -44,24 +44,37 @@ export const useUserState = (): UserState => {
       }
     };
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session?.user?.id) {
-        loadUserProfile(session.user.id);
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log("Current session:", session);
+        setSession(session);
+        
+        if (session?.user?.id) {
+          await loadUserProfile(session.user.id);
+        }
+      } catch (error) {
+        console.error('Error checking session:', error);
+      } finally {
+        setIsLoading(false);
+        setSessionChecked(true);
       }
-      setIsLoading(false);
-      setSessionChecked(true);
-    });
+    };
+
+    checkSession();
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      console.log("Auth state changed:", _event, session);
       setSession(session);
+      
       if (session?.user?.id) {
-        loadUserProfile(session.user.id);
+        await loadUserProfile(session.user.id);
       } else {
         setProfile(null);
       }
+      
       setIsLoading(false);
       setSessionChecked(true);
     });
@@ -69,7 +82,7 @@ export const useUserState = (): UserState => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const isAdmin = session?.user?.email === "mendar.bouchali@gmail.com";
+  const isAdmin = session?.user?.email === "mendar.bouchali@gmail.com" || false;
   const user = session?.user || null;
 
   return {

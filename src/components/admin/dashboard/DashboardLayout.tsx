@@ -1,7 +1,11 @@
 import { DashboardSidebar } from "../DashboardSidebar";
 import { Layout, FileText } from "lucide-react";
 
-export const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
+interface DashboardLayoutProps {
+  children: React.ReactNode;
+}
+
+export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const sidebarItems = [
     {
       title: "Dashboard",
@@ -17,7 +21,7 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
 
   return (
     <div className="flex h-screen bg-gray-100">
-      <DashboardSidebar items={sidebarItems} />
+      <DashboardSidebar sidebarItems={sidebarItems} />
       <div className="flex-1 overflow-auto">
         {children}
       </div>

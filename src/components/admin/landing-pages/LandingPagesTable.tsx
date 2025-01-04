@@ -102,7 +102,7 @@ export const LandingPagesTable = () => {
               <TableCell>{page.slug}</TableCell>
               <TableCell>{page.template_type}</TableCell>
               <TableCell>
-                <Badge variant={page.is_published ? "success" : "secondary"}>
+                <Badge variant={page.is_published ? "default" : "secondary"}>
                   {page.is_published ? "Publié" : "Brouillon"}
                 </Badge>
               </TableCell>

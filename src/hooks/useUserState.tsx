@@ -82,8 +82,17 @@ export const useUserState = (): UserState => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const isAdmin = session?.user?.email === "mendar.bouchali@gmail.com" || false;
+  // Explicitly check for admin email
+  const isAdmin = session?.user?.email === "mendar.bouchali@gmail.com";
   const user = session?.user || null;
+
+  // Log admin status for debugging
+  console.log("Admin check:", {
+    email: session?.user?.email,
+    isAdmin,
+    sessionChecked,
+    isLoading
+  });
 
   return {
     session,

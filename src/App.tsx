@@ -11,7 +11,6 @@ import { GoogleVerification } from "@/components/seo/GoogleVerification";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { SupportButton } from "@/components/support/SupportButton";
 import { Navbar } from "@/components/navigation/Navbar";
-import { AuthModal } from "@/components/auth/AuthModal";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,7 +36,6 @@ const PageTracker = () => {
 
 const App = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const [showAuthModal, setShowAuthModal] = useState(false);
 
   useEffect(() => {
     const initGA = async () => {
@@ -71,7 +69,7 @@ const App = () => {
               <GoogleVerification />
               <div className="flex flex-col min-h-screen">
                 <Navbar />
-                <main className="flex-grow">
+                <main className="flex-grow pt-16">
                   <AppRoutes />
                 </main>
               </div>
@@ -79,10 +77,6 @@ const App = () => {
               <Sonner />
               <PageTracker />
               <SupportButton />
-              <AuthModal 
-                isOpen={showAuthModal} 
-                onClose={() => setShowAuthModal(false)} 
-              />
             </Suspense>
           </TooltipProvider>
         </BrowserRouter>

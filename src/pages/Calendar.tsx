@@ -31,7 +31,7 @@ export const Calendar = () => {
             <DialogHeader>
               <DialogTitle>Créer une nouvelle réservation</DialogTitle>
             </DialogHeader>
-            <AdminBookingForm onSuccess={() => setIsDialogOpen(false)} />
+            <AdminBookingForm onClose={() => setIsDialogOpen(false)} />
           </DialogContent>
         </Dialog>
       </div>

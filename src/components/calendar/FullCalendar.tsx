@@ -29,6 +29,23 @@ export const FullCalendar = ({ bookings, isLoading }: FullCalendarProps) => {
     return acc;
   }, {} as Record<string, Booking[]>);
 
+  const getStatusVariant = (status: string) => {
+    switch (status) {
+      case 'confirmed':
+        return 'default';
+      case 'pending':
+        return 'secondary';
+      case 'cancelled':
+        return 'destructive';
+      default:
+        return 'secondary';
+    }
+  };
+
+  const getPaymentStatusVariant = (status: string) => {
+    return status === 'paid' ? 'default' : 'secondary';
+  };
+
   return (
     <div className="space-y-6">
       {Object.entries(groupedBookings).map(([date, dayBookings]) => (
@@ -62,21 +79,10 @@ export const FullCalendar = ({ bookings, isLoading }: FullCalendarProps) => {
                 </div>
 
                 <div className="flex flex-col items-end space-y-2">
-                  <Badge 
-                    variant={
-                      booking.status === 'confirmed' ? 'success' :
-                      booking.status === 'pending' ? 'warning' :
-                      'destructive'
-                    }
-                  >
+                  <Badge variant={getStatusVariant(booking.status)}>
                     {booking.status}
                   </Badge>
-                  <Badge 
-                    variant={
-                      booking.payment_status === 'paid' ? 'success' :
-                      'warning'
-                    }
-                  >
+                  <Badge variant={getPaymentStatusVariant(booking.payment_status)}>
                     {booking.payment_status}
                   </Badge>
                 </div>

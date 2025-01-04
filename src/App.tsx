@@ -70,7 +70,7 @@ const App = () => {
             <Suspense fallback={<LoadingSpinner fullScreen />}>
               <GoogleVerification />
               <div className="flex flex-col min-h-screen">
-                <Navbar onShowAuth={() => setShowAuthModal(true)} />
+                <Navbar />
                 <main className="flex-grow">
                   <AppRoutes />
                 </main>

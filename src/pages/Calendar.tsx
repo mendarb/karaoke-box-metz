@@ -9,7 +9,7 @@ import { useBookings } from "@/hooks/useBookings";
 
 export const Calendar = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { bookings, isLoading } = useBookings();
+  const { data: bookings = [], isLoading } = useBookings();
 
   return (
     <DashboardLayout>

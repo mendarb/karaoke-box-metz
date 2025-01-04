@@ -1,22 +1,25 @@
-import { ReactNode } from "react";
 import { DashboardSidebar } from "../DashboardSidebar";
+import { Layout, FileText } from "lucide-react";
 
-interface DashboardLayoutProps {
-  children: ReactNode;
-  title?: string;  // Make title optional
-}
+export const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
+  const sidebarItems = [
+    {
+      title: "Dashboard",
+      href: "/admin",
+      icon: <Layout className="h-4 w-4" />,
+    },
+    {
+      title: "Landing Pages",
+      href: "/admin/landing-pages",
+      icon: <FileText className="h-4 w-4" />,
+    },
+  ];
 
-export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
   return (
     <div className="flex h-screen bg-gray-100">
-      <DashboardSidebar />
+      <DashboardSidebar items={sidebarItems} />
       <div className="flex-1 overflow-auto">
-        <main className="p-6">
-          {title && (
-            <h1 className="text-2xl font-semibold mb-6">{title}</h1>
-          )}
-          {children}
-        </main>
+        {children}
       </div>
     </div>
   );

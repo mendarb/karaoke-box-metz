@@ -35,7 +35,7 @@ export const DashboardSidebar = () => {
   const location = useLocation();
 
   return (
-    <div className="pb-12 min-h-screen">
+    <div className="hidden md:flex h-screen w-64 flex-col fixed left-0 top-0 bottom-0 bg-white border-r">
       <div className="space-y-4 py-4">
         <div className="px-3 py-2">
           <div className="space-y-1">

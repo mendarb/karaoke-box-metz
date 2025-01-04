@@ -6,10 +6,12 @@ interface DashboardLayoutProps {
 
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100">
       <DashboardSidebar />
-      <div className="flex-1 overflow-auto pt-16 md:pt-0">
-        {children}
+      <div className="md:pl-64">
+        <div className="p-4 md:p-8">
+          {children}
+        </div>
       </div>
     </div>
   );

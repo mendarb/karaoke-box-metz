@@ -20,6 +20,7 @@ export const DashboardContent = ({
   onViewDetails 
 }: DashboardContentProps) => {
   const [isCleanupDialogOpen, setIsCleanupDialogOpen] = useState(false);
+  const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
   const dummyOnStatusChange = async () => {};
 
   return (
@@ -34,7 +35,7 @@ export const DashboardContent = ({
             <Trash2 className="mr-2 h-4 w-4" />
             Nettoyer les réservations
           </Button>
-          <Dialog>
+          <Dialog open={isBookingDialogOpen} onOpenChange={setIsBookingDialogOpen}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
@@ -45,7 +46,7 @@ export const DashboardContent = ({
               <DialogHeader>
                 <DialogTitle>Créer une nouvelle réservation</DialogTitle>
               </DialogHeader>
-              <AdminBookingForm />
+              <AdminBookingForm onClose={() => setIsBookingDialogOpen(false)} />
             </DialogContent>
           </Dialog>
         </div>

@@ -13,8 +13,8 @@ export const Calendar = () => {
 
   return (
     <DashboardLayout>
-      <div className="p-4 md:p-6">
-        <div className="flex justify-between items-center mb-6">
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Calendrier des réservations</h1>
           <Button onClick={() => setIsDialogOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
@@ -22,7 +22,7 @@ export const Calendar = () => {
           </Button>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white rounded-lg shadow">
           <FullCalendar bookings={bookings} isLoading={isLoading} />
         </div>
 

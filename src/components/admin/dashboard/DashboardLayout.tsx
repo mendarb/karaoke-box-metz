@@ -1,14 +1,10 @@
-import { DashboardSidebar } from "../DashboardSidebar";
+import { DashboardSidebar } from "./DashboardSidebar";
 
-interface DashboardLayoutProps {
-  children: React.ReactNode;
-}
-
-export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
+export const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-gray-100">
       <DashboardSidebar />
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 p-8 pt-24">
         {children}
       </div>
     </div>

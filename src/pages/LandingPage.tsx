@@ -29,9 +29,15 @@ export const LandingPage = () => {
       console.log("Fetched landing page:", data);
       return data;
     },
+    // Ajout des options pour forcer le rechargement lors du changement de slug
+    refetchOnWindowFocus: false,
+    enabled: !!slug,
+    staleTime: 0,
+    cacheTime: 0
   });
 
   if (error) {
+    console.error("Error in landing page component:", error);
     toast({
       title: "Erreur",
       description: "Impossible de charger la page",

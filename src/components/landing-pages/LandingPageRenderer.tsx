@@ -2,6 +2,7 @@ import { LandingPage } from "@/types/landing";
 import { BasicTemplate } from "./templates/BasicTemplate";
 import { HeroTemplate } from "./templates/HeroTemplate";
 import { Helmet } from "react-helmet";
+import { useEffect } from "react";
 
 interface LandingPageRendererProps {
   page: LandingPage;
@@ -9,6 +10,11 @@ interface LandingPageRendererProps {
 
 export const LandingPageRenderer = ({ page }: LandingPageRendererProps) => {
   console.log("Rendering landing page with template:", page.template_type);
+
+  useEffect(() => {
+    // Scroll to top when page changes
+    window.scrollTo(0, 0);
+  }, [page.slug]);
 
   const templates: Record<string, React.ComponentType<{ page: LandingPage }>> = {
     basic: BasicTemplate,

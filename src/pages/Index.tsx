@@ -31,18 +31,18 @@ const Index = () => {
   });
 
   if (userLoading && !sessionChecked || settingsLoading) {
-    return <LoadingSpinner />;
+    return <LoadingSpinner fullScreen />;
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-kbox-coral">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-white to-kbox-pink/10">
       <main className="flex-grow container mx-auto pb-20 md:pb-0">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-0 min-h-[500px]">
           <div className="md:col-span-1">
             <HeroSection />
           </div>
 
-          <div className="md:col-span-2 bg-white">
+          <div className="md:col-span-2 bg-white/50 backdrop-blur-sm rounded-lg shadow-sm">
             <Suspense fallback={
               <div className="flex items-center justify-center h-full min-h-[500px]">
                 <LoadingSpinner />
@@ -56,7 +56,7 @@ const Index = () => {
           </div>
         </div>
 
-        <div>
+        <div className="mt-12">
           <FeatureGrid />
         </div>
       </main>

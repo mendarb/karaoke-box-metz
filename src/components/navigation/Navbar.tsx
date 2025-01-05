@@ -7,6 +7,7 @@ import { useAuthHandlers } from "@/hooks/useAuthHandlers";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { useState } from "react";
 import { AuthModal } from "@/components/auth/AuthModal";
+import { CalendarDays } from "lucide-react";
 
 export const Navbar = () => {
   const { user } = useUserState();
@@ -26,10 +27,11 @@ export const Navbar = () => {
             <>
               <Link to="/">
                 <Button 
-                  size="lg"
-                  className="bg-violet-600 hover:bg-violet-700 text-white font-semibold px-6 py-2 text-lg shadow-md hover:shadow-lg transition-all duration-200"
+                  variant="default"
+                  className="bg-violet-600 hover:bg-violet-700 text-white font-medium px-4 py-2 text-sm flex items-center gap-2 shadow-sm hover:shadow transition-all duration-200"
                 >
-                  Réserver
+                  <CalendarDays className="w-4 h-4" />
+                  Réserver une session
                 </Button>
               </Link>
               <UserNav onSignOut={handleSignOut} isAdmin={isAdmin} />

@@ -1,6 +1,8 @@
 import { Calendar } from "@/components/ui/calendar";
 import { Card } from "@/components/ui/card";
 import { fr } from "date-fns/locale";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface BookingCalendarProps {
   selectedDate?: Date;
@@ -38,6 +40,28 @@ export const BookingCalendar = ({
           defaultMonth={defaultMonth}
           className="rounded-md border"
           showOutsideDays={false}
+          components={{
+            IconLeft: ({ ...props }) => (
+              <ChevronLeft 
+                className="h-5 w-5 text-gray-600 hover:text-violet-600 transition-colors cursor-pointer" 
+                {...props}
+              />
+            ),
+            IconRight: ({ ...props }) => (
+              <ChevronRight 
+                className="h-5 w-5 text-gray-600 hover:text-violet-600 transition-colors cursor-pointer" 
+                {...props}
+              />
+            ),
+          }}
+          classNames={{
+            nav_button: cn(
+              "w-8 h-8 bg-transparent p-0 opacity-100 hover:bg-violet-50 rounded-full transition-colors",
+              "data-[disabled]:opacity-50 data-[disabled]:hover:bg-transparent"
+            ),
+            nav_button_previous: "-ml-1",
+            nav_button_next: "-mr-1",
+          }}
         />
       </div>
     </Card>

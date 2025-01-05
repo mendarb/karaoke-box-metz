@@ -12,9 +12,8 @@ export const useBookingForm = () => {
 
   const form = useForm<BookingFormValues>({
     defaultValues: {
-      firstName: "",
-      lastName: "",
       email: "",
+      fullName: "",
       phone: "",
       date: undefined,
       timeSlot: "",
@@ -22,8 +21,6 @@ export const useBookingForm = () => {
       duration: "",
       message: "",
       promoCode: "",
-      createAccount: false,
-      password: "",
     },
   });
 

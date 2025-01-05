@@ -5,65 +5,52 @@ import { GallerySection } from "./components/GallerySection";
 import { LandingFooter } from "./components/LandingFooter";
 import { Helmet } from "react-helmet";
 import { Facebook, Instagram, Twitter } from "lucide-react";
+import { LandingPage } from "@/types/landing";
 
 interface BasicTemplateProps {
-  content: {
-    title: string;
-    description: string;
-    heroImage?: string;
-    features?: Array<{
-      title: string;
-      description: string;
-    }>;
-    gallery?: Array<{
-      url: string;
-      alt: string;
-    }>;
-  };
-  meta: {
-    title: string;
-    description: string;
-    keywords: string[];
-  };
+  page: LandingPage;
 }
 
-export const BasicTemplate = ({ content, meta }: BasicTemplateProps) => {
+export const BasicTemplate = ({ page }: BasicTemplateProps) => {
+  const features = page.content.features || [];
+  const gallery = page.content.gallery || [];
+
   return (
     <>
       <Helmet>
-        <title>{meta.title}</title>
-        <meta name="description" content={meta.description} />
-        <meta name="keywords" content={meta.keywords.join(', ')} />
-        <meta property="og:title" content={meta.title} />
-        <meta property="og:description" content={meta.description} />
-        {content.heroImage && <meta property="og:image" content={content.heroImage} />}
+        <title>{page.meta_title}</title>
+        <meta name="description" content={page.meta_description} />
+        <meta name="keywords" content={page.keywords.join(', ')} />
+        <meta property="og:title" content={page.meta_title} />
+        <meta property="og:description" content={page.meta_description} />
+        {page.image_url && <meta property="og:image" content={page.image_url} />}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={meta.title} />
-        <meta name="twitter:description" content={meta.description} />
-        {content.heroImage && <meta name="twitter:image" content={content.heroImage} />}
+        <meta name="twitter:title" content={page.meta_title} />
+        <meta name="twitter:description" content={page.meta_description} />
+        {page.image_url && <meta name="twitter:image" content={page.image_url} />}
         <link rel="canonical" href={window.location.href} />
       </Helmet>
 
       <main className="min-h-screen">
         <HeroSection
-          title={content.title}
-          subtitle={content.description}
-          imageUrl={content.heroImage}
+          title={page.title}
+          subtitle={page.description}
+          imageUrl={page.image_url}
         />
 
-        {content.features && (
+        {features.length > 0 && (
           <FeaturesSection
             title="Nos points forts"
             subtitle="Découvrez ce qui rend notre escape game unique"
-            features={content.features}
+            features={features}
           />
         )}
 
-        {content.gallery && (
+        {gallery.length > 0 && (
           <GallerySection
             title="Notre univers"
             subtitle="Plongez dans l'ambiance de nos salles"
-            images={content.gallery}
+            images={gallery}
           />
         )}
 

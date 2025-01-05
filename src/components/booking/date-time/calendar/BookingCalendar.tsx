@@ -43,13 +43,13 @@ export const BookingCalendar = ({
           components={{
             IconLeft: ({ ...props }) => (
               <ChevronLeft 
-                className="h-5 w-5 text-gray-600 hover:text-kbox-coral transition-colors cursor-pointer" 
+                className="h-4 w-4 text-gray-600 hover:text-kbox-coral transition-colors" 
                 {...props}
               />
             ),
             IconRight: ({ ...props }) => (
               <ChevronRight 
-                className="h-5 w-5 text-gray-600 hover:text-kbox-coral transition-colors cursor-pointer" 
+                className="h-4 w-4 text-gray-600 hover:text-kbox-coral transition-colors" 
                 {...props}
               />
             ),
@@ -57,11 +57,11 @@ export const BookingCalendar = ({
           classNames={{
             nav: "space-x-1 flex items-center",
             nav_button: cn(
-              "w-8 h-8 bg-transparent p-0 opacity-100 hover:bg-gray-50 rounded-full transition-colors cursor-pointer",
+              "h-7 w-7 bg-transparent p-0 opacity-100 hover:bg-gray-50 transition-colors",
               "data-[disabled]:opacity-50 data-[disabled]:hover:bg-transparent"
             ),
-            nav_button_previous: "-ml-1",
-            nav_button_next: "-mr-1",
+            nav_button_previous: "ml-auto",
+            nav_button_next: "mr-auto",
             caption: "flex justify-center py-2 relative items-center",
             caption_label: "text-sm font-medium",
             table: "w-full border-collapse space-y-1",

@@ -35,9 +35,9 @@ export const DashboardSidebar = () => {
   const location = useLocation();
 
   return (
-    <div className="hidden md:flex h-screen w-64 flex-col fixed left-0 top-0 bottom-0 bg-white border-r shadow-sm">
-      <div className="flex-1 py-6">
-        <nav className="px-3 space-y-1">
+    <div className="fixed left-0 top-16 bottom-0 w-64 bg-white border-r shadow-sm">
+      <div className="flex flex-col h-full py-6">
+        <nav className="space-y-1 px-3">
           {menuItems.map((item) => {
             const isActive = location.pathname === item.href;
             

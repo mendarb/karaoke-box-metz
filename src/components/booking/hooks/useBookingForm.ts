@@ -1,35 +1,39 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { BookingFormValues } from "../types/bookingFormTypes";
 
 export const useBookingForm = () => {
+  const [groupSize, setGroupSize] = useState<string>("");
+  const [duration, setDuration] = useState<string>("");
   const [currentStep, setCurrentStep] = useState(1);
-  const [groupSize, setGroupSize] = useState("");
-  const [duration, setDuration] = useState("");
   const [calculatedPrice, setCalculatedPrice] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [availableHours, setAvailableHours] = useState(0);
+  const [availableHours, setAvailableHours] = useState<number>(0);
 
   const form = useForm<BookingFormValues>({
     defaultValues: {
+      firstName: "",
+      lastName: "",
       email: "",
-      fullName: "",
       phone: "",
       date: undefined,
       timeSlot: "",
       groupSize: "",
       duration: "",
       message: "",
+      promoCode: "",
+      createAccount: false,
+      password: "",
     },
   });
 
-  const handlePriceCalculated = useCallback((price: number) => {
+  const handlePriceCalculated = (price: number) => {
     setCalculatedPrice(price);
-  }, []);
+  };
 
-  const handleAvailabilityChange = useCallback((date: Date | undefined, hours: number) => {
+  const handleAvailabilityChange = (date: Date | undefined, hours: number) => {
     setAvailableHours(hours);
-  }, []);
+  };
 
   const handlePrevious = () => {
     if (currentStep > 1) {
@@ -37,25 +41,8 @@ export const useBookingForm = () => {
     }
   };
 
-  // Validation des étapes
-  const validateStep = (step: number): boolean => {
-    switch (step) {
-      case 1:
-        return !!form.getValues("date") && !!form.getValues("timeSlot");
-      case 2:
-        return !!groupSize && !!duration;
-      case 3:
-        return true;
-      default:
-        return false;
-    }
-  };
-
-  // Ne permet pas de passer à l'étape suivante si l'étape actuelle n'est pas validée
   const handleNextStep = () => {
-    if (validateStep(currentStep)) {
-      setCurrentStep(currentStep + 1);
-    }
+    setCurrentStep(currentStep + 1);
   };
 
   return {

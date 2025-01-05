@@ -6,27 +6,23 @@ interface CTASectionProps {
   description?: string;
   ctaText?: string;
   ctaLink?: string;
-  imageUrl?: string;
 }
 
 export const CTASection = ({
   title,
   description,
   ctaText = "Réserver maintenant",
-  ctaLink = "/booking",
-  imageUrl = "/lovable-uploads/d45fd1b9-de1b-40a3-ae6b-4072948883a6.png"
+  ctaLink = "/booking"
 }: CTASectionProps) => {
   return (
     <section className="py-20 relative overflow-hidden">
       <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-kbox-coral to-kbox-violet opacity-90" />
-        {imageUrl && (
-          <img
-            src={imageUrl}
-            alt=""
-            className="w-full h-full object-cover"
-          />
-        )}
+        <img
+          src="/lovable-uploads/d45fd1b9-de1b-40a3-ae6b-4072948883a6.png"
+          alt="KBOX Ambiance"
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-kbox-violet/90 to-kbox-coral/90" />
       </div>
       
       <div className="container mx-auto px-4 relative z-10">
@@ -47,7 +43,7 @@ export const CTASection = ({
           )}
           <Button
             size="lg"
-            className="bg-white hover:bg-gray-100 text-kbox-coral px-8 py-6 text-lg"
+            className="bg-white hover:bg-gray-100 text-kbox-violet px-8 py-6 text-lg animate-pulse"
             asChild
           >
             <a href={ctaLink}>{ctaText}</a>

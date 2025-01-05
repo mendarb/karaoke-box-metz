@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Facebook, Instagram, Twitter } from "lucide-react";
 
 interface LandingFooterProps {
   links?: Array<{
@@ -12,8 +13,16 @@ interface LandingFooterProps {
 }
 
 export const LandingFooter = ({
-  links = [],
-  socialLinks = []
+  links = [
+    { text: "Accueil", url: "/" },
+    { text: "Réservation", url: "/booking" },
+    { text: "Contact", url: "/contact" }
+  ],
+  socialLinks = [
+    { icon: <Facebook className="h-6 w-6" />, url: "https://facebook.com/kboxmetz" },
+    { icon: <Instagram className="h-6 w-6" />, url: "https://instagram.com/kboxmetz" },
+    { icon: <Twitter className="h-6 w-6" />, url: "https://twitter.com/kboxmetz" }
+  ]
 }: LandingFooterProps) => {
   const currentYear = new Date().getFullYear();
   
@@ -28,9 +37,9 @@ export const LandingFooter = ({
           className="grid grid-cols-1 md:grid-cols-3 gap-8"
         >
           <div>
-            <h3 className="text-xl font-semibold mb-4">À propos</h3>
+            <h3 className="text-xl font-semibold mb-4">À propos de KBOX</h3>
             <p className="text-gray-400">
-              Découvrez une expérience unique de karaoké à Metz. KBOX vous offre des salles privées équipées pour des moments inoubliables entre amis.
+              Découvrez une expérience unique de karaoké à Metz. KBOX vous offre des box privatives équipées des dernières technologies pour des moments inoubliables entre amis.
             </p>
           </div>
 
@@ -42,7 +51,7 @@ export const LandingFooter = ({
                   <li key={index}>
                     <a
                       href={link.url}
-                      className="text-gray-400 hover:text-white transition-colors"
+                      className="text-gray-400 hover:text-kbox-coral transition-colors"
                     >
                       {link.text}
                     </a>
@@ -60,7 +69,7 @@ export const LandingFooter = ({
                   <a
                     key={index}
                     href={link.url}
-                    className="text-gray-400 hover:text-white transition-colors"
+                    className="text-gray-400 hover:text-kbox-coral transition-colors"
                     target="_blank"
                     rel="noopener noreferrer"
                   >

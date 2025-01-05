@@ -4,7 +4,7 @@ import { CTASection } from "./components/CTASection";
 import { GallerySection } from "./components/GallerySection";
 import { LandingFooter } from "./components/LandingFooter";
 import { Helmet } from "react-helmet";
-import { Facebook, Instagram, Twitter } from "lucide-react";
+import { Facebook, Instagram, Twitter, Music, Star, Users } from "lucide-react";
 import { LandingPage } from "@/types/landing";
 
 interface BasicTemplateProps {
@@ -12,7 +12,25 @@ interface BasicTemplateProps {
 }
 
 export const BasicTemplate = ({ page }: BasicTemplateProps) => {
-  const features = page.content.features || [];
+  const defaultFeatures = [
+    {
+      title: "Box Privatives",
+      description: "Profitez d'un espace privatif entièrement équipé pour votre groupe",
+      icon: <Music className="w-8 h-8" />
+    },
+    {
+      title: "Ambiance Premium",
+      description: "Une atmosphère unique avec un système son et lumières haut de gamme",
+      icon: <Star className="w-8 h-8" />
+    },
+    {
+      title: "Entre Amis",
+      description: "Le lieu idéal pour des moments inoubliables entre amis",
+      icon: <Users className="w-8 h-8" />
+    }
+  ];
+
+  const features = page.content.features?.length > 0 ? page.content.features : defaultFeatures;
   const gallery = page.content.gallery || [];
 
   return (
@@ -31,46 +49,31 @@ export const BasicTemplate = ({ page }: BasicTemplateProps) => {
         <link rel="canonical" href={window.location.href} />
       </Helmet>
 
-      <main className="min-h-screen">
+      <main className="min-h-screen bg-gradient-to-br from-white to-kbox-pink/10">
         <HeroSection
           title={page.title}
           subtitle={page.description}
           imageUrl={page.image_url}
         />
 
-        {features.length > 0 && (
-          <FeaturesSection
-            title="Nos points forts"
-            subtitle="Découvrez ce qui rend notre escape game unique"
-            features={features}
-          />
-        )}
+        <FeaturesSection
+          title="Nos points forts"
+          subtitle="Découvrez ce qui rend KBOX unique"
+          features={features}
+        />
 
-        {gallery.length > 0 && (
-          <GallerySection
-            title="Notre univers"
-            subtitle="Plongez dans l'ambiance de nos salles"
-            images={gallery}
-          />
-        )}
+        <GallerySection
+          title="Notre univers"
+          subtitle="Plongez dans l'ambiance de nos box"
+          images={gallery}
+        />
 
         <CTASection
-          title="Prêt à relever le défi ?"
-          description="Réservez votre session maintenant et vivez une expérience inoubliable"
+          title="Prêt à vivre l'expérience KBOX ?"
+          description="Réservez votre box maintenant et créez des souvenirs inoubliables"
         />
 
-        <LandingFooter
-          links={[
-            { text: "Accueil", url: "/" },
-            { text: "Réservation", url: "/booking" },
-            { text: "Contact", url: "/contact" }
-          ]}
-          socialLinks={[
-            { icon: <Facebook className="h-6 w-6" />, url: "#" },
-            { icon: <Instagram className="h-6 w-6" />, url: "#" },
-            { icon: <Twitter className="h-6 w-6" />, url: "#" }
-          ]}
-        />
+        <LandingFooter />
       </main>
     </>
   );

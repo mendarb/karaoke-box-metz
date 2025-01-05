@@ -38,29 +38,57 @@ export const BookingCalendar = ({
           }
           locale={fr}
           defaultMonth={defaultMonth}
-          className="rounded-md border"
+          className="rounded-md border shadow-sm"
           showOutsideDays={false}
           components={{
             IconLeft: ({ ...props }) => (
               <ChevronLeft 
-                className="h-5 w-5 text-gray-600 hover:text-violet-600 transition-colors cursor-pointer" 
+                className="h-4 w-4 text-gray-600 hover:text-kbox-coral transition-colors" 
                 {...props}
               />
             ),
             IconRight: ({ ...props }) => (
               <ChevronRight 
-                className="h-5 w-5 text-gray-600 hover:text-violet-600 transition-colors cursor-pointer" 
+                className="h-4 w-4 text-gray-600 hover:text-kbox-coral transition-colors" 
                 {...props}
               />
             ),
           }}
           classNames={{
+            nav: "space-x-1 flex items-center",
             nav_button: cn(
-              "w-8 h-8 bg-transparent p-0 opacity-100 hover:bg-violet-50 rounded-full transition-colors",
-              "data-[disabled]:opacity-50 data-[disabled]:hover:bg-transparent"
+              "h-7 w-7 bg-white hover:bg-gray-50 p-0 opacity-100 border rounded-full transition-all",
+              "hover:border-kbox-coral hover:text-kbox-coral",
+              "data-[disabled]:opacity-50 data-[disabled]:hover:bg-transparent data-[disabled]:cursor-not-allowed"
             ),
-            nav_button_previous: "-ml-1",
-            nav_button_next: "-mr-1",
+            nav_button_previous: "ml-auto",
+            nav_button_next: "mr-auto",
+            caption: "flex justify-center py-2 relative items-center",
+            caption_label: "text-sm font-medium",
+            table: "w-full border-collapse space-y-1",
+            head_row: "flex",
+            head_cell: cn(
+              "text-gray-500 rounded-md w-9 font-normal text-[0.8rem] dark:text-gray-400",
+              "text-center"
+            ),
+            row: "flex w-full mt-2",
+            cell: cn(
+              "text-center text-sm relative p-0 text-gray-900",
+              "first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md",
+              "focus-within:relative focus-within:z-20"
+            ),
+            day: cn(
+              "h-9 w-9 p-0 font-normal",
+              "hover:bg-gray-100 hover:text-gray-900",
+              "aria-selected:opacity-100",
+              "rounded-full transition-all"
+            ),
+            day_selected: "bg-kbox-coral text-white hover:bg-kbox-coral hover:text-white",
+            day_today: "bg-gray-100",
+            day_outside: "text-gray-400 opacity-50",
+            day_disabled: "text-gray-400 opacity-50",
+            day_range_middle: "aria-selected:bg-gray-100",
+            day_hidden: "invisible",
           }}
         />
       </div>

@@ -35,6 +35,10 @@ export const LandingPageRenderer = ({ page }: LandingPageRendererProps) => {
         <meta name="description" content={page.meta_description} />
         <meta name="keywords" content={page.keywords.join(", ")} />
         {page.image_url && <meta property="og:image" content={page.image_url} />}
+        <meta property="og:title" content={page.meta_title} />
+        <meta property="og:description" content={page.meta_description} />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href={window.location.href} />
       </Helmet>
       <Template page={page} />
     </>

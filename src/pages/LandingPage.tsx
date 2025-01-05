@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, Navigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { LandingPageRenderer } from "@/components/landing-pages/LandingPageRenderer";
@@ -13,57 +13,55 @@ export const LandingPage = () => {
     queryKey: ["landing-page", slug],
     queryFn: async () => {
       console.log("Fetching landing page for slug:", slug);
+      
+      if (!slug) {
+        throw new Error("No slug provided");
+      }
+
       const { data, error } = await supabase
         .from("landing_pages")
         .select("*")
         .eq("slug", slug)
         .eq("is_published", true)
         .is("deleted_at", null)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error("Error fetching landing page:", error);
         throw error;
       }
 
+      if (!data) {
+        throw new Error("Landing page not found");
+      }
+
       console.log("Fetched landing page:", data);
       return data;
     },
-    // Options pour forcer le rechargement lors du changement de slug
-    refetchOnWindowFocus: false,
-    enabled: !!slug,
-    staleTime: 0,
-    gcTime: 0 // Remplacé cacheTime par gcTime
+    retry: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
-
-  if (error) {
-    console.error("Error in landing page component:", error);
-    toast({
-      title: "Erreur",
-      description: "Impossible de charger la page",
-      variant: "destructive",
-    });
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <h1 className="text-2xl">Page non trouvée</h1>
-      </div>
-    );
-  }
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner />
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
 
+  if (error) {
+    console.error("Error in landing page component:", error);
+    toast({
+      title: "Page non trouvée",
+      description: "La page que vous recherchez n'existe pas ou n'est pas accessible.",
+      variant: "destructive",
+    });
+    return <Navigate to="/" replace />;
+  }
+
   if (!page) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <h1 className="text-2xl">Page non trouvée</h1>
-      </div>
-    );
+    return <Navigate to="/" replace />;
   }
 
   return <LandingPageRenderer page={page} />;

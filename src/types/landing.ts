@@ -8,6 +8,15 @@ export interface LandingPage {
       title?: string;
       content: string;
     }>;
+    features?: Array<{
+      title: string;
+      description: string;
+      icon?: string;
+    }>;
+    gallery?: Array<{
+      url: string;
+      alt: string;
+    }>;
   };
   meta_title: string;
   meta_description: string;

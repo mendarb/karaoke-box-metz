@@ -15,7 +15,7 @@ export const useBookingForm = () => {
       email: "",
       fullName: "",
       phone: "",
-      date: "",
+      date: undefined,
       timeSlot: "",
       groupSize: "",
       duration: "",

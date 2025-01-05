@@ -27,6 +27,5 @@ export interface AuthHandlers {
   handleLogin: (email: string, password: string) => Promise<AuthResponse>;
   handleSignup: (email: string, password: string, fullName: string, phone: string) => Promise<SignupResult>;
   handleResetPassword: (email: string) => Promise<AuthResponse>;
-  handleSignOut: () => Promise<void>;
   isLoading: boolean;
 }

@@ -16,8 +16,6 @@ import { Settings } from "@/pages/Settings";
 import { Accounts } from "@/pages/Accounts";
 import { EditAccountPage } from "@/components/admin/accounts/EditAccountPage";
 import { DocumentationPage } from "@/components/admin/documentation/DocumentationPage";
-import { LandingPage } from "@/pages/LandingPage";
-import { LandingPages } from "@/pages/LandingPages";
 
 export const AppRoutes = () => {
   return (
@@ -32,7 +30,6 @@ export const AppRoutes = () => {
       <Route path="/legal/terms" element={<Terms />} />
       <Route path="/legal/privacy" element={<Privacy />} />
       <Route path="/legal/cancellation" element={<Cancellation />} />
-      <Route path="/p/:slug" element={<LandingPage />} />
 
       {/* Protected Routes */}
       <Route
@@ -98,14 +95,6 @@ export const AppRoutes = () => {
         element={
           <ProtectedRoute adminOnly>
             <DocumentationPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/landing-pages"
-        element={
-          <ProtectedRoute adminOnly>
-            <LandingPages />
           </ProtectedRoute>
         }
       />

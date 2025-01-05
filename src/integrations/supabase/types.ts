@@ -113,57 +113,6 @@ export type Database = {
           },
         ]
       }
-      landing_pages: {
-        Row: {
-          content: Json
-          created_at: string
-          deleted_at: string | null
-          description: string
-          id: string
-          image_url: string | null
-          is_published: boolean | null
-          keywords: string[]
-          meta_description: string
-          meta_title: string
-          slug: string
-          template_type: string
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          content: Json
-          created_at?: string
-          deleted_at?: string | null
-          description: string
-          id?: string
-          image_url?: string | null
-          is_published?: boolean | null
-          keywords?: string[]
-          meta_description: string
-          meta_title: string
-          slug: string
-          template_type: string
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          content?: Json
-          created_at?: string
-          deleted_at?: string | null
-          description?: string
-          id?: string
-          image_url?: string | null
-          is_published?: boolean | null
-          keywords?: string[]
-          meta_description?: string
-          meta_title?: string
-          slug?: string
-          template_type?: string
-          title?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       locations: {
         Row: {
           address: string

@@ -8,8 +8,9 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { HeroSection } from "@/components/home/HeroSection";
 import { FeatureGrid } from "@/components/home/FeatureGrid";
-import BookingSection from "@/components/home/BookingSection";
-import Footer from "@/components/home/Footer";
+
+const BookingSection = lazy(() => import("@/components/home/BookingSection"));
+const Footer = lazy(() => import("@/components/home/Footer"));
 
 const Index = () => {
   const isMobile = useIsMobile();
@@ -31,18 +32,18 @@ const Index = () => {
   });
 
   if (userLoading && !sessionChecked || settingsLoading) {
-    return <LoadingSpinner fullScreen />;
+    return <LoadingSpinner />;
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-white to-kbox-pink/10">
+    <div className="min-h-screen flex flex-col bg-kbox-coral">
       <main className="flex-grow container mx-auto pb-20 md:pb-0">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-0 min-h-[500px]">
           <div className="md:col-span-1">
             <HeroSection />
           </div>
 
-          <div className="md:col-span-2 bg-white/50 backdrop-blur-sm rounded-lg shadow-sm">
+          <div className="md:col-span-2 bg-white">
             <Suspense fallback={
               <div className="flex items-center justify-center h-full min-h-[500px]">
                 <LoadingSpinner />
@@ -56,12 +57,14 @@ const Index = () => {
           </div>
         </div>
 
-        <div className="mt-12">
+        <div>
           <FeatureGrid />
         </div>
       </main>
 
-      <Footer />
+      <Suspense fallback={null}>
+        <Footer />
+      </Suspense>
 
       <AuthModal 
         isOpen={showAuthModal} 

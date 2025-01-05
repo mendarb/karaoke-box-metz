@@ -1,4 +1,4 @@
-import { DashboardLayout } from "@/components/admin/DashboardLayout";
+import { DashboardLayout } from "@/components/admin/dashboard/DashboardLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookingSettings } from "@/components/admin/settings/BookingSettings";
 import { NotificationSettings } from "@/components/admin/settings/NotificationSettings";

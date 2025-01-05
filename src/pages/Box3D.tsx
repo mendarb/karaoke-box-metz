@@ -8,7 +8,7 @@ const Box3D = () => {
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-secondary to-white">
       <main className="flex-grow">
         <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-6 px-4 md:px-8 py-12">
               <div className="overflow-hidden">
                 <ImageLightbox 

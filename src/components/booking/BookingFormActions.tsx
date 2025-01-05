@@ -30,7 +30,7 @@ export const BookingFormActions = ({
       <Button
         type="submit"
         disabled={isSubmitting}
-        className="bg-violet-600 hover:bg-violet-700 text-white flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors duration-200"
+        className="bg-violet-600 hover:bg-violet-700 text-white flex items-center gap-2 px-6 py-2 rounded-lg transition-colors duration-200"
       >
         {isSubmitting ? (
           "Chargement..."

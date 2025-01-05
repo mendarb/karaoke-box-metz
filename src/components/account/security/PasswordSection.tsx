@@ -2,48 +2,73 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
-import { useUserState } from "@/hooks/useUserState";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const PasswordSection = () => {
-  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { user } = useUserState();
+  const [isLoading, setIsLoading] = useState(false);
+  const [lastRequestTime, setLastRequestTime] = useState(0);
 
   const handleResetPassword = async () => {
-    if (!user?.email) {
+    const currentTime = Date.now();
+    const timeSinceLastRequest = currentTime - lastRequestTime;
+    
+    if (timeSinceLastRequest < 60000) {
+      const remainingTime = Math.ceil((60000 - timeSinceLastRequest) / 1000);
       toast({
-        title: "Erreur",
-        description: "Email non disponible",
+        title: "Veuillez patienter",
+        description: `Vous pourrez renvoyer un nouveau lien dans ${remainingTime} secondes`,
         variant: "destructive",
       });
       return;
     }
 
+    setIsLoading(true);
+    
     try {
-      setIsLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.email) {
+        toast({
+          title: "Erreur",
+          description: "Email non trouvé",
+          variant: "destructive",
+        });
+        return;
+      }
 
-      // Ensure we have a clean base URL without any trailing colons or slashes
-      const baseUrl = window.location.origin.replace(/:[/]*$/, '');
-      console.log('Reset password redirect URL:', `${baseUrl}/reset-password`);
-
+      // Remove any trailing colons and ensure proper URL format
+      const baseUrl = window.location.origin.replace(/:\/*$/, '');
       const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
         redirectTo: `${baseUrl}/reset-password`,
       });
 
       if (error) {
-        throw error;
+        console.error("Reset password error:", error);
+        if (error.status === 429) {
+          toast({
+            title: "Trop de tentatives",
+            description: "Veuillez patienter quelques minutes avant de réessayer",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Erreur",
+            description: "Impossible d'envoyer le lien de réinitialisation",
+            variant: "destructive",
+          });
+        }
+        return;
       }
 
+      setLastRequestTime(currentTime);
       toast({
         title: "Email envoyé",
-        description: "Vérifiez votre boîte mail pour réinitialiser votre mot de passe",
+        description: "Vérifiez votre boîte mail pour modifier votre mot de passe",
       });
-    } catch (error: any) {
-      console.error('Error resetting password:', error);
+    } catch (error) {
+      console.error("Reset password error:", error);
       toast({
         title: "Erreur",
-        description: error.message || "Impossible d'envoyer l'email de réinitialisation",
+        description: "Une erreur inattendue s'est produite",
         variant: "destructive",
       });
     } finally {
@@ -52,21 +77,15 @@ export const PasswordSection = () => {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Mot de passe</CardTitle>
-        <CardDescription>
-          Modifiez votre mot de passe pour sécuriser votre compte
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Button 
-          onClick={handleResetPassword}
-          disabled={isLoading}
-        >
-          {isLoading ? "Envoi en cours..." : "Changer le mot de passe"}
-        </Button>
-      </CardContent>
-    </Card>
+    <div>
+      <h3 className="text-sm font-medium mb-2">Modifier votre mot de passe</h3>
+      <Button 
+        variant="outline" 
+        onClick={handleResetPassword}
+        disabled={isLoading}
+      >
+        {isLoading ? "Envoi en cours..." : "Recevoir un lien de modification"}
+      </Button>
+    </div>
   );
 };

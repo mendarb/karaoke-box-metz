@@ -1,4 +1,4 @@
-import { DashboardLayout } from "../DashboardLayout";
+import { DashboardLayout } from "../dashboard/DashboardLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";

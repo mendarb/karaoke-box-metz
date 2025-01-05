@@ -18,42 +18,22 @@ Deno.serve(async (req) => {
       }
     )
 
-    // Récupérer tous les utilisateurs avec leur email
-    const { data: { users }, error: usersError } = await supabaseClient.auth.admin.listUsers({
-      page: 1,
-      perPage: 1000, // Ajustez selon vos besoins
-    })
+    const { data: { users }, error } = await supabaseClient.auth.admin.listUsers()
     
-    if (usersError) throw usersError
+    if (error) throw error
 
-    // Créer un mapping id -> email
     const userEmails = users.reduce((acc, user) => {
-      if (user.email) {
-        acc[user.id] = user.email
-      }
+      acc[user.id] = user.email
       return acc
     }, {} as Record<string, string>)
 
-    // Log pour debug
-    console.log(`Retrieved ${Object.keys(userEmails).length} user emails`)
-
     return new Response(
       JSON.stringify({ userEmails }),
-      { 
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache' // Désactiver le cache
-        } 
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
-    console.error('Error in get-user-emails:', error)
     return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        details: error.stack 
-      }),
+      JSON.stringify({ error: error.message }),
       { 
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }

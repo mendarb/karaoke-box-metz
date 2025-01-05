@@ -6,7 +6,7 @@ import { Booking } from "@/hooks/useBookings";
 import { useUserState } from "@/hooks/useUserState";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { AdminLoadingState } from "./AdminLoadingState";
-import { DashboardLayout } from "./DashboardLayout";
+import { DashboardLayout } from "./dashboard/DashboardLayout";
 import { DashboardContent } from "./dashboard/DashboardContent";
 import { useToast } from "@/components/ui/use-toast";
 

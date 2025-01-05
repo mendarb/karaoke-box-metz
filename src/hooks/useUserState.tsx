@@ -44,37 +44,24 @@ export const useUserState = (): UserState => {
       }
     };
 
-    const checkSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        console.log("Current session:", session);
-        setSession(session);
-        
-        if (session?.user?.id) {
-          await loadUserProfile(session.user.id);
-        }
-      } catch (error) {
-        console.error('Error checking session:', error);
-      } finally {
-        setIsLoading(false);
-        setSessionChecked(true);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session?.user?.id) {
+        loadUserProfile(session.user.id);
       }
-    };
-
-    checkSession();
+      setIsLoading(false);
+      setSessionChecked(true);
+    });
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      console.log("Auth state changed:", _event, session);
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      
       if (session?.user?.id) {
-        await loadUserProfile(session.user.id);
+        loadUserProfile(session.user.id);
       } else {
         setProfile(null);
       }
-      
       setIsLoading(false);
       setSessionChecked(true);
     });
@@ -82,17 +69,8 @@ export const useUserState = (): UserState => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Explicitly check for admin email
   const isAdmin = session?.user?.email === "mendar.bouchali@gmail.com";
   const user = session?.user || null;
-
-  // Log admin status for debugging
-  console.log("Admin check:", {
-    email: session?.user?.email,
-    isAdmin,
-    sessionChecked,
-    isLoading
-  });
 
   return {
     session,

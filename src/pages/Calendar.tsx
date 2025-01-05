@@ -1,106 +1,142 @@
 import { useState } from "react";
-import { DashboardLayout } from "@/components/admin/DashboardLayout";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { AdminBookingForm } from "@/components/admin/BookingForm";
-import { BookingsList } from "@/components/admin/calendar/BookingsList";
-import { useBookings, Booking } from "@/hooks/useBookings";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { Card } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { BookingDetailsDialog } from "@/components/admin/BookingDetailsDialog";
+import { Booking } from "@/hooks/useBookings";
+import { useToast } from "@/components/ui/use-toast";
+import { BookingsList } from "@/components/admin/calendar/BookingsList";
+import { useRealtimeBookings } from "@/hooks/useRealtimeBookings";
+import { DashboardLayout } from "@/components/admin/dashboard/DashboardLayout";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card } from "@/components/ui/card";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const Calendar = () => {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const { data: bookings = [], isLoading } = useBookings();
+  const { toast } = useToast();
+  const isMobile = useIsMobile();
+
+  // Activer les mises à jour en temps réel
+  useRealtimeBookings();
+
+  const { data: bookings = [], isLoading } = useQuery({
+    queryKey: ['bookings'],
+    queryFn: async () => {
+      try {
+        const { data: session } = await supabase.auth.getSession();
+        
+        if (!session.session) {
+          toast({
+            title: "Session expirée",
+            description: "Veuillez vous reconnecter",
+            variant: "destructive",
+          });
+          return [];
+        }
+
+        const { data, error } = await supabase
+          .from('bookings')
+          .select('*')
+          .is('deleted_at', null)
+          .order('time_slot', { ascending: true });
+
+        if (error) {
+          console.error('Error fetching bookings:', error);
+          toast({
+            title: "Erreur",
+            description: "Impossible de charger les réservations",
+            variant: "destructive",
+          });
+          return [];
+        }
+
+        return data || [];
+      } catch (error) {
+        console.error('Error in query:', error);
+        return [];
+      }
+    },
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+  });
 
   // Filtrer les réservations pour la date sélectionnée
-  const filteredBookings = selectedDate
-    ? bookings.filter(
-        (booking) =>
-          format(new Date(booking.date), "yyyy-MM-dd") ===
-          format(selectedDate, "yyyy-MM-dd")
+  const bookingsForSelectedDate = selectedDate 
+    ? bookings.filter(booking => 
+        booking.date === format(selectedDate, 'yyyy-MM-dd')
       )
     : [];
 
-  // Créer un objet pour marquer les jours avec des réservations
-  const bookedDays = bookings.reduce((acc: { [key: string]: boolean }, booking) => {
-    const date = format(new Date(booking.date), "yyyy-MM-dd");
-    acc[date] = true;
-    return acc;
-  }, {});
+  // Obtenir les dates avec des réservations pour le style du calendrier
+  const datesWithBookings = bookings.reduce((dates: Date[], booking) => {
+    const bookingDate = new Date(booking.date);
+    if (!dates.some(date => date.getTime() === bookingDate.getTime())) {
+      dates.push(bookingDate);
+    }
+    return dates;
+  }, []);
 
-  const handleDateSelect = (date: Date | undefined) => {
-    setSelectedDate(date);
-    console.log("Date sélectionnée:", date);
-  };
-
-  const handleViewDetails = (booking: Booking) => {
-    setSelectedBooking(booking);
-    console.log("Détails de la réservation:", booking);
-  };
+  if (isLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6 p-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Calendrier des réservations</h1>
-          <Button onClick={() => setIsDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Nouvelle réservation
-          </Button>
+    <DashboardLayout title="Calendrier des réservations">
+      <div className="space-y-6">
+        <div className="flex items-center gap-2">
+          <CalendarIcon className="h-5 w-5 text-violet-500" />
+          <h2 className="text-lg font-semibold">Sélectionnez une date</h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="p-4">
+        <div className={`grid gap-6 ${isMobile ? '' : 'md:grid-cols-2'}`}>
+          <Card className="p-4 shadow-none border-none bg-transparent">
             <CalendarComponent
               mode="single"
               selected={selectedDate}
-              onSelect={handleDateSelect}
+              onSelect={setSelectedDate}
               locale={fr}
               modifiers={{
-                booked: (date) =>
-                  bookedDays[format(date, "yyyy-MM-dd")] === true,
+                booked: datesWithBookings,
               }}
               modifiersStyles={{
                 booked: {
-                  backgroundColor: "rgb(139 92 246 / 0.1)",
-                  color: "rgb(139 92 246)",
-                  fontWeight: "bold"
+                  fontWeight: 'bold',
+                  backgroundColor: '#9b87f5',
+                  color: 'white',
                 }
               }}
-              className="rounded-md border"
+              className="rounded-md border-none"
             />
           </Card>
 
-          <BookingsList
-            bookings={filteredBookings}
-            onViewDetails={handleViewDetails}
-            selectedDate={selectedDate}
-          />
+          <ScrollArea className={isMobile ? "h-[calc(100vh-24rem)]" : "h-[600px]"}>
+            <BookingsList
+              bookings={bookingsForSelectedDate}
+              onViewDetails={setSelectedBooking}
+              selectedDate={selectedDate}
+            />
+          </ScrollArea>
         </div>
-
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-3xl">
-            <DialogHeader>
-              <DialogTitle>Créer une nouvelle réservation</DialogTitle>
-            </DialogHeader>
-            <AdminBookingForm onClose={() => setIsDialogOpen(false)} />
-          </DialogContent>
-        </Dialog>
-
-        {selectedBooking && (
-          <BookingDetailsDialog
-            isOpen={!!selectedBooking}
-            booking={selectedBooking}
-            onClose={() => setSelectedBooking(null)}
-          />
-        )}
       </div>
+
+      {selectedBooking && (
+        <BookingDetailsDialog
+          isOpen={!!selectedBooking}
+          onClose={() => setSelectedBooking(null)}
+          booking={selectedBooking}
+        />
+      )}
     </DashboardLayout>
   );
 };

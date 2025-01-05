@@ -26,7 +26,6 @@ export const BookingFormWrapper = () => {
     handlePriceCalculated,
     handleAvailabilityChange,
     handlePrevious,
-    handleNextStep,
   } = useBookingForm();
 
   const steps = useBookingSteps(currentStep);
@@ -40,11 +39,58 @@ export const BookingFormWrapper = () => {
   );
   const { checkOverlap } = useBookingOverlap();
 
+  const validateStep = (step: number) => {
+    const requiredFields: { [key: number]: Array<keyof BookingFormValues> } = {
+      1: ['email', 'fullName', 'phone'],
+      2: ['date', 'timeSlot'],
+      3: ['groupSize', 'duration'],
+      4: []
+    };
+
+    const fields = requiredFields[step];
+    if (!fields) return true;
+
+    let isValid = true;
+    const errors: string[] = [];
+
+    fields.forEach(field => {
+      const value = form.getValues(field);
+      if (!value) {
+        form.setError(field, {
+          type: 'required',
+          message: 'Ce champ est requis'
+        });
+        isValid = false;
+        errors.push(field);
+      }
+    });
+
+    if (!isValid) {
+      toast({
+        title: "Erreur de validation",
+        description: "Veuillez remplir tous les champs obligatoires",
+        variant: "destructive",
+      });
+    }
+
+    return isValid;
+  };
+
   const onSubmit = async (data: BookingFormValues) => {
-    if (currentStep < steps.length) {
-      handleNextStep();
+    if (!validateStep(currentStep)) {
       return;
     }
+
+    if (currentStep < 4) {
+      setCurrentStep(currentStep + 1);
+      return;
+    }
+    
+    console.log('🔧 Payment mode:', isTestMode ? 'TEST' : 'LIVE', {
+      isTestMode
+    });
+    
+    form.setValue('isTestMode', isTestMode);
     
     const hasOverlap = await checkOverlap(data.date, data.timeSlot, duration);
     if (hasOverlap) {

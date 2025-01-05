@@ -15,8 +15,10 @@ export const LandingFooter = ({
   links = [],
   socialLinks = []
 }: LandingFooterProps) => {
+  const currentYear = new Date().getFullYear();
+  
   return (
-    <footer className="bg-gray-900 text-white py-12">
+    <footer className="bg-gradient-to-br from-gray-900 to-gray-800 text-white py-12">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -28,7 +30,7 @@ export const LandingFooter = ({
           <div>
             <h3 className="text-xl font-semibold mb-4">À propos</h3>
             <p className="text-gray-400">
-              Découvrez une expérience unique d'escape game à Metz. Relevez des défis passionnants en équipe et créez des souvenirs inoubliables.
+              Découvrez une expérience unique de karaoké à Metz. KBOX vous offre des salles privées équipées pour des moments inoubliables entre amis.
             </p>
           </div>
 
@@ -71,7 +73,7 @@ export const LandingFooter = ({
         </motion.div>
 
         <div className="mt-12 pt-8 border-t border-gray-800 text-center text-gray-400">
-          <p>&copy; {new Date().getFullYear()} Escape Game Metz. Tous droits réservés.</p>
+          <p>&copy; {currentYear} KBOX Metz. Tous droits réservés.</p>
         </div>
       </div>
     </footer>

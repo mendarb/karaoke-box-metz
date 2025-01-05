@@ -1,23 +1,15 @@
-import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
 
 interface HeroSectionProps {
   title: string;
   subtitle?: string;
   imageUrl?: string;
-  ctaText?: string;
-  ctaLink?: string;
 }
 
-export const HeroSection = ({
-  title,
-  subtitle,
-  imageUrl,
-  ctaText = "Réserver maintenant",
-  ctaLink = "/booking"
-}: HeroSectionProps) => {
+export const HeroSection = ({ title, subtitle, imageUrl }: HeroSectionProps) => {
   return (
-    <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-kbox-pink to-white">
       {imageUrl && (
         <div className="absolute inset-0 z-0">
           <img
@@ -25,7 +17,7 @@ export const HeroSection = ({
             alt={title}
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-black/50" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/40" />
         </div>
       )}
       
@@ -46,10 +38,10 @@ export const HeroSection = ({
           )}
           <Button
             size="lg"
-            className="bg-violet-600 hover:bg-violet-700 text-white px-8 py-6 text-lg"
+            className="bg-kbox-coral hover:bg-kbox-orange-dark text-white px-8 py-6 text-lg"
             asChild
           >
-            <a href={ctaLink}>{ctaText}</a>
+            <a href="/booking">Réserver maintenant</a>
           </Button>
         </motion.div>
       </div>

@@ -19,7 +19,7 @@ export const FeaturesSection = ({
   features
 }: FeaturesSectionProps) => {
   return (
-    <section className="py-20 bg-gray-50">
+    <section className="py-20 bg-gradient-to-br from-white to-kbox-pink/20">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <motion.h2
@@ -27,7 +27,7 @@ export const FeaturesSection = ({
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="text-3xl md:text-4xl font-bold mb-4"
+            className="text-3xl md:text-4xl font-bold mb-4 text-gray-900"
           >
             {title}
           </motion.h2>
@@ -47,13 +47,13 @@ export const FeaturesSection = ({
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
             >
-              <Card className="p-6 h-full hover:shadow-lg transition-shadow">
+              <Card className="p-6 h-full hover:shadow-lg transition-shadow bg-white/80 backdrop-blur-sm border-kbox-coral/10">
                 {feature.icon && (
-                  <div className="text-violet-600 mb-4 text-3xl">
+                  <div className="text-kbox-coral mb-4 text-3xl">
                     {feature.icon}
                   </div>
                 )}
-                <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
+                <h3 className="text-xl font-semibold mb-3 text-gray-900">{feature.title}</h3>
                 <p className="text-gray-600">{feature.description}</p>
               </Card>
             </motion.div>

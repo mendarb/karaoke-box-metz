@@ -17,7 +17,7 @@ export const GallerySection = ({
   images
 }: GallerySectionProps) => {
   return (
-    <section className="py-20 bg-white">
+    <section className="py-20 bg-gradient-to-br from-kbox-pink/20 to-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <motion.h2
@@ -25,7 +25,7 @@ export const GallerySection = ({
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="text-3xl md:text-4xl font-bold mb-4"
+            className="text-3xl md:text-4xl font-bold mb-4 text-gray-900"
           >
             {title}
           </motion.h2>
@@ -44,13 +44,14 @@ export const GallerySection = ({
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="aspect-w-16 aspect-h-9 rounded-lg overflow-hidden"
+              className="group relative aspect-w-16 aspect-h-9 rounded-lg overflow-hidden bg-kbox-pink/10"
             >
               <img
                 src={image.url}
                 alt={image.alt}
-                className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-300"
+                className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </motion.div>
           ))}
         </div>

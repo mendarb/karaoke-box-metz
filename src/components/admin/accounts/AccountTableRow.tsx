@@ -1,4 +1,3 @@
-import { User } from '@supabase/supabase-js';
 import { Mail, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
@@ -25,7 +24,7 @@ export const AccountTableRow = ({ profile }: AccountTableRowProps) => {
   };
 
   return (
-    <TableRow key={profile.id}>
+    <TableRow key={profile.id} className="hover:bg-muted/50 transition-colors">
       <TableCell>
         <div className="space-y-1">
           {profile.first_name || profile.last_name ? (
@@ -33,29 +32,35 @@ export const AccountTableRow = ({ profile }: AccountTableRowProps) => {
               {`${profile.first_name || ''} ${profile.last_name || ''}`}
             </span>
           ) : (
-            <span className="text-gray-500">Non renseigné</span>
+            <span className="text-muted-foreground">Non renseigné</span>
           )}
         </div>
       </TableCell>
       <TableCell>
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-sm">
-            <Mail className="h-4 w-4 text-gray-500" />
-            <a href={`mailto:${profile.email}`} className="hover:text-violet-500">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Mail className="h-4 w-4 text-muted-foreground" />
+            <a 
+              href={`mailto:${profile.email}`} 
+              className="text-sm hover:text-violet-500 transition-colors"
+            >
               {profile.email}
             </a>
           </div>
           {profile.phone && (
-            <div className="flex items-center gap-2 text-sm">
-              <Phone className="h-4 w-4 text-gray-500" />
-              <a href={`tel:${profile.phone}`} className="hover:text-violet-500">
+            <div className="flex items-center gap-2">
+              <Phone className="h-4 w-4 text-muted-foreground" />
+              <a 
+                href={`tel:${profile.phone}`} 
+                className="text-sm hover:text-violet-500 transition-colors"
+              >
                 {profile.phone}
               </a>
             </div>
           )}
         </div>
       </TableCell>
-      <TableCell>
+      <TableCell className="text-sm text-muted-foreground">
         {new Date(profile.created_at).toLocaleDateString('fr-FR')}
       </TableCell>
       <TableCell>
@@ -63,6 +68,7 @@ export const AccountTableRow = ({ profile }: AccountTableRowProps) => {
           variant="ghost"
           size="sm"
           onClick={handleEdit}
+          className="hover:text-violet-500"
         >
           Modifier
         </Button>

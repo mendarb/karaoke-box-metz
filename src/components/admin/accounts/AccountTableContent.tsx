@@ -19,8 +19,11 @@ export const AccountTableContent = ({ profiles }: AccountTableContentProps) => {
     return (
       <TableBody>
         <tr>
-          <td colSpan={4} className="text-center text-muted-foreground p-4">
-            Aucun compte utilisateur trouvé
+          <td colSpan={4} className="py-8 text-center text-muted-foreground">
+            <div className="flex flex-col items-center gap-2">
+              <p>Aucun compte utilisateur trouvé</p>
+              <p className="text-sm">Les comptes utilisateurs s'afficheront ici une fois créés</p>
+            </div>
           </td>
         </tr>
       </TableBody>

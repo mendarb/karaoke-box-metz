@@ -58,7 +58,7 @@ export const AccountsTable = () => {
           first_name: profile.first_name,
           last_name: profile.last_name,
           phone: profile.phone,
-          email: userEmails[profile.id] || profile.email, // Fallback to profile email if edge function fails
+          email: userEmails[profile.id] || profile.email,
           created_at: profile.created_at
         }));
 
@@ -111,9 +111,8 @@ export const AccountsTable = () => {
   };
 
   if (error) {
-    console.error('Query error:', error);
     return (
-      <div className="p-4 text-red-500">
+      <div className="p-4 rounded-lg bg-red-50 text-red-600">
         Une erreur est survenue lors du chargement des profils.
       </div>
     );
@@ -138,18 +137,21 @@ export const AccountsTable = () => {
       </div>
 
       {isLoadingProfiles ? (
-        <div className="flex justify-center items-center min-h-[200px]">
-          <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
+        <div className="flex justify-center items-center min-h-[400px]">
+          <div className="flex flex-col items-center gap-2">
+            <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
+            <p className="text-sm text-muted-foreground">Chargement des profils...</p>
+          </div>
         </div>
       ) : (
-        <div className="bg-white rounded-lg border">
+        <div className="bg-white rounded-lg border shadow-sm">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Utilisateur</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead>Date d'inscription</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead className="w-[250px]">Utilisateur</TableHead>
+                <TableHead className="w-[300px]">Contact</TableHead>
+                <TableHead className="w-[150px]">Date d'inscription</TableHead>
+                <TableHead className="w-[100px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <AccountTableContent profiles={profiles} />

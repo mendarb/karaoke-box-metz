@@ -1,17 +1,13 @@
 import { DashboardSidebar } from "./DashboardSidebar";
 
-interface DashboardLayoutProps {
-  children: React.ReactNode;
-}
-
-export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
+export const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="min-h-screen bg-gray-100">
-      <DashboardSidebar />
-      <div className="md:pl-64">
-        <div className="p-4 md:p-8">
+    <div className="min-h-screen pt-16">
+      <div className="flex h-[calc(100vh-4rem)]">
+        <DashboardSidebar />
+        <main className="flex-1 overflow-y-auto bg-gray-50 p-4">
           {children}
-        </div>
+        </main>
       </div>
     </div>
   );

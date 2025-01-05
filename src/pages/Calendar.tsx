@@ -95,6 +95,7 @@ export const Calendar = () => {
 
         {selectedBooking && (
           <BookingDetailsDialog
+            isOpen={!!selectedBooking}
             booking={selectedBooking}
             onClose={() => setSelectedBooking(null)}
           />

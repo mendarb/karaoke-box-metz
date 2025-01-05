@@ -1,76 +1,65 @@
-import { Music, Users, Heart } from "lucide-react";
+import { motion } from "framer-motion";
+import { Card } from "@/components/ui/card";
 
-interface FeaturesSectionProps {
-  features?: Array<{
-    icon: string;
-    title: string;
-    description: string;
-  }>;
+interface Feature {
+  title: string;
+  description: string;
+  icon?: React.ReactNode;
 }
 
-export const FeaturesSection = ({ features }: FeaturesSectionProps) => {
-  const defaultFeatures = [
-    {
-      icon: "music",
-      title: "Équipement Pro",
-      description: "Son haute qualité et écrans HD pour une expérience optimale"
-    },
-    {
-      icon: "users",
-      title: "Box Privatifs",
-      description: "Espaces insonorisés pour chanter en toute intimité"
-    },
-    {
-      icon: "heart",
-      title: "Ambiance Unique",
-      description: "Une atmosphère chaleureuse et conviviale"
-    }
-  ];
+interface FeaturesSectionProps {
+  title: string;
+  subtitle?: string;
+  features: Feature[];
+}
 
-  const getIcon = (iconName: string) => {
-    switch (iconName) {
-      case "music":
-        return <Music className="h-6 w-6 text-violet-600" />;
-      case "users":
-        return <Users className="h-6 w-6 text-violet-600" />;
-      case "heart":
-        return <Heart className="h-6 w-6 text-violet-600" />;
-      default:
-        return <Music className="h-6 w-6 text-violet-600" />;
-    }
-  };
-
-  const displayFeatures = features || defaultFeatures;
-
+export const FeaturesSection = ({
+  title,
+  subtitle,
+  features
+}: FeaturesSectionProps) => {
   return (
-    <div className="py-24 bg-white">
+    <section className="py-20 bg-gray-50">
       <div className="container mx-auto px-4">
-        <div className="grid md:grid-cols-2 gap-16 items-center">
-          <div>
-            <img 
-              src="/lovable-uploads/71abef1d-375e-47bb-afb7-77d8435491e6.png"
-              alt="Groupe karaoké"
-              className="rounded-lg shadow-xl"
-            />
-          </div>
-          <div className="space-y-8">
-            <h2 className="text-4xl font-bold text-gray-900">Une expérience unique</h2>
-            <div className="space-y-6">
-              {displayFeatures.map((feature, index) => (
-                <div key={index} className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-violet-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    {getIcon(feature.icon)}
+        <div className="text-center mb-16">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-3xl md:text-4xl font-bold mb-4"
+          >
+            {title}
+          </motion.h2>
+          {subtitle && (
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              {subtitle}
+            </p>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {features.map((feature, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+            >
+              <Card className="p-6 h-full hover:shadow-lg transition-shadow">
+                {feature.icon && (
+                  <div className="text-violet-600 mb-4 text-3xl">
+                    {feature.icon}
                   </div>
-                  <div>
-                    <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                    <p className="text-gray-600">{feature.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+                )}
+                <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
+                <p className="text-gray-600">{feature.description}</p>
+              </Card>
+            </motion.div>
+          ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 };

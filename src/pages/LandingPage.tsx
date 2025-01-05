@@ -29,11 +29,11 @@ export const LandingPage = () => {
       console.log("Fetched landing page:", data);
       return data;
     },
-    // Ajout des options pour forcer le rechargement lors du changement de slug
+    // Options pour forcer le rechargement lors du changement de slug
     refetchOnWindowFocus: false,
     enabled: !!slug,
     staleTime: 0,
-    cacheTime: 0
+    gcTime: 0 // Remplacé cacheTime par gcTime
   });
 
   if (error) {

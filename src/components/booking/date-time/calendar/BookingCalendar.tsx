@@ -34,7 +34,7 @@ export const BookingCalendar = ({
         }
         locale={fr}
         defaultMonth={defaultMonth}
-        className="border-none shadow-none [&_.rdp-nav]:space-x-1 [&_.rdp-nav_button]:w-7 [&_.rdp-nav_button]:h-7 [&_.rdp-nav_button]:flex [&_.rdp-nav_button]:items-center [&_.rdp-nav_button]:justify-center [&_.rdp-nav_button]:hover:bg-accent [&_.rdp-nav_button]:rounded-md [&_.rdp-nav_button_content]:pointer-events-none [&_.rdp-nav_button_content]:w-full [&_.rdp-nav_button_content]:h-full [&_.rdp-nav_button_content]:flex [&_.rdp-nav_button_content]:items-center [&_.rdp-nav_button_content]:justify-center"
+        className="border-none shadow-none [&_.rdp-nav]:relative [&_.rdp-nav]:flex [&_.rdp-nav]:justify-between [&_.rdp-nav_button]:absolute [&_.rdp-nav_button]:w-8 [&_.rdp-nav_button]:h-8 [&_.rdp-nav_button]:flex [&_.rdp-nav_button]:items-center [&_.rdp-nav_button]:justify-center [&_.rdp-nav_button]:hover:bg-accent [&_.rdp-nav_button]:rounded-md [&_.rdp-nav_button]:z-10 [&_.rdp-nav_button:first-child]:-left-1 [&_.rdp-nav_button:last-child]:-right-1 [&_.rdp-nav_button_content]:pointer-events-none [&_.rdp-nav_button_content]:w-full [&_.rdp-nav_button_content]:h-full [&_.rdp-nav_button_content]:flex [&_.rdp-nav_button_content]:items-center [&_.rdp-nav_button_content]:justify-center"
       />
     </div>
   );

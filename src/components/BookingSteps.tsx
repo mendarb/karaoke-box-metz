@@ -19,7 +19,7 @@ interface BookingStepsProps {
 export const BookingSteps = ({ steps, currentStep }: BookingStepsProps) => {
   return (
     <div className="w-full mb-8">
-      <div className="flex justify-between relative">
+      <div className="flex justify-between items-center relative">
         {/* Progress bar */}
         <div 
           className="absolute top-5 left-0 h-0.5 bg-gray-200 w-full -z-10"
@@ -37,28 +37,30 @@ export const BookingSteps = ({ steps, currentStep }: BookingStepsProps) => {
           <div
             key={index}
             className={cn(
-              "flex flex-col items-center space-y-2",
+              "flex flex-col items-center space-y-3 w-full max-w-[150px]",
               step.current ? "opacity-100" : "opacity-50"
             )}
           >
             <div
               className={cn(
-                "rounded-full p-3 transition-all duration-200",
-                step.completed ? "bg-violet-600 text-white" : 
-                step.current ? "bg-violet-100 text-violet-600 ring-2 ring-violet-600" : 
+                "rounded-full p-3 transition-all duration-300 transform",
+                step.completed ? "bg-violet-600 text-white scale-110" : 
+                step.current ? "bg-violet-100 text-violet-600 ring-2 ring-violet-600 scale-110" : 
                 "bg-gray-100 text-gray-400"
               )}
             >
               {step.icon}
             </div>
-            <span className="text-sm font-medium hidden sm:block text-center">
-              {step.title}
-            </span>
-            {step.description && (
-              <span className="text-xs text-gray-500 text-center hidden lg:block">
-                {step.description}
+            <div className="flex flex-col items-center space-y-1">
+              <span className="text-sm font-medium text-center">
+                {step.title}
               </span>
-            )}
+              {step.description && (
+                <span className="text-xs text-gray-500 text-center hidden lg:block max-w-[120px]">
+                  {step.description}
+                </span>
+              )}
+            </div>
           </div>
         ))}
       </div>

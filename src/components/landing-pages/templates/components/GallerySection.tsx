@@ -17,15 +17,15 @@ export const GallerySection = ({
   images
 }: GallerySectionProps) => {
   const defaultImages = [
-    { url: "/lovable-uploads/1d50de50-0e08-4925-906c-fa1b9888dccf.png", alt: "KBOX Ambiance 1" },
-    { url: "/lovable-uploads/3b342a8e-f225-4a8a-b3ce-72a9d6614e39.png", alt: "KBOX Ambiance 2" },
-    { url: "/lovable-uploads/71abef1d-375e-47bb-afb7-77d8435491e6.png", alt: "KBOX Ambiance 3" },
+    { url: "/lovable-uploads/40be9f9d-5bb0-46a0-8247-3151197219ba.png", alt: "KBOX Ambiance 1" },
+    { url: "/lovable-uploads/37e7282e-c552-41af-90e6-7b455985c179.png", alt: "KBOX Ambiance 2" },
+    { url: "/lovable-uploads/feebf134-d441-4f67-bdc5-26492e9fd6fd.png", alt: "KBOX Ambiance 3" },
   ];
 
   const displayImages = images.length > 0 ? images : defaultImages;
 
   return (
-    <section className="py-20 bg-gradient-to-br from-white to-kbox-pink/20">
+    <section className="py-20 bg-gradient-to-br from-violet-50 to-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <motion.h2
@@ -52,14 +52,18 @@ export const GallerySection = ({
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="group relative aspect-w-16 aspect-h-9 rounded-lg overflow-hidden shadow-lg"
+              className="group relative aspect-w-16 aspect-h-9 rounded-2xl overflow-hidden shadow-xl"
             >
               <img
                 src={image.url}
                 alt={image.alt}
-                className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                <div className="p-6">
+                  <h3 className="text-white font-semibold text-lg">{image.alt}</h3>
+                </div>
+              </div>
             </motion.div>
           ))}
         </div>

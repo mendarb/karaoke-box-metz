@@ -14,23 +14,33 @@ serve(async (req) => {
 
   try {
     const requestBody = await req.json();
-    console.log('📦 Données de réservation reçues:', {
-      email: requestBody.email,
-      fullName: requestBody.fullName,
-      date: requestBody.date,
-      timeSlot: requestBody.timeSlot,
-      duration: requestBody.duration,
-      groupSize: requestBody.groupSize,
-      price: requestBody.price,
-      promoCode: requestBody.promoCode,
-      discountAmount: requestBody.discountAmount,
-      isTestMode: requestBody.isTestMode,
-      userId: requestBody.userId,
-    });
+    console.log('📦 Données de réservation reçues:', requestBody);
 
     if (!requestBody.userId) {
       console.error('❌ Pas d\'ID utilisateur fourni');
       throw new Error('ID utilisateur requis');
+    }
+
+    // Récupérer les informations de l'utilisateur depuis le profil
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    const { data: profile, error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .select('*')
+      .eq('id', requestBody.userId)
+      .single();
+
+    if (profileError) {
+      console.error('❌ Erreur lors de la récupération du profil:', profileError);
+      throw new Error('Erreur lors de la récupération du profil');
+    }
+
+    if (!profile?.email) {
+      console.error('❌ Email non trouvé dans le profil');
+      throw new Error('Email non trouvé dans le profil');
     }
 
     const price = parseFloat(requestBody.price);
@@ -73,7 +83,7 @@ serve(async (req) => {
       mode: 'payment',
       success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}`,
-      customer_email: requestBody.email,
+      customer_email: profile.email,
       payment_method_options: {
         paypal: {
           setup_future_usage: 'off',
@@ -84,9 +94,9 @@ serve(async (req) => {
       },
       metadata: {
         userId: requestBody.userId,
-        userEmail: requestBody.email,
-        userName: requestBody.fullName,
-        userPhone: requestBody.phone,
+        userEmail: profile.email,
+        userName: profile.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : '',
+        userPhone: profile.phone || '',
         date: requestBody.date,
         timeSlot: requestBody.timeSlot,
         duration: requestBody.duration,

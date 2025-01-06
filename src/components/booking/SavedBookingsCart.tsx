@@ -38,6 +38,7 @@ export const SavedBookingsCart = () => {
 
   const loadSavedBookings = async () => {
     try {
+      setIsLoading(true);
       const { data: bookings, error } = await supabase
         .from("saved_bookings")
         .select("*")
@@ -45,30 +46,32 @@ export const SavedBookingsCart = () => {
 
       if (error) throw error;
 
-      const bookingsWithAvailability = await Promise.all(
-        bookings.map(async (booking) => {
-          const { data: existingBookings } = await supabase
-            .from("bookings")
-            .select("*")
-            .eq("date", booking.date)
-            .eq("time_slot", booking.time_slot)
-            .neq("status", "cancelled")
-            .is("deleted_at", null);
+      if (bookings) {
+        const bookingsWithAvailability = await Promise.all(
+          bookings.map(async (booking) => {
+            const { data: existingBookings } = await supabase
+              .from("bookings")
+              .select("*")
+              .eq("date", booking.date)
+              .eq("time_slot", booking.time_slot)
+              .neq("status", "cancelled")
+              .is("deleted_at", null);
 
-          return {
-            ...booking,
-            is_available: !existingBookings?.length,
-          };
-        })
-      );
+            return {
+              ...booking,
+              is_available: !existingBookings?.length,
+            };
+          })
+        );
 
-      setSavedBookings(bookingsWithAvailability);
-      
-      if (bookingsWithAvailability.length > 0) {
-        toast({
-          title: "💡 Réservations sauvegardées",
-          description: "Cliquez sur 'Continuer la réservation' pour finaliser",
-        });
+        setSavedBookings(bookingsWithAvailability);
+        
+        if (bookingsWithAvailability.length > 0) {
+          toast({
+            title: "💡 Réservations sauvegardées",
+            description: "Cliquez sur 'Continuer la réservation' pour finaliser",
+          });
+        }
       }
     } catch (error) {
       console.error("Erreur lors du chargement des réservations:", error);
@@ -122,7 +125,6 @@ export const SavedBookingsCart = () => {
       return;
     }
 
-    // Sauvegarder toutes les informations nécessaires
     sessionStorage.setItem("savedBooking", JSON.stringify({
       ...booking,
       currentStep: 3

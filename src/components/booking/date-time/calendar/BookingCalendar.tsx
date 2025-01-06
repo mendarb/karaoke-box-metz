@@ -38,14 +38,20 @@ export const BookingCalendar = ({
         className="rounded-md border"
         components={{
           IconLeft: () => (
-            <div className="h-7 w-7 p-0 hover:bg-accent hover:text-accent-foreground flex items-center justify-center">
+            <button
+              className="h-7 w-7 p-0 hover:bg-accent hover:text-accent-foreground flex items-center justify-center"
+              type="button"
+            >
               <ChevronLeft className="h-4 w-4" />
-            </div>
+            </button>
           ),
           IconRight: () => (
-            <div className="h-7 w-7 p-0 hover:bg-accent hover:text-accent-foreground flex items-center justify-center">
+            <button
+              className="h-7 w-7 p-0 hover:bg-accent hover:text-accent-foreground flex items-center justify-center"
+              type="button"
+            >
               <ChevronRight className="h-4 w-4" />
-            </div>
+            </button>
           ),
         }}
       />

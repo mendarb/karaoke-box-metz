@@ -10,16 +10,20 @@ import { BookingFormActions } from "./BookingFormActions";
 import { useBookingForm } from "./hooks/useBookingForm";
 import { User2, Calendar, Users, CreditCard } from "lucide-react";
 import { PromoCodePopup } from "./PromoCodePopup";
+import { useUserState } from "@/hooks/useUserState";
 
 export const BookingFormWrapper = () => {
-  const [currentStep, setCurrentStep] = useState(1);
+  const { user } = useUserState();
+  const [currentStep, setCurrentStep] = useState(user ? 2 : 1);
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [availableHours, setAvailableHours] = useState(0);
   const [calculatedPrice, setCalculatedPrice] = useState(0);
+  const [groupSize, setGroupSize] = useState("");
+  const [duration, setDuration] = useState("");
 
   const form = useForm({
     defaultValues: {
-      email: "",
+      email: user?.email || "",
       fullName: "",
       phone: "",
       date: undefined,
@@ -74,7 +78,21 @@ export const BookingFormWrapper = () => {
 
   const handlePromoCode = (code: string) => {
     form.setValue("promoCode", code);
-    // Trigger validation if needed
+  };
+
+  const handleAvailabilityChange = (date: Date | undefined, hours: number) => {
+    setSelectedDate(date);
+    setAvailableHours(hours);
+  };
+
+  const handleGroupSizeChange = (size: string) => {
+    setGroupSize(size);
+    form.setValue("groupSize", size);
+  };
+
+  const handleDurationChange = (dur: string) => {
+    setDuration(dur);
+    form.setValue("duration", dur);
   };
 
   return (
@@ -82,30 +100,24 @@ export const BookingFormWrapper = () => {
       <div className="space-y-6 animate-fadeIn p-6">
         <BookingSteps steps={steps} currentStep={currentStep} />
 
-        {currentStep === 1 && (
+        {currentStep === 1 && !user && (
           <PersonalInfoFields
             form={form}
-            onNext={() => setCurrentStep(2)}
           />
         )}
 
         {currentStep === 2 && (
           <DateTimeFields
             form={form}
-            onBack={() => setCurrentStep(1)}
-            onNext={() => setCurrentStep(3)}
-            onDateSelect={setSelectedDate}
-            onAvailabilityChange={setAvailableHours}
+            onAvailabilityChange={handleAvailabilityChange}
           />
         )}
 
         {currentStep === 3 && (
           <GroupSizeAndDurationFields
             form={form}
-            onBack={() => setCurrentStep(2)}
-            onNext={() => setCurrentStep(4)}
-            onGroupSizeChange={() => {}}
-            onDurationChange={() => {}}
+            onGroupSizeChange={handleGroupSizeChange}
+            onDurationChange={handleDurationChange}
             onPriceCalculated={setCalculatedPrice}
             availableHours={availableHours}
           />
@@ -115,19 +127,40 @@ export const BookingFormWrapper = () => {
           <AdditionalFields
             form={form}
             calculatedPrice={calculatedPrice}
-            groupSize={form.getValues("groupSize")}
-            duration={form.getValues("duration")}
+            groupSize={groupSize}
+            duration={duration}
           />
         )}
 
-        {currentStep === 4 && (
-          <BookingFormActions
-            form={form}
-            isSubmitting={isSubmitting}
-            onBack={() => setCurrentStep(3)}
-            onSubmit={handleSubmit}
-          />
-        )}
+        <div className="flex justify-between mt-6">
+          {currentStep > (user ? 2 : 1) && (
+            <button
+              type="button"
+              onClick={() => setCurrentStep(currentStep - 1)}
+              className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800"
+            >
+              Retour
+            </button>
+          )}
+          {currentStep < 4 && (
+            <button
+              type="button"
+              onClick={() => setCurrentStep(currentStep + 1)}
+              className="ml-auto px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700"
+            >
+              Suivant
+            </button>
+          )}
+          {currentStep === 4 && (
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="ml-auto px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 disabled:opacity-50"
+            >
+              {isSubmitting ? "En cours..." : "Réserver"}
+            </button>
+          )}
+        </div>
       </div>
 
       <PromoCodePopup onApplyCode={handlePromoCode} />

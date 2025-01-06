@@ -2,20 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useBookingSubmit } from "./useBookingSubmit";
 import { useToast } from "@/hooks/use-toast";
-
-export interface BookingFormData {
-  email: string;
-  fullName: string;
-  phone: string;
-  date: Date | undefined;
-  timeSlot: string;
-  duration: string;
-  groupSize: string;
-  message: string;
-  promoCode?: string;
-  promoCodeId?: string | null;
-  finalPrice: number;
-}
+import { BookingFormData } from "../types/bookingFormTypes";
 
 export const useBookingForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,7 +29,13 @@ export const useBookingForm = () => {
     },
   });
 
-  const { handleSubmit: submitBooking } = useBookingSubmit();
+  const { handleSubmit } = useBookingSubmit(
+    form,
+    groupSize,
+    duration,
+    calculatedPrice,
+    setIsSubmitting
+  );
 
   const handlePriceCalculated = (price: number) => {
     if (price <= 0) {
@@ -66,26 +59,43 @@ export const useBookingForm = () => {
   };
 
   const onSubmit = async (data: BookingFormData) => {
-    if (!calculatedPrice || calculatedPrice <= 0) {
-      toast({
-        title: "Erreur de prix",
-        description: "Le prix n'est pas valide. Veuillez recommencer la réservation.",
-        variant: "destructive",
-      });
+    console.log("Étape actuelle:", currentStep);
+    
+    if (currentStep < 3) {
+      // Validation par étape
+      if (currentStep === 1 && (!data.date || !data.timeSlot)) {
+        toast({
+          title: "Champs requis",
+          description: "Veuillez sélectionner une date et un créneau horaire",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (currentStep === 2 && (!data.groupSize || !data.duration)) {
+        toast({
+          title: "Champs requis",
+          description: "Veuillez sélectionner la taille du groupe et la durée",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Si la validation passe, on passe à l'étape suivante
+      setCurrentStep((prev) => prev + 1);
       return;
     }
 
+    // Dernière étape - soumission finale
     try {
-      setIsSubmitting(true);
-      await submitBooking(data);
-    } catch (error: any) {
+      await handleSubmit(data);
+    } catch (error) {
+      console.error("Erreur lors de la soumission:", error);
       toast({
-        title: "Erreur lors de la réservation",
-        description: error.message || "Une erreur est survenue lors de la réservation",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la réservation",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 

@@ -31,7 +31,7 @@ export const BookingForm = () => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={onSubmit} className="space-y-6">
         <BookingSteps steps={steps} currentStep={currentStep} />
         
         <div className="min-h-[300px]">

@@ -9,6 +9,7 @@ import { useBookingForm } from "./hooks/useBookingForm";
 import { Calendar, Users, CreditCard } from "lucide-react";
 import { PromoCodePopup } from "./PromoCodePopup";
 import { useUserState } from "@/hooks/useUserState";
+import { useToast } from "@/hooks/use-toast";
 
 export const BookingFormWrapper = () => {
   const { user } = useUserState();
@@ -18,6 +19,7 @@ export const BookingFormWrapper = () => {
   const [calculatedPrice, setCalculatedPrice] = useState(0);
   const [groupSize, setGroupSize] = useState("");
   const [duration, setDuration] = useState("");
+  const { toast } = useToast();
 
   const form = useForm({
     defaultValues: {
@@ -49,8 +51,15 @@ export const BookingFormWrapper = () => {
       form.setValue("message", booking.message || "");
       setGroupSize(booking.group_size);
       setDuration(booking.duration);
-      setCurrentStep(2); // Aller directement à l'étape 2
-      sessionStorage.removeItem("savedBooking"); // Nettoyer après utilisation
+      // Utiliser l'étape spécifiée ou par défaut l'étape 2
+      setCurrentStep(booking.currentStep || 2);
+      sessionStorage.removeItem("savedBooking");
+
+      // Afficher un guide pour l'utilisateur
+      toast({
+        title: "✨ Réservation chargée",
+        description: "Vous pouvez maintenant continuer votre réservation",
+      });
     }
   }, []);
 
@@ -64,7 +73,7 @@ export const BookingFormWrapper = () => {
       icon: <Calendar className="h-5 w-5" />,
       completed: currentStep > 1,
       current: currentStep === 1,
-      tooltip: "Choisissez votre créneau de réservation",
+      tooltip: "Sélectionnez la date et l'heure de votre session",
     },
     {
       id: 2,
@@ -73,7 +82,7 @@ export const BookingFormWrapper = () => {
       icon: <Users className="h-5 w-5" />,
       completed: currentStep > 2,
       current: currentStep === 2,
-      tooltip: "Indiquez la taille de votre groupe et la durée",
+      tooltip: "Indiquez le nombre de participants et la durée souhaitée",
     },
     {
       id: 3,
@@ -82,7 +91,7 @@ export const BookingFormWrapper = () => {
       icon: <CreditCard className="h-5 w-5" />,
       completed: currentStep > 3,
       current: currentStep === 3,
-      tooltip: "Finalisez votre réservation",
+      tooltip: "Finalisez votre réservation et procédez au paiement",
     },
   ];
 
@@ -104,6 +113,32 @@ export const BookingFormWrapper = () => {
     setDuration(dur);
     form.setValue("duration", dur);
   };
+
+  // Afficher des guides contextuels en fonction de l'étape
+  useEffect(() => {
+    if (!user) return;
+
+    switch (currentStep) {
+      case 1:
+        toast({
+          title: "📅 Choisissez une date",
+          description: "Sélectionnez la date et l'heure qui vous conviennent",
+        });
+        break;
+      case 2:
+        toast({
+          title: "👥 Taille du groupe",
+          description: "Indiquez le nombre de participants et la durée",
+        });
+        break;
+      case 3:
+        toast({
+          title: "💳 Finalisation",
+          description: "Vérifiez les détails et procédez au paiement",
+        });
+        break;
+    }
+  }, [currentStep, user]);
 
   return (
     <Form {...form}>

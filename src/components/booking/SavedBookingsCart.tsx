@@ -13,6 +13,12 @@ import {
 } from "@/components/ui/sheet";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface SavedBooking {
   id: string;
@@ -39,7 +45,6 @@ export const SavedBookingsCart = () => {
 
       if (error) throw error;
 
-      // Vérifier la disponibilité de chaque créneau
       const bookingsWithAvailability = await Promise.all(
         bookings.map(async (booking) => {
           const { data: existingBookings } = await supabase
@@ -58,6 +63,14 @@ export const SavedBookingsCart = () => {
       );
 
       setSavedBookings(bookingsWithAvailability);
+      
+      // Afficher un toast pour guider l'utilisateur s'il y a des réservations sauvegardées
+      if (bookingsWithAvailability.length > 0) {
+        toast({
+          title: "💡 Réservations sauvegardées",
+          description: "Cliquez sur 'Continuer la réservation' pour finaliser votre réservation",
+        });
+      }
     } catch (error) {
       console.error("Erreur lors du chargement des réservations:", error);
       toast({
@@ -109,27 +122,40 @@ export const SavedBookingsCart = () => {
     }
 
     // Stocker les détails de la réservation dans sessionStorage
-    sessionStorage.setItem("savedBooking", JSON.stringify(booking));
+    sessionStorage.setItem("savedBooking", JSON.stringify({
+      ...booking,
+      currentStep: 3 // Force l'étape de paiement
+    }));
     navigate("/");
   };
 
   return (
     <Sheet>
-      <SheetTrigger asChild>
-        <Button
-          variant="outline"
-          size="icon"
-          className="relative"
-          aria-label="Panier des réservations"
-        >
-          <ShoppingCart className="h-5 w-5" />
-          {savedBookings.length > 0 && (
-            <span className="absolute -top-2 -right-2 bg-violet-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-              {savedBookings.length}
-            </span>
-          )}
-        </Button>
-      </SheetTrigger>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <SheetTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                className="relative"
+                aria-label="Panier des réservations"
+              >
+                <ShoppingCart className="h-5 w-5" />
+                {savedBookings.length > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-violet-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                    {savedBookings.length}
+                  </span>
+                )}
+              </Button>
+            </SheetTrigger>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Vos réservations sauvegardées</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+
       <SheetContent>
         <SheetHeader>
           <SheetTitle>Réservations sauvegardées</SheetTitle>
@@ -145,19 +171,22 @@ export const SavedBookingsCart = () => {
             savedBookings.map((booking) => (
               <div
                 key={booking.id}
-                className="border rounded-lg p-4 space-y-2 relative"
+                className="border rounded-lg p-4 space-y-2 relative bg-white shadow-sm"
               >
                 <div className="flex justify-between items-start">
-                  <div>
+                  <div className="space-y-2">
                     <p className="font-medium">
                       {format(new Date(booking.date), "EEEE d MMMM yyyy", {
                         locale: fr,
                       })}
                     </p>
-                    <p className="text-sm text-gray-600">
-                      {booking.time_slot}h - {booking.duration}h -{" "}
-                      {booking.group_size} pers.
-                    </p>
+                    <div className="space-y-1 text-sm text-gray-600">
+                      <p>🕒 {booking.time_slot}h - {parseInt(booking.time_slot) + parseInt(booking.duration)}h ({booking.duration}h)</p>
+                      <p>👥 {booking.group_size} personnes</p>
+                      {booking.message && (
+                        <p className="italic">💬 {booking.message}</p>
+                      )}
+                    </div>
                     {!booking.is_available && (
                       <p className="text-sm text-red-500 flex items-center gap-1 mt-1">
                         <AlertCircle className="h-4 w-4" />

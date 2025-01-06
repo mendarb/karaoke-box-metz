@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Form } from "@/components/ui/form";
 import { BookingSteps, Step } from "@/components/BookingSteps";
@@ -36,6 +36,23 @@ export const BookingFormWrapper = () => {
       password: "",
     },
   });
+
+  // Charger les détails d'une réservation sauvegardée si disponible
+  useEffect(() => {
+    const savedBooking = sessionStorage.getItem("savedBooking");
+    if (savedBooking) {
+      const booking = JSON.parse(savedBooking);
+      form.setValue("date", booking.date);
+      form.setValue("timeSlot", booking.time_slot);
+      form.setValue("duration", booking.duration);
+      form.setValue("groupSize", booking.group_size);
+      form.setValue("message", booking.message || "");
+      setGroupSize(booking.group_size);
+      setDuration(booking.duration);
+      setCurrentStep(2); // Aller directement à l'étape 2
+      sessionStorage.removeItem("savedBooking"); // Nettoyer après utilisation
+    }
+  }, []);
 
   const { isSubmitting } = useBookingForm();
 
@@ -124,7 +141,7 @@ export const BookingFormWrapper = () => {
             <button
               type="button"
               onClick={() => setCurrentStep(currentStep - 1)}
-              className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800"
+              className="px-4 py-2 text-sm font-medium text-violet-600 hover:text-violet-800 border border-violet-200 rounded-md hover:bg-violet-50"
             >
               Retour
             </button>

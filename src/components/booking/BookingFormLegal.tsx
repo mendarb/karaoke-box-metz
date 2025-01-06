@@ -22,7 +22,6 @@ interface BookingFormLegalProps {
 
 export const BookingFormLegal = ({ 
   form, 
-  onSaveForLater,
   groupSize,
   duration,
   date,
@@ -76,7 +75,7 @@ export const BookingFormLegal = ({
 
   return (
     <div className="space-y-8">
-      <div className="space-y-6">
+      <div className="space-y-4">
         <FormField
           control={form.control}
           name="acceptTerms"
@@ -91,10 +90,10 @@ export const BookingFormLegal = ({
                 />
               </FormControl>
               <div className="space-y-1 leading-none">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-500">
                   J'accepte les <TermsDialog onAccept={() => field.onChange(true)} />, la{" "}
                   <PrivacyDialog /> et la{" "}
-                  <CancellationDialog />. En cochant cette case, je consens au traitement de mes données personnelles conformément à la politique de confidentialité.
+                  <CancellationDialog />.
                 </p>
                 <FormMessage className="text-xs" />
               </div>
@@ -102,17 +101,12 @@ export const BookingFormLegal = ({
           )}
         />
 
-        <div className="text-xs text-gray-600 space-y-2 max-w-lg">
-          <p className="leading-relaxed">
-            Conformément au RGPD, vous disposez d'un droit d'accès, de rectification, d'effacement, et de portabilité des données vous concernant.
-          </p>
-          <p className="leading-relaxed">
-            Vos données sont utilisées uniquement dans le cadre de votre réservation et ne sont pas transmises à des tiers.
-          </p>
-        </div>
+        <p className="text-xs text-gray-400">
+          Vos données sont utilisées uniquement dans le cadre de votre réservation.
+        </p>
       </div>
 
-      <div className="flex justify-center">
+      <div className="flex justify-center pt-4">
         <Button
           type="button"
           variant="outline"

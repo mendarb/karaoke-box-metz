@@ -31,7 +31,10 @@ export const Confirmation = ({
   const startHour = parseInt(formData.timeSlot);
   const endHour = startHour + parseInt(formData.duration);
 
-  const formatHour = (hour: number) => `${hour.toString().padStart(2, '0')}:00`;
+  const formatHour = (hour: number) => {
+    const paddedHour = hour.toString().padStart(2, '0');
+    return `${paddedHour}h00`;
+  };
 
   return (
     <div className="space-y-6">

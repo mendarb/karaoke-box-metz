@@ -1,13 +1,20 @@
 import { useState } from "react";
-import { UseFormReturn } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { useBookingSubmit } from "./useBookingSubmit";
 import { useToast } from "@/hooks/use-toast";
 
-interface UseBookingFormProps {
-  form: UseFormReturn<any>;
-  groupSize: string;
+export interface BookingFormData {
+  email: string;
+  fullName: string;
+  phone: string;
+  date: Date | undefined;
+  timeSlot: string;
   duration: string;
-  calculatedPrice: number;
+  groupSize: string;
+  message: string;
+  promoCode?: string;
+  promoCodeId?: string | null;
+  finalPrice: number;
 }
 
 export const useBookingForm = () => {
@@ -19,7 +26,7 @@ export const useBookingForm = () => {
   const [availableHours, setAvailableHours] = useState(0);
   const { toast } = useToast();
 
-  const form = useForm({
+  const form = useForm<BookingFormData>({
     defaultValues: {
       email: "",
       fullName: "",
@@ -64,7 +71,7 @@ export const useBookingForm = () => {
     setCurrentStep((prev) => Math.max(1, prev - 1));
   };
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: BookingFormData) => {
     if (!calculatedPrice || calculatedPrice <= 0) {
       toast({
         title: "Erreur de prix",

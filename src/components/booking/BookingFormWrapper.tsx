@@ -14,75 +14,23 @@ import { BookingFormActions } from "./form-actions/BookingFormActions";
 
 export const BookingFormWrapper = () => {
   const { user } = useUserState();
-  const [currentStep, setCurrentStep] = useState(1);
-  const [selectedDate, setSelectedDate] = useState<Date>();
-  const [availableHours, setAvailableHours] = useState(0);
-  const [calculatedPrice, setCalculatedPrice] = useState(0);
-  const [groupSize, setGroupSize] = useState("");
-  const [duration, setDuration] = useState("");
   const { toast } = useToast();
-
-  const form = useForm({
-    defaultValues: {
-      email: user?.email || "",
-      fullName: "",
-      phone: "",
-      date: undefined,
-      timeSlot: "",
-      duration: "",
-      groupSize: "",
-      message: "",
-      promoCode: "",
-      promoCodeId: null,
-      finalPrice: 0,
-      createAccount: false,
-      password: "",
-    },
-  });
-
-  const { isSubmitting, onSubmit } = useBookingForm({
+  const {
     form,
     groupSize,
+    setGroupSize,
     duration,
+    setDuration,
+    currentStep,
+    setCurrentStep,
     calculatedPrice,
-  });
-
-  // Charger les détails d'une réservation sauvegardée si disponible
-  useEffect(() => {
-    const savedBooking = sessionStorage.getItem("savedBooking");
-    if (savedBooking) {
-      const booking = JSON.parse(savedBooking);
-      form.setValue("date", booking.date);
-      form.setValue("timeSlot", booking.time_slot);
-      form.setValue("duration", booking.duration);
-      form.setValue("groupSize", booking.group_size);
-      form.setValue("message", booking.message || "");
-      setGroupSize(booking.group_size);
-      setDuration(booking.duration);
-      // Utiliser l'étape spécifiée ou par défaut l'étape 2
-      setCurrentStep(booking.currentStep || 2);
-      sessionStorage.removeItem("savedBooking");
-
-      // Afficher un guide pour l'utilisateur
-      toast({
-        title: "✨ Réservation chargée",
-        description: "Vous pouvez maintenant continuer votre réservation",
-      });
-    }
-  }, []);
-
-  const handleSubmit = async (data: any) => {
-    try {
-      await onSubmit(data);
-    } catch (error) {
-      console.error("Erreur lors de la soumission:", error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la réservation. Veuillez réessayer.",
-        variant: "destructive",
-      });
-    }
-  };
+    isSubmitting,
+    handlePriceCalculated,
+    handleAvailabilityChange,
+    handlePrevious,
+    availableHours,
+    onSubmit,
+  } = useBookingForm();
 
   const steps: Step[] = [
     {
@@ -114,54 +62,37 @@ export const BookingFormWrapper = () => {
     },
   ];
 
+  // Charger les détails d'une réservation sauvegardée si disponible
+  useEffect(() => {
+    const savedBooking = sessionStorage.getItem("savedBooking");
+    if (savedBooking) {
+      const booking = JSON.parse(savedBooking);
+      form.setValue("date", booking.date);
+      form.setValue("timeSlot", booking.time_slot);
+      form.setValue("duration", booking.duration);
+      form.setValue("groupSize", booking.group_size);
+      form.setValue("message", booking.message || "");
+      setGroupSize(booking.group_size);
+      setDuration(booking.duration);
+      // Utiliser l'étape spécifiée ou par défaut l'étape 2
+      setCurrentStep(booking.currentStep || 2);
+      sessionStorage.removeItem("savedBooking");
+
+      // Afficher un guide pour l'utilisateur
+      toast({
+        title: "✨ Réservation chargée",
+        description: "Vous pouvez maintenant continuer votre réservation",
+      });
+    }
+  }, []);
+
   const handlePromoCode = (code: string) => {
     form.setValue("promoCode", code);
   };
 
-  const handleAvailabilityChange = (date: Date | undefined, hours: number) => {
-    setSelectedDate(date);
-    setAvailableHours(hours);
-  };
-
-  const handleGroupSizeChange = (size: string) => {
-    setGroupSize(size);
-    form.setValue("groupSize", size);
-  };
-
-  const handleDurationChange = (dur: string) => {
-    setDuration(dur);
-    form.setValue("duration", dur);
-  };
-
-  // Afficher des guides contextuels en fonction de l'étape
-  useEffect(() => {
-    if (!user) return;
-
-    switch (currentStep) {
-      case 1:
-        toast({
-          title: "📅 Choisissez une date",
-          description: "Sélectionnez la date et l'heure qui vous conviennent",
-        });
-        break;
-      case 2:
-        toast({
-          title: "👥 Taille du groupe",
-          description: "Indiquez le nombre de participants et la durée",
-        });
-        break;
-      case 3:
-        toast({
-          title: "💳 Finalisation",
-          description: "Vérifiez les détails et procédez au paiement",
-        });
-        break;
-    }
-  }, [currentStep, user]);
-
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 animate-fadeIn p-6">
+      <form onSubmit={onSubmit} className="space-y-6 animate-fadeIn p-6">
         <BookingSteps steps={steps} currentStep={currentStep} />
 
         {currentStep === 1 && (
@@ -174,9 +105,9 @@ export const BookingFormWrapper = () => {
         {currentStep === 2 && (
           <GroupSizeAndDurationFields
             form={form}
-            onGroupSizeChange={handleGroupSizeChange}
-            onDurationChange={handleDurationChange}
-            onPriceCalculated={setCalculatedPrice}
+            onGroupSizeChange={setGroupSize}
+            onDurationChange={setDuration}
+            onPriceCalculated={handlePriceCalculated}
             availableHours={availableHours}
           />
         )}
@@ -193,7 +124,7 @@ export const BookingFormWrapper = () => {
         <BookingFormActions
           currentStep={currentStep}
           isSubmitting={isSubmitting}
-          onPrevious={() => setCurrentStep(currentStep - 1)}
+          onPrevious={handlePrevious}
         />
       </form>
 

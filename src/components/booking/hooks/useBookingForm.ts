@@ -42,13 +42,7 @@ export const useBookingForm = () => {
     },
   });
 
-  const { handleSubmit: submitBooking } = useBookingSubmit(
-    form,
-    groupSize,
-    duration,
-    calculatedPrice,
-    setIsSubmitting
-  );
+  const { handleSubmit: submitBooking } = useBookingSubmit();
 
   const handlePriceCalculated = (price: number) => {
     if (price <= 0) {
@@ -105,11 +99,10 @@ export const useBookingForm = () => {
     setCurrentStep,
     calculatedPrice,
     isSubmitting,
-    setIsSubmitting,
     handlePriceCalculated,
     handleAvailabilityChange,
     handlePrevious,
     availableHours,
-    onSubmit,
+    onSubmit: form.handleSubmit(onSubmit),
   };
 };

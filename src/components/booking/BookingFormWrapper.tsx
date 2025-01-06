@@ -150,7 +150,7 @@ export const BookingFormWrapper = () => {
         </div>
       </div>
 
-      <PromoCodePopup onApplyCode={handlePromoCode} />
+      <PromoCodePopup onApplyCode={handlePromoCode} currentStep={currentStep} />
     </Form>
   );
 };

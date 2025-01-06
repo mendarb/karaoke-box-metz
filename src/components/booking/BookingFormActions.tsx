@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ChevronLeft, ArrowRight } from "lucide-react";
 
 interface BookingFormActionsProps {
   currentStep: number;
@@ -19,10 +19,10 @@ export const BookingFormActions = ({
           type="button"
           variant="outline"
           onClick={onPrevious}
-          className="flex items-center gap-2 hover:bg-gray-100"
+          className="flex items-center gap-2 border-2 border-violet-200 hover:bg-violet-50 hover:border-violet-300 text-violet-700"
         >
-          <ArrowLeft className="w-4 h-4" />
-          Précédent
+          <ChevronLeft className="w-4 h-4" />
+          Retour
         </Button>
       ) : (
         <div></div>
@@ -34,7 +34,7 @@ export const BookingFormActions = ({
       >
         {isSubmitting ? (
           "Chargement..."
-        ) : currentStep < 4 ? (
+        ) : currentStep < 3 ? (
           <>
             Suivant
             <ArrowRight className="w-4 h-4" />

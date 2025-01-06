@@ -11,24 +11,23 @@ import { Tag } from "lucide-react";
 
 interface PromoCodePopupProps {
   onApplyCode: (code: string) => void;
+  currentStep: number;
 }
 
-export const PromoCodePopup = ({ onApplyCode }: PromoCodePopupProps) => {
+export const PromoCodePopup = ({ onApplyCode, currentStep }: PromoCodePopupProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    // Afficher la popup après un court délai
-    const timer = setTimeout(() => {
+    if (currentStep === 3) {
       const hasSeenPromo = localStorage.getItem("hasSeenPromoOuverture");
-      const currentStep = localStorage.getItem("currentBookingStep");
-      
-      if (!hasSeenPromo && currentStep === "3") {
-        setIsOpen(true);
+      if (!hasSeenPromo) {
+        const timer = setTimeout(() => {
+          setIsOpen(true);
+        }, 1000);
+        return () => clearTimeout(timer);
       }
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, []);
+    }
+  }, [currentStep]);
 
   const handleApplyCode = () => {
     onApplyCode("OUVERTURE");

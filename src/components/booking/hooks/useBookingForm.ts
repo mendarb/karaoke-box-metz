@@ -61,6 +61,8 @@ export const useBookingForm = () => {
   };
 
   const validateStep = (data: BookingFormData): boolean => {
+    console.log("Validating step", currentStep, "with data:", data);
+
     if (currentStep === 1) {
       if (!data.date || !data.timeSlot) {
         toast({
@@ -83,8 +85,18 @@ export const useBookingForm = () => {
       }
     }
 
+    // Pour l'étape 3, on vérifie si l'utilisateur est connecté
     if (currentStep === 3) {
-      if (!data.email || !data.fullName || !data.phone) {
+      const formData = form.getValues();
+      console.log("Checking final step data:", formData);
+
+      // Si l'utilisateur est connecté, on utilise ses données
+      if (user) {
+        return true;
+      }
+
+      // Sinon on vérifie les champs du formulaire
+      if (!formData.email || !formData.fullName || !formData.phone) {
         toast({
           title: "Champs requis",
           description: "Veuillez remplir tous les champs obligatoires",
@@ -99,6 +111,7 @@ export const useBookingForm = () => {
 
   const onSubmit = async (data: BookingFormData) => {
     console.log("Étape actuelle:", currentStep);
+    console.log("Données du formulaire:", data);
     
     if (!validateStep(data)) {
       return;

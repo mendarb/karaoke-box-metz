@@ -20,6 +20,8 @@ export const PromoCodeField = ({ onPromoValidated, form }: PromoCodeFieldProps) 
     setPromoCode(code);
     if (!code) {
       onPromoValidated(false);
+      form.setValue("promoCode", "");
+      form.setValue("promoCodeId", null);
     }
   };
 
@@ -60,7 +62,6 @@ export const PromoCodeField = ({ onPromoValidated, form }: PromoCodeFieldProps) 
 
       const now = new Date();
 
-      // Vérifier la période de validité
       if (data.start_date && new Date(data.start_date) > now) {
         onPromoValidated(false);
         toast({
@@ -81,7 +82,6 @@ export const PromoCodeField = ({ onPromoValidated, form }: PromoCodeFieldProps) 
         return;
       }
 
-      // Vérifier les limites d'utilisation
       if (data.max_uses && data.current_uses >= data.max_uses) {
         onPromoValidated(false);
         toast({
@@ -124,6 +124,7 @@ export const PromoCodeField = ({ onPromoValidated, form }: PromoCodeFieldProps) 
               value={promoCode}
               onChange={handlePromoCodeChange}
               placeholder="Entrez votre code promo"
+              className="uppercase"
             />
           </FormControl>
           <Button 

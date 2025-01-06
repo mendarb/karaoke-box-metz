@@ -59,11 +59,11 @@ serve(async (req) => {
       line_items: [{
         price_data: {
           currency: 'eur',
-          unit_amount: Math.round(price * 100),
           product_data: {
             name: requestBody.isTestMode ? '[TEST MODE] Karaoké BOX - MB EI' : 'Karaoké BOX - MB EI',
-            description: `${requestBody.groupSize} personnes - ${requestBody.duration}h${requestBody.promoCode ? ` (Code promo: ${requestBody.promoCode})` : ''}`,
+            description: `${requestBody.groupSize} personnes - ${requestBody.duration}h`,
           },
+          unit_amount: Math.round(price * 100),
         },
         quantity: 1,
       }],
@@ -72,12 +72,12 @@ serve(async (req) => {
       cancel_url: `${origin}`,
       customer_email: profile.email,
       payment_method_options: {
-        paypal: {
-          setup_future_usage: 'off',
-        },
         klarna: {
-          setup_future_usage: 'none',
+          setup_future_usage: 'none'
         },
+        paypal: {
+          setup_future_usage: 'none'
+        }
       },
       metadata: {
         userId: requestBody.userId,
@@ -109,13 +109,10 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ 
-        success: true,
-        url: session.url 
-      }),
+      JSON.stringify({ url: session.url }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
+        status: 200,
       }
     );
 

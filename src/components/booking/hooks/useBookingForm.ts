@@ -1,103 +1,42 @@
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { useToast } from "@/hooks/use-toast";
-import { useUserState } from "@/hooks/useUserState";
-import { supabase } from "@/lib/supabase";
-import { BookingFormValues } from "../types/bookingFormTypes";
+import { useState } from "react";
+import { UseFormReturn } from "react-hook-form";
+import { useBookingSubmit } from "./useBookingSubmit";
 
-export const useBookingForm = () => {
-  const { toast } = useToast();
-  const { user } = useUserState();
-  const [groupSize, setGroupSize] = useState("");
-  const [duration, setDuration] = useState("");
-  const [currentStep, setCurrentStep] = useState(1);
-  const [calculatedPrice, setCalculatedPrice] = useState(0);
+interface UseBookingFormProps {
+  form: UseFormReturn<any>;
+  groupSize: string;
+  duration: string;
+  calculatedPrice: number;
+}
+
+export const useBookingForm = ({
+  form,
+  groupSize,
+  duration,
+  calculatedPrice,
+}: UseBookingFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
-  const [availableHours, setAvailableHours] = useState(4);
-  
-  const form = useForm<BookingFormValues>({
-    defaultValues: {
-      email: user?.email || '',
-      fullName: '',
-      phone: '',
-      date: undefined,
-      timeSlot: '',
-      groupSize: '',
-      duration: '',
-      message: ''
-    }
-  });
+  const { handleSubmit: submitBooking } = useBookingSubmit(
+    form,
+    groupSize,
+    duration,
+    calculatedPrice,
+    setIsSubmitting
+  );
 
-  const loadUserData = async () => {
-    if (!user) return;
-
+  const onSubmit = async (data: any) => {
     try {
-      const { data: lastBooking } = await supabase
-        .from('bookings')
-        .select('user_name, user_phone')
-        .eq('user_id', user.id)
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (lastBooking) {
-        form.setValue('fullName', lastBooking.user_name);
-        form.setValue('phone', lastBooking.user_phone);
-      }
-
-      // Si l'utilisateur est connecté, on passe directement à l'étape 2
-      if (user) {
-        setCurrentStep(2);
-      }
+      setIsSubmitting(true);
+      await submitBooking(data);
     } catch (error) {
-      console.error('Error loading user data:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger vos informations",
-        variant: "destructive",
-      });
-    }
-  };
-
-  useEffect(() => {
-    loadUserData();
-  }, [user, form]);
-
-  const handlePriceCalculated = (price: number) => {
-    console.log('Price calculated:', price);
-    setCalculatedPrice(price);
-  };
-
-  const handleAvailabilityChange = (date: Date | undefined, hours: number) => {
-    setSelectedDate(date);
-    setAvailableHours(hours);
-    console.log('Available hours updated:', hours);
-  };
-
-  const handlePrevious = () => {
-    if (currentStep > (user ? 2 : 1)) {
-      setCurrentStep(currentStep - 1);
+      throw error;
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return {
-    form,
-    groupSize,
-    setGroupSize,
-    duration,
-    setDuration,
-    currentStep,
-    setCurrentStep,
-    calculatedPrice,
     isSubmitting,
-    setIsSubmitting,
-    selectedDate,
-    availableHours,
-    handlePriceCalculated,
-    handleAvailabilityChange,
-    handlePrevious,
-    toast
+    onSubmit,
   };
 };

@@ -10,6 +10,7 @@ import { Calendar, Users, CreditCard } from "lucide-react";
 import { PromoCodePopup } from "./PromoCodePopup";
 import { useUserState } from "@/hooks/useUserState";
 import { useToast } from "@/hooks/use-toast";
+import { BookingFormActions } from "./form-actions/BookingFormActions";
 
 export const BookingFormWrapper = () => {
   const { user } = useUserState();
@@ -39,6 +40,13 @@ export const BookingFormWrapper = () => {
     },
   });
 
+  const { isSubmitting, onSubmit } = useBookingForm({
+    form,
+    groupSize,
+    duration,
+    calculatedPrice,
+  });
+
   // Charger les détails d'une réservation sauvegardée si disponible
   useEffect(() => {
     const savedBooking = sessionStorage.getItem("savedBooking");
@@ -63,7 +71,18 @@ export const BookingFormWrapper = () => {
     }
   }, []);
 
-  const { isSubmitting } = useBookingForm();
+  const handleSubmit = async (data: any) => {
+    try {
+      await onSubmit(data);
+    } catch (error) {
+      console.error("Erreur lors de la soumission:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la réservation. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const steps: Step[] = [
     {
@@ -142,7 +161,7 @@ export const BookingFormWrapper = () => {
 
   return (
     <Form {...form}>
-      <div className="space-y-6 animate-fadeIn p-6">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 animate-fadeIn p-6">
         <BookingSteps steps={steps} currentStep={currentStep} />
 
         {currentStep === 1 && (
@@ -171,36 +190,12 @@ export const BookingFormWrapper = () => {
           />
         )}
 
-        <div className="flex justify-between mt-6">
-          {currentStep > 1 && (
-            <button
-              type="button"
-              onClick={() => setCurrentStep(currentStep - 1)}
-              className="px-4 py-2 text-sm font-medium text-violet-600 hover:text-violet-800 border border-violet-200 rounded-md hover:bg-violet-50"
-            >
-              Retour
-            </button>
-          )}
-          {currentStep < 3 && (
-            <button
-              type="button"
-              onClick={() => setCurrentStep(currentStep + 1)}
-              className="ml-auto px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700"
-            >
-              Suivant
-            </button>
-          )}
-          {currentStep === 3 && (
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="ml-auto px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-violet-700 disabled:opacity-50"
-            >
-              {isSubmitting ? "En cours..." : "Réserver"}
-            </button>
-          )}
-        </div>
-      </div>
+        <BookingFormActions
+          currentStep={currentStep}
+          isSubmitting={isSubmitting}
+          onPrevious={() => setCurrentStep(currentStep - 1)}
+        />
+      </form>
 
       <PromoCodePopup onApplyCode={handlePromoCode} currentStep={currentStep} />
     </Form>

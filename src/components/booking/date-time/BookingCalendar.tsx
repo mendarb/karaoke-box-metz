@@ -34,7 +34,7 @@ export const BookingCalendar = ({
         }
         locale={fr}
         defaultMonth={defaultMonth}
-        className="border-none shadow-none [&_.rdp-nav]:flex [&_.rdp-nav]:justify-between [&_.rdp-nav]:mb-4 [&_.rdp-nav_button]:w-auto [&_.rdp-nav_button]:h-8 [&_.rdp-nav_button]:rounded-md [&_.rdp-nav_button]:px-3 [&_.rdp-nav_button]:bg-transparent [&_.rdp-nav_button]:hover:bg-violet-600 [&_.rdp-nav_button]:hover:text-white [&_.rdp-nav_button]:transition-colors [&_.rdp-nav_button]:focus:outline-none [&_.rdp-nav_button]:focus:ring-2 [&_.rdp-nav_button]:focus:ring-violet-600 [&_.rdp-nav_button]:focus:ring-offset-2 [&_.rdp-nav_button_previous]:before:content-['Précédent'] [&_.rdp-nav_button_next]:before:content-['Suivant'] [&_.rdp-nav_button_svg]:hidden"
+        className="rounded-md border"
       />
     </div>
   );

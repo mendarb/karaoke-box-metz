@@ -1,10 +1,10 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from 'https://esm.sh/stripe@14.21.0';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import Stripe from "https://esm.sh/stripe@14.21.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, stripe-signature',
 };
 
 serve(async (req) => {
@@ -14,47 +14,48 @@ serve(async (req) => {
 
   try {
     const requestBody = await req.json();
-    const origin = req.headers.get('origin') || '';
-    const price = parseFloat(requestBody.price);
+    console.log('📦 Données de réservation reçues:', requestBody);
 
-    if (!price || isNaN(price)) {
+    if (!requestBody.userId) {
+      throw new Error('ID utilisateur requis');
+    }
+
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    const { data: profile, error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .select('*')
+      .eq('id', requestBody.userId)
+      .single();
+
+    if (profileError || !profile?.email) {
+      console.error('❌ Erreur profil:', { profileError, profile });
+      throw new Error('Erreur lors de la récupération du profil');
+    }
+
+    const price = parseFloat(requestBody.price);
+    if (isNaN(price) || price < 0) {
       throw new Error('Prix invalide');
     }
 
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-    );
+    const stripeKey = requestBody.isTestMode ? 
+      Deno.env.get('STRIPE_TEST_SECRET_KEY')! : 
+      Deno.env.get('STRIPE_SECRET_KEY')!;
 
-    const authHeader = req.headers.get('Authorization')!;
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user } } = await supabaseClient.auth.getUser(token);
-
-    if (!user) {
-      throw new Error('Utilisateur non authentifié');
-    }
-
-    const { data: profile } = await supabaseClient
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-
-    if (!profile) {
-      throw new Error('Profil utilisateur non trouvé');
-    }
-
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+    const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
+      httpClient: Stripe.createFetchHttpClient(),
     });
 
-    console.log('💰 Création de la session de paiement:', {
-      email: profile.email,
-      price,
-      isTestMode: requestBody.isTestMode,
-    });
+    console.log('💳 Création de la session Stripe...');
 
+    const origin = req.headers.get('origin') || 'https://k-box.fr';
+    
     const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card', 'paypal', 'klarna'],
       line_items: [{
         price_data: {
           currency: 'eur',
@@ -78,56 +79,34 @@ serve(async (req) => {
           setup_future_usage: 'none'
         }
       },
-      payment_method_types: ['card', 'paypal', 'klarna'],
       metadata: {
         userId: requestBody.userId,
-        userEmail: requestBody.userEmail,
-        userName: requestBody.userName,
-        userPhone: requestBody.userPhone,
+        userEmail: profile.email,
+        userName: profile.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : '',
+        userPhone: profile.phone || '',
         date: requestBody.date,
         timeSlot: requestBody.timeSlot,
         duration: requestBody.duration,
         groupSize: requestBody.groupSize,
-        price: requestBody.price,
-        message: requestBody.message || '',
+        price: String(price),
         promoCode: requestBody.promoCode || '',
-        discountAmount: requestBody.discountAmount || '0',
-        isTestMode: requestBody.isTestMode ? 'true' : 'false',
+        discountAmount: String(requestBody.discountAmount || 0),
+        message: requestBody.message || '',
+        isTestMode: String(requestBody.isTestMode),
       },
-      locale: 'fr',
-      appearance: {
-        theme: 'stripe',
-        variables: {
-          colorPrimary: '#FF5733',
-          colorBackground: '#ffffff',
-          colorText: '#1a1a1a',
-          colorDanger: '#dc2626',
-          fontFamily: 'Inter, system-ui, sans-serif',
-          spacingUnit: '4px',
-          borderRadius: '8px',
-        },
-        rules: {
-          '.Input': {
-            border: '1px solid #e5e7eb',
-            boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
-          },
-          '.Input:focus': {
-            border: '2px solid #FF5733',
-            boxShadow: '0 0 0 1px #FF5733',
-          },
-          '.Button': {
-            fontWeight: '600',
-            textTransform: 'none',
-            padding: '10px 16px',
-          },
-          '.Button:hover': {
-            transform: 'translateY(-1px)',
-          }
-        }
-      }
     });
 
-    console.log('✅ Session de paiement créée:', session.id);
+    console.log('✅ Session Stripe créée:', {
+      sessionId: session.id,
+      paymentIntentId: session.payment_intent,
+      userId: requestBody.userId,
+      price: price,
+      metadata: session.metadata,
+    });
+
+    if (!session.url) {
+      throw new Error('Pas d\'URL de paiement retournée par Stripe');
+    }
 
     return new Response(
       JSON.stringify({ url: session.url }),

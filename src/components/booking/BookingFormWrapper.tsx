@@ -1,131 +1,136 @@
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { Form } from "@/components/ui/form";
-import { useBookingForm } from "./hooks/useBookingForm";
-import { useBookingSteps } from "./hooks/useBookingSteps";
-import { useBookingSubmit } from "./hooks/useBookingSubmit";
-import { BookingSteps } from "@/components/BookingSteps";
-import { BookingFormContent } from "./BookingFormContent";
+import { BookingSteps, Step } from "@/components/BookingSteps";
+import { PersonalInfoFields } from "./PersonalInfoFields";
+import { DateTimeFields } from "./DateTimeFields";
+import { GroupSizeAndDurationFields } from "./GroupSizeAndDurationFields";
+import { AdditionalFields } from "./AdditionalFields";
 import { BookingFormActions } from "./BookingFormActions";
-import { useBookingMode } from "./hooks/useBookingMode";
-import { useBookingOverlap } from "@/hooks/useBookingOverlap";
-import { toast } from "@/hooks/use-toast";
-import { BookingFormValues } from "./types/bookingFormTypes";
+import { useBookingForm } from "./hooks/useBookingForm";
+import { User2, Calendar, Users, CreditCard } from "lucide-react";
+import { PromoCodePopup } from "./PromoCodePopup";
 
 export const BookingFormWrapper = () => {
-  const {
-    form,
-    groupSize,
-    setGroupSize,
-    duration,
-    setDuration,
-    currentStep,
-    setCurrentStep,
-    calculatedPrice,
-    isSubmitting,
-    setIsSubmitting,
-    availableHours,
-    handlePriceCalculated,
-    handleAvailabilityChange,
-    handlePrevious,
-  } = useBookingForm();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [availableHours, setAvailableHours] = useState(0);
+  const [calculatedPrice, setCalculatedPrice] = useState(0);
 
-  const steps = useBookingSteps(currentStep);
-  const { isTestMode } = useBookingMode();
-  const { handleSubmit: submitBooking } = useBookingSubmit(
-    form, 
-    groupSize, 
-    duration, 
-    calculatedPrice, 
-    setIsSubmitting
-  );
-  const { checkOverlap } = useBookingOverlap();
+  const form = useForm({
+    defaultValues: {
+      email: "",
+      fullName: "",
+      phone: "",
+      date: undefined,
+      timeSlot: "",
+      duration: "",
+      groupSize: "",
+      message: "",
+      promoCode: "",
+      promoCodeId: null,
+      finalPrice: 0,
+      createAccount: false,
+      password: "",
+    },
+  });
 
-  const validateStep = (step: number) => {
-    const requiredFields: { [key: number]: Array<keyof BookingFormValues> } = {
-      1: ['email', 'fullName', 'phone'],
-      2: ['date', 'timeSlot'],
-      3: ['groupSize', 'duration'],
-      4: []
-    };
+  const { isSubmitting, handleSubmit } = useBookingForm(form);
 
-    const fields = requiredFields[step];
-    if (!fields) return true;
+  const steps: Step[] = [
+    {
+      id: 1,
+      title: "Coordonnées",
+      icon: <User2 className="h-5 w-5" />,
+      completed: currentStep > 1,
+      current: currentStep === 1,
+      tooltip: "Renseignez vos informations de contact",
+    },
+    {
+      id: 2,
+      title: "Date & Heure",
+      icon: <Calendar className="h-5 w-5" />,
+      completed: currentStep > 2,
+      current: currentStep === 2,
+      tooltip: "Choisissez votre créneau de réservation",
+    },
+    {
+      id: 3,
+      title: "Groupe",
+      icon: <Users className="h-5 w-5" />,
+      completed: currentStep > 3,
+      current: currentStep === 3,
+      tooltip: "Indiquez la taille de votre groupe et la durée",
+    },
+    {
+      id: 4,
+      title: "Paiement",
+      icon: <CreditCard className="h-5 w-5" />,
+      completed: currentStep > 4,
+      current: currentStep === 4,
+      tooltip: "Finalisez votre réservation",
+    },
+  ];
 
-    let isValid = true;
-    const errors: string[] = [];
-
-    fields.forEach(field => {
-      const value = form.getValues(field);
-      if (!value) {
-        form.setError(field, {
-          type: 'required',
-          message: 'Ce champ est requis'
-        });
-        isValid = false;
-        errors.push(field);
-      }
-    });
-
-    if (!isValid) {
-      toast({
-        title: "Erreur de validation",
-        description: "Veuillez remplir tous les champs obligatoires",
-        variant: "destructive",
-      });
-    }
-
-    return isValid;
-  };
-
-  const onSubmit = async (data: BookingFormValues) => {
-    if (!validateStep(currentStep)) {
-      return;
-    }
-
-    if (currentStep < 4) {
-      setCurrentStep(currentStep + 1);
-      return;
-    }
-    
-    console.log('🔧 Payment mode:', isTestMode ? 'TEST' : 'LIVE', {
-      isTestMode
-    });
-    
-    form.setValue('isTestMode', isTestMode);
-    
-    const hasOverlap = await checkOverlap(data.date, data.timeSlot, duration);
-    if (hasOverlap) {
-      return;
-    }
-
-    await submitBooking({ ...data, isTestMode });
+  const handlePromoCode = (code: string) => {
+    form.setValue("promoCode", code);
+    // Trigger validation if needed
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <div className="space-y-6 animate-fadeIn p-6">
         <BookingSteps steps={steps} currentStep={currentStep} />
-        
-        <div className="min-h-[300px]">
-          <BookingFormContent
-            currentStep={currentStep}
+
+        {currentStep === 1 && (
+          <PersonalInfoFields
             form={form}
-            groupSize={groupSize}
-            duration={duration}
-            calculatedPrice={calculatedPrice}
-            onGroupSizeChange={setGroupSize}
-            onDurationChange={setDuration}
-            onPriceCalculated={handlePriceCalculated}
-            onAvailabilityChange={handleAvailabilityChange}
+            onNext={() => setCurrentStep(2)}
+          />
+        )}
+
+        {currentStep === 2 && (
+          <DateTimeFields
+            form={form}
+            onBack={() => setCurrentStep(1)}
+            onNext={() => setCurrentStep(3)}
+            onDateSelect={setSelectedDate}
+            onAvailabilityChange={setAvailableHours}
+          />
+        )}
+
+        {currentStep === 3 && (
+          <GroupSizeAndDurationFields
+            form={form}
+            onBack={() => setCurrentStep(2)}
+            onNext={() => setCurrentStep(4)}
+            onGroupSizeChange={() => {}}
+            onDurationChange={() => {}}
+            onPriceCalculated={setCalculatedPrice}
             availableHours={availableHours}
           />
-        </div>
+        )}
 
-        <BookingFormActions
-          currentStep={currentStep}
-          isSubmitting={isSubmitting}
-          onPrevious={handlePrevious}
-        />
-      </form>
+        {currentStep === 4 && (
+          <AdditionalFields
+            form={form}
+            calculatedPrice={calculatedPrice}
+            groupSize={form.getValues("groupSize")}
+            duration={form.getValues("duration")}
+          />
+        )}
+
+        {currentStep === 4 && (
+          <BookingFormActions
+            form={form}
+            isSubmitting={isSubmitting}
+            onBack={() => setCurrentStep(3)}
+            onSubmit={handleSubmit}
+          />
+        )}
+      </div>
+
+      <PromoCodePopup onApplyCode={handlePromoCode} />
     </Form>
   );
 };

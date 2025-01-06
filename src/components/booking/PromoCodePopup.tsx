@@ -20,7 +20,9 @@ export const PromoCodePopup = ({ onApplyCode }: PromoCodePopupProps) => {
     // Afficher la popup après un court délai
     const timer = setTimeout(() => {
       const hasSeenPromo = localStorage.getItem("hasSeenPromoOuverture");
-      if (!hasSeenPromo) {
+      const currentStep = localStorage.getItem("currentBookingStep");
+      
+      if (!hasSeenPromo && currentStep === "3") {
         setIsOpen(true);
       }
     }, 1000);

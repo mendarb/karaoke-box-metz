@@ -12,23 +12,12 @@ import {
 import { User } from "lucide-react";
 
 interface UserNavProps {
-  onShowAuth: () => void;
+  onSignOut: () => Promise<void>;
+  isAdmin: boolean;
 }
 
-export const UserNav = ({ onShowAuth }: UserNavProps) => {
-  const { user, signOut } = useUserState();
-
-  const handleSignOut = async () => {
-    await signOut();
-  };
-
-  if (!user) {
-    return (
-      <Button variant="outline" onClick={onShowAuth}>
-        Se connecter
-      </Button>
-    );
-  }
+export const UserNav = ({ onSignOut, isAdmin }: UserNavProps) => {
+  const { user } = useUserState();
 
   return (
     <div className="flex items-center gap-4">
@@ -48,8 +37,16 @@ export const UserNav = ({ onShowAuth }: UserNavProps) => {
           <DropdownMenuItem onClick={() => window.location.href = "/my-bookings"}>
             Mes réservations
           </DropdownMenuItem>
+          {isAdmin && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => window.location.href = "/admin"}>
+                Administration
+              </DropdownMenuItem>
+            </>
+          )}
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleSignOut}>
+          <DropdownMenuItem onClick={onSignOut}>
             Se déconnecter
           </DropdownMenuItem>
         </DropdownMenuContent>

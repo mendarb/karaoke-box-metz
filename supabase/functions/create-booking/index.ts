@@ -89,7 +89,7 @@ serve(async (req) => {
           setup_future_usage: 'off',
         },
         klarna: {
-          setup_future_usage: 'off',
+          setup_future_usage: 'none',
         },
       },
       metadata: {
@@ -141,7 +141,7 @@ serve(async (req) => {
       JSON.stringify({ error: error.message }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500 
+        status: 500,
       }
     );
   }

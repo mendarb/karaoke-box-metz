@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { useBookingSubmit } from "./useBookingSubmit";
 import { useToast } from "@/hooks/use-toast";
 import { BookingFormData } from "../types/bookingFormTypes";
+import { useUserState } from "@/hooks/useUserState";
 
 export const useBookingForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -12,12 +13,13 @@ export const useBookingForm = () => {
   const [calculatedPrice, setCalculatedPrice] = useState(0);
   const [availableHours, setAvailableHours] = useState(0);
   const { toast } = useToast();
+  const { user } = useUserState();
 
   const form = useForm<BookingFormData>({
     defaultValues: {
-      email: "",
-      fullName: "",
-      phone: "",
+      email: user?.email || "",
+      fullName: user?.user_metadata?.full_name || "",
+      phone: user?.user_metadata?.phone || "",
       date: undefined,
       timeSlot: "",
       duration: "",
@@ -58,35 +60,56 @@ export const useBookingForm = () => {
     setCurrentStep((prev) => Math.max(1, prev - 1));
   };
 
-  const onSubmit = async (data: BookingFormData) => {
-    console.log("Étape actuelle:", currentStep);
-    
-    if (currentStep < 3) {
-      // Validation par étape
-      if (currentStep === 1 && (!data.date || !data.timeSlot)) {
+  const validateStep = (data: BookingFormData): boolean => {
+    if (currentStep === 1) {
+      if (!data.date || !data.timeSlot) {
         toast({
           title: "Champs requis",
           description: "Veuillez sélectionner une date et un créneau horaire",
           variant: "destructive",
         });
-        return;
+        return false;
       }
-      
-      if (currentStep === 2 && (!data.groupSize || !data.duration)) {
+    }
+    
+    if (currentStep === 2) {
+      if (!data.groupSize || !data.duration) {
         toast({
           title: "Champs requis",
           description: "Veuillez sélectionner la taille du groupe et la durée",
           variant: "destructive",
         });
-        return;
+        return false;
       }
+    }
 
-      // Si la validation passe, on passe à l'étape suivante
+    if (currentStep === 3) {
+      if (!data.email || !data.fullName || !data.phone) {
+        toast({
+          title: "Champs requis",
+          description: "Veuillez remplir tous les champs obligatoires",
+          variant: "destructive",
+        });
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  const onSubmit = async (data: BookingFormData) => {
+    console.log("Étape actuelle:", currentStep);
+    
+    if (!validateStep(data)) {
+      return;
+    }
+
+    if (currentStep < 3) {
       setCurrentStep((prev) => prev + 1);
       return;
     }
 
-    // Dernière étape - soumission finale
+    // Final submission
     try {
       await handleSubmit(data);
     } catch (error) {

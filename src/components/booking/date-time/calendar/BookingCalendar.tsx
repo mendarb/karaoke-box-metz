@@ -1,7 +1,5 @@
 import { Calendar } from "@/components/ui/calendar";
 import { fr } from "date-fns/locale";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 interface BookingCalendarProps {
   selectedDate?: Date;
@@ -36,29 +34,7 @@ export const BookingCalendar = ({
         }
         locale={fr}
         defaultMonth={defaultMonth}
-        className="border-none shadow-none"
-        components={{
-          IconLeft: ({ ...props }) => (
-            <Button 
-              variant="ghost" 
-              size="icon"
-              className="h-7 w-7"
-              {...props}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-          ),
-          IconRight: ({ ...props }) => (
-            <Button 
-              variant="ghost" 
-              size="icon"
-              className="h-7 w-7"
-              {...props}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          ),
-        }}
+        className="rounded-md border"
       />
     </div>
   );

@@ -84,7 +84,7 @@ export const useBookingSubmit = (
       }
       console.log('💰 Prix final:', finalPrice);
 
-      // Appeler la nouvelle fonction Edge pour créer la réservation
+      // Appeler la fonction Edge pour créer la réservation
       const { data: response, error } = await supabase.functions.invoke(
         'create-booking',
         {
@@ -115,7 +115,6 @@ export const useBookingSubmit = (
       }
 
       console.log('✅ Booking created and payment link generated:', {
-        bookingId: response.bookingId,
         checkoutUrl: response.url,
         userId: user.id,
         price: finalPrice,

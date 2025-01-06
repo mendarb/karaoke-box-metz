@@ -54,12 +54,11 @@ serve(async (req) => {
 
     console.log('💳 Création de la session Stripe...');
 
-    // Récupérer l'origine de la requête pour la redirection
     const origin = req.headers.get('origin') || 'https://k-box.fr';
     console.log('🌐 URL d\'origine pour la redirection:', origin);
 
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
+      payment_method_types: ['card', 'paypal', 'klarna'],
       line_items: [{
         price_data: {
           currency: 'eur',
@@ -75,6 +74,14 @@ serve(async (req) => {
       success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}`,
       customer_email: requestBody.email,
+      payment_method_options: {
+        paypal: {
+          setup_future_usage: 'off',
+        },
+        klarna: {
+          setup_future_usage: 'off',
+        },
+      },
       metadata: {
         userId: requestBody.userId,
         userEmail: requestBody.email,

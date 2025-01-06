@@ -75,33 +75,33 @@ export const BookingFormLegal = ({
   };
 
   return (
-    <div className="space-y-6 rounded-lg bg-white p-6 shadow-sm border border-gray-100">
-      <FormField
-        control={form.control}
-        name="acceptTerms"
-        rules={{ required: "Vous devez accepter les conditions générales" }}
-        render={({ field }) => (
-          <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border border-gray-100 p-4 shadow-sm">
-            <FormControl>
-              <Checkbox
-                checked={field.value}
-                onCheckedChange={field.onChange}
-                className="data-[state=checked]:bg-violet-600 data-[state=checked]:border-violet-600"
-              />
-            </FormControl>
-            <div className="space-y-1 leading-none">
-              <p className="text-sm text-gray-600">
-                J'accepte les <TermsDialog onAccept={() => field.onChange(true)} />, la{" "}
-                <PrivacyDialog /> et la{" "}
-                <CancellationDialog />. En cochant cette case, je consens au traitement de mes données personnelles conformément à la politique de confidentialité.
-              </p>
-              <FormMessage className="text-xs" />
-            </div>
-          </FormItem>
-        )}
-      />
+    <div className="space-y-8">
+      <div className="space-y-6">
+        <FormField
+          control={form.control}
+          name="acceptTerms"
+          rules={{ required: "Vous devez accepter les conditions générales" }}
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  className="data-[state=checked]:bg-violet-600"
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <p className="text-sm text-gray-600">
+                  J'accepte les <TermsDialog onAccept={() => field.onChange(true)} />, la{" "}
+                  <PrivacyDialog /> et la{" "}
+                  <CancellationDialog />. En cochant cette case, je consens au traitement de mes données personnelles conformément à la politique de confidentialité.
+                </p>
+                <FormMessage className="text-xs" />
+              </div>
+            </FormItem>
+          )}
+        />
 
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0 p-4 rounded-md bg-gray-50">
         <div className="text-xs text-gray-600 space-y-2 max-w-lg">
           <p className="leading-relaxed">
             Conformément au RGPD, vous disposez d'un droit d'accès, de rectification, d'effacement, et de portabilité des données vous concernant.
@@ -110,14 +110,17 @@ export const BookingFormLegal = ({
             Vos données sont utilisées uniquement dans le cadre de votre réservation et ne sont pas transmises à des tiers.
           </p>
         </div>
+      </div>
+
+      <div className="flex justify-center">
         <Button
           type="button"
           variant="outline"
           onClick={handleSaveForLater}
-          className="whitespace-nowrap ml-0 md:ml-4 border-2 border-violet-200 hover:bg-violet-50 hover:border-violet-300 text-violet-700 transition-all duration-200"
+          className="bg-violet-50 hover:bg-violet-100 text-violet-700 hover:text-violet-800 transition-all duration-200 shadow-sm"
         >
-          <BookmarkPlus className="mr-2 h-4 w-4" />
-          Sauvegarder pour plus tard
+          <BookmarkPlus className="mr-2 h-5 w-5" />
+          Enregistrer ma réservation pour plus tard
         </Button>
       </div>
     </div>

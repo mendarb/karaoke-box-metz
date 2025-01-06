@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Trash2, AlertCircle } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
@@ -11,14 +11,13 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { SavedBookingsList } from "./saved-bookings/SavedBookingsList";
 
 interface SavedBooking {
   id: string;
@@ -33,6 +32,7 @@ interface SavedBooking {
 export const SavedBookingsCart = () => {
   const [savedBookings, setSavedBookings] = useState<SavedBooking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -64,11 +64,10 @@ export const SavedBookingsCart = () => {
 
       setSavedBookings(bookingsWithAvailability);
       
-      // Afficher un toast pour guider l'utilisateur s'il y a des réservations sauvegardées
       if (bookingsWithAvailability.length > 0) {
         toast({
           title: "💡 Réservations sauvegardées",
-          description: "Cliquez sur 'Continuer la réservation' pour finaliser votre réservation",
+          description: "Cliquez sur 'Continuer la réservation' pour finaliser",
         });
       }
     } catch (error) {
@@ -84,8 +83,10 @@ export const SavedBookingsCart = () => {
   };
 
   useEffect(() => {
-    loadSavedBookings();
-  }, []);
+    if (isOpen) {
+      loadSavedBookings();
+    }
+  }, [isOpen]);
 
   const handleDelete = async (id: string) => {
     try {
@@ -121,16 +122,16 @@ export const SavedBookingsCart = () => {
       return;
     }
 
-    // Stocker les détails de la réservation dans sessionStorage
     sessionStorage.setItem("savedBooking", JSON.stringify({
       ...booking,
-      currentStep: 3 // Force l'étape de paiement
+      currentStep: 3
     }));
+    setIsOpen(false);
     navigate("/");
   };
 
   return (
-    <Sheet>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -138,10 +139,10 @@ export const SavedBookingsCart = () => {
               <Button
                 variant="outline"
                 size="icon"
-                className="relative"
+                className="relative hover:bg-violet-50 hover:border-violet-200"
                 aria-label="Panier des réservations"
               >
-                <ShoppingCart className="h-5 w-5" />
+                <ShoppingCart className="h-5 w-5 text-violet-600" />
                 {savedBookings.length > 0 && (
                   <span className="absolute -top-2 -right-2 bg-violet-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
                     {savedBookings.length}
@@ -158,65 +159,23 @@ export const SavedBookingsCart = () => {
 
       <SheetContent>
         <SheetHeader>
-          <SheetTitle>Réservations sauvegardées</SheetTitle>
+          <SheetTitle className="flex items-center gap-2">
+            <ShoppingCart className="w-5 h-5" />
+            Réservations sauvegardées
+          </SheetTitle>
         </SheetHeader>
-        <div className="mt-4 space-y-4">
-          {isLoading ? (
-            <p className="text-center text-gray-500">Chargement...</p>
-          ) : savedBookings.length === 0 ? (
-            <p className="text-center text-gray-500">
-              Aucune réservation sauvegardée
-            </p>
-          ) : (
-            savedBookings.map((booking) => (
-              <div
-                key={booking.id}
-                className="border rounded-lg p-4 space-y-2 relative bg-white shadow-sm"
-              >
-                <div className="flex justify-between items-start">
-                  <div className="space-y-2">
-                    <p className="font-medium">
-                      {format(new Date(booking.date), "EEEE d MMMM yyyy", {
-                        locale: fr,
-                      })}
-                    </p>
-                    <div className="space-y-1 text-sm text-gray-600">
-                      <p>🕒 {booking.time_slot}h - {parseInt(booking.time_slot) + parseInt(booking.duration)}h ({booking.duration}h)</p>
-                      <p>👥 {booking.group_size} personnes</p>
-                      {booking.message && (
-                        <p className="italic">💬 {booking.message}</p>
-                      )}
-                    </div>
-                    {!booking.is_available && (
-                      <p className="text-sm text-red-500 flex items-center gap-1 mt-1">
-                        <AlertCircle className="h-4 w-4" />
-                        Créneau plus disponible
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="flex gap-2 mt-2">
-                  <Button
-                    onClick={() => handleContinueBooking(booking)}
-                    disabled={!booking.is_available}
-                    className="flex-1"
-                  >
-                    {booking.is_available
-                      ? "Continuer la réservation"
-                      : "Créneau indisponible"}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => handleDelete(booking.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+        
+        {isLoading ? (
+          <div className="flex items-center justify-center h-40">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600" />
+          </div>
+        ) : (
+          <SavedBookingsList
+            bookings={savedBookings}
+            onDelete={handleDelete}
+            onContinue={handleContinueBooking}
+          />
+        )}
       </SheetContent>
     </Sheet>
   );

@@ -4,37 +4,33 @@ import { format } from "date-fns";
 
 export const useBookedSlots = (selectedDate: Date | null) => {
   return useQuery({
-    queryKey: ['booked-slots', selectedDate?.toISOString()],
+    queryKey: ['booked-slots', selectedDate],
     queryFn: async () => {
-      if (!selectedDate) return [];
+      if (!selectedDate) {
+        return [];
+      }
 
       const formattedDate = format(selectedDate, 'yyyy-MM-dd');
-      console.log('🔍 Vérification des créneaux pour:', formattedDate);
-      
-      const { data: bookings, error } = await supabase
+      console.log('📅 Chargement des créneaux pour:', formattedDate);
+
+      const { data, error } = await supabase
         .from('bookings')
         .select('time_slot, duration')
         .eq('date', formattedDate)
         .neq('status', 'cancelled')
         .is('deleted_at', null)
-        .eq('payment_status', 'paid'); // Fixed payment status filter
+        .eq('payment_status', 'paid');
 
       if (error) {
         console.error('❌ Erreur lors du chargement des créneaux réservés:', error);
         throw error;
       }
 
-      const bookedSlots = new Set<string>();
-      bookings?.forEach(booking => {
-        const startHour = parseInt(booking.time_slot);
-        const duration = parseInt(booking.duration);
-        
-        for (let hour = startHour; hour < startHour + duration; hour++) {
-          bookedSlots.add(`${hour.toString().padStart(2, '0')}:00`);
-        }
-      });
-
-      return Array.from(bookedSlots);
+      console.log('✅ Créneaux réservés chargés:', data);
+      return data.map(booking => ({
+        timeSlot: booking.time_slot,
+        duration: booking.duration
+      }));
     },
     enabled: !!selectedDate,
     staleTime: 30000,

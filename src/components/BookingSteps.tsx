@@ -1,4 +1,4 @@
-import { User2, Calendar, Users, CreditCard } from "lucide-react";
+import { Calendar, Users, CreditCard } from "lucide-react";
 import React from "react";
 import {
   Tooltip,

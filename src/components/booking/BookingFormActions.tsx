@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ArrowRight } from "lucide-react";
+import { ChevronLeft, ArrowRight, Lock } from "lucide-react";
 
 interface BookingFormActionsProps {
   currentStep: number;
@@ -40,7 +40,10 @@ export const BookingFormActions = ({
             <ArrowRight className="w-4 h-4" />
           </>
         ) : (
-          "Confirmer et payer"
+          <>
+            <Lock className="w-4 h-4" />
+            Paiement sécurisé
+          </>
         )}
       </Button>
     </div>

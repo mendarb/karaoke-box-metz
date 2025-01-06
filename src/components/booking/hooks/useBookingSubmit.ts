@@ -107,7 +107,10 @@ export const useBookingSubmit = (
         }
       );
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Error from create-booking function:', error);
+        throw error;
+      }
 
       if (!response?.url) {
         console.error('❌ No checkout URL returned:', response);
@@ -121,8 +124,8 @@ export const useBookingSubmit = (
         responseData: response
       });
 
-      // Rediriger vers la page de paiement Stripe
-      window.location.href = response.url;
+      // Rediriger vers la page de paiement Stripe dans un nouvel onglet
+      window.open(response.url, '_blank');
 
     } catch (error: any) {
       console.error('❌ Error in booking process:', error);

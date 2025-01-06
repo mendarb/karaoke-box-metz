@@ -71,7 +71,10 @@ export const PromoCodePopup = ({ onApplyCode, currentStep }: PromoCodePopupProps
             <Button variant="outline" onClick={() => setIsOpen(false)}>
               Plus tard
             </Button>
-            <Button onClick={handleApplyCode} className="bg-violet-600 hover:bg-violet-700">
+            <Button 
+              onClick={handleApplyCode} 
+              className="bg-violet-600 hover:bg-violet-700"
+            >
               Appliquer le code
             </Button>
           </div>

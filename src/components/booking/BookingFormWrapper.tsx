@@ -37,7 +37,7 @@ export const BookingFormWrapper = () => {
     },
   });
 
-  const { isSubmitting } = useBookingForm(form);
+  const { isSubmitting } = useBookingForm();
 
   const steps: Step[] = [
     {

@@ -7,6 +7,7 @@ import { BookingSummary } from "./additional/BookingSummary";
 import { PromoCodeField } from "./additional/PromoCodeField";
 import { AccountCreation } from "./additional/AccountCreation";
 import { usePromoCode } from "../hooks/usePromoCode";
+import { BookingFormLegal } from "./BookingFormLegal";
 
 interface AdditionalFieldsProps {
   form: UseFormReturn<any>;
@@ -79,6 +80,15 @@ export const AdditionalFields = ({
         isAuthenticated={isAuthenticated}
         form={form}
         userEmail={form.getValues("email")}
+      />
+
+      <BookingFormLegal 
+        form={form}
+        groupSize={groupSize}
+        duration={duration}
+        date={form.getValues("date")}
+        timeSlot={form.getValues("timeSlot")}
+        message={form.getValues("message")}
       />
     </div>
   );

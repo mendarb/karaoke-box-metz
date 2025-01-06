@@ -290,6 +290,48 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_bookings: {
+        Row: {
+          cabin: string
+          created_at: string
+          date: string
+          deleted_at: string | null
+          duration: string
+          group_size: string
+          id: string
+          message: string | null
+          time_slot: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cabin?: string
+          created_at?: string
+          date: string
+          deleted_at?: string | null
+          duration: string
+          group_size: string
+          id?: string
+          message?: string | null
+          time_slot: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cabin?: string
+          created_at?: string
+          date?: string
+          deleted_at?: string | null
+          duration?: string
+          group_size?: string
+          id?: string
+          message?: string | null
+          time_slot?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       settings: {
         Row: {
           created_at: string

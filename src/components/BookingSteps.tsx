@@ -38,7 +38,9 @@ export const BookingSteps = ({ steps, currentStep }: BookingStepsProps) => {
                   <div
                     className={`rounded-full p-3 mb-2 ${
                       step.current
-                        ? "bg-violet-100 text-violet-600"
+                        ? "bg-violet-100 text-violet-600 ring-2 ring-violet-200"
+                        : step.completed
+                        ? "bg-green-100 text-green-600"
                         : "bg-gray-100 text-gray-400"
                     }`}
                   >

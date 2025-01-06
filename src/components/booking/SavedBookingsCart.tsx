@@ -52,7 +52,7 @@ export const SavedBookingsCart = () => {
             .select("*")
             .eq("date", booking.date)
             .eq("time_slot", booking.time_slot)
-            .eq("status", "confirmed")
+            .neq("status", "cancelled")
             .is("deleted_at", null);
 
           return {
@@ -122,10 +122,12 @@ export const SavedBookingsCart = () => {
       return;
     }
 
+    // Sauvegarder toutes les informations nécessaires
     sessionStorage.setItem("savedBooking", JSON.stringify({
       ...booking,
       currentStep: 3
     }));
+    
     setIsOpen(false);
     navigate("/");
   };

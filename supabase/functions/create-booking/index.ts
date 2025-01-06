@@ -17,11 +17,9 @@ serve(async (req) => {
     console.log('📦 Données de réservation reçues:', requestBody);
 
     if (!requestBody.userId) {
-      console.error('❌ Pas d\'ID utilisateur fourni');
       throw new Error('ID utilisateur requis');
     }
 
-    // Récupérer les informations de l'utilisateur depuis le profil
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -33,29 +31,19 @@ serve(async (req) => {
       .eq('id', requestBody.userId)
       .single();
 
-    if (profileError) {
-      console.error('❌ Erreur lors de la récupération du profil:', profileError);
+    if (profileError || !profile?.email) {
+      console.error('❌ Erreur profil:', { profileError, profile });
       throw new Error('Erreur lors de la récupération du profil');
-    }
-
-    if (!profile?.email) {
-      console.error('❌ Email non trouvé dans le profil');
-      throw new Error('Email non trouvé dans le profil');
     }
 
     const price = parseFloat(requestBody.price);
     if (isNaN(price) || price < 0) {
-      console.error('❌ Prix invalide:', price);
       throw new Error('Prix invalide');
     }
 
     const stripeKey = requestBody.isTestMode ? 
       Deno.env.get('STRIPE_TEST_SECRET_KEY')! : 
       Deno.env.get('STRIPE_SECRET_KEY')!;
-
-    if (!stripeKey) {
-      throw new Error(`Clé Stripe ${requestBody.isTestMode ? 'test' : 'live'} non configurée`);
-    }
 
     const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
@@ -65,8 +53,7 @@ serve(async (req) => {
     console.log('💳 Création de la session Stripe...');
 
     const origin = req.headers.get('origin') || 'https://k-box.fr';
-    console.log('🌐 URL d\'origine pour la redirection:', origin);
-
+    
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card', 'paypal', 'klarna'],
       line_items: [{
@@ -115,12 +102,9 @@ serve(async (req) => {
       userId: requestBody.userId,
       price: price,
       metadata: session.metadata,
-      successUrl: session.success_url,
-      cancelUrl: session.cancel_url
     });
 
     if (!session.url) {
-      console.error('❌ Pas d\'URL de paiement retournée par Stripe');
       throw new Error('Pas d\'URL de paiement retournée par Stripe');
     }
 

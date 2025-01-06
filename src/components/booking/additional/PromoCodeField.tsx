@@ -1,7 +1,7 @@
 import { FormControl, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -35,16 +35,16 @@ export const PromoCodeField = ({ onPromoValidated, form }: PromoCodeFieldProps) 
 
     setIsValidating(true);
     try {
-      console.log('🔍 Validation du code promo:', promoCode);
+      console.log("🔍 Validation du code promo:", promoCode);
       const { data, error } = await supabase
-        .from('promo_codes')
-        .select('*')
-        .eq('code', promoCode.trim())
-        .eq('is_active', true)
-        .is('deleted_at', null)
+        .from("promo_codes")
+        .select("*")
+        .eq("code", promoCode.trim())
+        .eq("is_active", true)
+        .is("deleted_at", null)
         .maybeSingle();
 
-      console.log('📊 Résultat de la validation:', { data, error });
+      console.log("📊 Résultat de la validation:", { data, error });
 
       if (error) throw error;
 
@@ -92,16 +92,16 @@ export const PromoCodeField = ({ onPromoValidated, form }: PromoCodeFieldProps) 
         return;
       }
 
-      console.log('✅ Code promo valide:', data);
-      form.setValue('promoCode', data.code);
-      form.setValue('promoCodeId', data.id);
+      console.log("✅ Code promo valide:", data);
+      form.setValue("promoCode", data.code);
+      form.setValue("promoCodeId", data.id);
       onPromoValidated(true, data);
       toast({
         title: "Code promo valide !",
         description: `Le code ${promoCode} a été appliqué avec succès.`,
       });
     } catch (error: any) {
-      console.error('❌ Erreur lors de la validation du code promo:', error);
+      console.error("❌ Erreur lors de la validation du code promo:", error);
       onPromoValidated(false);
       toast({
         title: "Erreur",
@@ -133,7 +133,7 @@ export const PromoCodeField = ({ onPromoValidated, form }: PromoCodeFieldProps) 
             disabled={isValidating}
             className="shrink-0"
           >
-            {isValidating ? 'Validation...' : 'Valider'}
+            {isValidating ? "Validation..." : "Valider"}
           </Button>
         </div>
       </FormItem>

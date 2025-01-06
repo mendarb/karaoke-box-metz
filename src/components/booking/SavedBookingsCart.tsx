@@ -158,10 +158,13 @@ export const SavedBookingsCart = () => {
                       {booking.time_slot}h - {booking.duration}h -{" "}
                       {booking.group_size} pers.
                     </p>
+                    {!booking.is_available && (
+                      <p className="text-sm text-red-500 flex items-center gap-1 mt-1">
+                        <AlertCircle className="h-4 w-4" />
+                        Créneau plus disponible
+                      </p>
+                    )}
                   </div>
-                  {!booking.is_available && (
-                    <AlertCircle className="text-red-500 h-5 w-5" />
-                  )}
                 </div>
                 <div className="flex gap-2 mt-2">
                   <Button

@@ -5,6 +5,7 @@ import { GroupSizeSelector } from "@/components/booking/group-size/GroupSizeSele
 import { DurationSelector } from "@/components/booking/duration/DurationSelector";
 import { PriceDisplay } from "@/components/price-calculator/PriceDisplay";
 import { useState, useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface GroupSizeAndDurationFieldsProps {
   form: UseFormReturn<any>;
@@ -25,9 +26,20 @@ export const GroupSizeAndDurationFields = ({
   const { calculatePrice } = useCalculatePrice({ settings });
   const [currentPrice, setCurrentPrice] = useState<number>(0);
   const [pricePerPerson, setPricePerPerson] = useState<number>(0);
+  const { toast } = useToast();
 
   const groupSize = form.watch("groupSize");
   const duration = form.watch("duration");
+
+  useEffect(() => {
+    // Afficher un toast d'aide lors du premier rendu
+    if (!groupSize) {
+      toast({
+        title: "👥 Sélectionnez la taille du groupe",
+        description: "Choisissez le nombre de personnes qui participeront à la session",
+      });
+    }
+  }, []);
 
   const updatePrices = (size: string, dur: string) => {
     if (size && dur) {
@@ -38,7 +50,7 @@ export const GroupSizeAndDurationFields = ({
       setPricePerPerson(pricePerPersonPerHour);
       onPriceCalculated(calculatedPrice);
       
-      console.log('💰 Prix calculé:', {
+      console.log("💰 Prix calculé:", {
         groupSize: size,
         duration: dur,
         totalPrice: calculatedPrice,
@@ -54,6 +66,12 @@ export const GroupSizeAndDurationFields = ({
     const currentDuration = form.getValues("duration");
     if (currentDuration) {
       updatePrices(value, currentDuration);
+    } else {
+      // Afficher un toast pour guider vers la sélection de la durée
+      toast({
+        title: "⏱️ Choisissez la durée",
+        description: "Sélectionnez maintenant la durée de votre session",
+      });
     }
   };
 

@@ -33,44 +33,62 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
 
       {/* Colonne de droite - Image et informations */}
       <div className="relative hidden lg:block">
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-black/80" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 to-black/90" />
         <img
           src="/lovable-uploads/245a691d-0576-40d2-91fb-cbd34455aec7.png"
           alt="Ambiance karaoké"
           className="h-full w-full object-cover"
         />
         <div className="absolute inset-0 flex flex-col justify-center p-12 text-white">
-          <div className="space-y-6 max-w-lg">
+          <div className="space-y-8 max-w-lg">
             <h2 className="text-4xl font-bold">K.Box Metz - Box Karaoké</h2>
             
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-2">
-                <h3 className="font-semibold">Box Privative</h3>
-                <p className="text-sm text-gray-200">Espace intime et confortable</p>
+                <h3 className="font-semibold text-xl">Box Privative</h3>
+                <p className="text-sm text-gray-100">Espace intime et confortable</p>
               </div>
               <div className="space-y-2">
-                <h3 className="font-semibold">Catalogue Musical</h3>
-                <p className="text-sm text-gray-200">Plus de 30 000 titres disponibles</p>
+                <h3 className="font-semibold text-xl">Catalogue Musical</h3>
+                <p className="text-sm text-gray-100">Plus de 30 000 titres disponibles</p>
               </div>
               <div className="space-y-2">
-                <h3 className="font-semibold">Horaires</h3>
-                <p className="text-sm text-gray-200">Du mercredi au dimanche, 17h-23h</p>
+                <h3 className="font-semibold text-xl">Horaires</h3>
+                <p className="text-sm text-gray-100">Du mercredi au dimanche, 17h-23h</p>
               </div>
               <div className="space-y-2">
-                <h3 className="font-semibold">Entre Amis</h3>
-                <p className="text-sm text-gray-200">Capacité jusqu'à 10 personnes</p>
+                <h3 className="font-semibold text-xl">Entre Amis</h3>
+                <p className="text-sm text-gray-100">Capacité jusqu'à 10 personnes</p>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <h3 className="font-semibold">Un espace privatif unique</h3>
-              <ul className="text-sm text-gray-200 grid grid-cols-2 gap-2">
-                <li>• Écran HD interactif</li>
-                <li>• Système audio pro</li>
-                <li>• Éclairage LED</li>
-                <li>• Isolation phonique</li>
-                <li>• Service en salle</li>
-                <li>• Banquettes confortables</li>
+            <div className="space-y-3">
+              <h3 className="font-semibold text-xl">Un espace privatif unique</h3>
+              <ul className="text-sm text-gray-100 grid grid-cols-2 gap-2">
+                <li className="flex items-center space-x-2">
+                  <span className="text-kbox-coral">•</span>
+                  <span>Écran HD interactif</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <span className="text-kbox-coral">•</span>
+                  <span>Système audio pro</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <span className="text-kbox-coral">•</span>
+                  <span>Éclairage LED</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <span className="text-kbox-coral">•</span>
+                  <span>Isolation phonique</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <span className="text-kbox-coral">•</span>
+                  <span>Service en salle</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <span className="text-kbox-coral">•</span>
+                  <span>Banquettes confortables</span>
+                </li>
               </ul>
             </div>
           </div>

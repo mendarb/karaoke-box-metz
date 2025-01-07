@@ -1,11 +1,9 @@
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
 import { useSignupHandler } from "@/hooks/auth/useSignupHandler"
 import { SignupFormFields } from "./signup/SignupFormFields"
-import { useIsMobile } from "@/hooks/use-mobile"
-import { GoogleSignupButton } from "./signup/GoogleSignupButton"
 import { SignupDivider } from "./signup/SignupDivider"
 import { SignupFooter } from "./signup/SignupFooter"
+import { SignupButtons } from "./signup/SignupButtons"
 import { supabase } from "@/lib/supabase"
 import { useToast } from "@/hooks/use-toast"
 
@@ -20,7 +18,6 @@ export function SignupForm({ onToggleMode, onSuccess }: SignupFormProps) {
   const [fullName, setFullName] = useState("")
   const [phone, setPhone] = useState("")
   const { handleSignup, isLoading } = useSignupHandler()
-  const isMobile = useIsMobile()
   const { toast } = useToast()
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -75,23 +72,12 @@ export function SignupForm({ onToggleMode, onSuccess }: SignupFormProps) {
         isLoading={isLoading}
       />
 
-      <Button 
-        type="submit" 
-        className={`w-full h-12 text-base rounded-xl bg-kbox-coral hover:bg-kbox-orange-dark
-          transition-all duration-200 font-medium ${isMobile ? 'text-lg' : ''}`}
-        disabled={isLoading}
-      >
-        {isLoading ? "Chargement..." : "Créer un compte"}
-      </Button>
+      <SignupButtons 
+        isLoading={isLoading}
+        handleGoogleSignup={handleGoogleSignup}
+      />
 
       <SignupDivider />
-
-      <div className="space-y-4">
-        <GoogleSignupButton 
-          onClick={handleGoogleSignup}
-          isLoading={isLoading}
-        />
-      </div>
 
       <SignupFooter 
         onToggleMode={onToggleMode}

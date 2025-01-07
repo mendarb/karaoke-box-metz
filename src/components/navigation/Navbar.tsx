@@ -45,11 +45,11 @@ export const Navbar = ({ onShowAuth }: NavbarProps) => {
           </Link>
 
           <div className="hidden md:flex items-center space-x-6">
-            <DesktopNav />
+            <DesktopNav onShowAuth={onShowAuth} />
             {user && <SavedBookingsCart />}
           </div>
 
-          <MobileNav />
+          <MobileNav onShowAuth={onShowAuth} />
         </div>
       </div>
     </nav>

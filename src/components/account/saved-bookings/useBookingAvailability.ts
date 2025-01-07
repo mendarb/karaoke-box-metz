@@ -10,8 +10,8 @@ export const useBookingAvailability = () => {
             .from('bookings')
             .select('*')
             .eq('date', booking.date)
-            .neq('status', 'cancelled')
             .eq('payment_status', 'paid')
+            .neq('status', 'cancelled')
             .is('deleted_at', null);
 
           const isAvailable = !existingBookings?.some(existingBooking => {
@@ -20,19 +20,11 @@ export const useBookingAvailability = () => {
             const existingStart = parseInt(existingBooking.time_slot);
             const existingEnd = existingStart + parseInt(existingBooking.duration);
 
-            const overlap = (
+            return (
               (savedStart >= existingStart && savedStart < existingEnd) ||
               (savedEnd > existingStart && savedEnd <= existingEnd) ||
               (savedStart <= existingStart && savedEnd >= existingEnd)
             );
-
-            console.log('Vérification disponibilité:', {
-              savedBooking: `${savedStart}h-${savedEnd}h`,
-              existingBooking: `${existingStart}h-${existingEnd}h`,
-              overlap
-            });
-
-            return overlap;
           });
 
           return { ...booking, isAvailable };

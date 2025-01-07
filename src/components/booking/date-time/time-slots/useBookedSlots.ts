@@ -17,7 +17,7 @@ export const useBookedSlots = (selectedDate: Date | null) => {
         .eq('date', formattedDate)
         .neq('status', 'cancelled')
         .is('deleted_at', null)
-        .eq('payment_status', 'paid');
+        .eq('payment_status', 'paid');  // Modifié ici : is.paid -> eq.paid
 
       if (error) {
         console.error('❌ Erreur lors du chargement des créneaux réservés:', error);

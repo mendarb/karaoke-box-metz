@@ -1,7 +1,7 @@
 import { UseFormReturn } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { DateTimeFields } from "@/components/booking/DateTimeFields";
-import { GroupSizeAndDurationFields } from "@/components/booking/GroupSizeAndDurationFields";
+import { GroupSizeAndDurationFields } from "@/components/GroupSizeAndDurationFields";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface BookingDetailsProps {

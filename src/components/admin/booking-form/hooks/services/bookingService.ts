@@ -27,7 +27,8 @@ export const generatePaymentLink = async (data: any) => {
         promoCodeId: data.promoCodeId,
         promoCode: data.promoCode,
         discountAmount: data.discountAmount,
-        message: data.message
+        message: data.message,
+        sendEmail: true // Ajout du flag pour envoyer l'email
       },
     });
 

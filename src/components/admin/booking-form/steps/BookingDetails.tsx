@@ -1,7 +1,8 @@
 import { UseFormReturn } from "react-hook-form";
-import { BookingFormFields } from "../BookingFormFields";
-import { PriceCalculator } from "@/components/PriceCalculator";
 import { Button } from "@/components/ui/button";
+import { BookingFormFields } from "../BookingFormFields";
+import { PromoCodeField } from "@/components/booking/additional/PromoCodeField";
+import { usePromoCode } from "@/hooks/usePromoCode";
 
 interface BookingDetailsProps {
   form: UseFormReturn<any>;
@@ -22,28 +23,10 @@ export const BookingDetails = ({
   onBack,
   onNext,
 }: BookingDetailsProps) => {
-  const handleNext = () => {
-    const requiredFields = ["date", "timeSlot", "duration", "groupSize"];
-    const isValid = requiredFields.every(field => form.getValues(field));
-    
-    if (!isValid) {
-      form.trigger(requiredFields);
-      return;
-    }
-    
-    onNext();
-  };
+  const { handlePromoValidated } = usePromoCode(form.getValues("calculatedPrice"), form);
 
   return (
     <div className="space-y-6">
-      <Button 
-        variant="ghost" 
-        onClick={onBack}
-        className="mb-4"
-      >
-        ← Retour au client
-      </Button>
-
       <BookingFormFields
         form={form}
         durations={durations}
@@ -51,17 +34,26 @@ export const BookingDetails = ({
         isLoading={isLoading}
       />
 
-      <div className="mt-6">
-        <PriceCalculator
-          groupSize={form.watch("groupSize")}
-          duration={form.watch("duration")}
-          onPriceCalculated={onPriceCalculated}
-        />
-      </div>
+      <PromoCodeField 
+        onPromoValidated={handlePromoValidated}
+        form={form}
+      />
 
-      <Button onClick={handleNext} className="w-full">
-        Continuer
-      </Button>
+      <div className="flex justify-between gap-4">
+        <Button 
+          variant="outline" 
+          onClick={onBack}
+          className="w-full"
+        >
+          Retour
+        </Button>
+        <Button 
+          onClick={onNext}
+          className="w-full"
+        >
+          Suivant
+        </Button>
+      </div>
     </div>
   );
 };

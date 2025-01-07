@@ -15,8 +15,8 @@ serve(async (req) => {
   try {
     const requestBody = await req.json();
     console.log('📦 Données de réservation reçues:', {
-      email: requestBody.email,
-      fullName: requestBody.fullName,
+      email: requestBody.userEmail,
+      fullName: requestBody.userName,
       date: requestBody.date,
       timeSlot: requestBody.timeSlot,
       duration: requestBody.duration,
@@ -26,6 +26,7 @@ serve(async (req) => {
       discountAmount: requestBody.discountAmount,
       isTestMode: requestBody.isTestMode,
       userId: requestBody.userId,
+      sendEmail: requestBody.sendEmail
     });
 
     if (!requestBody.userId) {
@@ -105,6 +106,39 @@ serve(async (req) => {
     if (!session.url) {
       console.error('❌ Pas d\'URL de paiement retournée par Stripe');
       throw new Error('Pas d\'URL de paiement retournée par Stripe');
+    }
+
+    // Envoyer l'email si demandé
+    if (requestBody.sendEmail) {
+      try {
+        await fetch(
+          `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-booking-email`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+            },
+            body: JSON.stringify({
+              booking: {
+                user_email: requestBody.userEmail,
+                user_name: requestBody.userName,
+                date: requestBody.date,
+                time_slot: requestBody.timeSlot,
+                duration: requestBody.duration,
+                group_size: requestBody.groupSize,
+                price: requestBody.finalPrice || requestBody.price,
+                message: requestBody.message,
+                payment_url: session.url
+              }
+            }),
+          }
+        );
+        console.log('📧 Email de réservation envoyé avec succès');
+      } catch (emailError) {
+        console.error('❌ Erreur lors de l\'envoi de l\'email:', emailError);
+        // On ne throw pas l'erreur pour ne pas bloquer la création de la réservation
+      }
     }
 
     return new Response(

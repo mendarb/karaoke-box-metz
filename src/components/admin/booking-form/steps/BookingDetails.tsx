@@ -2,7 +2,7 @@ import { UseFormReturn } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { BookingFormFields } from "../BookingFormFields";
 import { PromoCodeField } from "@/components/booking/additional/PromoCodeField";
-import { usePromoCode } from "@/components/hooks/usePromoCode";
+import { usePromoCode } from "@/components/booking/hooks/usePromoCode";
 
 interface BookingDetailsProps {
   form: UseFormReturn<any>;

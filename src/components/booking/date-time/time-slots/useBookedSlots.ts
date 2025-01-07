@@ -4,16 +4,14 @@ import { format } from "date-fns";
 
 export const useBookedSlots = (selectedDate: Date | null) => {
   return useQuery({
-    queryKey: ['booked-slots', selectedDate],
+    queryKey: ['booked-slots', selectedDate?.toISOString()],
     queryFn: async () => {
-      if (!selectedDate) {
-        return [];
-      }
+      if (!selectedDate) return [];
 
       const formattedDate = format(selectedDate, 'yyyy-MM-dd');
-      console.log('📅 Chargement des créneaux pour:', formattedDate);
-
-      const { data, error } = await supabase
+      console.log('🔍 Vérification des créneaux pour:', formattedDate);
+      
+      const { data: bookings, error } = await supabase
         .from('bookings')
         .select('time_slot, duration')
         .eq('date', formattedDate)
@@ -26,14 +24,20 @@ export const useBookedSlots = (selectedDate: Date | null) => {
         throw error;
       }
 
-      console.log('✅ Créneaux réservés chargés:', data);
-      return data.map(booking => ({
-        timeSlot: booking.time_slot,
-        duration: booking.duration
-      }));
+      const bookedSlots = new Set<string>();
+      bookings?.forEach(booking => {
+        const startHour = parseInt(booking.time_slot);
+        const duration = parseInt(booking.duration);
+        
+        for (let hour = startHour; hour < startHour + duration; hour++) {
+          bookedSlots.add(`${hour.toString().padStart(2, '0')}:00`);
+        }
+      });
+
+      return Array.from(bookedSlots);
     },
     enabled: !!selectedDate,
     staleTime: 30000,
-    gcTime: 300000,
+    gcTime: 300000, // Remplace cacheTime
   });
 };

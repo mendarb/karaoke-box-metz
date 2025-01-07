@@ -18,22 +18,7 @@ export const TimeSlots = ({
   selectedDate
 }: TimeSlotsProps) => {
   const selectedTimeSlot = form.watch("timeSlot");
-  const { data: bookedSlots = [], isLoading: isLoadingSlots } = useBookedSlots(selectedDate);
-
-  // Convert booked slots to a Set of unavailable time slots
-  const disabledSlots = useMemo(() => {
-    const slots = new Set<string>();
-    bookedSlots.forEach(booking => {
-      const startHour = parseInt(booking.timeSlot);
-      const duration = parseInt(booking.duration);
-      
-      // Add all hours covered by this booking
-      for (let hour = startHour; hour < startHour + duration; hour++) {
-        slots.add(`${hour.toString().padStart(2, '0')}:00`);
-      }
-    });
-    return Array.from(slots);
-  }, [bookedSlots]);
+  const { data: disabledSlots = [], isLoading: isLoadingSlots } = useBookedSlots(selectedDate);
 
   const sortedSlots = useMemo(() => {
     return [...availableSlots].sort((a, b) => {

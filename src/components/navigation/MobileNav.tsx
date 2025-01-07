@@ -1,124 +1,55 @@
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { Menu, Calendar, Home, User2, CalendarDays, Settings, LogIn, UserPlus } from "lucide-react";
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { useUserState } from "@/hooks/useUserState";
-import { SavedBookingsCart } from "@/components/booking/saved-bookings/SavedBookingsCart";
+import { Link } from "react-router-dom";
+import { Home, Calendar, User as UserIcon, Settings, LayoutDashboard } from "lucide-react";
 
 interface MobileNavProps {
+  user: any;
+  isAdmin: boolean;
+  onSignOut: () => Promise<void>;
   onShowAuth: () => void;
 }
 
-export const MobileNav = ({ onShowAuth }: MobileNavProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const navigate = useNavigate();
-  const { user } = useUserState();
-
-  const handleBookingClick = () => {
-    setIsOpen(false);
-    sessionStorage.removeItem("savedBooking");
-    navigate('/', { replace: true });
-  };
-
+export const MobileNav = ({ user, isAdmin, onSignOut, onShowAuth }: MobileNavProps) => {
   return (
-    <div className="md:hidden flex items-center gap-2">
-      {user && <SavedBookingsCart />}
-      <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <SheetTrigger asChild>
-          <Button variant="ghost" size="icon">
-            <Menu className="h-6 w-6" />
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-          <nav className="flex flex-col gap-4">
-            {user ? (
-              <>
-                <Button
-                  onClick={handleBookingClick}
-                  size="lg"
-                  className="bg-violet-600 hover:bg-violet-700 text-white font-medium px-6 py-6 rounded-full transition-all duration-200 flex items-center gap-2 justify-center shadow-lg hover:shadow-violet-200"
-                >
-                  <Calendar className="w-5 h-5" />
-                  Réserver une séance
-                </Button>
-
-                <Link to="/" onClick={() => setIsOpen(false)}>
-                  <Button
-                    variant="ghost"
-                    size="lg"
-                    className="w-full justify-start"
-                  >
-                    <Home className="mr-2 h-5 w-5" />
-                    Accueil
-                  </Button>
-                </Link>
-
-                <Link to="/account" onClick={() => setIsOpen(false)}>
-                  <Button
-                    variant="ghost"
-                    size="lg"
-                    className="w-full justify-start"
-                  >
-                    <User2 className="mr-2 h-5 w-5" />
-                    Mon compte
-                  </Button>
-                </Link>
-
-                <Link to="/my-bookings" onClick={() => setIsOpen(false)}>
-                  <Button
-                    variant="ghost"
-                    size="lg"
-                    className="w-full justify-start"
-                  >
-                    <CalendarDays className="mr-2 h-5 w-5" />
-                    Mes réservations
-                  </Button>
-                </Link>
-
-                {user.app_metadata.claims_admin && (
-                  <Link to="/admin" onClick={() => setIsOpen(false)}>
-                    <Button
-                      variant="ghost"
-                      size="lg"
-                      className="w-full justify-start"
-                    >
-                      <Settings className="mr-2 h-5 w-5" />
-                      Administration
-                    </Button>
-                  </Link>
-                )}
-              </>
-            ) : (
-              <>
-                <Button
-                  onClick={() => {
-                    setIsOpen(false);
-                    onShowAuth();
-                  }}
-                  variant="outline"
-                  size="lg"
-                  className="w-full justify-center font-medium px-6 py-6 rounded-full transition-all duration-200 flex items-center gap-2"
-                >
-                  <LogIn className="w-5 h-5" />
-                  Se connecter
-                </Button>
-                <Button
-                  onClick={() => {
-                    setIsOpen(false);
-                    onShowAuth();
-                  }}
-                  size="lg"
-                  className="w-full justify-center bg-violet-600 hover:bg-violet-700 text-white font-medium px-6 py-6 rounded-full transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-violet-200"
-                >
-                  <UserPlus className="w-5 h-5" />
-                  S'inscrire
-                </Button>
-              </>
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 py-3 px-4 md:hidden z-50">
+      <div className="flex justify-around items-center divide-x divide-gray-100">
+        <Link to="/" className="flex flex-col items-center flex-1 px-2">
+          <Home className="h-5 w-5 text-kbox-coral" />
+          <span className="text-xs mt-1 text-gray-600">Accueil</span>
+        </Link>
+        {user ? (
+          <>
+            <Link to="/my-bookings" className="flex flex-col items-center flex-1 px-2">
+              <Calendar className="h-5 w-5 text-kbox-coral" />
+              <span className="text-xs mt-1 text-gray-600">Réservations</span>
+            </Link>
+            <Link to="/account" className="flex flex-col items-center flex-1 px-2">
+              <Settings className="h-5 w-5 text-kbox-coral" />
+              <span className="text-xs mt-1 text-gray-600">Compte</span>
+            </Link>
+            {isAdmin && (
+              <Link to="/admin" className="flex flex-col items-center flex-1 px-2">
+                <LayoutDashboard className="h-5 w-5 text-kbox-coral" />
+                <span className="text-xs mt-1 text-gray-600">Admin</span>
+              </Link>
             )}
-          </nav>
-        </SheetContent>
-      </Sheet>
+            <button
+              onClick={onSignOut}
+              className="flex flex-col items-center flex-1 px-2"
+            >
+              <UserIcon className="h-5 w-5 text-kbox-coral" />
+              <span className="text-xs mt-1 text-gray-600">Déconnexion</span>
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={onShowAuth}
+            className="flex flex-col items-center flex-1 px-2"
+          >
+            <UserIcon className="h-5 w-5 text-kbox-coral" />
+            <span className="text-xs mt-1 text-gray-600">Connexion</span>
+          </button>
+        )}
+      </div>
     </div>
   );
 };

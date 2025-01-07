@@ -24,15 +24,12 @@ export function useLoginHandler() {
       if (error) {
         console.error("Auth error details:", error);
         
-        let errorMessage = "Une erreur de connexion est survenue";
-        
-        if (error.message === "Invalid login credentials") {
-          errorMessage = "Email ou mot de passe incorrect";
-        } else if (error.message.includes("Email not confirmed")) {
-          errorMessage = "Veuillez confirmer votre email avant de vous connecter";
-        } else if (error.message.includes("Too many requests")) {
-          errorMessage = "Trop de tentatives de connexion. Veuillez réessayer plus tard.";
-        }
+        const errorMessage = 
+          error.message === "Invalid login credentials" 
+            ? "Email ou mot de passe incorrect" 
+            : error.message.includes("Email not confirmed")
+            ? "Veuillez confirmer votre email avant de vous connecter"
+            : "Une erreur de connexion est survenue";
 
         toast({
           title: "Erreur de connexion",

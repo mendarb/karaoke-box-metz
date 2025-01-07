@@ -20,18 +20,16 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
     handleTimeSlotChange
   } = useDateTimeSelection(form, onAvailabilityChange);
 
-  const { minDate, maxDate } = useBookingSettings();
+  const { minDate, maxDate, settings } = useBookingSettings();
   const { disabledDates } = useDisabledDates({ minDate, maxDate });
 
   // Trouver la première date disponible
   const getFirstAvailableDate = () => {
-    if (!minDate || !maxDate) return new Date();
-    
     let currentDate = startOfDay(minDate);
     const endDate = maxDate;
     
     while (currentDate <= endDate) {
-      if (!disabledDates?.some(disabledDate => 
+      if (!disabledDates.some(disabledDate => 
         disabledDate.toDateString() === currentDate.toDateString()
       )) {
         return currentDate;
@@ -41,20 +39,27 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
     return minDate;
   };
 
-  const firstAvailableDate = getFirstAvailableDate();
-
   useEffect(() => {
-    if (!selectedDate && firstAvailableDate) {
+    if (!selectedDate) {
+      const firstAvailableDate = getFirstAvailableDate();
       handleDateSelect(firstAvailableDate);
     }
-  }, [selectedDate, firstAvailableDate, handleDateSelect]);
+  }, []);
 
   useEffect(() => {
     const timeSlot = form.watch("timeSlot");
     if (timeSlot && selectedDate) {
       handleTimeSlotChange(timeSlot);
     }
-  }, [form.watch("timeSlot"), selectedDate, handleTimeSlotChange]);
+  }, [form.watch("timeSlot")]);
+
+  console.log('DateTimeFields render:', {
+    selectedDate,
+    minDate,
+    maxDate,
+    disabledDates: disabledDates.length,
+    availableSlots,
+  });
 
   return (
     <div className="space-y-8">
@@ -63,9 +68,9 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
         selectedDate={selectedDate}
         minDate={minDate}
         maxDate={maxDate}
-        disabledDates={disabledDates || []}
+        disabledDates={disabledDates}
         onDateSelect={handleDateSelect}
-        defaultMonth={firstAvailableDate}
+        defaultMonth={getFirstAvailableDate()}
       />
 
       {selectedDate && (

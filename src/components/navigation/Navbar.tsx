@@ -5,7 +5,6 @@ import { MobileNav } from "./MobileNav";
 import { Logo } from "./Logo";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate, Link } from "react-router-dom";
-import { SavedBookingsCart } from "@/components/booking/saved-bookings/SavedBookingsCart";
 
 interface NavbarProps {
   onShowAuth: () => void;
@@ -43,13 +42,18 @@ export const Navbar = ({ onShowAuth }: NavbarProps) => {
           <Link to="/" className="flex items-center">
             <Logo />
           </Link>
-
-          <div className="hidden md:flex items-center space-x-6">
-            <DesktopNav onShowAuth={onShowAuth} />
-            {user && <SavedBookingsCart />}
-          </div>
-
-          <MobileNav onShowAuth={onShowAuth} />
+          <DesktopNav
+            user={user}
+            isAdmin={isAdmin}
+            onSignOut={handleSignOut}
+            onShowAuth={onShowAuth}
+          />
+          <MobileNav
+            user={user}
+            isAdmin={isAdmin}
+            onSignOut={handleSignOut}
+            onShowAuth={onShowAuth}
+          />
         </div>
       </div>
     </nav>

@@ -100,7 +100,7 @@ serve(async (req) => {
         'Authorization': `Bearer ${resendApiKey}`,
       },
       body: JSON.stringify({
-        from: 'Karaoké Box <onboarding@resend.dev>', // Utilisation temporaire de l'adresse par défaut
+        from: 'Karaoké Box <onboarding@resend.dev>', // Utilisation de l'adresse par défaut de Resend
         to: [booking.userEmail],
         subject: '🎤 Confirmez votre réservation - K-Box',
         html: emailHtml,

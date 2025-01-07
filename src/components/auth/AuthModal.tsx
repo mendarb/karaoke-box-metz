@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Dialog,
   DialogContent,
@@ -8,14 +8,24 @@ import {
 } from "@/components/ui/dialog"
 import { AuthForm } from "./AuthForm"
 
+interface AuthModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  defaultMode?: 'login' | 'signup';
+}
+
 export function AuthModal({
   isOpen,
   onClose,
-}: {
-  isOpen: boolean
-  onClose: () => void
-}) {
-  const [isLogin, setIsLogin] = useState(true)
+  defaultMode = 'login'
+}: AuthModalProps) {
+  const [isLogin, setIsLogin] = useState(defaultMode === 'login');
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsLogin(defaultMode === 'login');
+    }
+  }, [isOpen, defaultMode]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

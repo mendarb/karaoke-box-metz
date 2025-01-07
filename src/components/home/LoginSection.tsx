@@ -12,16 +12,16 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
       {/* Colonne de gauche - Formulaire */}
       <div className="flex items-center justify-center p-8 lg:p-12">
-        <div className="w-full max-w-md space-y-6">
-          <div className="text-left space-y-3">
-            <h1 className="text-3xl font-bold text-gray-900">
+        <div className="w-full max-w-md">
+          <div className="text-left mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-3">
               Créer votre compte
             </h1>
             <p className="text-base text-gray-600">
               Commencez votre expérience karaoké dès maintenant
             </p>
           </div>
-          <Card className="p-6 bg-white shadow-sm rounded-xl border-0">
+          <Card className="p-8 bg-white shadow-sm rounded-xl border-0">
             <AuthForm 
               onClose={() => {}} 
               isLogin={false}
@@ -33,7 +33,7 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
 
       {/* Colonne de droite - Image et informations */}
       <div className="relative hidden lg:block">
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 to-black/90" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/90 to-black/95" />
         <img
           src="/lovable-uploads/245a691d-0576-40d2-91fb-cbd34455aec7.png"
           alt="Ambiance karaoké"
@@ -43,28 +43,28 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
           <div className="space-y-8 max-w-lg">
             <h2 className="text-4xl font-bold">K.Box Metz - Box Karaoké</h2>
             
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-2 gap-8">
               <div className="space-y-2">
                 <h3 className="font-semibold text-xl">Box Privative</h3>
-                <p className="text-sm text-gray-100">Espace intime et confortable</p>
+                <p className="text-sm text-gray-200">Espace intime et confortable</p>
               </div>
               <div className="space-y-2">
                 <h3 className="font-semibold text-xl">Catalogue Musical</h3>
-                <p className="text-sm text-gray-100">Plus de 30 000 titres disponibles</p>
+                <p className="text-sm text-gray-200">Plus de 30 000 titres disponibles</p>
               </div>
               <div className="space-y-2">
                 <h3 className="font-semibold text-xl">Horaires</h3>
-                <p className="text-sm text-gray-100">Du mercredi au dimanche, 17h-23h</p>
+                <p className="text-sm text-gray-200">Du mercredi au dimanche, 17h-23h</p>
               </div>
               <div className="space-y-2">
                 <h3 className="font-semibold text-xl">Entre Amis</h3>
-                <p className="text-sm text-gray-100">Capacité jusqu'à 10 personnes</p>
+                <p className="text-sm text-gray-200">Capacité jusqu'à 10 personnes</p>
               </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               <h3 className="font-semibold text-xl">Un espace privatif unique</h3>
-              <ul className="text-sm text-gray-100 grid grid-cols-2 gap-2">
+              <ul className="text-sm text-gray-200 grid grid-cols-2 gap-y-2">
                 <li className="flex items-center space-x-2">
                   <span className="text-kbox-coral">•</span>
                   <span>Écran HD interactif</span>

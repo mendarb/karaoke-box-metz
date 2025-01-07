@@ -7,7 +7,7 @@ interface SignupFooterProps {
 
 export function SignupFooter({ onToggleMode, isLoading }: SignupFooterProps) {
   return (
-    <div className="text-center pt-4">
+    <div className="text-center pt-6">
       <div className="text-sm text-gray-600">
         Déjà un compte ?{" "}
         <Button

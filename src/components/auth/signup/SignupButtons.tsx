@@ -11,7 +11,7 @@ export function SignupButtons({ isLoading, handleGoogleSignup }: SignupButtonsPr
   const isMobile = useIsMobile()
 
   return (
-    <>
+    <div className="space-y-6">
       <Button 
         type="submit" 
         className={`w-full h-12 text-base rounded-xl bg-kbox-coral hover:bg-kbox-orange-dark
@@ -27,6 +27,6 @@ export function SignupButtons({ isLoading, handleGoogleSignup }: SignupButtonsPr
           isLoading={isLoading}
         />
       </div>
-    </>
+    </div>
   )
 }

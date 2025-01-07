@@ -29,9 +29,9 @@ export function SignupFormFields({
   const inputClassName = `h-12 rounded-xl bg-gray-50 border-gray-200 ${isMobile ? 'text-base' : ''}`
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="fullName" className="text-sm font-medium">Nom complet</Label>
+    <div className="space-y-6">
+      <div className="space-y-2.5">
+        <Label htmlFor="fullName" className="text-sm font-medium text-gray-700">Nom complet</Label>
         <Input
           id="fullName"
           value={fullName}
@@ -42,8 +42,8 @@ export function SignupFormFields({
           className={inputClassName}
         />
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+      <div className="space-y-2.5">
+        <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email</Label>
         <Input
           id="email"
           type="email"
@@ -55,8 +55,8 @@ export function SignupFormFields({
           className={inputClassName}
         />
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="password" className="text-sm font-medium">Mot de passe</Label>
+      <div className="space-y-2.5">
+        <Label htmlFor="password" className="text-sm font-medium text-gray-700">Mot de passe</Label>
         <Input
           id="password"
           type="password"
@@ -69,8 +69,8 @@ export function SignupFormFields({
           className={inputClassName}
         />
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="phone" className="text-sm font-medium">Téléphone</Label>
+      <div className="space-y-2.5">
+        <Label htmlFor="phone" className="text-sm font-medium text-gray-700">Téléphone</Label>
         <Input
           id="phone"
           type="tel"

@@ -25,7 +25,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        arvo: ['Arvo', 'serif'],
+        serif: ['"DM Serif Text"', 'serif'],
       },
       colors: {
         kbox: {

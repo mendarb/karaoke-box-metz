@@ -10,6 +10,10 @@ interface SearchResult {
   user_phone?: string;
 }
 
+interface EmailsResponse {
+  userEmails: Record<string, string>;
+}
+
 export const useUserSearch = (form: UseFormReturn<any>) => {
   const [isSearching, setIsSearching] = useState(false);
   const [userFound, setUserFound] = useState(false);
@@ -43,7 +47,7 @@ export const useUserSearch = (form: UseFormReturn<any>) => {
       if (bookingsError) throw bookingsError;
 
       // Obtenir les emails des utilisateurs via la fonction Edge
-      const { data: emailsResponse, error: emailsError } = await supabase.functions.invoke(
+      const { data: emailsResponse, error: emailsError } = await supabase.functions.invoke<EmailsResponse>(
         'get-user-emails'
       );
 
@@ -52,7 +56,7 @@ export const useUserSearch = (form: UseFormReturn<any>) => {
         throw emailsError;
       }
 
-      const userEmails = emailsResponse.userEmails;
+      const userEmails = emailsResponse?.userEmails || {};
 
       // Transformer les résultats des profils
       const profileResults: SearchResult[] = (profilesData || []).map(profile => ({

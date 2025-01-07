@@ -33,7 +33,7 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
 
       {/* Colonne de droite - Image et informations */}
       <div className="relative hidden lg:block">
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/60" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-black/80" />
         <img
           src="/lovable-uploads/245a691d-0576-40d2-91fb-cbd34455aec7.png"
           alt="Ambiance karaoké"

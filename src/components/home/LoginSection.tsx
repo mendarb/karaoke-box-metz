@@ -1,7 +1,7 @@
 import { AuthForm } from "@/components/auth/AuthForm";
 import { Card } from "@/components/ui/card";
 import { User } from "@supabase/supabase-js";
-import { Home, Music, Users, Calendar, Clock } from "lucide-react";
+import { Home, Music, Users, Calendar, Clock, CreditCard, CircleDollarSign } from "lucide-react";
 
 interface LoginSectionProps {
   user: User | null;
@@ -22,13 +22,41 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
               Connectez-vous pour réserver votre box
             </p>
           </div>
-          <Card className="p-8 bg-white/10 backdrop-blur-sm shadow-lg rounded-xl border-0">
+          <Card className="p-8 bg-white shadow-lg rounded-xl">
             <AuthForm 
               onClose={() => {}} 
               isLogin={true}
               onToggleMode={() => {}}
             />
           </Card>
+
+          <div className="mt-8 space-y-4">
+            <div className="text-sm text-white/90 text-center">Moyens de paiement acceptés</div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center p-4 bg-white/10 backdrop-blur-sm rounded-xl">
+                <CreditCard className="w-5 h-5 text-white mr-3" />
+                <div className="text-left">
+                  <p className="text-sm font-medium text-white">Paiement en 3x</p>
+                  <p className="text-xs text-white/80">Sans frais avec Klarna</p>
+                </div>
+              </div>
+              <div className="flex items-center p-4 bg-white/10 backdrop-blur-sm rounded-xl">
+                <CircleDollarSign className="w-5 h-5 text-white mr-3" />
+                <div className="text-left">
+                  <p className="text-sm font-medium text-white">PayPal</p>
+                  <p className="text-xs text-white/80">Paiement sécurisé</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center gap-4 mt-4">
+              <img src="/lovable-uploads/72f8f139-d39e-4cac-b328-14d86dbc6927.png" alt="Visa" className="h-8" />
+              <img src="/lovable-uploads/85294882-1624-4fa6-a2d0-09d415c43674.png" alt="Mastercard" className="h-8" />
+              <img src="/lovable-uploads/b4b03af7-d741-46f7-a7f3-e927b989289f.png" alt="Apple Pay" className="h-8" />
+              <img src="/lovable-uploads/cfa63d4d-3758-45b6-8316-13d7d026d109.png" alt="PayPal" className="h-8" />
+              <img src="/lovable-uploads/d45fd1b9-de1b-40a3-ae6b-4072948883a6.png" alt="Klarna" className="h-8" />
+            </div>
+          </div>
         </div>
       </div>
 

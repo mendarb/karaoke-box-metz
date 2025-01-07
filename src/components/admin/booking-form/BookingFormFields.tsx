@@ -1,24 +1,46 @@
 import { UseFormReturn } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { useEffect } from "react";
+import { useCalculatePrice } from "@/components/price-calculator/useCalculatePrice";
+import { usePriceSettings } from "@/components/price-calculator/usePriceSettings";
 
 interface BookingFormFieldsProps {
   form: UseFormReturn<any>;
   durations: string[];
   groupSizes: string[];
   isLoading: boolean;
+  onPriceCalculated?: (price: number) => void;
 }
 
 export const BookingFormFields = ({ 
   form, 
-  durations, 
-  groupSizes,
-  isLoading 
+  isLoading,
+  onPriceCalculated 
 }: BookingFormFieldsProps) => {
+  const { data: settings } = usePriceSettings();
+  const { calculatePrice } = useCalculatePrice({ settings });
+
+  // Recalculate price when duration or group size changes
+  useEffect(() => {
+    const duration = form.watch("duration");
+    const groupSize = form.watch("groupSize");
+    
+    if (duration && groupSize && onPriceCalculated) {
+      const price = calculatePrice(groupSize, duration);
+      onPriceCalculated(price);
+      form.setValue("calculatedPrice", price);
+      
+      console.log('💰 Prix calculé:', {
+        groupSize,
+        duration,
+        price
+      });
+    }
+  }, [form.watch("duration"), form.watch("groupSize")]);
+
   return (
-    <>
+    <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <label>Email</label>
@@ -38,49 +60,33 @@ export const BookingFormFields = ({
         </div>
         <div className="space-y-2">
           <label>Heure de début</label>
-          <Input {...form.register("timeSlot")} type="number" min="14" max="23" required />
+          <Input 
+            {...form.register("timeSlot")} 
+            type="number" 
+            min="14" 
+            max="23" 
+            required 
+          />
         </div>
-      </div>
-
-      <div className="space-y-4">
-        <div>
-          <label className="block mb-2">Durée (heures)</label>
-          <div className="flex flex-wrap gap-2">
-            {durations.map((duration) => (
-              <Button
-                key={duration}
-                type="button"
-                variant={form.watch("duration") === duration ? "default" : "outline"}
-                className={cn(
-                  "flex-1 min-w-[60px]",
-                  form.watch("duration") === duration && "bg-violet-600 hover:bg-violet-700"
-                )}
-                onClick={() => form.setValue("duration", duration)}
-              >
-                {duration}h
-              </Button>
-            ))}
-          </div>
+        <div className="space-y-2">
+          <label>Durée (heures)</label>
+          <Input 
+            {...form.register("duration")} 
+            type="number" 
+            min="1" 
+            max="4" 
+            required 
+          />
         </div>
-
-        <div>
-          <label className="block mb-2">Nombre de personnes</label>
-          <div className="flex flex-wrap gap-2">
-            {groupSizes.map((size) => (
-              <Button
-                key={size}
-                type="button"
-                variant={form.watch("groupSize") === size ? "default" : "outline"}
-                className={cn(
-                  "flex-1 min-w-[60px]",
-                  form.watch("groupSize") === size && "bg-violet-600 hover:bg-violet-700"
-                )}
-                onClick={() => form.setValue("groupSize", size)}
-              >
-                {size}
-              </Button>
-            ))}
-          </div>
+        <div className="space-y-2">
+          <label>Nombre de personnes</label>
+          <Input 
+            {...form.register("groupSize")} 
+            type="number" 
+            min="1" 
+            max="15" 
+            required 
+          />
         </div>
       </div>
       
@@ -88,6 +94,6 @@ export const BookingFormFields = ({
         <label>Message</label>
         <Textarea {...form.register("message")} />
       </div>
-    </>
+    </div>
   );
 };

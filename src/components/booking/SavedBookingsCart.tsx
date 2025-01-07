@@ -7,11 +7,11 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
+  SheetTrigger,
 } from "@/components/ui/sheet";
 import { SavedBookingsList } from "./saved-bookings/SavedBookingsList";
 import { CartButton } from "./saved-bookings/CartButton";
 import { useSavedBookings } from "./saved-bookings/hooks/useSavedBookings";
-import { SavedBooking } from "./saved-bookings/hooks/useSavedBookings";
 
 export const SavedBookingsCart = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,8 +19,18 @@ export const SavedBookingsCart = () => {
   const { toast } = useToast();
   const { savedBookings, isLoading, handleDelete } = useSavedBookings(isOpen);
 
-  const handleContinueBooking = (booking: SavedBooking) => {
-    if (!booking.is_available) {
+  const handleContinueBooking = async (booking: any) => {
+    // Vérifier la disponibilité avant de continuer
+    const { data: existingBookings } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('date', booking.date)
+      .eq('time_slot', booking.time_slot)
+      .neq('status', 'cancelled')
+      .is('deleted_at', null)
+      .eq('payment_status', 'paid');
+
+    if (existingBookings && existingBookings.length > 0) {
       toast({
         title: "Créneau indisponible",
         description: "Ce créneau n'est plus disponible",

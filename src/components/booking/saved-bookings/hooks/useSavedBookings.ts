@@ -20,14 +20,22 @@ export const useSavedBookings = (isOpen: boolean) => {
   const loadSavedBookings = async () => {
     try {
       setIsLoading(true);
+      console.log('🔄 Chargement des réservations sauvegardées...');
+      
       const { data: bookings, error } = await supabase
         .from("saved_bookings")
         .select("*")
         .is("deleted_at", null);
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Erreur lors du chargement:', error);
+        throw error;
+      }
 
       if (bookings) {
+        console.log('✅ Réservations chargées:', bookings);
+        
+        // Vérifier la disponibilité de chaque réservation
         const bookingsWithAvailability = await Promise.all(
           bookings.map(async (booking) => {
             const { data: existingBookings } = await supabase
@@ -36,7 +44,8 @@ export const useSavedBookings = (isOpen: boolean) => {
               .eq("date", booking.date)
               .eq("time_slot", booking.time_slot)
               .neq("status", "cancelled")
-              .is("deleted_at", null);
+              .is("deleted_at", null)
+              .eq("payment_status", "paid");
 
             return {
               ...booking,
@@ -46,16 +55,9 @@ export const useSavedBookings = (isOpen: boolean) => {
         );
 
         setSavedBookings(bookingsWithAvailability);
-        
-        if (bookingsWithAvailability.length > 0) {
-          toast({
-            title: "💡 Réservations sauvegardées",
-            description: "Cliquez sur 'Continuer la réservation' pour finaliser",
-          });
-        }
       }
     } catch (error) {
-      console.error("Erreur lors du chargement des réservations:", error);
+      console.error("❌ Erreur lors du chargement des réservations:", error);
       toast({
         title: "Erreur",
         description: "Impossible de charger vos réservations sauvegardées",
@@ -74,6 +76,8 @@ export const useSavedBookings = (isOpen: boolean) => {
 
   const handleDelete = async (id: string) => {
     try {
+      console.log('🗑️ Suppression de la réservation:', id);
+      
       const { error } = await supabase
         .from("saved_bookings")
         .update({ deleted_at: new Date().toISOString() })
@@ -82,12 +86,13 @@ export const useSavedBookings = (isOpen: boolean) => {
       if (error) throw error;
 
       setSavedBookings((prev) => prev.filter((booking) => booking.id !== id));
+      
       toast({
         title: "Succès",
         description: "Réservation supprimée",
       });
     } catch (error) {
-      console.error("Erreur lors de la suppression:", error);
+      console.error("❌ Erreur lors de la suppression:", error);
       toast({
         title: "Erreur",
         description: "Impossible de supprimer la réservation",

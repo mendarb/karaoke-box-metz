@@ -1,10 +1,11 @@
 import { SavedBookingCard } from "./SavedBookingCard";
 import { SavedBookingsEmpty } from "./SavedBookingsEmpty";
+import { SavedBooking } from "./hooks/useSavedBookings";
 
 interface SavedBookingsListProps {
-  bookings: any[];
+  bookings: SavedBooking[];
   onDelete: (id: string) => void;
-  onContinue: (booking: any) => void;
+  onContinue: (booking: SavedBooking) => void;
 }
 
 export const SavedBookingsList = ({ bookings, onDelete, onContinue }: SavedBookingsListProps) => {

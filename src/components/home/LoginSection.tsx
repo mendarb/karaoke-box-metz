@@ -29,16 +29,8 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
         </div>
       </div>
 
-      {/* Colonne de droite */}
-      <div className="relative hidden md:block">
-        <div className="absolute inset-0 bg-gradient-to-br from-black/80 to-black/40 z-10" />
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ 
-            backgroundImage: "url('/lovable-uploads/d45fd1b9-de1b-40a3-ae6b-4072948883a6.png')",
-          }}
-        />
-        
+      {/* Colonne de droite avec dégradé */}
+      <div className="relative hidden md:block bg-gradient-to-br from-[#ec6342] to-[#f3917a]">
         <div className="relative z-20 h-full flex flex-col justify-center p-8 text-white">
           <div className="space-y-8">
             {/* En-tête */}

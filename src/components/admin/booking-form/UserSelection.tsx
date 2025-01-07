@@ -12,7 +12,7 @@ interface UserSelectionProps {
 
 export const UserSelection = ({ form, onUserSelected, onSearchStart }: UserSelectionProps) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const { searchResults, isSearching, searchUser } = useUserSearch();
+  const { searchResults, isSearching, searchUser } = useUserSearch(form);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -23,9 +23,9 @@ export const UserSelection = ({ form, onUserSelected, onSearchStart }: UserSelec
   };
 
   const handleUserSelect = (user: any) => {
-    form.setValue("email", user.email);
-    form.setValue("fullName", user.full_name);
-    form.setValue("phone", user.phone);
+    form.setValue("email", user.user_email);
+    form.setValue("fullName", user.user_name);
+    form.setValue("phone", user.user_phone);
     form.setValue("userId", user.id);
     setSearchTerm("");
     if (onUserSelected) onUserSelected();
@@ -34,18 +34,17 @@ export const UserSelection = ({ form, onUserSelected, onSearchStart }: UserSelec
   return (
     <div className="space-y-4">
       <SearchBar
-        value={searchTerm}
-        onChange={handleSearch}
+        searchEmail={searchTerm}
         isSearching={isSearching}
+        onSearchChange={handleSearch}
       />
       
       {searchResults && searchResults.length > 0 && searchTerm && (
         <div className="border rounded-lg divide-y">
           {searchResults.map((user) => (
             <UserDetails
-              key={user.id}
-              user={user}
-              onSelect={() => handleUserSelect(user)}
+              key={user.user_email}
+              form={form}
             />
           ))}
         </div>

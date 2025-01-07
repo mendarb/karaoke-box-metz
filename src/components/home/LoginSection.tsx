@@ -12,17 +12,17 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
       {/* Colonne de gauche - Formulaire */}
-      <div className="flex items-center justify-center p-8 lg:p-12 bg-kbox-coral">
+      <div className="flex items-center justify-center p-6 lg:p-8 bg-kbox-coral">
         <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-white mb-3">
+          <div className="text-center mb-6">
+            <h1 className="text-3xl font-bold text-white mb-2">
               Connexion
             </h1>
             <p className="text-base text-white/90">
               Connectez-vous pour réserver votre box
             </p>
           </div>
-          <Card className="p-8 bg-white shadow-lg rounded-[24px]">
+          <Card className="p-6 bg-white shadow-lg rounded-[24px]">
             <AuthForm 
               onClose={() => {}} 
               isLogin={true}
@@ -40,14 +40,14 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
           className="h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" />
-        <div className="absolute inset-0 flex flex-col justify-center p-12 text-white">
-          <div className="space-y-12 max-w-xl">
-            <div className="space-y-4">
+        <div className="absolute inset-0 flex flex-col justify-center p-8 lg:p-10 text-white">
+          <div className="space-y-8 max-w-xl">
+            <div className="space-y-3">
               <h2 className="text-4xl font-bold text-white">K.Box Metz - Box Karaoké</h2>
               <p className="text-lg text-gray-200">Votre espace karaoké privatif au cœur de Metz</p>
             </div>
             
-            <div className="grid grid-cols-2 gap-8">
+            <div className="grid grid-cols-2 gap-6">
               <div className="flex items-start space-x-3">
                 <Home className="w-6 h-6 text-white mt-1" />
                 <div className="space-y-1">
@@ -78,7 +78,7 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="text-sm text-white/90">Moyens de paiement acceptés</div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex items-center p-4 bg-black/20 backdrop-blur-sm rounded-xl">

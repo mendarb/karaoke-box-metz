@@ -6,10 +6,8 @@ import { useUserState } from "@/hooks/useUserState";
 import { CookieConsent } from "@/components/legal/CookieConsent";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { HeroSection } from "@/components/home/HeroSection";
-import { FeatureGrid } from "@/components/home/FeatureGrid";
+import { LoginSection } from "@/components/home/LoginSection";
 
-const BookingSection = lazy(() => import("@/components/home/BookingSection"));
 const Footer = lazy(() => import("@/components/home/Footer"));
 
 const Index = () => {
@@ -38,24 +36,7 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <main className="flex-grow">
-        <HeroSection />
-        
-        <div className="bg-white">
-          <Suspense fallback={
-            <div className="flex items-center justify-center h-full min-h-[500px]">
-              <LoadingSpinner />
-            </div>
-          }>
-            <BookingSection 
-              user={user} 
-              onShowAuth={() => setShowAuthModal(true)} 
-            />
-          </Suspense>
-        </div>
-
-        <div className="bg-white py-12">
-          <FeatureGrid />
-        </div>
+        <LoginSection user={user} onShowAuth={() => setShowAuthModal(true)} />
       </main>
 
       <Suspense fallback={null}>

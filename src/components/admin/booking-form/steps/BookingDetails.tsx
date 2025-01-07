@@ -1,8 +1,8 @@
 import { UseFormReturn } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { BookingFormFields } from "../BookingFormFields";
-import { PromoCodeField } from "@/components/booking/additional/PromoCodeField";
-import { usePromoCode } from "@/components/booking/hooks/usePromoCode";
+import { PromoCodeField } from "@/components/price-calculator/PromoCodeField";
+import { usePromoCode } from "@/components/price-calculator/usePromoCode";
 import { PriceDisplay } from "@/components/price-calculator/PriceDisplay";
 
 interface BookingDetailsProps {
@@ -24,11 +24,11 @@ export const BookingDetails = ({
   onBack,
   onNext,
 }: BookingDetailsProps) => {
-  const { handlePromoValidated } = usePromoCode(form.getValues("calculatedPrice"), form);
+  const calculatedPrice = form.watch("calculatedPrice");
+  const { handlePromoValidated, finalPrice, isPromoValid, promoData } = usePromoCode(calculatedPrice, form);
 
   const groupSize = form.watch("groupSize");
   const duration = form.watch("duration");
-  const calculatedPrice = form.watch("calculatedPrice");
 
   return (
     <div className="space-y-6">
@@ -46,15 +46,16 @@ export const BookingDetails = ({
             groupSize={groupSize}
             duration={duration}
             price={calculatedPrice}
-            finalPrice={calculatedPrice}
+            finalPrice={finalPrice}
             pricePerPersonPerHour={calculatedPrice / (parseInt(groupSize) * parseInt(duration))}
+            promoCode={promoData?.code}
+            isPromoValid={isPromoValid}
           />
         </div>
       )}
 
       <PromoCodeField 
         onPromoValidated={handlePromoValidated}
-        form={form}
       />
 
       <div className="flex justify-between gap-4">

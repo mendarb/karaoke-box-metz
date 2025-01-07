@@ -71,17 +71,6 @@ export function SignupForm({ onToggleMode, onSuccess }: SignupFormProps) {
           <img src="/google.svg" alt="Google" className="w-5 h-5 mr-3" />
           Continuer avec Google
         </Button>
-
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full h-12 text-base rounded-xl border-2 hover:bg-gray-50 transition-all duration-200"
-          onClick={() => {/* TODO: Implement Apple signup */}}
-          disabled={isLoading}
-        >
-          <img src="/apple.svg" alt="Apple" className="w-5 h-5 mr-3" />
-          Continuer avec Apple
-        </Button>
       </div>
 
       <div className="text-center pt-4">

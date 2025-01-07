@@ -1,7 +1,7 @@
 import { AuthForm } from "@/components/auth/AuthForm";
 import { Card } from "@/components/ui/card";
 import { User } from "@supabase/supabase-js";
-import { Home, Music, Users, Clock, CreditCard, CircleDollarSign, Star } from "lucide-react";
+import { Home, Music, Users, Clock, CreditCard, CircleDollarSign } from "lucide-react";
 import { BookingForm } from "@/components/BookingForm";
 
 interface LoginSectionProps {
@@ -13,7 +13,7 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
   return (
     <div className="min-h-screen grid md:grid-cols-2">
       {/* Colonne de gauche */}
-      <div className="flex items-center justify-center p-4 md:p-8">
+      <div className="flex items-center justify-center p-3 md:p-6">
         <div className="w-full max-w-md">
           <Card className="border-0 shadow-none">
             {!user ? (
@@ -31,7 +31,7 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
 
       {/* Colonne de droite */}
       <div className="relative hidden md:block bg-[#ec6342]">
-        <div className="relative z-20 h-full flex flex-col justify-center p-8 text-white">
+        <div className="relative z-20 h-full flex flex-col justify-center p-12 text-white">
           <div className="space-y-8">
             {/* En-tête */}
             <div className="space-y-4">
@@ -75,10 +75,10 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
               </div>
             </div>
 
-            {/* Moyens de paiement */}
+            {/* Moyens de paiement en grille 2x2 */}
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Moyens de paiement acceptés</h3>
-              <div className="grid gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="flex items-center p-4 bg-white/10 backdrop-blur-sm rounded-xl hover:bg-white/20 transition-colors duration-200">
                   <CreditCard className="w-5 h-5 text-white mr-3" />
                   <div className="text-left">
@@ -108,23 +108,6 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* Témoignage client */}
-            <div className="mt-8 p-6 bg-white/10 backdrop-blur-sm rounded-xl">
-              <div className="flex items-center mb-4">
-                <Star className="w-5 h-5 text-yellow-400" />
-                <Star className="w-5 h-5 text-yellow-400" />
-                <Star className="w-5 h-5 text-yellow-400" />
-                <Star className="w-5 h-5 text-yellow-400" />
-                <Star className="w-5 h-5 text-yellow-400" />
-              </div>
-              <p className="text-sm italic text-white/90">
-                "Une expérience incroyable ! La box est super bien équipée et l'ambiance est au top. Parfait pour une soirée entre amis !"
-              </p>
-              <p className="text-xs text-white/70 mt-2">
-                - Marie L.
-              </p>
             </div>
           </div>
         </div>

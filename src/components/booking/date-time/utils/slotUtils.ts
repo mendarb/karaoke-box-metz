@@ -37,14 +37,13 @@ export const getAvailableSlots = async (
   console.log('🔍 Vérification des créneaux pour la date:', localDate.toISOString().split('T')[0]);
 
   try {
-    // Modification importante ici : on récupère toutes les réservations non annulées pour cette date
     const { data: bookings, error } = await supabase
       .from('bookings')
       .select('time_slot, duration')
       .eq('date', localDate.toISOString().split('T')[0])
       .neq('status', 'cancelled')
       .is('deleted_at', null)
-      .is('payment_status', 'paid');
+      .eq('payment_status', 'paid');
 
     if (error) {
       console.error('❌ Erreur lors de la récupération des réservations:', error);
@@ -53,7 +52,6 @@ export const getAvailableSlots = async (
 
     console.log('✅ Réservations trouvées:', bookings);
 
-    // Filtrer les créneaux disponibles
     return slots.filter(slot => {
       const slotTime = parseInt(slot.split(':')[0]);
       const isSlotAvailable = !bookings?.some(booking => {
@@ -61,10 +59,6 @@ export const getAvailableSlots = async (
         const bookingDuration = parseInt(booking.duration);
         const bookingEndTime = bookingStartTime + bookingDuration;
 
-        // Un créneau est indisponible si :
-        // - il commence pendant une réservation existante
-        // - il se termine pendant une réservation existante
-        // - il englobe complètement une réservation existante
         const overlap = (
           (slotTime >= bookingStartTime && slotTime < bookingEndTime) ||
           (slotTime + 1 > bookingStartTime && slotTime + 1 <= bookingEndTime)

@@ -26,12 +26,12 @@ export function SignupFormFields({
   isLoading
 }: SignupFormFieldsProps) {
   const isMobile = useIsMobile()
-  const inputClassName = `h-11 ${isMobile ? 'text-base' : ''}`
+  const inputClassName = `h-12 rounded-xl bg-gray-50 border-gray-200 ${isMobile ? 'text-base' : ''}`
 
   return (
-    <>
+    <div className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="fullName" className="text-sm font-medium">Nom complet *</Label>
+        <Label htmlFor="fullName" className="text-sm font-medium">Nom complet</Label>
         <Input
           id="fullName"
           value={fullName}
@@ -43,7 +43,7 @@ export function SignupFormFields({
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="email" className="text-sm font-medium">Email *</Label>
+        <Label htmlFor="email" className="text-sm font-medium">Email</Label>
         <Input
           id="email"
           type="email"
@@ -56,7 +56,7 @@ export function SignupFormFields({
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="password" className="text-sm font-medium">Mot de passe *</Label>
+        <Label htmlFor="password" className="text-sm font-medium">Mot de passe</Label>
         <Input
           id="password"
           type="password"
@@ -70,7 +70,7 @@ export function SignupFormFields({
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="phone" className="text-sm font-medium">Téléphone *</Label>
+        <Label htmlFor="phone" className="text-sm font-medium">Téléphone</Label>
         <Input
           id="phone"
           type="tel"
@@ -82,6 +82,6 @@ export function SignupFormFields({
           className={inputClassName}
         />
       </div>
-    </>
+    </div>
   )
 }

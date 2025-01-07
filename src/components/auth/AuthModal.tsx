@@ -31,24 +31,29 @@ export function AuthModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={`sm:max-w-[400px] p-4 sm:p-6 ${isMobile ? 'h-[90vh] mt-auto rounded-t-xl' : ''}`}>
-        <DialogHeader className="space-y-3">
-          <DialogTitle className="text-xl sm:text-2xl font-bold">
-            {isLogin ? "Connexion" : "Créer un compte"}
-          </DialogTitle>
-          <DialogDescription className="text-sm text-gray-600">
-            {isLogin 
-              ? "Connectez-vous à votre compte pour réserver"
-              : "Créez un compte pour réserver votre box"
-            }
-          </DialogDescription>
-        </DialogHeader>
-        <div className={`${isMobile ? 'overflow-y-auto flex-1 -mx-4 px-4' : ''}`}>
-          <AuthForm 
-            onClose={onClose}
-            isLogin={isLogin}
-            onToggleMode={() => setIsLogin(!isLogin)}
-          />
+      <DialogContent className={`
+        sm:max-w-[400px] p-0 gap-0 bg-gradient-to-br from-white to-kbox-pink/10
+        ${isMobile ? 'h-[90vh] mt-auto rounded-t-[32px]' : 'rounded-[24px]'}
+      `}>
+        <div className="p-6 space-y-6">
+          <DialogHeader className="space-y-3 text-center">
+            <DialogTitle className="text-2xl sm:text-3xl font-bold">
+              {isLogin ? "Connexion" : "Créer un compte"}
+            </DialogTitle>
+            <DialogDescription className="text-base text-gray-600">
+              {isLogin 
+                ? "Connectez-vous pour réserver votre box"
+                : "Créez un compte pour réserver votre box"
+              }
+            </DialogDescription>
+          </DialogHeader>
+          <div className={`${isMobile ? 'overflow-y-auto flex-1 -mx-4 px-4' : ''}`}>
+            <AuthForm 
+              onClose={onClose}
+              isLogin={isLogin}
+              onToggleMode={() => setIsLogin(!isLogin)}
+            />
+          </div>
         </div>
       </DialogContent>
     </Dialog>

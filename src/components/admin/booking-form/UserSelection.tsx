@@ -8,9 +8,10 @@ import { useToast } from "@/components/ui/use-toast";
 
 interface UserSelectionProps {
   form: UseFormReturn<any>;
+  onSearchChange: (value: string) => void;
 }
 
-export const UserSelection = ({ form }: UserSelectionProps) => {
+export const UserSelection = ({ form, onSearchChange }: UserSelectionProps) => {
   const [searchEmail, setSearchEmail] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [userFound, setUserFound] = useState(false);
@@ -88,6 +89,11 @@ export const UserSelection = ({ form }: UserSelectionProps) => {
     }
   };
 
+  const handleSearchChange = (value: string) => {
+    setSearchEmail(value);
+    onSearchChange(value);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex gap-2">
@@ -97,7 +103,7 @@ export const UserSelection = ({ form }: UserSelectionProps) => {
             className="pl-9"
             placeholder="Rechercher un utilisateur par email"
             value={searchEmail}
-            onChange={(e) => setSearchEmail(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && searchUser()}
             aria-label="Email de l'utilisateur"
           />

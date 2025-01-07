@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { ClientList } from "./client-selection/ClientList";
 import { useClientSearch } from "./client-selection/useClientSearch";
+import { ClientResult } from "./client-selection/types";
 
 interface ClientSelectionProps {
   form: UseFormReturn<any>;
@@ -20,7 +21,7 @@ export const ClientSelection = ({ form, onNext }: ClientSelectionProps) => {
     }
   };
 
-  const handleClientSelect = (client: any) => {
+  const handleClientSelect = (client: ClientResult) => {
     form.setValue("email", client.user_email);
     form.setValue("fullName", client.user_name);
     form.setValue("phone", client.user_phone || "");

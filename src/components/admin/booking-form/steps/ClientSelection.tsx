@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ClientList } from "./client-selection/ClientList";
 import { useClientSearch } from "./client-selection/useClientSearch";
 import { ClientResult } from "./client-selection/types";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ClientSelectionProps {
   form: UseFormReturn<any>;
@@ -13,7 +14,7 @@ interface ClientSelectionProps {
 
 export const ClientSelection = ({ form, onNext }: ClientSelectionProps) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const { clients, isLoading } = useClientSearch(searchTerm);
+  const { existingClients, isSearching, searchClients } = useClientSearch();
 
   const handleNext = () => {
     if (form.getValues("email")) {
@@ -27,21 +28,28 @@ export const ClientSelection = ({ form, onNext }: ClientSelectionProps) => {
     form.setValue("phone", client.user_phone || "");
   };
 
+  const handleSearchChange = async (value: string) => {
+    setSearchTerm(value);
+    await searchClients(value);
+  };
+
   return (
     <div className="space-y-6">
       <div className="space-y-4">
         <h2 className="text-lg font-semibold">Sélection du client</h2>
         <UserSelection 
           form={form}
-          onSearchChange={setSearchTerm}
+          onSearchChange={handleSearchChange}
         />
         
-        {clients && clients.length > 0 && (
-          <ClientList 
-            clients={clients}
-            onSelectClient={handleClientSelect}
-          />
-        )}
+        <ScrollArea className="h-[300px]">
+          {existingClients && existingClients.length > 0 && (
+            <ClientList 
+              clients={existingClients}
+              onSelectClient={handleClientSelect}
+            />
+          )}
+        </ScrollArea>
       </div>
 
       <Button 

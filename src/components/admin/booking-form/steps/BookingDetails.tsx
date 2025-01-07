@@ -1,9 +1,8 @@
 import { UseFormReturn } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { BookingFormFields } from "../BookingFormFields";
-import { PromoCodeField } from "@/components/price-calculator/PromoCodeField";
-import { usePromoCode } from "@/components/price-calculator/usePromoCode";
-import { PriceDisplay } from "@/components/price-calculator/PriceDisplay";
+import { DateTimeFields } from "@/components/booking/DateTimeFields";
+import { GroupSizeAndDurationFields } from "@/components/booking/GroupSizeAndDurationFields";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface BookingDetailsProps {
   form: UseFormReturn<any>;
@@ -24,55 +23,43 @@ export const BookingDetails = ({
   onBack,
   onNext,
 }: BookingDetailsProps) => {
-  const calculatedPrice = form.watch("calculatedPrice");
-  const { handlePromoValidated, finalPrice, isPromoValid, promoData } = usePromoCode(calculatedPrice, form);
-
-  const groupSize = form.watch("groupSize");
-  const duration = form.watch("duration");
-
   return (
-    <div className="space-y-6">
-      <BookingFormFields
-        form={form}
-        durations={durations}
-        groupSizes={groupSizes}
-        isLoading={isLoading}
-        onPriceCalculated={onPriceCalculated}
-      />
+    <ScrollArea className="h-[calc(100vh-200px)] pr-4">
+      <div className="space-y-6">
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold">Détails de la réservation</h2>
+          
+          <DateTimeFields 
+            form={form}
+            onAvailabilityChange={() => {}}
+          />
 
-      {groupSize && duration && calculatedPrice > 0 && (
-        <div className="bg-violet-50 rounded-lg p-4">
-          <PriceDisplay
-            groupSize={groupSize}
-            duration={duration}
-            price={calculatedPrice}
-            finalPrice={finalPrice}
-            pricePerPersonPerHour={calculatedPrice / (parseInt(groupSize) * parseInt(duration))}
-            promoCode={promoData?.code}
-            isPromoValid={isPromoValid}
+          <GroupSizeAndDurationFields
+            form={form}
+            onGroupSizeChange={(size) => form.setValue("groupSize", size)}
+            onDurationChange={(duration) => form.setValue("duration", duration)}
+            onPriceCalculated={onPriceCalculated}
+            availableHours={4}
           />
         </div>
-      )}
 
-      <PromoCodeField 
-        onPromoValidated={handlePromoValidated}
-      />
-
-      <div className="flex justify-between gap-4">
-        <Button 
-          variant="outline" 
-          onClick={onBack}
-          className="w-full"
-        >
-          Retour
-        </Button>
-        <Button 
-          onClick={onNext}
-          className="w-full"
-        >
-          Suivant
-        </Button>
+        <div className="flex justify-between gap-4">
+          <Button
+            variant="outline"
+            onClick={onBack}
+            className="w-full"
+          >
+            Retour
+          </Button>
+          <Button 
+            onClick={onNext}
+            disabled={isLoading}
+            className="w-full"
+          >
+            Suivant
+          </Button>
+        </div>
       </div>
-    </div>
+    </ScrollArea>
   );
 };

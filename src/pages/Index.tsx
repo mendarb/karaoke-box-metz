@@ -36,28 +36,24 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-kbox-coral">
-      <main className="flex-grow container mx-auto pb-20 md:pb-0">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-0 min-h-[500px]">
-          <div className="md:col-span-1">
-            <HeroSection />
-          </div>
-
-          <div className="md:col-span-2 bg-white">
-            <Suspense fallback={
-              <div className="flex items-center justify-center h-full min-h-[500px]">
-                <LoadingSpinner />
-              </div>
-            }>
-              <BookingSection 
-                user={user} 
-                onShowAuth={() => setShowAuthModal(true)} 
-              />
-            </Suspense>
-          </div>
+    <div className="min-h-screen flex flex-col bg-white">
+      <main className="flex-grow">
+        <HeroSection />
+        
+        <div className="bg-white">
+          <Suspense fallback={
+            <div className="flex items-center justify-center h-full min-h-[500px]">
+              <LoadingSpinner />
+            </div>
+          }>
+            <BookingSection 
+              user={user} 
+              onShowAuth={() => setShowAuthModal(true)} 
+            />
+          </Suspense>
         </div>
 
-        <div>
+        <div className="bg-white py-12">
           <FeatureGrid />
         </div>
       </main>

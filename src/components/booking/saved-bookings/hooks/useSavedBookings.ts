@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
+import { useUserState } from "@/hooks/useUserState";
 
 export interface SavedBooking {
   id: string;
@@ -17,8 +18,11 @@ export const useSavedBookings = (isOpen: boolean) => {
   const [savedBookings, setSavedBookings] = useState<SavedBooking[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { user } = useUserState();
 
   const loadSavedBookings = async () => {
+    if (!user) return;
+    
     try {
       setIsLoading(true);
       console.log('🔄 Chargement des réservations sauvegardées...');
@@ -26,6 +30,7 @@ export const useSavedBookings = (isOpen: boolean) => {
       const { data: bookings, error } = await supabase
         .from("saved_bookings")
         .select("*")
+        .eq("user_id", user.id)
         .is("deleted_at", null)
         .order('created_at', { ascending: false });
 
@@ -44,14 +49,26 @@ export const useSavedBookings = (isOpen: boolean) => {
               .from("bookings")
               .select("*")
               .eq("date", booking.date)
-              .eq("time_slot", booking.time_slot)
               .neq("status", "cancelled")
               .is("deleted_at", null)
               .eq("payment_status", "paid");
 
+            const isAvailable = !existingBookings?.some(existingBooking => {
+              const savedStart = parseInt(booking.time_slot);
+              const savedEnd = savedStart + parseInt(booking.duration);
+              const existingStart = parseInt(existingBooking.time_slot);
+              const existingEnd = existingStart + parseInt(existingBooking.duration);
+
+              return (
+                (savedStart >= existingStart && savedStart < existingEnd) ||
+                (savedEnd > existingStart && savedEnd <= existingEnd) ||
+                (savedStart <= existingStart && savedEnd >= existingEnd)
+              );
+            });
+
             return {
               ...booking,
-              is_available: !existingBookings?.length,
+              is_available: isAvailable,
             };
           })
         );
@@ -71,10 +88,10 @@ export const useSavedBookings = (isOpen: boolean) => {
   };
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && user) {
       loadSavedBookings();
     }
-  }, [isOpen]);
+  }, [isOpen, user]);
 
   const handleDelete = async (id: string) => {
     try {

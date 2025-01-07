@@ -28,7 +28,6 @@ export const SavedBookingsCart = () => {
         .from('bookings')
         .select('*')
         .eq('date', booking.date)
-        .eq('time_slot', booking.time_slot)
         .neq('status', 'cancelled')
         .is('deleted_at', null)
         .eq('payment_status', 'paid');
@@ -37,7 +36,21 @@ export const SavedBookingsCart = () => {
         throw checkError;
       }
 
-      if (existingBookings && existingBookings.length > 0) {
+      // Vérifier les chevauchements de créneaux
+      const isSlotAvailable = !existingBookings?.some(existingBooking => {
+        const savedStart = parseInt(booking.time_slot);
+        const savedEnd = savedStart + parseInt(booking.duration);
+        const existingStart = parseInt(existingBooking.time_slot);
+        const existingEnd = existingStart + parseInt(existingBooking.duration);
+
+        return (
+          (savedStart >= existingStart && savedStart < existingEnd) ||
+          (savedEnd > existingStart && savedEnd <= existingEnd) ||
+          (savedStart <= existingStart && savedEnd >= existingEnd)
+        );
+      });
+
+      if (!isSlotAvailable) {
         toast({
           title: "Créneau indisponible",
           description: "Ce créneau n'est plus disponible",
@@ -49,9 +62,9 @@ export const SavedBookingsCart = () => {
       // Préparer les données de réservation
       const bookingData = {
         date: booking.date,
-        time_slot: booking.time_slot,
+        timeSlot: booking.time_slot,
         duration: booking.duration,
-        group_size: booking.group_size,
+        groupSize: booking.group_size,
         message: booking.message || "",
         currentStep: 3,
         cabin: booking.cabin || 'metz'
@@ -62,13 +75,17 @@ export const SavedBookingsCart = () => {
       // Sauvegarder dans sessionStorage
       sessionStorage.setItem("savedBooking", JSON.stringify(bookingData));
       
-      // Fermer le panier et rediriger
+      // Fermer le panier
       setIsOpen(false);
       
-      // Utiliser un petit délai pour s'assurer que le state est mis à jour
-      setTimeout(() => {
-        navigate("/", { replace: true });
-      }, 100);
+      // Rediriger avec les données
+      navigate("/", { 
+        state: { 
+          savedBooking: bookingData,
+          fromSavedBookings: true 
+        },
+        replace: true 
+      });
 
     } catch (error) {
       console.error("❌ Erreur lors de la vérification:", error);

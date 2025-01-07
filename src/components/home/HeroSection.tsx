@@ -70,7 +70,7 @@ export const HeroSection = () => {
                         className="object-cover w-full h-full"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-                    </div>
+                    </CarouselItem>
                   ))}
                 </CarouselContent>
               </Carousel>

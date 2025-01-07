@@ -15,16 +15,16 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
         <div className="space-y-6">
           <div className="text-left space-y-3">
             <h1 className="text-4xl font-bold text-gray-900">
-              Votre Box Karaoké Privée à Metz
+              Créer votre compte
             </h1>
             <p className="text-lg text-gray-600">
-              Réservez votre session privée et profitez d'une expérience unique
+              Commencez votre expérience karaoké dès maintenant
             </p>
           </div>
           <Card className="p-6 bg-white shadow-lg rounded-2xl border-0">
             <AuthForm 
               onClose={() => {}} 
-              isLogin={true}
+              isLogin={false}
               onToggleMode={() => {}}
             />
           </Card>

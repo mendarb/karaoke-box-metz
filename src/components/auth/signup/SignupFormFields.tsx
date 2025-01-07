@@ -1,5 +1,6 @@
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 interface SignupFormFieldsProps {
   email: string;
@@ -24,10 +25,13 @@ export function SignupFormFields({
   setPhone,
   isLoading
 }: SignupFormFieldsProps) {
+  const isMobile = useIsMobile()
+  const inputClassName = `h-11 ${isMobile ? 'text-base' : ''}`
+
   return (
     <>
       <div className="space-y-2">
-        <Label htmlFor="fullName">Nom complet *</Label>
+        <Label htmlFor="fullName" className="text-sm font-medium">Nom complet *</Label>
         <Input
           id="fullName"
           value={fullName}
@@ -35,10 +39,11 @@ export function SignupFormFields({
           required
           placeholder="Jean Dupont"
           disabled={isLoading}
+          className={inputClassName}
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="email">Email *</Label>
+        <Label htmlFor="email" className="text-sm font-medium">Email *</Label>
         <Input
           id="email"
           type="email"
@@ -47,10 +52,11 @@ export function SignupFormFields({
           required
           placeholder="votre@email.com"
           disabled={isLoading}
+          className={inputClassName}
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="password">Mot de passe *</Label>
+        <Label htmlFor="password" className="text-sm font-medium">Mot de passe *</Label>
         <Input
           id="password"
           type="password"
@@ -60,10 +66,11 @@ export function SignupFormFields({
           placeholder="••••••••"
           minLength={6}
           disabled={isLoading}
+          className={inputClassName}
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="phone">Téléphone *</Label>
+        <Label htmlFor="phone" className="text-sm font-medium">Téléphone *</Label>
         <Input
           id="phone"
           type="tel"
@@ -72,6 +79,7 @@ export function SignupFormFields({
           required
           placeholder="06 12 34 56 78"
           disabled={isLoading}
+          className={inputClassName}
         />
       </div>
     </>

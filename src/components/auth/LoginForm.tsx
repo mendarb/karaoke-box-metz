@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useAuthHandlers } from "@/hooks/useAuthHandlers"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 interface LoginFormProps {
   onToggleMode: () => void;
@@ -14,6 +15,7 @@ export function LoginForm({ onToggleMode, onSuccess }: LoginFormProps) {
   const [password, setPassword] = useState("")
   const [showResetPassword, setShowResetPassword] = useState(false)
   const { handleLogin, handleResetPassword, isLoading } = useAuthHandlers()
+  const isMobile = useIsMobile()
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,7 +35,7 @@ export function LoginForm({ onToggleMode, onSuccess }: LoginFormProps) {
   return (
     <form onSubmit={onSubmit} className="space-y-4 pt-4">
       <div className="space-y-2">
-        <Label htmlFor="email">Email *</Label>
+        <Label htmlFor="email" className="text-sm font-medium">Email *</Label>
         <Input
           id="email"
           type="email"
@@ -42,11 +44,12 @@ export function LoginForm({ onToggleMode, onSuccess }: LoginFormProps) {
           required
           placeholder="votre@email.com"
           disabled={isLoading}
+          className={`h-11 ${isMobile ? 'text-base' : ''}`}
         />
       </div>
       {!showResetPassword && (
         <div className="space-y-2">
-          <Label htmlFor="password">Mot de passe *</Label>
+          <Label htmlFor="password" className="text-sm font-medium">Mot de passe *</Label>
           <Input
             id="password"
             type="password"
@@ -56,17 +59,22 @@ export function LoginForm({ onToggleMode, onSuccess }: LoginFormProps) {
             placeholder="••••••••"
             minLength={6}
             disabled={isLoading}
+            className={`h-11 ${isMobile ? 'text-base' : ''}`}
           />
         </div>
       )}
-      <Button type="submit" className="w-full" disabled={isLoading}>
+      <Button 
+        type="submit" 
+        className={`w-full h-11 text-base ${isMobile ? 'mt-6' : ''}`} 
+        disabled={isLoading}
+      >
         {isLoading ? "Chargement..." : (showResetPassword ? "Réinitialiser le mot de passe" : "Se connecter")}
       </Button>
-      <div className="flex flex-col space-y-2">
+      <div className="flex flex-col space-y-2 pt-2">
         <Button
           type="button"
           variant="link"
-          className="w-full"
+          className="text-sm"
           onClick={() => setShowResetPassword(!showResetPassword)}
           disabled={isLoading}
         >
@@ -75,7 +83,7 @@ export function LoginForm({ onToggleMode, onSuccess }: LoginFormProps) {
         <Button
           type="button"
           variant="link"
-          className="w-full"
+          className="text-sm"
           onClick={onToggleMode}
           disabled={isLoading}
         >

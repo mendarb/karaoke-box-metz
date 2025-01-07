@@ -48,7 +48,7 @@ export const PriceDisplay = ({
       {promoCode && (
         <div className="flex items-center justify-between pt-2 border-t">
           <span className="text-sm">
-            Code promo : <span className="font-mono">{promoCode}</span>
+            Code promo : <span className="font-mono uppercase">{promoCode}</span>
           </span>
           {isPromoValid && (
             <span className="text-green-600 flex items-center text-sm">

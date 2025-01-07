@@ -3,7 +3,7 @@ import { BookingFormWrapper } from "@/components/booking/BookingFormWrapper";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { useUserState } from "@/hooks/useUserState";
 import { Button } from "@/components/ui/button";
-import { LogIn, UserPlus, PaypalLogo, CreditCard } from "lucide-react";
+import { LogIn, UserPlus, CreditCard, CircleDollarSign } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 export const BookingForm = () => {
@@ -65,7 +65,7 @@ export const BookingForm = () => {
             </div>
 
             <div className="flex items-center p-4 border rounded-lg bg-gray-50">
-              <PaypalLogo className="w-5 h-5 text-[#00457C] mr-3" />
+              <CircleDollarSign className="w-5 h-5 text-[#00457C] mr-3" />
               <div className="text-left">
                 <p className="text-sm font-medium text-gray-900">PayPal</p>
                 <p className="text-xs text-gray-500">Paiement sécurisé</p>

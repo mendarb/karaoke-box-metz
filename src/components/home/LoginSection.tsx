@@ -1,7 +1,7 @@
 import { AuthForm } from "@/components/auth/AuthForm";
 import { Card } from "@/components/ui/card";
 import { User } from "@supabase/supabase-js";
-import { Home, Music, Users, Calendar, Clock, CreditCard, CircleDollarSign } from "lucide-react";
+import { Home, Music, Users, Clock, CreditCard, CircleDollarSign } from "lucide-react";
 import { BookingForm } from "@/components/BookingForm";
 
 interface LoginSectionProps {
@@ -30,7 +30,7 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
       </div>
 
       {/* Colonne de droite avec dégradé */}
-      <div className="relative hidden md:block bg-gradient-to-br from-[#ec6342] to-[#f3917a]">
+      <div className="relative hidden md:block bg-[#ec6342]">
         <div className="relative z-20 h-full flex flex-col justify-center p-8 text-white">
           <div className="space-y-8">
             {/* En-tête */}
@@ -39,7 +39,7 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
                 K.Box Metz - Box Karaoké
               </h1>
               <p className="text-lg text-white/90">
-                Réservez votre session de karaoké en quelques clics
+                Votre espace karaoké privatif au cœur de Metz
               </p>
             </div>
 
@@ -47,23 +47,31 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
                 <Home className="w-5 h-5 text-white/90" />
-                <span>Box privative et insonorisée</span>
+                <div>
+                  <span className="font-medium">Box Privative</span>
+                  <p className="text-sm text-white/80">Espace intime et confortable</p>
+                </div>
               </div>
               <div className="flex items-center space-x-3">
                 <Music className="w-5 h-5 text-white/90" />
-                <span>Plus de 60 000 titres disponibles</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <Users className="w-5 h-5 text-white/90" />
-                <span>Capacité de 3 à 15 personnes</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <Calendar className="w-5 h-5 text-white/90" />
-                <span>Ouvert 7j/7</span>
+                <div>
+                  <span className="font-medium">Catalogue Musical</span>
+                  <p className="text-sm text-white/80">Plus de 30 000 titres disponibles</p>
+                </div>
               </div>
               <div className="flex items-center space-x-3">
                 <Clock className="w-5 h-5 text-white/90" />
-                <span>De 10h à minuit</span>
+                <div>
+                  <span className="font-medium">Horaires</span>
+                  <p className="text-sm text-white/80">Du mercredi au dimanche, 17h-23h</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Users className="w-5 h-5 text-white/90" />
+                <div>
+                  <span className="font-medium">Entre Amis</span>
+                  <p className="text-sm text-white/80">Capacité jusqu'à 10 personnes</p>
+                </div>
               </div>
             </div>
 
@@ -86,17 +94,17 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
                   </div>
                 </div>
                 <div className="flex items-center p-4 bg-white/10 backdrop-blur-sm rounded-xl">
-                  <CircleDollarSign className="w-5 h-5 text-white mr-3" />
-                  <div className="text-left">
-                    <p className="text-sm font-medium text-white">PayPal</p>
-                    <p className="text-xs text-white/80">Paiement sécurisé</p>
-                  </div>
-                </div>
-                <div className="flex items-center p-4 bg-white/10 backdrop-blur-sm rounded-xl">
                   <CreditCard className="w-5 h-5 text-white mr-3" />
                   <div className="text-left">
                     <p className="text-sm font-medium text-white">Paiement en 3x</p>
                     <p className="text-xs text-white/80">Sans frais avec Klarna</p>
+                  </div>
+                </div>
+                <div className="flex items-center p-4 bg-white/10 backdrop-blur-sm rounded-xl">
+                  <CircleDollarSign className="w-5 h-5 text-white mr-3" />
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-white">PayPal</p>
+                    <p className="text-xs text-white/80">Paiement sécurisé</p>
                   </div>
                 </div>
               </div>

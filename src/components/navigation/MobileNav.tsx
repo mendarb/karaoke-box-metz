@@ -34,7 +34,7 @@ export const MobileNav = () => {
               className="bg-violet-600 hover:bg-violet-700 text-white font-medium px-6 py-6 rounded-full transition-all duration-200 flex items-center gap-2 justify-center shadow-lg hover:shadow-violet-200"
             >
               <Calendar className="w-5 h-5" />
-              Réserver une séance
+              {user ? 'Réserver une séance' : 'Commencer une réservation'}
             </Button>
 
             <Link to="/" onClick={() => setIsOpen(false)}>
@@ -48,7 +48,7 @@ export const MobileNav = () => {
               </Button>
             </Link>
 
-            {user && (
+            {user ? (
               <>
                 <Link to="/account" onClick={() => setIsOpen(false)}>
                   <Button
@@ -85,7 +85,7 @@ export const MobileNav = () => {
                   </Link>
                 )}
               </>
-            )}
+            ) : null}
           </nav>
         </SheetContent>
       </Sheet>

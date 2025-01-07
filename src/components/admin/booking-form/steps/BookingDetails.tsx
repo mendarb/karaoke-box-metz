@@ -1,10 +1,11 @@
+import { UseFormReturn } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { BookingFormFields } from "../BookingFormFields";
 import { PromoCodeField } from "@/components/booking/additional/PromoCodeField";
-import { usePromoCode } from "@/hooks/useBookingForm";
+import { usePromoCode } from "@/components/hooks/usePromoCode";
 
 interface BookingDetailsProps {
-  form: any;
+  form: UseFormReturn<any>;
   durations: string[];
   groupSizes: string[];
   isLoading: boolean;

@@ -1,7 +1,7 @@
 import { AuthForm } from "@/components/auth/AuthForm";
 import { Card } from "@/components/ui/card";
 import { User } from "@supabase/supabase-js";
-import { Home, Music, Users, Calendar, Clock, CreditCard, CircleDollarSign, ArrowRight } from "lucide-react";
+import { Home, Music, Users, Calendar, Clock, CreditCard, CircleDollarSign, ArrowRight, CreditCardIcon } from "lucide-react";
 
 interface LoginSectionProps {
   user: User | null;
@@ -26,7 +26,7 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
             <AuthForm 
               onClose={() => {}} 
               isLogin={true}
-              onToggleMode={() => {}}
+              onToggleMode={onShowAuth}
             />
           </Card>
         </div>
@@ -106,6 +106,20 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
                   <div className="text-left">
                     <p className="text-sm font-medium text-white">Apple Pay</p>
                     <p className="text-xs text-white/80">Paiement sécurisé</p>
+                  </div>
+                </div>
+                <div className="flex items-center p-4 bg-white/10 backdrop-blur-sm rounded-xl">
+                  <CircleDollarSign className="w-5 h-5 text-white mr-3" />
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-white">PayPal</p>
+                    <p className="text-xs text-white/80">Paiement sécurisé</p>
+                  </div>
+                </div>
+                <div className="flex items-center p-4 bg-white/10 backdrop-blur-sm rounded-xl">
+                  <CreditCard className="w-5 h-5 text-white mr-3" />
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-white">Paiement en 3x</p>
+                    <p className="text-xs text-white/80">Sans frais avec Klarna</p>
                   </div>
                 </div>
               </div>

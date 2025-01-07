@@ -1,137 +1,84 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useBookingSubmit } from "./useBookingSubmit";
 import { useToast } from "@/hooks/use-toast";
-import { BookingFormData } from "../types/bookingFormTypes";
 import { useUserState } from "@/hooks/useUserState";
+import { supabase } from "@/lib/supabase";
+import { BookingFormValues } from "../types/bookingFormTypes";
 
 export const useBookingForm = () => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1);
-  const [groupSize, setGroupSize] = useState("");
-  const [duration, setDuration] = useState("");
-  const [calculatedPrice, setCalculatedPrice] = useState(0);
-  const [availableHours, setAvailableHours] = useState(0);
   const { toast } = useToast();
   const { user } = useUserState();
-
-  const form = useForm<BookingFormData>({
+  const [groupSize, setGroupSize] = useState("");
+  const [duration, setDuration] = useState("");
+  const [currentStep, setCurrentStep] = useState(1);
+  const [calculatedPrice, setCalculatedPrice] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+  const [availableHours, setAvailableHours] = useState(4);
+  
+  const form = useForm<BookingFormValues>({
     defaultValues: {
-      email: user?.email || "",
-      fullName: user?.user_metadata?.full_name || "",
-      phone: user?.user_metadata?.phone || "",
+      email: user?.email || '',
+      fullName: '',
+      phone: '',
       date: undefined,
-      timeSlot: "",
-      duration: "",
-      groupSize: "",
-      message: "",
-      promoCode: "",
-      promoCodeId: null,
-      finalPrice: 0,
-    },
+      timeSlot: '',
+      groupSize: '',
+      duration: '',
+      message: ''
+    }
   });
 
-  const { handleSubmit } = useBookingSubmit(
-    form,
-    groupSize,
-    duration,
-    calculatedPrice,
-    setIsSubmitting
-  );
+  const loadUserData = async () => {
+    if (!user) return;
 
-  const handlePriceCalculated = (price: number) => {
-    if (price <= 0) {
+    try {
+      const { data: lastBooking } = await supabase
+        .from('bookings')
+        .select('user_name, user_phone')
+        .eq('user_id', user.id)
+        .is('deleted_at', null)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (lastBooking) {
+        form.setValue('fullName', lastBooking.user_name);
+        form.setValue('phone', lastBooking.user_phone);
+      }
+
+      // Si l'utilisateur est connecté, on passe directement à l'étape 2
+      if (user) {
+        setCurrentStep(2);
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
       toast({
-        title: "Erreur de prix",
-        description: "Le prix calculé est invalide. Veuillez réessayer.",
+        title: "Erreur",
+        description: "Impossible de charger vos informations",
         variant: "destructive",
       });
-      return;
     }
+  };
+
+  useEffect(() => {
+    loadUserData();
+  }, [user, form]);
+
+  const handlePriceCalculated = (price: number) => {
+    console.log('Price calculated:', price);
     setCalculatedPrice(price);
-    form.setValue("finalPrice", price);
   };
 
   const handleAvailabilityChange = (date: Date | undefined, hours: number) => {
+    setSelectedDate(date);
     setAvailableHours(hours);
+    console.log('Available hours updated:', hours);
   };
 
   const handlePrevious = () => {
-    setCurrentStep((prev) => Math.max(1, prev - 1));
-  };
-
-  const validateStep = (data: BookingFormData): boolean => {
-    console.log("Validating step", currentStep, "with data:", data);
-
-    if (currentStep === 1) {
-      if (!data.date || !data.timeSlot) {
-        toast({
-          title: "Champs requis",
-          description: "Veuillez sélectionner une date et un créneau horaire",
-          variant: "destructive",
-        });
-        return false;
-      }
-    }
-    
-    if (currentStep === 2) {
-      if (!data.groupSize || !data.duration) {
-        toast({
-          title: "Champs requis",
-          description: "Veuillez sélectionner la taille du groupe et la durée",
-          variant: "destructive",
-        });
-        return false;
-      }
-    }
-
-    // Pour l'étape 3, on vérifie si l'utilisateur est connecté
-    if (currentStep === 3) {
-      const formData = form.getValues();
-      console.log("Checking final step data:", formData);
-
-      // Si l'utilisateur est connecté, on utilise ses données
-      if (user) {
-        return true;
-      }
-
-      // Sinon on vérifie les champs du formulaire
-      if (!formData.email || !formData.fullName || !formData.phone) {
-        toast({
-          title: "Champs requis",
-          description: "Veuillez remplir tous les champs obligatoires",
-          variant: "destructive",
-        });
-        return false;
-      }
-    }
-
-    return true;
-  };
-
-  const onSubmit = async (data: BookingFormData) => {
-    console.log("Étape actuelle:", currentStep);
-    console.log("Données du formulaire:", data);
-    
-    if (!validateStep(data)) {
-      return;
-    }
-
-    if (currentStep < 3) {
-      setCurrentStep((prev) => prev + 1);
-      return;
-    }
-
-    // Final submission
-    try {
-      await handleSubmit(data);
-    } catch (error) {
-      console.error("Erreur lors de la soumission:", error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la réservation",
-        variant: "destructive",
-      });
+    if (currentStep > (user ? 2 : 1)) {
+      setCurrentStep(currentStep - 1);
     }
   };
 
@@ -145,10 +92,12 @@ export const useBookingForm = () => {
     setCurrentStep,
     calculatedPrice,
     isSubmitting,
+    setIsSubmitting,
+    selectedDate,
+    availableHours,
     handlePriceCalculated,
     handleAvailabilityChange,
     handlePrevious,
-    availableHours,
-    onSubmit: form.handleSubmit(onSubmit),
+    toast
   };
 };

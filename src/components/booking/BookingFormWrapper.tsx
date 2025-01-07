@@ -1,20 +1,16 @@
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
 import { Form } from "@/components/ui/form";
-import { BookingSteps, Step } from "@/components/BookingSteps";
-import { DateTimeFields } from "./DateTimeFields";
-import { GroupSizeAndDurationFields } from "./GroupSizeAndDurationFields";
-import { AdditionalFields } from "./AdditionalFields";
 import { useBookingForm } from "./hooks/useBookingForm";
-import { Calendar, Users, CreditCard } from "lucide-react";
-import { PromoCodePopup } from "./PromoCodePopup";
-import { useUserState } from "@/hooks/useUserState";
-import { useToast } from "@/hooks/use-toast";
-import { BookingFormActions } from "./form-actions/BookingFormActions";
+import { useBookingSteps } from "./hooks/useBookingSteps";
+import { useBookingSubmit } from "./hooks/useBookingSubmit";
+import { BookingSteps } from "@/components/BookingSteps";
+import { BookingFormContent } from "./BookingFormContent";
+import { BookingFormActions } from "./BookingFormActions";
+import { useBookingMode } from "./hooks/useBookingMode";
+import { useBookingOverlap } from "@/hooks/useBookingOverlap";
+import { toast } from "@/hooks/use-toast";
+import { BookingFormValues } from "./types/bookingFormTypes";
 
 export const BookingFormWrapper = () => {
-  const { user } = useUserState();
-  const { toast } = useToast();
   const {
     form,
     groupSize,
@@ -25,101 +21,104 @@ export const BookingFormWrapper = () => {
     setCurrentStep,
     calculatedPrice,
     isSubmitting,
+    setIsSubmitting,
+    availableHours,
     handlePriceCalculated,
     handleAvailabilityChange,
     handlePrevious,
-    availableHours,
-    onSubmit,
   } = useBookingForm();
 
-  const steps: Step[] = [
-    {
-      id: 1,
-      title: "Date & Heure",
-      description: "Choisissez votre créneau",
-      icon: <Calendar className="h-5 w-5" />,
-      completed: currentStep > 1,
-      current: currentStep === 1,
-      tooltip: "Sélectionnez la date et l'heure de votre session",
-    },
-    {
-      id: 2,
-      title: "Groupe",
-      description: "Taille du groupe et durée",
-      icon: <Users className="h-5 w-5" />,
-      completed: currentStep > 2,
-      current: currentStep === 2,
-      tooltip: "Indiquez le nombre de participants et la durée souhaitée",
-    },
-    {
-      id: 3,
-      title: "Paiement",
-      description: "Informations complémentaires",
-      icon: <CreditCard className="h-5 w-5" />,
-      completed: currentStep > 3,
-      current: currentStep === 3,
-      tooltip: "Finalisez votre réservation et procédez au paiement",
-    },
-  ];
+  const steps = useBookingSteps(currentStep);
+  const { isTestMode } = useBookingMode();
+  const { handleSubmit: submitBooking } = useBookingSubmit(
+    form, 
+    groupSize, 
+    duration, 
+    calculatedPrice, 
+    setIsSubmitting
+  );
+  const { checkOverlap } = useBookingOverlap();
 
-  // Charger les détails d'une réservation sauvegardée si disponible
-  useEffect(() => {
-    const savedBooking = sessionStorage.getItem("savedBooking");
-    if (savedBooking) {
-      const booking = JSON.parse(savedBooking);
-      form.setValue("date", booking.date);
-      form.setValue("timeSlot", booking.time_slot);
-      form.setValue("duration", booking.duration);
-      form.setValue("groupSize", booking.group_size);
-      form.setValue("message", booking.message || "");
-      setGroupSize(booking.group_size);
-      setDuration(booking.duration);
-      // Utiliser l'étape spécifiée ou par défaut l'étape 2
-      setCurrentStep(booking.currentStep || 2);
-      sessionStorage.removeItem("savedBooking");
+  const validateStep = (step: number) => {
+    const requiredFields: { [key: number]: Array<keyof BookingFormValues> } = {
+      1: ['email', 'fullName', 'phone'],
+      2: ['date', 'timeSlot'],
+      3: ['groupSize', 'duration'],
+      4: []
+    };
 
-      // Afficher un guide pour l'utilisateur
+    const fields = requiredFields[step];
+    if (!fields) return true;
+
+    let isValid = true;
+    const errors: string[] = [];
+
+    fields.forEach(field => {
+      const value = form.getValues(field);
+      if (!value) {
+        form.setError(field, {
+          type: 'required',
+          message: 'Ce champ est requis'
+        });
+        isValid = false;
+        errors.push(field);
+      }
+    });
+
+    if (!isValid) {
       toast({
-        title: "✨ Réservation chargée",
-        description: "Vous pouvez maintenant continuer votre réservation",
+        title: "Erreur de validation",
+        description: "Veuillez remplir tous les champs obligatoires",
+        variant: "destructive",
       });
     }
-  }, []);
 
-  const handlePromoCode = (code: string) => {
-    form.setValue("promoCode", code);
+    return isValid;
+  };
+
+  const onSubmit = async (data: BookingFormValues) => {
+    if (!validateStep(currentStep)) {
+      return;
+    }
+
+    if (currentStep < 4) {
+      setCurrentStep(currentStep + 1);
+      return;
+    }
+    
+    console.log('🔧 Payment mode:', isTestMode ? 'TEST' : 'LIVE', {
+      isTestMode
+    });
+    
+    form.setValue('isTestMode', isTestMode);
+    
+    const hasOverlap = await checkOverlap(data.date, data.timeSlot, duration);
+    if (hasOverlap) {
+      return;
+    }
+
+    await submitBooking({ ...data, isTestMode });
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={onSubmit} className="space-y-6 animate-fadeIn p-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <BookingSteps steps={steps} currentStep={currentStep} />
-
-        {currentStep === 1 && (
-          <DateTimeFields
+        
+        <div className="min-h-[300px]">
+          <BookingFormContent
+            currentStep={currentStep}
             form={form}
-            onAvailabilityChange={handleAvailabilityChange}
-          />
-        )}
-
-        {currentStep === 2 && (
-          <GroupSizeAndDurationFields
-            form={form}
+            groupSize={groupSize}
+            duration={duration}
+            calculatedPrice={calculatedPrice}
             onGroupSizeChange={setGroupSize}
             onDurationChange={setDuration}
             onPriceCalculated={handlePriceCalculated}
+            onAvailabilityChange={handleAvailabilityChange}
             availableHours={availableHours}
           />
-        )}
-
-        {currentStep === 3 && (
-          <AdditionalFields
-            form={form}
-            calculatedPrice={calculatedPrice}
-            groupSize={groupSize}
-            duration={duration}
-          />
-        )}
+        </div>
 
         <BookingFormActions
           currentStep={currentStep}
@@ -127,8 +126,6 @@ export const BookingFormWrapper = () => {
           onPrevious={handlePrevious}
         />
       </form>
-
-      <PromoCodePopup onApplyCode={handlePromoCode} currentStep={currentStep} />
     </Form>
   );
 };

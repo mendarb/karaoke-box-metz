@@ -84,7 +84,7 @@ export const useBookingSubmit = (
       }
       console.log('💰 Prix final:', finalPrice);
 
-      // Appeler la fonction Edge pour créer la réservation
+      // Appeler la nouvelle fonction Edge pour créer la réservation
       const { data: response, error } = await supabase.functions.invoke(
         'create-booking',
         {
@@ -107,10 +107,7 @@ export const useBookingSubmit = (
         }
       );
 
-      if (error) {
-        console.error('❌ Error from create-booking function:', error);
-        throw error;
-      }
+      if (error) throw error;
 
       if (!response?.url) {
         console.error('❌ No checkout URL returned:', response);
@@ -118,14 +115,15 @@ export const useBookingSubmit = (
       }
 
       console.log('✅ Booking created and payment link generated:', {
+        bookingId: response.bookingId,
         checkoutUrl: response.url,
         userId: user.id,
         price: finalPrice,
         responseData: response
       });
 
-      // Rediriger vers la page de paiement Stripe dans un nouvel onglet
-      window.open(response.url, '_blank');
+      // Rediriger vers la page de paiement Stripe
+      window.location.href = response.url;
 
     } catch (error: any) {
       console.error('❌ Error in booking process:', error);

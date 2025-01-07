@@ -1,14 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { useUserState } from "@/hooks/useUserState";
-import { SavedBookingsCart } from "@/components/booking/SavedBookingsCart";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useNavigate } from "react-router-dom";
 import { User } from "lucide-react";
 
 interface UserNavProps {
@@ -17,40 +15,41 @@ interface UserNavProps {
 }
 
 export const UserNav = ({ onSignOut, isAdmin }: UserNavProps) => {
-  const { user } = useUserState();
+  const navigate = useNavigate();
 
   return (
-    <div className="flex items-center gap-4">
-      <SavedBookingsCart />
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="icon">
-            <User className="h-5 w-5" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => window.location.href = "/account"}>
-            Profil
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => window.location.href = "/my-bookings"}>
-            Mes réservations
-          </DropdownMenuItem>
-          {isAdmin && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => window.location.href = "/admin"}>
-                Administration
-              </DropdownMenuItem>
-            </>
-          )}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={onSignOut}>
-            Se déconnecter
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button 
+          variant="outline" 
+          className="relative w-8 h-8 rounded-full border-gray-300 hover:bg-gray-100 p-0"
+        >
+          <User className="h-4 w-4 text-gray-700" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56" align="end" forceMount>
+        <DropdownMenuItem onClick={() => navigate('/my-bookings')}>
+          Mes réservations
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate('/account')}>
+          Mon compte
+        </DropdownMenuItem>
+        {isAdmin && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => navigate('/admin')}>
+              Administration
+            </DropdownMenuItem>
+          </>
+        )}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem 
+          onClick={onSignOut} 
+          className="text-red-600 focus:bg-red-50 focus:text-red-600"
+        >
+          Déconnexion
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };

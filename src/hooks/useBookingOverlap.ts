@@ -17,11 +17,10 @@ export const useBookingOverlap = () => {
 
       const { data: existingBookings, error } = await supabase
         .from('bookings')
-        .select('time_slot, duration')
+        .select('*')
         .eq('date', formattedDate)
         .neq('status', 'cancelled')
-        .is('deleted_at', null)
-        .eq('payment_status', 'paid');
+        .is('deleted_at', null);
 
       if (error) {
         console.error('Error checking booking overlap:', error);
@@ -44,6 +43,8 @@ export const useBookingOverlap = () => {
           console.log('Chevauchement détecté:', {
             newBooking: { date: formattedDate, start: startHour, end: endHour },
             existingBooking: { 
+              id: booking.id, 
+              date: booking.date, 
               start: bookingStart, 
               end: bookingEnd 
             }

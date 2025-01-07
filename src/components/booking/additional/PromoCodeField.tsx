@@ -1,19 +1,18 @@
-import { useState } from "react";
-import { UseFormReturn } from "react-hook-form";
-import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
+import { FormControl, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
+import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 interface PromoCodeFieldProps {
-  onPromoValidated: (isValid: boolean, promoData?: any) => void;
-  form: UseFormReturn<any>;
+  onPromoValidated: (isValid: boolean, promoCode?: any) => void;
+  form: any;
 }
 
 export const PromoCodeField = ({ onPromoValidated, form }: PromoCodeFieldProps) => {
   const [promoCode, setPromoCode] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
   const { toast } = useToast();
 
   const handlePromoCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -21,42 +20,39 @@ export const PromoCodeField = ({ onPromoValidated, form }: PromoCodeFieldProps) 
     setPromoCode(code);
     if (!code) {
       onPromoValidated(false);
-      form.setValue("promoCode", "");
-      form.setValue("promoCodeId", null);
     }
   };
 
   const validatePromoCode = async () => {
-    if (!promoCode) {
+    if (!promoCode.trim()) {
       toast({
         title: "Code promo manquant",
-        description: "Veuillez entrer un code promo",
+        description: "Veuillez entrer un code promo.",
         variant: "destructive",
       });
       return;
     }
 
-    setIsLoading(true);
-    console.log("🔍 Vérification du code promo:", promoCode);
-
+    setIsValidating(true);
     try {
+      console.log('🔍 Validation du code promo:', promoCode);
       const { data, error } = await supabase
-        .from("promo_codes")
-        .select("*")
-        .eq("code", promoCode)
-        .eq("is_active", true)
-        .is("deleted_at", null)
-        .single();
+        .from('promo_codes')
+        .select('*')
+        .eq('code', promoCode.trim())
+        .eq('is_active', true)
+        .is('deleted_at', null)
+        .maybeSingle();
 
-      if (error) {
-        throw error;
-      }
+      console.log('📊 Résultat de la validation:', { data, error });
+
+      if (error) throw error;
 
       if (!data) {
         onPromoValidated(false);
         toast({
-          title: "Code invalide",
-          description: "Ce code promo n'existe pas",
+          title: "Code promo invalide",
+          description: "Ce code promo n'existe pas ou n'est plus valide.",
           variant: "destructive",
         });
         return;
@@ -64,11 +60,12 @@ export const PromoCodeField = ({ onPromoValidated, form }: PromoCodeFieldProps) 
 
       const now = new Date();
 
+      // Vérifier la période de validité
       if (data.start_date && new Date(data.start_date) > now) {
         onPromoValidated(false);
         toast({
-          title: "Code non valide",
-          description: "Ce code promo n'est pas encore actif",
+          title: "Code promo non valide",
+          description: "Ce code promo n'est pas encore valide.",
           variant: "destructive",
         });
         return;
@@ -77,74 +74,69 @@ export const PromoCodeField = ({ onPromoValidated, form }: PromoCodeFieldProps) 
       if (data.end_date && new Date(data.end_date) < now) {
         onPromoValidated(false);
         toast({
-          title: "Code expiré",
-          description: "Ce code promo a expiré",
+          title: "Code promo expiré",
+          description: "Ce code promo a expiré.",
           variant: "destructive",
         });
         return;
       }
 
+      // Vérifier les limites d'utilisation
       if (data.max_uses && data.current_uses >= data.max_uses) {
         onPromoValidated(false);
         toast({
-          title: "Code épuisé",
-          description: "Ce code promo a atteint sa limite d'utilisation",
+          title: "Code promo épuisé",
+          description: "Ce code promo a atteint sa limite d'utilisation.",
           variant: "destructive",
         });
         return;
       }
 
-      console.log("✅ Code promo valide:", data);
+      console.log('✅ Code promo valide:', data);
+      form.setValue('promoCode', data.code);
+      form.setValue('promoCodeId', data.id);
       onPromoValidated(true, data);
-      form.setValue("promoCode", data.code);
-      form.setValue("promoCodeId", data.id);
-      
       toast({
-        title: "Code promo appliqué",
-        description: "Le code promo a été appliqué avec succès",
+        title: "Code promo valide !",
+        description: `Le code ${promoCode} a été appliqué avec succès.`,
       });
-
-    } catch (error) {
-      console.error("❌ Erreur lors de la validation du code promo:", error);
+    } catch (error: any) {
+      console.error('❌ Erreur lors de la validation du code promo:', error);
+      onPromoValidated(false);
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de la validation du code",
+        description: "Une erreur est survenue lors de la validation du code promo.",
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsValidating(false);
     }
   };
 
   return (
-    <div className="space-y-4">
-      <FormField
-        control={form.control}
-        name="promoCode"
-        render={() => (
-          <FormItem>
-            <FormLabel>Code promo</FormLabel>
-            <div className="flex gap-2">
-              <FormControl>
-                <Input
-                  value={promoCode}
-                  onChange={handlePromoCodeChange}
-                  placeholder="Entrez votre code promo"
-                  className="uppercase"
-                />
-              </FormControl>
-              <Button
-                type="button"
-                onClick={validatePromoCode}
-                disabled={isLoading || !promoCode}
-                className="bg-violet-600 hover:bg-violet-700 text-white"
-              >
-                {isLoading ? "Vérification..." : "Appliquer"}
-              </Button>
-            </div>
-          </FormItem>
-        )}
-      />
+    <div className="space-y-2">
+      <FormItem>
+        <FormLabel>Code promo (optionnel)</FormLabel>
+        <div className="flex gap-2">
+          <FormControl>
+            <Input
+              type="text"
+              value={promoCode}
+              onChange={handlePromoCodeChange}
+              placeholder="Entrez votre code promo"
+            />
+          </FormControl>
+          <Button 
+            type="button" 
+            variant="outline"
+            onClick={validatePromoCode}
+            disabled={isValidating}
+            className="shrink-0"
+          >
+            {isValidating ? 'Validation...' : 'Valider'}
+          </Button>
+        </div>
+      </FormItem>
     </div>
   );
 };

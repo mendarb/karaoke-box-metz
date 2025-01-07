@@ -1,7 +1,6 @@
 import { AccountLayout } from "./AccountLayout";
 import { ProfileSection } from "./ProfileSection";
 import { SecuritySection } from "./SecuritySection";
-import { SavedBookingsSection } from "./SavedBookingsSection";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const AccountPage = () => {
@@ -14,10 +13,9 @@ export const AccountPage = () => {
         
         <div className="glass rounded-lg p-6">
           <Tabs defaultValue="profile" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3 max-w-[600px] mx-auto">
+            <TabsList className="grid w-full grid-cols-2 max-w-[400px] mx-auto">
               <TabsTrigger value="profile">Profil</TabsTrigger>
               <TabsTrigger value="security">Sécurité</TabsTrigger>
-              <TabsTrigger value="saved">Réservations sauvegardées</TabsTrigger>
             </TabsList>
             
             <TabsContent value="profile" className="space-y-6">
@@ -26,10 +24,6 @@ export const AccountPage = () => {
             
             <TabsContent value="security" className="space-y-6">
               <SecuritySection />
-            </TabsContent>
-
-            <TabsContent value="saved" className="space-y-6">
-              <SavedBookingsSection />
             </TabsContent>
           </Tabs>
         </div>

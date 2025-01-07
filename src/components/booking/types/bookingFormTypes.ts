@@ -1,13 +1,14 @@
-export interface BookingFormData {
+export interface BookingFormValues {
   email: string;
   fullName: string;
   phone: string;
   date: Date | undefined;
   timeSlot: string;
-  duration: string;
   groupSize: string;
+  duration: string;
   message: string;
+  isTestMode?: boolean;
   promoCode?: string;
-  promoCodeId?: string | null;
-  finalPrice: number;
+  promoCodeId?: string;
+  finalPrice?: number;
 }

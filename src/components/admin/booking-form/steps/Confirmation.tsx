@@ -21,13 +21,7 @@ export const Confirmation = ({
   onSubmit,
 }: ConfirmationProps) => {
   const formData = form.getValues();
-  
-  // Ensure we're working with a proper Date object
-  const bookingDate = new Date(formData.date);
-  // Add timezone offset to compensate for UTC conversion
-  bookingDate.setMinutes(bookingDate.getMinutes() + bookingDate.getTimezoneOffset());
-  
-  const date = formData.date ? format(bookingDate, "EEEE d MMMM yyyy", { locale: fr }) : "";
+  const date = formData.date ? format(new Date(formData.date), "EEEE d MMMM yyyy", { locale: fr }) : "";
   const startHour = parseInt(formData.timeSlot);
   const endHour = startHour + parseInt(formData.duration);
 
@@ -50,7 +44,7 @@ export const Confirmation = ({
           <div className="space-y-2">
             <div className="flex items-center text-sm">
               <Calendar className="mr-2 h-4 w-4 text-violet-500" />
-              <span className="font-medium capitalize">{date}</span>
+              <span className="font-medium">{date}</span>
             </div>
             <div className="flex items-center text-sm">
               <Clock className="mr-2 h-4 w-4 text-violet-500" />

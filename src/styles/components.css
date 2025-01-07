@@ -37,13 +37,27 @@
   .mobile-input {
     @apply w-full px-4 py-3 border border-gray-200
            focus:ring-2 focus:ring-kbox-coral focus:border-transparent
-           text-base;
+           text-base rounded-xl;
   }
 
   .mobile-button {
     @apply w-full py-3 px-4 font-medium
            transition-all duration-200 
            active:scale-[0.98] disabled:opacity-50
+           focus:outline-none focus:ring-2 focus:ring-offset-2
+           rounded-xl;
+  }
+
+  .auth-input {
+    @apply h-12 rounded-xl bg-gray-50 border-gray-200
+           focus:ring-2 focus:ring-kbox-coral/20 focus:border-kbox-coral/50
+           transition-all duration-200;
+  }
+
+  .auth-button {
+    @apply h-12 rounded-xl font-medium
+           transition-all duration-200
+           transform hover:scale-[1.02] active:scale-[0.98]
            focus:outline-none focus:ring-2 focus:ring-offset-2;
   }
 }

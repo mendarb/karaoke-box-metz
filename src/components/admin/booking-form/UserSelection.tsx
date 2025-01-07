@@ -42,10 +42,17 @@ export const UserSelection = ({ form, onUserSelected, onSearchStart }: UserSelec
       {searchResults && searchResults.length > 0 && searchTerm && (
         <div className="border rounded-lg divide-y">
           {searchResults.map((user) => (
-            <UserDetails
+            <div
               key={user.user_email}
-              form={form}
-            />
+              className="p-4 cursor-pointer hover:bg-gray-50"
+              onClick={() => handleUserSelect(user)}
+            >
+              <div className="font-medium">{user.user_name}</div>
+              <div className="text-sm text-gray-500">{user.user_email}</div>
+              {user.user_phone && (
+                <div className="text-sm text-gray-500">{user.user_phone}</div>
+              )}
+            </div>
           ))}
         </div>
       )}

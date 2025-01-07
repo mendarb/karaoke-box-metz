@@ -7,19 +7,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface PaymentRequestEmailData {
-  userEmail: string;
-  userName: string;
-  date: string;
-  timeSlot: string;
-  duration: string;
-  groupSize: string;
-  price: number;
-  paymentUrl: string;
-  message?: string;
-  promoCode?: string;
-}
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });

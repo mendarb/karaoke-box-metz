@@ -46,7 +46,6 @@ export const GroupSizeAndDurationFields = ({
       onPriceCalculated(calculatedPrice);
       
       form.setValue("calculatedPrice", calculatedPrice);
-      form.setValue("finalPrice", calculatedPrice);
       
       console.log('💰 Prix calculé:', {
         groupSize: size,

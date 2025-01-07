@@ -14,12 +14,22 @@ interface EmailRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  // Handle CORS
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    if (!RESEND_API_KEY) {
+      throw new Error("RESEND_API_KEY is not configured");
+    }
+
     const { to, fullName } = await req.json() as EmailRequest;
+    console.log('📧 Sending welcome email to:', { to, fullName });
+
+    if (!to || !fullName) {
+      throw new Error("Missing required fields: to and fullName are required");
+    }
 
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -41,23 +51,30 @@ const handler = async (req: Request): Promise<Response> => {
       }),
     });
 
+    const data = await res.json();
+    
     if (!res.ok) {
-      const error = await res.text();
-      console.error("Erreur lors de l'envoi de l'email:", error);
-      throw new Error(error);
+      console.error('❌ Resend API error:', data);
+      throw new Error(data.message || "Failed to send email");
     }
 
-    const data = await res.json();
+    console.log('✅ Welcome email sent successfully:', data);
     return new Response(JSON.stringify(data), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("Erreur dans la fonction send-welcome-email:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    console.error("❌ Error in send-welcome-email function:", error);
+    return new Response(
+      JSON.stringify({ 
+        error: error.message || "Internal server error",
+        details: error.toString()
+      }),
+      {
+        status: error.status || 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
   }
 };
 

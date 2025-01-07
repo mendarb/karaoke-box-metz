@@ -22,14 +22,15 @@ export const useAdminBookingSubmit = (form: UseFormReturn<any>) => {
     try {
       setIsLoading(true);
 
-      // Trouver ou créer l'utilisateur
+      // Trouver l'utilisateur (sans en créer un nouveau)
       const userId = await findOrCreateUser(data.email, data.fullName, data.phone);
-      console.log('✅ Utilisateur trouvé/créé:', userId);
+      console.log('✅ Utilisateur trouvé:', userId);
 
-      // Générer directement le lien de paiement
+      // Générer le lien de paiement
       const checkoutUrl = await generatePaymentLink({
         ...data,
-        userId: userId
+        userId: userId,
+        sendEmail: true // On veut toujours envoyer l'email de paiement en mode admin
       });
       
       setPaymentLink(checkoutUrl);

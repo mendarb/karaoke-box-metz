@@ -18,7 +18,7 @@ export const UserSelection = ({ form, onSearchChange }: UserSelectionProps) => {
   const { toast } = useToast();
 
   const searchUser = async () => {
-    if (!searchEmail.trim()) {
+    if (!searchEmail?.trim()) {
       toast({
         title: "Erreur",
         description: "Veuillez entrer un email",

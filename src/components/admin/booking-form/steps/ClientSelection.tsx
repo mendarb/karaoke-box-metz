@@ -14,7 +14,7 @@ interface ClientSelectionProps {
 
 export const ClientSelection = ({ form, onNext }: ClientSelectionProps) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const { existingClients, isSearching, searchClients } = useClientSearch();
+  const { clients, isLoading, searchClients } = useClientSearch();
 
   const handleNext = () => {
     if (form.getValues("email")) {
@@ -43,9 +43,9 @@ export const ClientSelection = ({ form, onNext }: ClientSelectionProps) => {
         />
         
         <ScrollArea className="h-[300px]">
-          {existingClients && existingClients.length > 0 && (
+          {clients && clients.length > 0 && (
             <ClientList 
-              clients={existingClients}
+              clients={clients}
               onSelectClient={handleClientSelect}
             />
           )}

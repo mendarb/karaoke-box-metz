@@ -1,9 +1,11 @@
 import { UseFormReturn } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
 import { useCalculatePrice } from "@/components/price-calculator/useCalculatePrice";
 import { usePriceSettings } from "@/components/price-calculator/usePriceSettings";
+import { cn } from "@/lib/utils";
 
 interface BookingFormFieldsProps {
   form: UseFormReturn<any>;
@@ -15,6 +17,8 @@ interface BookingFormFieldsProps {
 
 export const BookingFormFields = ({ 
   form, 
+  durations,
+  groupSizes,
   isLoading,
   onPriceCalculated 
 }: BookingFormFieldsProps) => {
@@ -40,7 +44,7 @@ export const BookingFormFields = ({
   }, [form.watch("duration"), form.watch("groupSize")]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <label>Email</label>
@@ -68,25 +72,45 @@ export const BookingFormFields = ({
             required 
           />
         </div>
-        <div className="space-y-2">
-          <label>Durée (heures)</label>
-          <Input 
-            {...form.register("duration")} 
-            type="number" 
-            min="1" 
-            max="4" 
-            required 
-          />
+      </div>
+
+      <div className="space-y-2">
+        <label>Durée (heures)</label>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          {durations.map((duration) => (
+            <Button
+              key={duration}
+              type="button"
+              variant={form.watch("duration") === duration ? "default" : "outline"}
+              className={cn(
+                "w-full",
+                form.watch("duration") === duration && "bg-violet-600 hover:bg-violet-700"
+              )}
+              onClick={() => form.setValue("duration", duration)}
+            >
+              {duration}h
+            </Button>
+          ))}
         </div>
-        <div className="space-y-2">
-          <label>Nombre de personnes</label>
-          <Input 
-            {...form.register("groupSize")} 
-            type="number" 
-            min="1" 
-            max="15" 
-            required 
-          />
+      </div>
+
+      <div className="space-y-2">
+        <label>Nombre de personnes</label>
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+          {groupSizes.map((size) => (
+            <Button
+              key={size}
+              type="button"
+              variant={form.watch("groupSize") === size ? "default" : "outline"}
+              className={cn(
+                "w-full",
+                form.watch("groupSize") === size && "bg-violet-600 hover:bg-violet-700"
+              )}
+              onClick={() => form.setValue("groupSize", size)}
+            >
+              {size}
+            </Button>
+          ))}
         </div>
       </div>
       

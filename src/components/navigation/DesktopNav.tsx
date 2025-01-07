@@ -7,14 +7,18 @@ export const DesktopNav = () => {
   const navigate = useNavigate();
 
   const handleBookingClick = () => {
-    // Réinitialiser le stockage de session pour une nouvelle réservation
     sessionStorage.removeItem("savedBooking");
-    // Rediriger vers la page d'accueil avec un état frais
     navigate('/', { replace: true });
   };
 
   return (
-    <nav className="hidden md:flex items-center space-x-6">
+    <nav className="flex items-center space-x-6">
+      <Link to="/account" className={`text-gray-800 hover:text-violet-600 ${location.pathname === '/account' ? 'font-bold' : ''}`}>
+        Mon Compte
+      </Link>
+      <Link to="/my-bookings" className={`text-gray-800 hover:text-violet-600 ${location.pathname === '/my-bookings' ? 'font-bold' : ''}`}>
+        Mes Réservations
+      </Link>
       <Button
         onClick={handleBookingClick}
         size="lg"
@@ -23,12 +27,6 @@ export const DesktopNav = () => {
         <Calendar className="w-5 h-5" />
         Réserver une séance
       </Button>
-      <Link to="/account" className={`text-gray-800 hover:text-violet-600 ${location.pathname === '/account' ? 'font-bold' : ''}`}>
-        Mon Compte
-      </Link>
-      <Link to="/my-bookings" className={`text-gray-800 hover:text-violet-600 ${location.pathname === '/my-bookings' ? 'font-bold' : ''}`}>
-        Mes Réservations
-      </Link>
     </nav>
   );
 };

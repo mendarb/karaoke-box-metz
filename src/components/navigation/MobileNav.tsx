@@ -18,7 +18,8 @@ export const MobileNav = () => {
   };
 
   return (
-    <div className="md:hidden">
+    <div className="md:hidden flex items-center gap-2">
+      {user && <SavedBookingsCart />}
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
           <Button variant="ghost" size="icon">
@@ -85,10 +86,6 @@ export const MobileNav = () => {
                 )}
               </>
             )}
-
-            <div className="mt-auto">
-              <SavedBookingsCart />
-            </div>
           </nav>
         </SheetContent>
       </Sheet>

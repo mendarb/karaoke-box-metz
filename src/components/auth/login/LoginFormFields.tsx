@@ -24,7 +24,7 @@ export function LoginFormFields({
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="email" className="text-sm font-medium text-white">Email</Label>
+        <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email</Label>
         <Input
           id="email"
           type="email"
@@ -33,12 +33,12 @@ export function LoginFormFields({
           required
           placeholder="votre@email.com"
           disabled={isLoading}
-          className={`h-12 rounded-xl bg-white/20 border-white/30 text-white placeholder:text-white/60 ${isMobile ? 'text-base' : ''}`}
+          className={`h-12 rounded-xl bg-gray-50 border-gray-200 ${isMobile ? 'text-base' : ''}`}
         />
       </div>
       {!showResetPassword && (
         <div className="space-y-2">
-          <Label htmlFor="password" className="text-sm font-medium text-white">Mot de passe</Label>
+          <Label htmlFor="password" className="text-sm font-medium text-gray-700">Mot de passe</Label>
           <Input
             id="password"
             type="password"
@@ -48,7 +48,7 @@ export function LoginFormFields({
             placeholder="••••••••"
             minLength={6}
             disabled={isLoading}
-            className={`h-12 rounded-xl bg-white/20 border-white/30 text-white placeholder:text-white/60 ${isMobile ? 'text-base' : ''}`}
+            className={`h-12 rounded-xl bg-gray-50 border-gray-200 ${isMobile ? 'text-base' : ''}`}
           />
         </div>
       )}

@@ -19,48 +19,73 @@ export const HeroSection = () => {
   ];
 
   return (
-    <div className="flex flex-col items-center px-4 py-8 bg-white">
-      <div className="w-full max-w-md mx-auto space-y-8">
-        {/* Image Grid Carousel */}
-        <Carousel className="w-full">
-          <CarouselContent>
-            {images.map((image, index) => (
-              <CarouselItem key={index}>
-                <div className="relative aspect-[4/3] overflow-hidden rounded-3xl">
-                  <img
-                    src={image.src}
-                    alt={image.alt}
-                    className="object-cover w-full h-full"
-                  />
+    <div className="min-h-screen bg-white">
+      <div className="container mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center min-h-[calc(100vh-4rem)] py-8">
+          {/* Colonne de gauche - Texte et CTA */}
+          <div className="space-y-8 max-w-xl">
+            <h1 className="text-5xl font-bold text-gray-900 leading-tight">
+              Votre Box Karaoké Privée à Metz
+            </h1>
+            <p className="text-xl text-gray-600">
+              Réservez votre session privée, profitez d'une ambiance unique et chantez en toute intimité avec vos amis.
+            </p>
+            <div className="space-y-4">
+              <Button 
+                asChild
+                className="w-full lg:w-auto bg-kbox-coral hover:bg-kbox-orange-dark text-white py-6 px-8 rounded-full text-lg shadow-lg transition-all duration-300"
+              >
+                <Link to="/box-3d">
+                  Découvrir notre Box en 3D
+                </Link>
+              </Button>
+              
+              <div className="flex items-center justify-start space-x-8 pt-4">
+                <div className="flex items-center space-x-2">
+                  <div className="w-10 h-10 rounded-full bg-kbox-pink flex items-center justify-center">
+                    <span className="text-kbox-coral">🎤</span>
+                  </div>
+                  <span className="text-gray-700">Équipement Pro</span>
                 </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-        </Carousel>
+                <div className="flex items-center space-x-2">
+                  <div className="w-10 h-10 rounded-full bg-kbox-pink flex items-center justify-center">
+                    <span className="text-kbox-coral">🎵</span>
+                  </div>
+                  <span className="text-gray-700">+2000 Chansons</span>
+                </div>
+              </div>
+            </div>
+          </div>
 
-        {/* Text Content */}
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold text-gray-900">
-            Votre Box Karaoké à Metz
-          </h1>
-          <p className="text-lg text-gray-600 px-4">
-            Réservez votre session privée, profitez d'une ambiance unique et chantez en toute intimité
-          </p>
-          <Button 
-            asChild
-            className="w-full bg-kbox-coral hover:bg-kbox-orange-dark text-white py-6 rounded-full text-lg shadow-lg"
-          >
-            <Link to="/box-3d">
-              Découvrir notre Box en 3D
-            </Link>
-          </Button>
-        </div>
+          {/* Colonne de droite - Carousel d'images */}
+          <div className="relative">
+            <div className="aspect-[4/3] overflow-hidden rounded-[2rem] shadow-2xl">
+              <Carousel className="w-full h-full">
+                <CarouselContent>
+                  {images.map((image, index) => (
+                    <CarouselItem key={index} className="relative">
+                      <img
+                        src={image.src}
+                        alt={image.alt}
+                        className="object-cover w-full h-full"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+                    </div>
+                  ))}
+                </CarouselContent>
+              </Carousel>
+            </div>
 
-        {/* Navigation Dots */}
-        <div className="flex justify-center space-x-2">
-          <div className="w-8 h-2 rounded-full bg-kbox-coral"></div>
-          <div className="w-2 h-2 rounded-full bg-gray-300"></div>
-          <div className="w-2 h-2 rounded-full bg-gray-300"></div>
+            {/* Badges flottants */}
+            <div className="absolute -bottom-4 left-4 right-4 flex justify-between">
+              <div className="bg-white px-6 py-3 rounded-full shadow-lg">
+                <span className="text-kbox-coral font-medium">Jusqu'à 15 personnes</span>
+              </div>
+              <div className="bg-white px-6 py-3 rounded-full shadow-lg">
+                <span className="text-kbox-coral font-medium">7j/7 de 14h à 2h</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

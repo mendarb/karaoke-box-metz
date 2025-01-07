@@ -10,6 +10,7 @@ export interface SavedBooking {
   group_size: string;
   message?: string;
   is_available?: boolean;
+  cabin: string;
 }
 
 export const useSavedBookings = (isOpen: boolean) => {

@@ -22,8 +22,9 @@ export const SavedBookingsCart = () => {
 
   const handleContinueBooking = async (booking: any) => {
     try {
-      // Vérifier la disponibilité avant de continuer
-      const { data: existingBookings } = await supabase
+      console.log('🔄 Vérification de la disponibilité pour:', booking);
+      
+      const { data: existingBookings, error: checkError } = await supabase
         .from('bookings')
         .select('*')
         .eq('date', booking.date)
@@ -31,6 +32,10 @@ export const SavedBookingsCart = () => {
         .neq('status', 'cancelled')
         .is('deleted_at', null)
         .eq('payment_status', 'paid');
+
+      if (checkError) {
+        throw checkError;
+      }
 
       if (existingBookings && existingBookings.length > 0) {
         toast({
@@ -41,18 +46,29 @@ export const SavedBookingsCart = () => {
         return;
       }
 
-      // Sauvegarder les données de réservation dans sessionStorage
+      // Préparer les données de réservation
       const bookingData = {
-        ...booking,
-        currentStep: 3
+        date: booking.date,
+        time_slot: booking.time_slot,
+        duration: booking.duration,
+        group_size: booking.group_size,
+        message: booking.message || "",
+        currentStep: 3,
+        cabin: booking.cabin || 'metz'
       };
       
-      console.log("📦 Données de réservation sauvegardées:", bookingData);
+      console.log("📦 Données de réservation à sauvegarder:", bookingData);
+      
+      // Sauvegarder dans sessionStorage
       sessionStorage.setItem("savedBooking", JSON.stringify(bookingData));
       
       // Fermer le panier et rediriger
       setIsOpen(false);
-      navigate("/");
+      
+      // Utiliser un petit délai pour s'assurer que le state est mis à jour
+      setTimeout(() => {
+        navigate("/", { replace: true });
+      }, 100);
 
     } catch (error) {
       console.error("❌ Erreur lors de la vérification:", error);

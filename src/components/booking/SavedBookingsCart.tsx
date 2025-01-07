@@ -21,37 +21,54 @@ export const SavedBookingsCart = () => {
   const { savedBookings, isLoading, handleDelete } = useSavedBookings(isOpen);
 
   const handleContinueBooking = async (booking: any) => {
-    // Vérifier la disponibilité avant de continuer
-    const { data: existingBookings } = await supabase
-      .from('bookings')
-      .select('*')
-      .eq('date', booking.date)
-      .eq('time_slot', booking.time_slot)
-      .neq('status', 'cancelled')
-      .is('deleted_at', null)
-      .eq('payment_status', 'paid');
+    try {
+      // Vérifier la disponibilité avant de continuer
+      const { data: existingBookings } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('date', booking.date)
+        .eq('time_slot', booking.time_slot)
+        .neq('status', 'cancelled')
+        .is('deleted_at', null)
+        .eq('payment_status', 'paid');
 
-    if (existingBookings && existingBookings.length > 0) {
+      if (existingBookings && existingBookings.length > 0) {
+        toast({
+          title: "Créneau indisponible",
+          description: "Ce créneau n'est plus disponible",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Sauvegarder les données de réservation dans sessionStorage
+      const bookingData = {
+        ...booking,
+        currentStep: 3
+      };
+      
+      console.log("📦 Données de réservation sauvegardées:", bookingData);
+      sessionStorage.setItem("savedBooking", JSON.stringify(bookingData));
+      
+      // Fermer le panier et rediriger
+      setIsOpen(false);
+      navigate("/");
+
+    } catch (error) {
+      console.error("❌ Erreur lors de la vérification:", error);
       toast({
-        title: "Créneau indisponible",
-        description: "Ce créneau n'est plus disponible",
+        title: "Erreur",
+        description: "Une erreur est survenue. Veuillez réessayer.",
         variant: "destructive",
       });
-      return;
     }
-
-    sessionStorage.setItem("savedBooking", JSON.stringify({
-      ...booking,
-      currentStep: 3
-    }));
-    
-    setIsOpen(false);
-    navigate("/");
   };
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
-      <CartButton count={savedBookings.length} />
+      <SheetTrigger asChild>
+        <CartButton count={savedBookings.length} />
+      </SheetTrigger>
 
       <SheetContent>
         <SheetHeader>

@@ -25,7 +25,8 @@ export const useSavedBookings = (isOpen: boolean) => {
       const { data: bookings, error } = await supabase
         .from("saved_bookings")
         .select("*")
-        .is("deleted_at", null);
+        .is("deleted_at", null)
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('❌ Erreur lors du chargement:', error);

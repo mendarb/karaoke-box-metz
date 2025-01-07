@@ -1,6 +1,5 @@
 import { UseFormReturn } from "react-hook-form";
 import { SearchBar } from "./user-selection/SearchBar";
-import { UserDetails } from "./user-selection/UserDetails";
 import { useState } from "react";
 import { useUserSearch } from "./user-selection/useUserSearch";
 
@@ -27,7 +26,6 @@ export const UserSelection = ({ form, onUserSelected, onSearchStart }: UserSelec
     form.setValue("fullName", user.user_name);
     form.setValue("phone", user.user_phone);
     form.setValue("userId", user.id);
-    setSearchTerm("");
     if (onUserSelected) onUserSelected();
   };
 

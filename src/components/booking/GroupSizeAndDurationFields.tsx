@@ -89,6 +89,7 @@ export const GroupSizeAndDurationFields = ({
             groupSize={groupSize}
             duration={duration}
             price={currentPrice}
+            finalPrice={currentPrice}
             pricePerPersonPerHour={pricePerPerson}
           />
         </div>

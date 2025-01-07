@@ -46,6 +46,7 @@ export const BookingDetails = ({
             groupSize={groupSize}
             duration={duration}
             price={calculatedPrice}
+            finalPrice={calculatedPrice}
             pricePerPersonPerHour={calculatedPrice / (parseInt(groupSize) * parseInt(duration))}
           />
         </div>

@@ -4,6 +4,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useAuthHandlers } from "@/hooks/useAuthHandlers"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { supabase } from "@/lib/supabase"
+import { useToast } from "@/hooks/use-toast"
 
 interface LoginFormProps {
   onToggleMode: () => void;
@@ -16,6 +18,7 @@ export function LoginForm({ onToggleMode, onSuccess }: LoginFormProps) {
   const [showResetPassword, setShowResetPassword] = useState(false)
   const { handleLogin, handleResetPassword, isLoading } = useAuthHandlers()
   const isMobile = useIsMobile()
+  const { toast } = useToast()
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,6 +32,33 @@ export function LoginForm({ onToggleMode, onSuccess }: LoginFormProps) {
       if (success && onSuccess) {
         onSuccess()
       }
+    }
+  }
+
+  const handleGoogleLogin = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      })
+
+      if (error) {
+        console.error("Erreur Google login:", error)
+        toast({
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la connexion avec Google",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Erreur inattendue:", error)
+      toast({
+        title: "Erreur",
+        description: "Une erreur inattendue s'est produite",
+        variant: "destructive",
+      })
     }
   }
 
@@ -89,7 +119,7 @@ export function LoginForm({ onToggleMode, onSuccess }: LoginFormProps) {
           type="button"
           variant="outline"
           className="w-full h-12 text-base rounded-xl border-2 hover:bg-gray-50 transition-all duration-200"
-          onClick={() => {/* TODO: Implement Google login */}}
+          onClick={handleGoogleLogin}
           disabled={isLoading}
         >
           <img src="/google.svg" alt="Google" className="w-5 h-5 mr-3" />

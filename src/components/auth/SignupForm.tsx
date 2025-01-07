@@ -3,6 +3,11 @@ import { Button } from "@/components/ui/button"
 import { useSignupHandler } from "@/hooks/auth/useSignupHandler"
 import { SignupFormFields } from "./signup/SignupFormFields"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { GoogleSignupButton } from "./signup/GoogleSignupButton"
+import { SignupDivider } from "./signup/SignupDivider"
+import { SignupFooter } from "./signup/SignupFooter"
+import { supabase } from "@/lib/supabase"
+import { useToast } from "@/hooks/use-toast"
 
 interface SignupFormProps {
   onToggleMode: () => void;
@@ -16,6 +21,7 @@ export function SignupForm({ onToggleMode, onSuccess }: SignupFormProps) {
   const [phone, setPhone] = useState("")
   const { handleSignup, isLoading } = useSignupHandler()
   const isMobile = useIsMobile()
+  const { toast } = useToast()
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -25,6 +31,33 @@ export function SignupForm({ onToggleMode, onSuccess }: SignupFormProps) {
       onToggleMode()
     } else if (success && onSuccess) {
       onSuccess()
+    }
+  }
+
+  const handleGoogleSignup = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      })
+
+      if (error) {
+        console.error("Erreur Google signup:", error)
+        toast({
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la connexion avec Google",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Erreur inattendue:", error)
+      toast({
+        title: "Erreur",
+        description: "Une erreur inattendue s'est produite",
+        variant: "destructive",
+      })
     }
   }
 
@@ -51,42 +84,19 @@ export function SignupForm({ onToggleMode, onSuccess }: SignupFormProps) {
         {isLoading ? "Chargement..." : "Créer un compte"}
       </Button>
 
-      <div className="relative my-8">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-200"></div>
-        </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="px-4 text-gray-500 bg-white">ou</span>
-        </div>
-      </div>
+      <SignupDivider />
 
       <div className="space-y-4">
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full h-12 text-base rounded-xl border-2 hover:bg-gray-50 transition-all duration-200"
-          onClick={() => {/* TODO: Implement Google signup */}}
-          disabled={isLoading}
-        >
-          <img src="/google.svg" alt="Google" className="w-5 h-5 mr-3" />
-          Continuer avec Google
-        </Button>
+        <GoogleSignupButton 
+          onClick={handleGoogleSignup}
+          isLoading={isLoading}
+        />
       </div>
 
-      <div className="text-center pt-4">
-        <div className="text-sm text-gray-600">
-          Déjà un compte ?{" "}
-          <Button
-            type="button"
-            variant="link"
-            className="text-kbox-coral hover:text-kbox-orange-dark font-medium p-0"
-            onClick={onToggleMode}
-            disabled={isLoading}
-          >
-            Se connecter
-          </Button>
-        </div>
-      </div>
+      <SignupFooter 
+        onToggleMode={onToggleMode}
+        isLoading={isLoading}
+      />
     </form>
   )
 }

@@ -18,18 +18,18 @@ export function LoginFooter({
       <Button
         type="button"
         variant="link"
-        className="text-sm text-gray-600 hover:text-kbox-coral"
+        className="text-sm text-white/80 hover:text-white"
         onClick={() => setShowResetPassword(!showResetPassword)}
         disabled={isLoading}
       >
         {showResetPassword ? "Retour à la connexion" : "Mot de passe oublié ?"}
       </Button>
-      <div className="text-sm text-gray-600">
+      <div className="text-sm text-white/80">
         Pas encore de compte ?{" "}
         <Button
           type="button"
           variant="link"
-          className="text-kbox-coral hover:text-kbox-orange-dark font-medium p-0"
+          className="text-white hover:text-white/90 font-medium p-0"
           onClick={onToggleMode}
           disabled={isLoading}
         >

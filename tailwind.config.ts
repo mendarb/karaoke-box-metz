@@ -24,6 +24,9 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        arvo: ['Arvo', 'serif'],
+      },
       colors: {
         kbox: {
           coral: "#FF5733",

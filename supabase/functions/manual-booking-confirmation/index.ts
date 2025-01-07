@@ -28,6 +28,8 @@ serve(async (req) => {
       throw profileError;
     }
 
+    console.log('📧 Profile récupéré:', profile);
+
     const userName = profile.first_name && profile.last_name 
       ? `${profile.first_name} ${profile.last_name}`
       : 'Client';
@@ -56,6 +58,7 @@ serve(async (req) => {
       .single();
 
     if (bookingError) {
+      console.error('❌ Erreur lors de la création de la réservation:', bookingError);
       throw bookingError;
     }
 
@@ -80,6 +83,7 @@ serve(async (req) => {
     );
 
     if (!emailResponse.ok) {
+      console.error('❌ Erreur lors de l\'envoi de l\'email:', await emailResponse.text());
       throw new Error(await emailResponse.text());
     }
 

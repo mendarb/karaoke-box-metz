@@ -1,18 +1,18 @@
 import { useState } from "react";
 import { UseFormReturn } from "react-hook-form";
-import { supabase } from "@/lib/supabase";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Loader2, Search } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2 } from "lucide-react";
 
 interface UserSelectionProps {
   form: UseFormReturn<any>;
 }
 
 export const UserSelection = ({ form }: UserSelectionProps) => {
-  const [isSearching, setIsSearching] = useState(false);
   const [searchEmail, setSearchEmail] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
   const { toast } = useToast();
 
   const searchUser = async () => {
@@ -37,9 +37,14 @@ export const UserSelection = ({ form }: UserSelectionProps) => {
       if (profileError) throw profileError;
 
       if (profileData) {
-        form.setValue("email", profileData.email || "");
-        form.setValue("fullName", `${profileData.first_name || ""} ${profileData.last_name || ""}`.trim());
-        form.setValue("phone", profileData.phone || "");
+        // Preserve existing form values
+        const currentValues = form.getValues();
+        
+        // Update only user information
+        form.setValue("email", profileData.email || "", { shouldDirty: false });
+        form.setValue("fullName", `${profileData.first_name || ""} ${profileData.last_name || ""}`.trim(), { shouldDirty: false });
+        form.setValue("phone", profileData.phone || "", { shouldDirty: false });
+        
         toast({
           title: "Utilisateur trouvé",
           description: "Les informations ont été remplies automatiquement",
@@ -57,9 +62,14 @@ export const UserSelection = ({ form }: UserSelectionProps) => {
       if (bookingError) throw bookingError;
 
       if (bookingData) {
-        form.setValue("email", bookingData.user_email);
-        form.setValue("fullName", bookingData.user_name);
-        form.setValue("phone", bookingData.user_phone);
+        // Preserve existing form values
+        const currentValues = form.getValues();
+        
+        // Update only user information
+        form.setValue("email", bookingData.user_email, { shouldDirty: false });
+        form.setValue("fullName", bookingData.user_name, { shouldDirty: false });
+        form.setValue("phone", bookingData.user_phone, { shouldDirty: false });
+        
         toast({
           title: "Utilisateur trouvé",
           description: "Les informations ont été remplies automatiquement",
@@ -67,14 +77,15 @@ export const UserSelection = ({ form }: UserSelectionProps) => {
       } else {
         toast({
           title: "Utilisateur non trouvé",
-          description: "Un email sera envoyé pour créer un compte",
+          description: "Aucun utilisateur trouvé avec cet email",
+          variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error searching user:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de rechercher l'utilisateur",
+        description: "Une erreur est survenue lors de la recherche",
         variant: "destructive",
       });
     } finally {
@@ -83,27 +94,29 @@ export const UserSelection = ({ form }: UserSelectionProps) => {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex gap-2">
+    <div className="flex gap-2">
+      <div className="relative flex-1">
+        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
         <Input
+          className="pl-9"
           placeholder="Rechercher un utilisateur par email"
           value={searchEmail}
           onChange={(e) => setSearchEmail(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && searchUser()}
           aria-label="Email de l'utilisateur"
         />
-        <Button 
-          onClick={searchUser}
-          disabled={isSearching || !searchEmail}
-          aria-label={isSearching ? "Recherche en cours..." : "Rechercher l'utilisateur"}
-        >
-          {isSearching ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            "Rechercher"
-          )}
-        </Button>
       </div>
+      <Button 
+        onClick={searchUser}
+        disabled={isSearching || !searchEmail}
+        aria-label={isSearching ? "Recherche en cours..." : "Rechercher l'utilisateur"}
+      >
+        {isSearching ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          "Rechercher"
+        )}
+      </Button>
     </div>
   );
 };

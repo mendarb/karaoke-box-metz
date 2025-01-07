@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 
 const corsHeaders = {
@@ -21,15 +20,15 @@ serve(async (req) => {
       timeSlot: requestBody.timeSlot,
       duration: requestBody.duration,
       groupSize: requestBody.groupSize,
-      price: requestBody.price,
+      originalPrice: requestBody.price,
+      finalPrice: requestBody.finalPrice,
       promoCode: requestBody.promoCode,
       discountAmount: requestBody.discountAmount,
       isTestMode: requestBody.isTestMode,
       userId: requestBody.userId,
-      sendEmail: requestBody.sendEmail
     });
 
-    const price = parseFloat(requestBody.price);
+    const price = parseFloat(requestBody.finalPrice || requestBody.price);
     if (isNaN(price) || price < 0) {
       console.error('❌ Prix invalide:', price);
       throw new Error('Prix invalide');
@@ -50,9 +49,14 @@ serve(async (req) => {
 
     console.log('💳 Création de la session Stripe...');
 
-    // Récupérer l'origine de la requête pour la redirection
     const origin = req.headers.get('origin') || 'https://k-box.fr';
     console.log('🌐 URL d\'origine pour la redirection:', origin);
+
+    // Créer un objet pour la description du produit
+    let description = `${requestBody.groupSize} personnes - ${requestBody.duration}h`;
+    if (requestBody.promoCode) {
+      description += ` (Code promo: ${requestBody.promoCode})`;
+    }
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -62,7 +66,7 @@ serve(async (req) => {
           unit_amount: Math.round(price * 100),
           product_data: {
             name: requestBody.isTestMode ? '[TEST MODE] Karaoké BOX - MB EI' : 'Karaoké BOX - MB EI',
-            description: `${requestBody.groupSize} personnes - ${requestBody.duration}h${requestBody.promoCode ? ` (Code promo: ${requestBody.promoCode})` : ''}`,
+            description: description,
           },
         },
         quantity: 1,
@@ -103,35 +107,38 @@ serve(async (req) => {
       throw new Error('Pas d\'URL de paiement retournée par Stripe');
     }
 
-    // Envoyer l'email de demande de paiement
-    try {
-      await fetch(
-        `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-payment-request`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
-          },
-          body: JSON.stringify({
-            booking: {
-              userEmail: requestBody.userEmail,
-              userName: requestBody.userName,
-              date: requestBody.date,
-              timeSlot: requestBody.timeSlot,
-              duration: requestBody.duration,
-              groupSize: requestBody.groupSize,
-              price: price,
-              promoCode: requestBody.promoCode,
-              message: requestBody.message,
-              paymentUrl: session.url
-            }
-          }),
-        }
-      );
-      console.log('📧 Email de demande de paiement envoyé avec succès');
-    } catch (emailError) {
-      console.error('❌ Erreur lors de l\'envoi de l\'email:', emailError);
+    // Envoyer l'email de demande de paiement seulement si demandé
+    if (requestBody.sendEmail) {
+      try {
+        await fetch(
+          `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-payment-request`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+            },
+            body: JSON.stringify({
+              booking: {
+                userEmail: requestBody.userEmail,
+                userName: requestBody.userName,
+                date: requestBody.date,
+                timeSlot: requestBody.timeSlot,
+                duration: requestBody.duration,
+                groupSize: requestBody.groupSize,
+                price: price,
+                promoCode: requestBody.promoCode,
+                message: requestBody.message,
+                paymentUrl: session.url
+              }
+            }),
+          }
+        );
+        console.log('📧 Email de demande de paiement envoyé avec succès');
+      } catch (emailError) {
+        console.error('❌ Erreur lors de l\'envoi de l\'email:', emailError);
+        // On ne relance pas l'erreur pour ne pas bloquer la création de la session
+      }
     }
 
     return new Response(

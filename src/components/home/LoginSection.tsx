@@ -84,6 +84,13 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
                 <div className="flex items-center p-4 bg-white/10 backdrop-blur-sm rounded-xl">
                   <CreditCard className="w-5 h-5 text-white mr-3" />
                   <div className="text-left">
+                    <p className="text-sm font-medium text-white">Carte bancaire</p>
+                    <p className="text-xs text-white/80">Paiement sécurisé</p>
+                  </div>
+                </div>
+                <div className="flex items-center p-4 bg-white/10 backdrop-blur-sm rounded-xl">
+                  <CircleDollarSign className="w-5 h-5 text-white mr-3" />
+                  <div className="text-left">
                     <p className="text-sm font-medium text-white">Paiement en 3x</p>
                     <p className="text-xs text-white/80">Sans frais avec Klarna</p>
                   </div>

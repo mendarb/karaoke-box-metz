@@ -8,7 +8,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -100,7 +99,7 @@ serve(async (req) => {
         'Authorization': `Bearer ${resendApiKey}`,
       },
       body: JSON.stringify({
-        from: 'Karaoké Box <onboarding@resend.dev>', // Utilisation de l'adresse par défaut de Resend
+        from: 'Karaoké Box <contact@reservation.karaoke-box-metz.fr>',
         to: [booking.userEmail],
         subject: '🎤 Confirmez votre réservation - K-Box',
         html: emailHtml,
@@ -108,29 +107,23 @@ serve(async (req) => {
     });
 
     if (!res.ok) {
-      const errorText = await res.text();
-      console.error('❌ Erreur Resend:', errorText);
-      throw new Error(`Erreur lors de l'envoi de l'email: ${errorText}`);
+      const error = await res.text();
+      console.error('❌ Erreur Resend:', error);
+      throw new Error(`Erreur lors de l'envoi de l'email: ${error}`);
     }
 
     const data = await res.json();
     console.log('✅ Email envoyé avec succès:', data);
 
-    return new Response(
-      JSON.stringify({ success: true, data }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
-    );
+    return new Response(JSON.stringify(data), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200,
+    });
 
   } catch (error) {
     console.error('❌ Erreur dans la fonction send-payment-request:', error);
     return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        details: error.stack 
-      }),
+      JSON.stringify({ error: error.message }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500 

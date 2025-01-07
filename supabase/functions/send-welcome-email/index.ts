@@ -28,7 +28,7 @@ const handler = async (req: Request): Promise<Response> => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "K-Box <no-reply@k-box.fr>",
+        from: "K-Box <contact@reservation.karaoke-box-metz.fr>",
         to: [to],
         subject: "Bienvenue sur K-Box !",
         html: `

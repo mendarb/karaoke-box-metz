@@ -90,7 +90,7 @@ serve(async (req) => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: 'Karaoke Box <onboarding@resend.dev>',
+        from: 'Karaoke Box <contact@reservation.karaoke-box-metz.fr>',
         to: [booking.user_email],
         subject: 'Votre réservation est confirmée ! - Karaoke Box Metz',
         html: emailContent,

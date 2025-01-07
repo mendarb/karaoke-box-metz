@@ -20,12 +20,36 @@ export const useSavedBookings = (isOpen: boolean) => {
   const { toast } = useToast();
   const { user } = useUserState();
 
+  const checkAvailability = async (booking: SavedBooking) => {
+    const { data: existingBookings } = await supabase
+      .from("bookings")
+      .select("*")
+      .eq("date", booking.date)
+      .neq("status", "cancelled")
+      .is("deleted_at", null)
+      .eq("payment_status", "paid");
+
+    const isAvailable = !existingBookings?.some(existingBooking => {
+      const savedStart = parseInt(booking.time_slot);
+      const savedEnd = savedStart + parseInt(booking.duration);
+      const existingStart = parseInt(existingBooking.time_slot);
+      const existingEnd = existingStart + parseInt(existingBooking.duration);
+
+      return (
+        (savedStart >= existingStart && savedStart < existingEnd) ||
+        (savedEnd > existingStart && savedEnd <= existingEnd) ||
+        (savedStart <= existingStart && savedEnd >= existingEnd)
+      );
+    });
+
+    return { ...booking, is_available: isAvailable };
+  };
+
   const loadSavedBookings = async () => {
     if (!user) return;
     
     try {
       setIsLoading(true);
-      console.log('🔄 Chargement des réservations sauvegardées...');
       
       const { data: bookings, error } = await supabase
         .from("saved_bookings")
@@ -34,45 +58,12 @@ export const useSavedBookings = (isOpen: boolean) => {
         .is("deleted_at", null)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('❌ Erreur lors du chargement:', error);
-        throw error;
-      }
+      if (error) throw error;
 
       if (bookings) {
-        console.log('✅ Réservations chargées:', bookings);
-        
-        // Vérifier la disponibilité de chaque réservation
         const bookingsWithAvailability = await Promise.all(
-          bookings.map(async (booking) => {
-            const { data: existingBookings } = await supabase
-              .from("bookings")
-              .select("*")
-              .eq("date", booking.date)
-              .neq("status", "cancelled")
-              .is("deleted_at", null)
-              .eq("payment_status", "paid");
-
-            const isAvailable = !existingBookings?.some(existingBooking => {
-              const savedStart = parseInt(booking.time_slot);
-              const savedEnd = savedStart + parseInt(booking.duration);
-              const existingStart = parseInt(existingBooking.time_slot);
-              const existingEnd = existingStart + parseInt(existingBooking.duration);
-
-              return (
-                (savedStart >= existingStart && savedStart < existingEnd) ||
-                (savedEnd > existingStart && savedEnd <= existingEnd) ||
-                (savedStart <= existingStart && savedEnd >= existingEnd)
-              );
-            });
-
-            return {
-              ...booking,
-              is_available: isAvailable,
-            };
-          })
+          bookings.map(checkAvailability)
         );
-
         setSavedBookings(bookingsWithAvailability);
       }
     } catch (error) {
@@ -95,8 +86,6 @@ export const useSavedBookings = (isOpen: boolean) => {
 
   const handleDelete = async (id: string) => {
     try {
-      console.log('🗑️ Suppression de la réservation:', id);
-      
       const { error } = await supabase
         .from("saved_bookings")
         .update({ deleted_at: new Date().toISOString() })

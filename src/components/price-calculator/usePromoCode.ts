@@ -36,8 +36,8 @@ export const usePromoCode = (
       discountAmount = Math.min(100, promoData.value);
       newPrice = calculatedPrice * (1 - discountAmount / 100);
     } else if (promoData.type === 'fixed_amount' && promoData.value) {
-      discountAmount = Math.min(100, (promoData.value / calculatedPrice) * 100);
-      newPrice = Math.max(0, calculatedPrice - promoData.value);
+      discountAmount = Math.min(calculatedPrice, promoData.value);
+      newPrice = Math.max(0, calculatedPrice - discountAmount);
     }
     
     const roundedPrice = Math.round(newPrice * 100) / 100;

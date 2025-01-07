@@ -5,15 +5,23 @@ interface PriceDisplayProps {
   groupSize: string;
   duration: string;
   price: number;
+  finalPrice: number;
   pricePerPersonPerHour: number;
+  promoCode?: string;
+  isPromoValid?: boolean;
 }
 
 export const PriceDisplay = ({
   groupSize,
   duration,
   price,
-  pricePerPersonPerHour
+  finalPrice,
+  pricePerPersonPerHour,
+  promoCode,
+  isPromoValid
 }: PriceDisplayProps) => {
+  const showDiscount = isPromoValid && finalPrice !== price;
+
   return (
     <Card className="bg-violet-50 border-violet-100">
       <CardContent className="p-4 space-y-2">
@@ -22,7 +30,21 @@ export const PriceDisplay = ({
             <Euro className="h-5 w-5 text-violet-600" />
             <span className="text-sm font-medium text-violet-900">Prix total</span>
           </div>
-          <span className="text-xl font-bold text-violet-900">{price}€</span>
+          <div className="text-right">
+            {showDiscount ? (
+              <>
+                <span className="text-xl font-bold text-violet-900">{finalPrice}€</span>
+                <div className="text-sm text-gray-500 line-through">{price}€</div>
+                {promoCode && (
+                  <div className="text-xs text-green-600">
+                    Code promo {promoCode} appliqué
+                  </div>
+                )}
+              </>
+            ) : (
+              <span className="text-xl font-bold text-violet-900">{price}€</span>
+            )}
+          </div>
         </div>
         
         <div className="text-xs text-violet-600 flex justify-between items-center">

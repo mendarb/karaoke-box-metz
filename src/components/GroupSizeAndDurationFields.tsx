@@ -33,7 +33,9 @@ export const GroupSizeAndDurationFields = ({
 
   const {
     finalPrice,
-    handlePromoValidated
+    handlePromoValidated,
+    isPromoValid,
+    promoData
   } = usePromoCode(currentPrice, form);
 
   const updatePrices = (size: string, dur: string) => {
@@ -101,8 +103,11 @@ export const GroupSizeAndDurationFields = ({
           <PriceDisplay
             groupSize={groupSize}
             duration={duration}
-            price={finalPrice}
+            price={currentPrice}
+            finalPrice={finalPrice}
             pricePerPersonPerHour={pricePerPerson}
+            promoCode={promoData?.code}
+            isPromoValid={isPromoValid}
           />
         </>
       )}

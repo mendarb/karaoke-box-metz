@@ -9,35 +9,34 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface UserSelectionProps {
   form: UseFormReturn<any>;
-  onSearchChange: (value: string) => void;
 }
 
-export const UserSelection = ({ form, onSearchChange }: UserSelectionProps) => {
-  const [searchEmail, setSearchEmail] = useState("");
+export const UserSelection = ({ form }: UserSelectionProps) => {
+  const [searchTerm, setSearchTerm] = useState("");
   const { isSearching, userFound, searchResults, searchUser } = useUserSearch(form);
 
   const handleSearchChange = (value: string) => {
-    setSearchEmail(value);
-    onSearchChange(value);
-  };
-
-  const handleSearch = () => {
-    searchUser(searchEmail);
+    setSearchTerm(value);
+    if (value.length >= 2) {
+      searchUser(value);
+    } else {
+      setSearchTerm("");
+    }
   };
 
   const handleSelectUser = (user: any) => {
     form.setValue("email", user.user_email);
     form.setValue("fullName", user.user_name);
     form.setValue("phone", user.user_phone || "");
+    setSearchTerm("");
   };
 
   return (
     <div className="space-y-4">
       <SearchBar
-        searchEmail={searchEmail}
+        searchEmail={searchTerm}
         isSearching={isSearching}
         onSearchChange={handleSearchChange}
-        onSearch={handleSearch}
       />
 
       {searchResults && searchResults.length > 0 && (

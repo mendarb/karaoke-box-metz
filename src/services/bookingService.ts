@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { Booking } from "@/integrations/supabase/types/booking";
+import { sendPaymentRequestEmail } from "./emailService";
 
 export const generatePaymentLink = async (data: any) => {
   console.log('💰 Début de génération du lien de paiement:', {
@@ -41,6 +42,22 @@ export const generatePaymentLink = async (data: any) => {
     if (!url) {
       console.error('❌ Pas d\'URL de paiement retournée');
       throw new Error('Pas d\'URL de paiement retournée');
+    }
+
+    // Si sendEmail est true, on envoie l'email de demande de paiement
+    if (data.sendEmail) {
+      await sendPaymentRequestEmail({
+        userEmail: data.email,
+        userName: data.fullName,
+        date: data.date,
+        timeSlot: data.timeSlot,
+        duration: data.duration,
+        groupSize: data.groupSize,
+        price: data.finalPrice || data.calculatedPrice,
+        promoCode: data.promoCode,
+        message: data.message,
+        paymentUrl: url
+      });
     }
 
     console.log('✅ Lien de paiement généré avec succès:', {

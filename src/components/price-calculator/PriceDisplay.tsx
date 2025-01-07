@@ -1,5 +1,4 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Euro } from "lucide-react";
+import { Check } from "lucide-react";
 
 interface PriceDisplayProps {
   groupSize: string;
@@ -20,42 +19,45 @@ export const PriceDisplay = ({
   promoCode,
   isPromoValid
 }: PriceDisplayProps) => {
-  const showDiscount = isPromoValid && finalPrice !== price;
+  const hasDiscount = isPromoValid && finalPrice < price;
 
   return (
-    <Card className="bg-violet-50 border-violet-100">
-      <CardContent className="p-4 space-y-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Euro className="h-5 w-5 text-violet-600" />
-            <span className="text-sm font-medium text-violet-900">Prix total</span>
-          </div>
-          <div className="text-right">
-            {showDiscount ? (
-              <>
-                <span className="text-xl font-bold text-violet-900">{finalPrice}€</span>
-                <div className="text-sm text-gray-500 line-through">{price}€</div>
-                {promoCode && (
-                  <div className="text-xs text-green-600">
-                    Code promo {promoCode} appliqué
-                  </div>
-                )}
-              </>
-            ) : (
-              <span className="text-xl font-bold text-violet-900">{price}€</span>
-            )}
-          </div>
+    <div className="rounded-lg border p-4 space-y-2">
+      <div className="flex justify-between items-center">
+        <div>
+          <h3 className="font-semibold">Résumé</h3>
+          <p className="text-sm text-gray-500">
+            {groupSize} {parseInt(groupSize) > 1 ? "personnes" : "personne"} - {duration}h
+          </p>
         </div>
-        
-        <div className="text-xs text-violet-600 flex justify-between items-center">
-          <span>Prix par personne et par heure</span>
-          <span className="font-medium">{pricePerPersonPerHour.toFixed(2)}€</span>
+        <div className="text-right">
+          {hasDiscount ? (
+            <>
+              <p className="text-lg font-bold text-green-600">{finalPrice}€</p>
+              <p className="text-sm text-gray-500 line-through">{price}€</p>
+            </>
+          ) : (
+            <p className="text-lg font-bold">{price}€</p>
+          )}
+          <p className="text-xs text-gray-500">
+            {pricePerPersonPerHour.toFixed(2)}€/personne/heure
+          </p>
         </div>
-        
-        <div className="text-xs text-violet-600/80 pt-1">
-          Pour {groupSize} personne{parseInt(groupSize) > 1 ? 's' : ''}, {duration} heure{parseInt(duration) > 1 ? 's' : ''} de karaoké
+      </div>
+
+      {promoCode && (
+        <div className="flex items-center justify-between pt-2 border-t">
+          <span className="text-sm">
+            Code promo : <span className="font-mono">{promoCode}</span>
+          </span>
+          {isPromoValid && (
+            <span className="text-green-600 flex items-center text-sm">
+              <Check className="w-4 h-4 mr-1" />
+              Appliqué
+            </span>
+          )}
         </div>
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 };

@@ -13,6 +13,7 @@ interface UserSelectionProps {
 export const UserSelection = ({ form }: UserSelectionProps) => {
   const [searchEmail, setSearchEmail] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [userFound, setUserFound] = useState(false);
   const { toast } = useToast();
 
   const searchUser = async () => {
@@ -37,13 +38,10 @@ export const UserSelection = ({ form }: UserSelectionProps) => {
       if (profileError) throw profileError;
 
       if (profileData) {
-        // Preserve existing form values
-        const currentValues = form.getValues();
-        
-        // Update only user information
         form.setValue("email", profileData.email || "", { shouldDirty: false });
         form.setValue("fullName", `${profileData.first_name || ""} ${profileData.last_name || ""}`.trim(), { shouldDirty: false });
         form.setValue("phone", profileData.phone || "", { shouldDirty: false });
+        setUserFound(true);
         
         toast({
           title: "Utilisateur trouvé",
@@ -62,13 +60,10 @@ export const UserSelection = ({ form }: UserSelectionProps) => {
       if (bookingError) throw bookingError;
 
       if (bookingData) {
-        // Preserve existing form values
-        const currentValues = form.getValues();
-        
-        // Update only user information
         form.setValue("email", bookingData.user_email, { shouldDirty: false });
         form.setValue("fullName", bookingData.user_name, { shouldDirty: false });
         form.setValue("phone", bookingData.user_phone, { shouldDirty: false });
+        setUserFound(true);
         
         toast({
           title: "Utilisateur trouvé",
@@ -94,29 +89,60 @@ export const UserSelection = ({ form }: UserSelectionProps) => {
   };
 
   return (
-    <div className="flex gap-2">
-      <div className="relative flex-1">
-        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-        <Input
-          className="pl-9"
-          placeholder="Rechercher un utilisateur par email"
-          value={searchEmail}
-          onChange={(e) => setSearchEmail(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && searchUser()}
-          aria-label="Email de l'utilisateur"
-        />
+    <div className="space-y-4">
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+          <Input
+            className="pl-9"
+            placeholder="Rechercher un utilisateur par email"
+            value={searchEmail}
+            onChange={(e) => setSearchEmail(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && searchUser()}
+            aria-label="Email de l'utilisateur"
+          />
+        </div>
+        <Button 
+          onClick={searchUser}
+          disabled={isSearching || !searchEmail}
+          aria-label={isSearching ? "Recherche en cours..." : "Rechercher l'utilisateur"}
+        >
+          {isSearching ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            "Rechercher"
+          )}
+        </Button>
       </div>
-      <Button 
-        onClick={searchUser}
-        disabled={isSearching || !searchEmail}
-        aria-label={isSearching ? "Recherche en cours..." : "Rechercher l'utilisateur"}
-      >
-        {isSearching ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          "Rechercher"
-        )}
-      </Button>
+
+      {userFound && (
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Email</label>
+            <Input
+              {...form.register("email")}
+              disabled
+              className="bg-gray-50"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Nom complet</label>
+            <Input
+              {...form.register("fullName")}
+              disabled
+              className="bg-gray-50"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Téléphone</label>
+            <Input
+              {...form.register("phone")}
+              disabled
+              className="bg-gray-50"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

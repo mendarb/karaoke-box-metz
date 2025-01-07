@@ -108,37 +108,35 @@ serve(async (req) => {
       throw new Error('Pas d\'URL de paiement retournée par Stripe');
     }
 
-    // Envoyer l'email si demandé
-    if (requestBody.sendEmail) {
-      try {
-        await fetch(
-          `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-booking-email`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
-            },
-            body: JSON.stringify({
-              booking: {
-                user_email: requestBody.userEmail,
-                user_name: requestBody.userName,
-                date: requestBody.date,
-                time_slot: requestBody.timeSlot,
-                duration: requestBody.duration,
-                group_size: requestBody.groupSize,
-                price: requestBody.finalPrice || requestBody.price,
-                message: requestBody.message,
-                payment_url: session.url
-              }
-            }),
-          }
-        );
-        console.log('📧 Email de réservation envoyé avec succès');
-      } catch (emailError) {
-        console.error('❌ Erreur lors de l\'envoi de l\'email:', emailError);
-        // On ne throw pas l'erreur pour ne pas bloquer la création de la réservation
-      }
+    // Envoyer l'email de demande de paiement
+    try {
+      await fetch(
+        `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-payment-request`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+          },
+          body: JSON.stringify({
+            booking: {
+              userEmail: requestBody.userEmail,
+              userName: requestBody.userName,
+              date: requestBody.date,
+              timeSlot: requestBody.timeSlot,
+              duration: requestBody.duration,
+              groupSize: requestBody.groupSize,
+              price: price,
+              promoCode: requestBody.promoCode,
+              message: requestBody.message,
+              paymentUrl: session.url
+            }
+          }),
+        }
+      );
+      console.log('📧 Email de demande de paiement envoyé avec succès');
+    } catch (emailError) {
+      console.error('❌ Erreur lors de l\'envoi de l\'email:', emailError);
     }
 
     return new Response(

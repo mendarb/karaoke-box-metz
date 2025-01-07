@@ -1,11 +1,12 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { useAuthHandlers } from "@/hooks/useAuthHandlers"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { supabase } from "@/lib/supabase"
 import { useToast } from "@/hooks/use-toast"
+import { LoginFormFields } from "./login/LoginFormFields"
+import { GoogleLoginButton } from "./login/GoogleLoginButton"
+import { LoginFooter } from "./login/LoginFooter"
 
 interface LoginFormProps {
   onToggleMode: () => void;
@@ -64,37 +65,14 @@ export function LoginForm({ onToggleMode, onSuccess }: LoginFormProps) {
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="email" className="text-sm font-medium">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            placeholder="votre@email.com"
-            disabled={isLoading}
-            className={`h-12 rounded-xl bg-gray-50 border-gray-200 ${isMobile ? 'text-base' : ''}`}
-          />
-        </div>
-        {!showResetPassword && (
-          <div className="space-y-2">
-            <Label htmlFor="password" className="text-sm font-medium">Mot de passe</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="••••••••"
-              minLength={6}
-              disabled={isLoading}
-              className={`h-12 rounded-xl bg-gray-50 border-gray-200 ${isMobile ? 'text-base' : ''}`}
-            />
-          </div>
-        )}
-      </div>
+      <LoginFormFields
+        email={email}
+        password={password}
+        setEmail={setEmail}
+        setPassword={setPassword}
+        isLoading={isLoading}
+        showResetPassword={showResetPassword}
+      />
 
       <Button 
         type="submit" 
@@ -115,41 +93,15 @@ export function LoginForm({ onToggleMode, onSuccess }: LoginFormProps) {
       </div>
 
       <div className="space-y-4">
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full h-12 text-base rounded-xl border-2 hover:bg-gray-50 transition-all duration-200"
-          onClick={handleGoogleLogin}
-          disabled={isLoading}
-        >
-          <img src="/google.svg" alt="Google" className="w-5 h-5 mr-3" />
-          Continuer avec Google
-        </Button>
+        <GoogleLoginButton onClick={handleGoogleLogin} isLoading={isLoading} />
       </div>
 
-      <div className="flex flex-col space-y-4 text-center pt-4">
-        <Button
-          type="button"
-          variant="link"
-          className="text-sm text-gray-600 hover:text-kbox-coral"
-          onClick={() => setShowResetPassword(!showResetPassword)}
-          disabled={isLoading}
-        >
-          {showResetPassword ? "Retour à la connexion" : "Mot de passe oublié ?"}
-        </Button>
-        <div className="text-sm text-gray-600">
-          Pas encore de compte ?{" "}
-          <Button
-            type="button"
-            variant="link"
-            className="text-kbox-coral hover:text-kbox-orange-dark font-medium p-0"
-            onClick={onToggleMode}
-            disabled={isLoading}
-          >
-            Créer un compte
-          </Button>
-        </div>
-      </div>
+      <LoginFooter
+        showResetPassword={showResetPassword}
+        setShowResetPassword={setShowResetPassword}
+        onToggleMode={onToggleMode}
+        isLoading={isLoading}
+      />
     </form>
   )
 }

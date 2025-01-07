@@ -19,8 +19,6 @@ export const UserSelection = ({ form }: UserSelectionProps) => {
     setSearchTerm(value);
     if (value.length >= 2) {
       searchUser(value);
-    } else {
-      setSearchTerm("");
     }
   };
 

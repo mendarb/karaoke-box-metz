@@ -23,7 +23,7 @@ export const SearchBar = ({
       />
       {isSearching && (
         <div className="absolute right-3 top-1/2 -translate-y-1/2">
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
         </div>
       )}
     </div>

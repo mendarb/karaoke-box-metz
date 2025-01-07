@@ -29,11 +29,6 @@ serve(async (req) => {
       sendEmail: requestBody.sendEmail
     });
 
-    if (!requestBody.userId) {
-      console.error('❌ Pas d\'ID utilisateur fourni');
-      throw new Error('ID utilisateur requis');
-    }
-
     const price = parseFloat(requestBody.price);
     if (isNaN(price) || price < 0) {
       console.error('❌ Prix invalide:', price);
@@ -75,12 +70,12 @@ serve(async (req) => {
       mode: 'payment',
       success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}`,
-      customer_email: requestBody.email,
+      customer_email: requestBody.userEmail,
       metadata: {
         userId: requestBody.userId,
-        userEmail: requestBody.email,
-        userName: requestBody.fullName,
-        userPhone: requestBody.phone,
+        userEmail: requestBody.userEmail,
+        userName: requestBody.userName,
+        userPhone: requestBody.userPhone,
         date: requestBody.date,
         timeSlot: requestBody.timeSlot,
         duration: requestBody.duration,

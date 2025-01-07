@@ -16,21 +16,50 @@ export const UserSelection = ({ form }: UserSelectionProps) => {
   const { toast } = useToast();
 
   const searchUser = async () => {
+    if (!searchEmail.trim()) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez entrer un email",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSearching(true);
     try {
-      const { data, error } = await supabase
+      // First try to find in profiles
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('email', searchEmail.trim())
+        .maybeSingle();
+
+      if (profileError) throw profileError;
+
+      if (profileData) {
+        form.setValue("email", profileData.email || "");
+        form.setValue("fullName", `${profileData.first_name || ""} ${profileData.last_name || ""}`.trim());
+        form.setValue("phone", profileData.phone || "");
+        toast({
+          title: "Utilisateur trouvé",
+          description: "Les informations ont été remplies automatiquement",
+        });
+        return;
+      }
+
+      // If not found in profiles, try bookings
+      const { data: bookingData, error: bookingError } = await supabase
         .from('bookings')
         .select('user_name, user_phone, user_email')
-        .eq('user_email', searchEmail)
-        .limit(1)
-        .single();
+        .eq('user_email', searchEmail.trim())
+        .maybeSingle();
 
-      if (error) throw error;
+      if (bookingError) throw bookingError;
 
-      if (data) {
-        form.setValue("email", data.user_email);
-        form.setValue("fullName", data.user_name);
-        form.setValue("phone", data.user_phone);
+      if (bookingData) {
+        form.setValue("email", bookingData.user_email);
+        form.setValue("fullName", bookingData.user_name);
+        form.setValue("phone", bookingData.user_phone);
         toast({
           title: "Utilisateur trouvé",
           description: "Les informations ont été remplies automatiquement",
@@ -60,10 +89,13 @@ export const UserSelection = ({ form }: UserSelectionProps) => {
           placeholder="Rechercher un utilisateur par email"
           value={searchEmail}
           onChange={(e) => setSearchEmail(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && searchUser()}
+          aria-label="Email de l'utilisateur"
         />
         <Button 
           onClick={searchUser}
           disabled={isSearching || !searchEmail}
+          aria-label={isSearching ? "Recherche en cours..." : "Rechercher l'utilisateur"}
         >
           {isSearching ? (
             <Loader2 className="h-4 w-4 animate-spin" />

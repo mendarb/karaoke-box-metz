@@ -7,6 +7,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Loader2, Search, UserPlus, Users } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ClientSelectionProps {
   form: UseFormReturn<any>;
@@ -15,32 +16,79 @@ interface ClientSelectionProps {
 
 export const ClientSelection = ({ form, onNext }: ClientSelectionProps) => {
   const [isSearching, setIsSearching] = useState(false);
-  const [searchEmail, setSearchEmail] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [existingClients, setExistingClients] = useState<any[]>([]);
   const [mode, setMode] = useState<"search" | "create">("search");
   const { toast } = useToast();
 
   const searchClients = async () => {
+    if (!searchTerm.trim()) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez entrer un terme de recherche",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSearching(true);
     try {
-      const { data, error } = await supabase
+      // Recherche dans les réservations existantes
+      const { data: bookingsData, error: bookingsError } = await supabase
         .from('bookings')
         .select('user_name, user_phone, user_email, user_id')
-        .ilike('user_email', `%${searchEmail}%`)
+        .or(`user_email.ilike.%${searchTerm}%,user_name.ilike.%${searchTerm}%,user_phone.ilike.%${searchTerm}%`)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (bookingsError) throw bookingsError;
 
-      // Dédupliquer les clients par email
-      const uniqueClients = data?.reduce((acc: any[], current) => {
-        const exists = acc.find(client => client.user_email === current.user_email);
-        if (!exists) {
+      // Recherche dans les profils
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, email, first_name, last_name, phone')
+        .or(`email.ilike.%${searchTerm}%,first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%`);
+
+      if (profilesError) throw profilesError;
+
+      // Fusionner et dédupliquer les résultats
+      const bookingClients = bookingsData?.map(booking => ({
+        user_id: booking.user_id,
+        user_email: booking.user_email,
+        user_name: booking.user_name,
+        user_phone: booking.user_phone,
+        source: 'booking'
+      })) || [];
+
+      const profileClients = profilesData?.map(profile => ({
+        user_id: profile.id,
+        user_email: profile.email,
+        user_name: `${profile.first_name || ''} ${profile.last_name || ''}`.trim(),
+        user_phone: profile.phone,
+        source: 'profile'
+      })) || [];
+
+      const allClients = [...bookingClients, ...profileClients];
+      
+      // Dédupliquer par email
+      const uniqueClients = allClients.reduce((acc: any[], current) => {
+        const exists = acc.find(client => 
+          client.user_email === current.user_email || 
+          (client.user_phone && client.user_phone === current.user_phone)
+        );
+        if (!exists && (current.user_email || current.user_phone)) {
           acc.push(current);
         }
         return acc;
       }, []);
 
-      setExistingClients(uniqueClients || []);
+      setExistingClients(uniqueClients);
+
+      if (uniqueClients.length === 0) {
+        toast({
+          title: "Aucun résultat",
+          description: "Aucun client trouvé avec ces critères",
+        });
+      }
     } catch (error) {
       console.error('Error searching clients:', error);
       toast({
@@ -62,7 +110,7 @@ export const ClientSelection = ({ form, onNext }: ClientSelectionProps) => {
   };
 
   const handleCreateNew = () => {
-    form.setValue("email", searchEmail);
+    form.setValue("email", searchTerm);
     form.setValue("fullName", "");
     form.setValue("phone", "");
     form.setValue("userId", null);
@@ -70,7 +118,11 @@ export const ClientSelection = ({ form, onNext }: ClientSelectionProps) => {
   };
 
   const handleSubmitNew = () => {
-    if (!form.getValues("email") || !form.getValues("fullName") || !form.getValues("phone")) {
+    const email = form.getValues("email");
+    const fullName = form.getValues("fullName");
+    const phone = form.getValues("phone");
+
+    if (!email || !fullName || !phone) {
       toast({
         title: "Erreur",
         description: "Veuillez remplir tous les champs",
@@ -78,6 +130,16 @@ export const ClientSelection = ({ form, onNext }: ClientSelectionProps) => {
       });
       return;
     }
+
+    if (!email.includes('@')) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez entrer une adresse email valide",
+        variant: "destructive",
+      });
+      return;
+    }
+
     onNext();
   };
 
@@ -99,6 +161,7 @@ export const ClientSelection = ({ form, onNext }: ClientSelectionProps) => {
               {...form.register("email")}
               type="email"
               required
+              placeholder="email@exemple.com"
             />
           </div>
           
@@ -107,6 +170,7 @@ export const ClientSelection = ({ form, onNext }: ClientSelectionProps) => {
             <Input
               {...form.register("fullName")}
               required
+              placeholder="Jean Dupont"
             />
           </div>
           
@@ -115,6 +179,7 @@ export const ClientSelection = ({ form, onNext }: ClientSelectionProps) => {
             <Input
               {...form.register("phone")}
               required
+              placeholder="06 12 34 56 78"
             />
           </div>
         </div>
@@ -130,14 +195,15 @@ export const ClientSelection = ({ form, onNext }: ClientSelectionProps) => {
     <div className="space-y-4">
       <div className="flex gap-2">
         <Input
-          placeholder="Rechercher un client par email"
-          value={searchEmail}
-          onChange={(e) => setSearchEmail(e.target.value)}
+          placeholder="Rechercher par email, nom ou téléphone"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && searchClients()}
           className="flex-1"
         />
         <Button 
           onClick={searchClients}
-          disabled={isSearching || !searchEmail}
+          disabled={isSearching || !searchTerm}
         >
           {isSearching ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -161,16 +227,18 @@ export const ClientSelection = ({ form, onNext }: ClientSelectionProps) => {
                   <div>
                     <div className="font-medium">{client.user_name}</div>
                     <div className="text-sm text-gray-500">{client.user_email}</div>
-                    <div className="text-sm text-gray-500">{client.user_phone}</div>
+                    {client.user_phone && (
+                      <div className="text-sm text-gray-500">{client.user_phone}</div>
+                    )}
                   </div>
                 </div>
               </Card>
             ))}
           </div>
         </ScrollArea>
-      ) : searchEmail && !isSearching && (
+      ) : searchTerm && !isSearching && (
         <div className="text-center py-4">
-          <p className="text-gray-500 mb-4">Aucun client trouvé avec cet email</p>
+          <p className="text-gray-500 mb-4">Aucun client trouvé</p>
           <Button onClick={handleCreateNew}>
             <UserPlus className="h-4 w-4 mr-2" />
             Créer un nouveau client

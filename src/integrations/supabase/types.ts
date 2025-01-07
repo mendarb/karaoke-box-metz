@@ -113,6 +113,57 @@ export type Database = {
           },
         ]
       }
+      landing_pages: {
+        Row: {
+          content: Json
+          created_at: string
+          deleted_at: string | null
+          description: string
+          id: string
+          image_url: string | null
+          is_published: boolean | null
+          keywords: string[]
+          meta_description: string
+          meta_title: string
+          slug: string
+          template_type: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: Json
+          created_at?: string
+          deleted_at?: string | null
+          description: string
+          id?: string
+          image_url?: string | null
+          is_published?: boolean | null
+          keywords?: string[]
+          meta_description: string
+          meta_title: string
+          slug: string
+          template_type: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          deleted_at?: string | null
+          description?: string
+          id?: string
+          image_url?: string | null
+          is_published?: boolean | null
+          keywords?: string[]
+          meta_description?: string
+          meta_title?: string
+          slug?: string
+          template_type?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       locations: {
         Row: {
           address: string
@@ -236,6 +287,48 @@ export type Database = {
           type?: Database["public"]["Enums"]["promo_code_type"]
           updated_at?: string
           value?: number | null
+        }
+        Relationships: []
+      }
+      saved_bookings: {
+        Row: {
+          cabin: string
+          created_at: string
+          date: string
+          deleted_at: string | null
+          duration: string
+          group_size: string
+          id: string
+          message: string | null
+          time_slot: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cabin?: string
+          created_at?: string
+          date: string
+          deleted_at?: string | null
+          duration: string
+          group_size: string
+          id?: string
+          message?: string | null
+          time_slot: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cabin?: string
+          created_at?: string
+          date?: string
+          deleted_at?: string | null
+          duration?: string
+          group_size?: string
+          id?: string
+          message?: string | null
+          time_slot?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

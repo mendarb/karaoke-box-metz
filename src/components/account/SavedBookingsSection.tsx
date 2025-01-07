@@ -2,61 +2,39 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/ui/use-toast";
-import { Button } from "@/components/ui/button";
-import { Loader2, AlertTriangle } from "lucide-react";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
-import { Card } from "@/components/ui/card";
 import { useUserState } from "@/hooks/useUserState";
+import { SavedBookingCard } from "./saved-bookings/SavedBookingCard";
+import { EmptyState } from "./saved-bookings/EmptyState";
+import { LoadingState } from "./saved-bookings/LoadingState";
+import { useBookingAvailability } from "./saved-bookings/useBookingAvailability";
+import { SavedBooking } from "./saved-bookings/types";
 
 export const SavedBookingsSection = () => {
-  const [savedBookings, setSavedBookings] = useState<any[]>([]);
+  const [savedBookings, setSavedBookings] = useState<SavedBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useUserState();
+  const { checkAvailability } = useBookingAvailability();
 
   useEffect(() => {
-    fetchSavedBookings();
-  }, []);
+    if (user) {
+      fetchSavedBookings();
+    }
+  }, [user]);
 
   const fetchSavedBookings = async () => {
     try {
       const { data, error } = await supabase
         .from('saved_bookings')
         .select('*')
+        .eq('user_id', user?.id)
         .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      // Vérifier la disponibilité pour chaque réservation sauvegardée
-      const bookingsWithAvailability = await Promise.all(
-        data.map(async (booking) => {
-          const { data: existingBookings } = await supabase
-            .from('bookings')
-            .select('*')
-            .eq('date', booking.date)
-            .neq('status', 'cancelled')
-            .is('deleted_at', null);
-
-          const isAvailable = !existingBookings?.some(existingBooking => {
-            const savedStart = parseInt(booking.time_slot);
-            const savedEnd = savedStart + parseInt(booking.duration);
-            const existingStart = parseInt(existingBooking.time_slot);
-            const existingEnd = existingStart + parseInt(existingBooking.duration);
-
-            return (
-              (savedStart >= existingStart && savedStart < existingEnd) ||
-              (savedEnd > existingStart && savedEnd <= existingEnd) ||
-              (savedStart <= existingStart && savedEnd >= existingEnd)
-            );
-          });
-
-          return { ...booking, isAvailable };
-        })
-      );
-
+      const bookingsWithAvailability = await checkAvailability(data);
       setSavedBookings(bookingsWithAvailability);
     } catch (error) {
       console.error('Error fetching saved bookings:', error);
@@ -70,7 +48,7 @@ export const SavedBookingsSection = () => {
     }
   };
 
-  const handleContinueBooking = (booking: any) => {
+  const handleContinueBooking = (booking: SavedBooking) => {
     if (!booking.isAvailable) {
       toast({
         title: "Créneau indisponible",
@@ -80,17 +58,24 @@ export const SavedBookingsSection = () => {
       return;
     }
 
-    // Rediriger vers le formulaire de réservation avec les données pré-remplies
+    const bookingData = {
+      date: booking.date,
+      timeSlot: booking.time_slot,
+      duration: booking.duration,
+      groupSize: booking.group_size,
+      message: booking.message || "",
+      currentStep: 3,
+      cabin: booking.cabin || 'metz'
+    };
+
+    sessionStorage.setItem("savedBooking", JSON.stringify(bookingData));
+
     navigate('/', {
       state: {
-        savedBooking: {
-          date: booking.date,
-          timeSlot: booking.time_slot,
-          duration: booking.duration,
-          groupSize: booking.group_size,
-          message: booking.message,
-        }
-      }
+        savedBooking: bookingData,
+        fromSavedBookings: true
+      },
+      replace: true
     });
   };
 
@@ -108,7 +93,7 @@ export const SavedBookingsSection = () => {
         description: "La réservation sauvegardée a été supprimée",
       });
 
-      fetchSavedBookings();
+      setSavedBookings(prev => prev.filter(booking => booking.id !== id));
     } catch (error) {
       console.error('Error deleting saved booking:', error);
       toast({
@@ -128,19 +113,11 @@ export const SavedBookingsSection = () => {
   }
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
-      </div>
-    );
+    return <LoadingState />;
   }
 
   if (!savedBookings.length) {
-    return (
-      <div className="text-center p-8 text-gray-500">
-        Vous n'avez pas encore de réservations sauvegardées
-      </div>
-    );
+    return <EmptyState />;
   }
 
   return (
@@ -148,44 +125,12 @@ export const SavedBookingsSection = () => {
       <h2 className="text-2xl font-bold">Réservations sauvegardées</h2>
       <div className="grid gap-4">
         {savedBookings.map((booking) => (
-          <Card key={booking.id} className="p-6">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-              <div className="space-y-2">
-                <div className="font-medium">
-                  {format(new Date(booking.date), 'EEEE d MMMM yyyy', { locale: fr })}
-                </div>
-                <div className="text-gray-600">
-                  {booking.time_slot}h - {parseInt(booking.time_slot) + parseInt(booking.duration)}h
-                </div>
-                <div className="text-sm text-gray-500">
-                  {booking.group_size} personnes • {booking.duration}h
-                </div>
-                {!booking.isAvailable && (
-                  <div className="flex items-center text-amber-600 text-sm">
-                    <AlertTriangle className="h-4 w-4 mr-2" />
-                    Ce créneau n'est plus disponible
-                  </div>
-                )}
-              </div>
-              <div className="flex gap-2 w-full md:w-auto">
-                <Button
-                  variant="outline"
-                  className="flex-1 md:flex-none"
-                  onClick={() => handleDelete(booking.id)}
-                >
-                  Supprimer
-                </Button>
-                <Button
-                  variant={booking.isAvailable ? "default" : "secondary"}
-                  className="flex-1 md:flex-none"
-                  onClick={() => handleContinueBooking(booking)}
-                  disabled={!booking.isAvailable}
-                >
-                  {booking.isAvailable ? "Continuer la réservation" : "Créneau indisponible"}
-                </Button>
-              </div>
-            </div>
-          </Card>
+          <SavedBookingCard
+            key={booking.id}
+            booking={booking}
+            onDelete={handleDelete}
+            onContinue={handleContinueBooking}
+          />
         ))}
       </div>
     </div>

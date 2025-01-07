@@ -16,24 +16,28 @@ serve(async (req) => {
     const requestBody = await req.json();
     console.log('📦 Données de réservation reçues:', requestBody);
 
-    if (!requestBody.userId) {
-      throw new Error('ID utilisateur requis');
-    }
-
-    const supabaseAdmin = createClient(
+    // Vérification de l'authentification
+    const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     );
 
-    const { data: profile, error: profileError } = await supabaseAdmin
-      .from('profiles')
-      .select('*')
-      .eq('id', requestBody.userId)
-      .single();
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('Non autorisé: Token manquant');
+    }
 
-    if (profileError || !profile?.email) {
-      console.error('❌ Erreur profil:', { profileError, profile });
-      throw new Error('Erreur lors de la récupération du profil');
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+
+    if (authError || !user) {
+      console.error('❌ Erreur authentification:', authError);
+      throw new Error('Non autorisé: Utilisateur non trouvé');
+    }
+
+    // Vérification des données requises
+    if (!requestBody.userId || !requestBody.date || !requestBody.timeSlot || !requestBody.duration || !requestBody.groupSize) {
+      throw new Error('Données de réservation incomplètes');
     }
 
     const price = parseFloat(requestBody.price);
@@ -70,7 +74,7 @@ serve(async (req) => {
       mode: 'payment',
       success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}`,
-      customer_email: profile.email,
+      customer_email: requestBody.userEmail || user.email,
       payment_method_options: {
         klarna: {
           setup_future_usage: 'none'
@@ -81,9 +85,9 @@ serve(async (req) => {
       },
       metadata: {
         userId: requestBody.userId,
-        userEmail: profile.email,
-        userName: profile.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : '',
-        userPhone: profile.phone || '',
+        userEmail: requestBody.userEmail || user.email,
+        userName: requestBody.userName,
+        userPhone: requestBody.userPhone,
         date: requestBody.date,
         timeSlot: requestBody.timeSlot,
         duration: requestBody.duration,
@@ -122,7 +126,7 @@ serve(async (req) => {
       JSON.stringify({ error: error.message }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
+        status: error.message.includes('Non autorisé') ? 401 : 500,
       }
     );
   }

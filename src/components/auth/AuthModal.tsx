@@ -35,18 +35,18 @@ export function AuthModal({
       `}>
         <div className={`p-0 space-y-6 ${isMobile ? 'h-full' : ''}`}>
           <DialogHeader className="space-y-2 p-6 pb-0">
-            <h1 className="text-2xl font-semibold text-left">
-              {isLogin ? "Login" : "Create an account"}
+            <h1 className="text-2xl font-semibold text-gray-900 text-left">
+              {isLogin ? "Connectez-vous" : "Créez votre compte"}
             </h1>
             <p className="text-base text-gray-500 text-left">
               {isLogin 
-                ? "Don't have an account? "
-                : "Already have an account? "}
+                ? "Pas encore de compte ? "
+                : "Déjà un compte ? "}
               <button
                 onClick={() => setIsLogin(!isLogin)}
-                className="text-[#7F56D9] hover:underline font-medium"
+                className="text-kbox-coral hover:underline font-medium"
               >
-                {isLogin ? "Sign up" : "Login"}
+                {isLogin ? "Créer un compte" : "Se connecter"}
               </button>
             </p>
           </DialogHeader>

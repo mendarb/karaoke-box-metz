@@ -13,7 +13,15 @@ export const useAuthSession = () => {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("Session check error:", error);
+          setSession(null);
+          setIsAuthOpen(true);
+          return;
+        }
+
         setSession(session);
         
         if (!session) {
@@ -32,13 +40,18 @@ export const useAuthSession = () => {
 
     checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event);
-      setSession(session);
+      
+      if (event === 'TOKEN_REFRESHED') {
+        console.log('Token refreshed successfully');
+      }
       
       if (event === 'SIGNED_OUT' || !session) {
+        setSession(null);
         setIsAuthOpen(true);
       } else if (event === 'SIGNED_IN' && session) {
+        setSession(session);
         setIsAuthOpen(false);
       }
       

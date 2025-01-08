@@ -39,7 +39,22 @@ const Index = () => {
       <main className="flex-grow">
         {user ? (
           <div className="container mx-auto px-4 py-8">
-            <BookingForm />
+            <div className="flex flex-col lg:flex-row gap-8 items-start">
+              <div className="w-full lg:w-2/3">
+                <BookingForm />
+              </div>
+              
+              {/* Image column - hidden on mobile */}
+              <div className="hidden lg:block w-1/3 sticky top-8">
+                <div className="aspect-[3/4] rounded-2xl overflow-hidden shadow-xl">
+                  <img 
+                    src="/lovable-uploads/cfa63d4d-3758-45b6-8316-13d7d026d109.png"
+                    alt="Karaoké Box"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">

@@ -31,9 +31,9 @@ export function AuthModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className={`
         sm:max-w-[400px] p-0 gap-0 bg-white
-        ${isMobile ? 'h-[100vh] w-full mt-0 rounded-none' : 'rounded-[24px] border-0 shadow-none'}
+        ${isMobile ? 'h-[95vh] w-full mt-0 rounded-none' : 'rounded-[24px] border-0 shadow-none'}
       `}>
-        <div className={`p-0 space-y-6 ${isMobile ? 'h-full' : ''}`}>
+        <div className={`p-0 space-y-4 ${isMobile ? 'h-full' : ''}`}>
           <DialogHeader className="space-y-2 p-6 pb-0">
             <h1 className="text-2xl font-semibold text-gray-900 text-left">
               {isLogin ? "Connectez-vous" : "Créez votre compte"}

@@ -13,9 +13,9 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
   return (
     <div className="min-h-[90vh] grid md:grid-cols-2">
       {/* Colonne de gauche */}
-      <div className="flex items-center justify-center p-0">
-        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
-          <div className="max-w-md mx-auto w-full">
+      <div className="flex items-center justify-center">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-md mx-auto">
             <Card className="border-0 shadow-none">
               {!user ? (
                 <AuthForm 
@@ -42,7 +42,7 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
         />
         <div className="absolute inset-0 bg-black/60" />
         
-        <div className="relative z-20 h-full flex flex-col justify-center px-16 p-0 pb-4">
+        <div className="relative z-20 h-full flex flex-col justify-center container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="space-y-4">
             {/* En-tête */}
             <div className="space-y-2 mb-6">

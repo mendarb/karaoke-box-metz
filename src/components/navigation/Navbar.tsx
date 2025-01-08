@@ -5,6 +5,7 @@ import { MobileNav } from "./MobileNav";
 import { Logo } from "./Logo";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate, Link } from "react-router-dom";
+import { AdminDashboardButton } from "../admin/AdminDashboardButton";
 
 interface NavbarProps {
   onShowAuth: () => void;
@@ -42,6 +43,7 @@ export const Navbar = ({ onShowAuth }: NavbarProps) => {
           <Link to="/" className="flex items-center">
             <Logo />
           </Link>
+          {isAdmin && <AdminDashboardButton />}
           <DesktopNav
             user={user}
             isAdmin={isAdmin}

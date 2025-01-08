@@ -7,6 +7,7 @@ import { CookieConsent } from "@/components/legal/CookieConsent";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { LoginSection } from "@/components/home/LoginSection";
+import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
 
 const Footer = lazy(() => import("@/components/home/Footer"));
 
@@ -38,6 +39,8 @@ const Index = () => {
       <main className="flex-grow">
         <LoginSection user={user} onShowAuth={() => setShowAuthModal(true)} />
       </main>
+
+      <OnboardingModal />
 
       <Suspense fallback={null}>
         <Footer />

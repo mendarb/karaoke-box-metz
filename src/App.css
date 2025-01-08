@@ -81,3 +81,26 @@
 img {
   content-visibility: auto;
 }
+
+/* Animations du carousel d'onboarding */
+.carousel-slide-enter {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.carousel-slide-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.carousel-slide-exit {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.carousel-slide-exit-active {
+  opacity: 0;
+  transform: translateX(-100%);
+  transition: opacity 300ms, transform 300ms;
+}

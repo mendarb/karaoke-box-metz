@@ -30,38 +30,26 @@ export function SignupFormFields({
   const isMobile = useIsMobile()
   const [showPassword, setShowPassword] = useState(false)
   
-  const inputClassName = `h-12 rounded-xl bg-gray-50/50 border-gray-200 
+  const inputClassName = `h-12 rounded-xl bg-gray-50 border-gray-200 
     ${isMobile ? 'text-base' : ''}`
 
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="fullName" className="text-sm font-medium text-gray-700">Nom complet</Label>
-        <Input
-          id="fullName"
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
-          required
-          placeholder="Jean Dupont"
-          disabled={isLoading}
-          className={inputClassName}
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email</Label>
+        <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email address</Label>
         <Input
           id="email"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          placeholder="votre@email.com"
+          placeholder="Enter your email"
           disabled={isLoading}
           className={inputClassName}
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="password" className="text-sm font-medium text-gray-700">Mot de passe</Label>
+        <Label htmlFor="password" className="text-sm font-medium text-gray-700">Password</Label>
         <div className="relative">
           <Input
             id="password"
@@ -83,18 +71,10 @@ export function SignupFormFields({
           </button>
         </div>
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="phone" className="text-sm font-medium text-gray-700">Téléphone</Label>
-        <Input
-          id="phone"
-          type="tel"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          required
-          placeholder="06 12 34 56 78"
-          disabled={isLoading}
-          className={inputClassName}
-        />
+      <div className="text-right">
+        <button type="button" className="text-sm text-gray-500 hover:text-gray-700">
+          Recovery Password
+        </button>
       </div>
     </div>
   )

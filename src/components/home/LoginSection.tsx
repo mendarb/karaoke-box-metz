@@ -13,8 +13,8 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
   return (
     <div className="min-h-[90vh] grid md:grid-cols-2">
       {/* Colonne de gauche */}
-      <div className="flex items-center justify-center p-0 px-3">
-        <div className="w-full max-w-md">
+      <div className="flex items-center justify-center p-0">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <Card className="border-0 shadow-none">
             {!user ? (
               <AuthForm 

@@ -1,16 +1,16 @@
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { Eye, EyeOff, ChevronDown } from "lucide-react"
+import { Eye, EyeOff, Flag } from "lucide-react"
 import { useState } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const phoneCountryCodes = [
-  { code: "+33", country: "France" },
-  { code: "+32", country: "Belgique" },
-  { code: "+41", country: "Suisse" },
-  { code: "+352", country: "Luxembourg" },
-  { code: "+377", country: "Monaco" },
+  { code: "+33", country: "FR", flag: "🇫🇷" },
+  { code: "+32", country: "BE", flag: "🇧🇪" },
+  { code: "+41", country: "CH", flag: "🇨🇭" },
+  { code: "+352", country: "LU", flag: "🇱🇺" },
+  { code: "+377", country: "MC", flag: "🇲🇨" },
 ]
 
 interface SignupFormFieldsProps {
@@ -41,15 +41,14 @@ export function SignupFormFields({
   const [selectedCountryCode, setSelectedCountryCode] = useState("+33")
 
   const handlePhoneChange = (value: string) => {
-    // Remove any non-digit characters except for the plus sign
     const cleanedValue = value.replace(/[^\d+]/g, '')
     setPhone(cleanedValue)
   }
 
   return (
-    <div className="space-y-3">
-      <div className="space-y-2">
-        <Label htmlFor="fullName" className="text-base font-normal text-gray-700">Nom complet</Label>
+    <div className="space-y-2.5">
+      <div className="space-y-1.5">
+        <Label htmlFor="fullName" className="text-sm font-normal text-gray-700">Nom complet</Label>
         <Input
           id="fullName"
           type="text"
@@ -58,12 +57,12 @@ export function SignupFormFields({
           required
           placeholder="John Doe"
           disabled={isLoading}
-          className={`h-11 rounded-xl bg-gray-50 border-gray-200 ${isMobile ? 'text-base' : ''}`}
+          className="h-11 rounded-xl bg-gray-50 border-gray-200"
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="email" className="text-base font-normal text-gray-700">Email</Label>
+      <div className="space-y-1.5">
+        <Label htmlFor="email" className="text-sm font-normal text-gray-700">Email</Label>
         <Input
           id="email"
           type="email"
@@ -72,24 +71,29 @@ export function SignupFormFields({
           required
           placeholder="votre@email.com"
           disabled={isLoading}
-          className={`h-11 rounded-xl bg-gray-50 border-gray-200 ${isMobile ? 'text-base' : ''}`}
+          className="h-11 rounded-xl bg-gray-50 border-gray-200"
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="phone" className="text-base font-normal text-gray-700">Téléphone</Label>
+      <div className="space-y-1.5">
+        <Label htmlFor="phone" className="text-sm font-normal text-gray-700">Téléphone</Label>
         <div className="flex gap-2">
           <Select
             value={selectedCountryCode}
             onValueChange={setSelectedCountryCode}
           >
-            <SelectTrigger className="w-[140px] h-11 rounded-xl bg-gray-50 border-gray-200">
-              <SelectValue placeholder="Indicatif" />
+            <SelectTrigger className="w-[100px] h-11 rounded-xl bg-gray-50 border-gray-200">
+              <SelectValue>
+                {phoneCountryCodes.find(c => c.code === selectedCountryCode)?.flag}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {phoneCountryCodes.map((country) => (
                 <SelectItem key={country.code} value={country.code}>
-                  {country.country} ({country.code})
+                  <span className="flex items-center gap-2">
+                    <span>{country.flag}</span>
+                    <span>{country.code}</span>
+                  </span>
                 </SelectItem>
               ))}
             </SelectContent>
@@ -102,13 +106,13 @@ export function SignupFormFields({
             required
             placeholder="6 12 34 56 78"
             disabled={isLoading}
-            className={`h-11 rounded-xl bg-gray-50 border-gray-200 flex-1 ${isMobile ? 'text-base' : ''}`}
+            className="h-11 rounded-xl bg-gray-50 border-gray-200 flex-1"
           />
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="password" className="text-base font-normal text-gray-700">Mot de passe</Label>
+      <div className="space-y-1.5">
+        <Label htmlFor="password" className="text-sm font-normal text-gray-700">Mot de passe</Label>
         <div className="relative">
           <Input
             id="password"
@@ -119,12 +123,13 @@ export function SignupFormFields({
             placeholder="••••••••"
             minLength={6}
             disabled={isLoading}
-            className={`h-11 rounded-xl bg-gray-50 border-gray-200 ${isMobile ? 'text-base' : ''} pr-10`}
+            className="h-11 rounded-xl bg-gray-50 border-gray-200 pr-10"
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+            tabIndex={-1}
           >
             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
           </button>

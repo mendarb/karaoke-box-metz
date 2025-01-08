@@ -6,9 +6,8 @@ import { useUserState } from "@/hooks/useUserState";
 import { CookieConsent } from "@/components/legal/CookieConsent";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { LoginSection } from "@/components/home/LoginSection";
 import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
-import { BookingForm } from "@/components/BookingForm";
-import { HeroSection } from "@/components/home/HeroSection";
 
 const Footer = lazy(() => import("@/components/home/Footer"));
 
@@ -38,35 +37,7 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <main className="flex-grow">
-        {user ? (
-          <div className="container mx-auto px-4 py-8">
-            <div className="flex flex-col lg:flex-row gap-8 items-start">
-              <div className="w-full lg:w-2/3">
-                <BookingForm />
-              </div>
-              
-              {/* Image column - hidden on mobile */}
-              <div className="hidden lg:block w-1/3 sticky top-8">
-                <div className="aspect-[3/4] rounded-2xl overflow-hidden shadow-xl">
-                  <img 
-                    src="/lovable-uploads/cfa63d4d-3758-45b6-8316-13d7d026d109.png"
-                    alt="Karaoké Box"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <>
-            <HeroSection />
-            <AuthModal 
-              isOpen={showAuthModal}
-              onClose={() => setShowAuthModal(false)}
-              defaultMode="login"
-            />
-          </>
-        )}
+        <LoginSection user={user} onShowAuth={() => setShowAuthModal(true)} />
       </main>
 
       <OnboardingModal />
@@ -75,6 +46,10 @@ const Index = () => {
         <Footer />
       </Suspense>
 
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)} 
+      />
       <CookieConsent />
     </div>
   );

@@ -24,7 +24,7 @@ export const BookingForm = () => {
         <div className="space-y-3">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Réservez votre session karaoké</h2>
           <p className="text-base sm:text-lg text-gray-600 max-w-md mx-auto">
-            Pour effectuer une réservation et profiter de notre box karaoké, vous devez être connecté à votre compte.
+            Pour profiter de notre box karaoké, connectez-vous à votre compte ou créez-en un nouveau en quelques clics.
           </p>
         </div>
 
@@ -35,7 +35,7 @@ export const BookingForm = () => {
             className="w-full bg-violet-600 hover:bg-violet-700 h-12 sm:h-14 text-base"
           >
             <LogIn className="w-5 h-5 mr-2" />
-            Se connecter
+            Se connecter pour réserver
           </Button>
 
           <Button 
@@ -45,7 +45,7 @@ export const BookingForm = () => {
             className="w-full border-violet-200 hover:bg-violet-50 h-12 sm:h-14 text-base"
           >
             <UserPlus className="w-5 h-5 mr-2" />
-            Créer un compte
+            Créer un compte pour réserver
           </Button>
         </div>
 

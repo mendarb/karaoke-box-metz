@@ -9,7 +9,7 @@ interface LoginSectionProps {
 
 export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
   return (
-    <div className="min-h-[90vh] grid md:grid-cols-2">
+    <div className="min-h-screen grid md:grid-cols-2">
       <LoginColumn user={user} onClose={onShowAuth} />
       <InfoColumn />
     </div>

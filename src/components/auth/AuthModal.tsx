@@ -2,7 +2,6 @@ import { useState, useEffect } from "react"
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
 } from "@/components/ui/dialog"
 import { AuthForm } from "./AuthForm"
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -34,22 +33,6 @@ export function AuthModal({
         ${isMobile ? 'h-[100vh] w-full mt-0 rounded-none' : 'rounded-[24px] border-0 shadow-none'}
       `}>
         <div className={`p-0 h-full flex flex-col`}>
-          <DialogHeader className="space-y-1.5 p-4">
-            <h1 className="text-xl font-semibold text-gray-900 text-left">
-              {isLogin ? "Connectez-vous" : "Créez votre compte"}
-            </h1>
-            <p className="text-sm text-gray-500 text-left">
-              {isLogin 
-                ? "Pas encore de compte ? "
-                : "Déjà un compte ? "}
-              <button
-                onClick={() => setIsLogin(!isLogin)}
-                className="text-kbox-coral hover:underline font-medium"
-              >
-                {isLogin ? "Créer un compte" : "Se connecter"}
-              </button>
-            </p>
-          </DialogHeader>
           <div className="flex-1 overflow-y-auto">
             <AuthForm 
               onClose={onClose}

@@ -22,10 +22,10 @@ export const GroupSizeSelector = ({
   const selectedSize = form.watch("groupSize");
 
   return (
-    <div className="w-full space-y-2">
-      <div className="flex items-center gap-2 mb-1">
+    <div className="w-full">
+      <div className="flex items-center gap-2 mb-3">
         <Users className="h-4 w-4 text-violet-600" />
-        <h2 className="text-base text-gray-900">
+        <h2 className="text-sm font-medium text-gray-700">
           Combien serez-vous ?
         </h2>
       </div>
@@ -36,10 +36,11 @@ export const GroupSizeSelector = ({
             type="button"
             variant={selectedSize === value ? "default" : "outline"}
             className={cn(
-              "relative h-11 font-medium transition-all w-full",
-              selectedSize === value ? "bg-violet-600 hover:bg-violet-700" : "hover:bg-violet-50",
+              "relative h-10 font-medium transition-all w-full",
+              selectedSize === value ? "bg-violet-600 hover:bg-violet-700" : "hover:bg-violet-50 border-gray-200",
               "flex flex-col items-center justify-center text-center",
-              "transform active:scale-[0.98] transition-transform duration-200"
+              "transform active:scale-[0.98] transition-transform duration-200",
+              "rounded-xl"
             )}
             onClick={() => {
               form.setValue("groupSize", value);
@@ -47,9 +48,6 @@ export const GroupSizeSelector = ({
             }}
           >
             <div className="text-sm">{label}</div>
-            <div className="text-xs opacity-75">
-              personnes
-            </div>
           </Button>
         ))}
       </div>

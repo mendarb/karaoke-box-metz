@@ -40,7 +40,7 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
         />
         <div className="absolute inset-0 bg-black/60" />
         
-        <div className="relative z-20 h-full flex flex-col justify-center px-8 py-6">
+        <div className="relative z-20 h-full flex flex-col justify-center px-16 py-4">
           <div className="space-y-4">
             {/* En-tête */}
             <div className="space-y-2 mb-6">
@@ -53,7 +53,7 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
             </div>
 
             {/* Liste des caractéristiques */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="flex items-center space-x-3 group hover:scale-105 transition-transform duration-200">
                 <Home className="w-5 h-5 text-white/90 group-hover:rotate-6 transition-transform duration-200" />
                 <div>

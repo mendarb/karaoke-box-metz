@@ -9,7 +9,7 @@ interface DesktopNavProps {
   onShowAuth: () => void;
 }
 
-export const DesktopNav = ({ user, isAdmin, onSignOut, onShowAuth }: DesktopNavProps) => {
+export const DesktopNav = ({ user, onShowAuth }: DesktopNavProps) => {
   return (
     <div className="hidden md:flex items-center gap-4">
       {user ? (
@@ -19,7 +19,7 @@ export const DesktopNav = ({ user, isAdmin, onSignOut, onShowAuth }: DesktopNavP
               Réserver
             </Button>
           </Link>
-          <UserNav onSignOut={onSignOut} isAdmin={isAdmin} />
+          <UserNav />
         </div>
       ) : (
         <Button

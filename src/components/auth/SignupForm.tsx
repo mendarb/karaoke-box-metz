@@ -1,8 +1,6 @@
 import { useState } from "react"
 import { useSignupHandler } from "@/hooks/auth/useSignupHandler"
 import { SignupFormFields } from "./signup/SignupFormFields"
-import { SignupDivider } from "./signup/SignupDivider"
-import { SignupFooter } from "./signup/SignupFooter"
 import { SignupButtons } from "./signup/SignupButtons"
 import { supabase } from "@/lib/supabase"
 import { useToast } from "@/hooks/use-toast"
@@ -59,7 +57,7 @@ export function SignupForm({ onToggleMode, onSuccess }: SignupFormProps) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
+    <form onSubmit={onSubmit} className="space-y-6 px-4 py-6">
       <SignupFormFields
         email={email}
         setEmail={setEmail}
@@ -75,13 +73,6 @@ export function SignupForm({ onToggleMode, onSuccess }: SignupFormProps) {
       <SignupButtons 
         isLoading={isLoading}
         handleGoogleSignup={handleGoogleSignup}
-      />
-
-      <SignupDivider />
-
-      <SignupFooter 
-        onToggleMode={onToggleMode}
-        isLoading={isLoading}
       />
     </form>
   )

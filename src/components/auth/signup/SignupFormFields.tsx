@@ -6,8 +6,8 @@ import { useState } from "react"
 
 interface SignupFormFieldsProps {
   email: string;
-  setEmail: (value: string) => void;
   password: string;
+  setEmail: (value: string) => void;
   setPassword: (value: string) => void;
   fullName: string;
   setFullName: (value: string) => void;
@@ -29,27 +29,53 @@ export function SignupFormFields({
 }: SignupFormFieldsProps) {
   const isMobile = useIsMobile()
   const [showPassword, setShowPassword] = useState(false)
-  
-  const inputClassName = `h-12 rounded-xl bg-gray-50 border-gray-200 
-    ${isMobile ? 'text-base' : ''}`
 
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email address</Label>
+        <Label htmlFor="fullName" className="text-base font-normal text-gray-700">Nom complet</Label>
+        <Input
+          id="fullName"
+          type="text"
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+          required
+          placeholder="John Doe"
+          disabled={isLoading}
+          className={`h-12 rounded-xl bg-gray-50 border-gray-200 ${isMobile ? 'text-base' : ''}`}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="email" className="text-base font-normal text-gray-700">Email</Label>
         <Input
           id="email"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          placeholder="Enter your email"
+          placeholder="votre@email.com"
           disabled={isLoading}
-          className={inputClassName}
+          className={`h-12 rounded-xl bg-gray-50 border-gray-200 ${isMobile ? 'text-base' : ''}`}
         />
       </div>
+
       <div className="space-y-2">
-        <Label htmlFor="password" className="text-sm font-medium text-gray-700">Password</Label>
+        <Label htmlFor="phone" className="text-base font-normal text-gray-700">Téléphone</Label>
+        <Input
+          id="phone"
+          type="tel"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          required
+          placeholder="+33 6 12 34 56 78"
+          disabled={isLoading}
+          className={`h-12 rounded-xl bg-gray-50 border-gray-200 ${isMobile ? 'text-base' : ''}`}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="password" className="text-base font-normal text-gray-700">Mot de passe</Label>
         <div className="relative">
           <Input
             id="password"
@@ -60,7 +86,7 @@ export function SignupFormFields({
             placeholder="••••••••"
             minLength={6}
             disabled={isLoading}
-            className={inputClassName}
+            className={`h-12 rounded-xl bg-gray-50 border-gray-200 ${isMobile ? 'text-base' : ''} pr-10`}
           />
           <button
             type="button"
@@ -71,11 +97,6 @@ export function SignupFormFields({
           </button>
         </div>
       </div>
-      <div className="text-right">
-        <button type="button" className="text-sm text-gray-500 hover:text-gray-700">
-          Recovery Password
-        </button>
-      </div>
     </div>
-  )
+  );
 }

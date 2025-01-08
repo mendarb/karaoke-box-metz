@@ -40,8 +40,8 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
         />
         <div className="absolute inset-0 bg-black/60" /> {/* Overlay sombre */}
         
-        <div className="relative z-20 h-full flex flex-col justify-center p-12 text-white">
-          <div className="space-y-8">
+        <div className="relative z-20 h-full flex flex-col justify-center p-6 text-white">
+          <div className="space-y-6">
             {/* En-tête */}
             <div className="space-y-4">
               <h1 className="text-3xl font-bold">

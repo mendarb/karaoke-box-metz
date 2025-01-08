@@ -17,7 +17,7 @@ export const useBookedSlots = (selectedDate: Date | null) => {
         .eq('date', formattedDate)
         .neq('status', 'cancelled')
         .is('deleted_at', null)
-        .eq('payment_status', 'paid');  // Modifié ici : is.paid -> eq.paid
+        .eq('payment_status', 'paid');  // Changed from is.paid to eq.paid
 
       if (error) {
         console.error('❌ Erreur lors du chargement des créneaux réservés:', error);
@@ -38,6 +38,6 @@ export const useBookedSlots = (selectedDate: Date | null) => {
     },
     enabled: !!selectedDate,
     staleTime: 30000,
-    gcTime: 300000, // Remplace cacheTime
+    gcTime: 300000,
   });
 };

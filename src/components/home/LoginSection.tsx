@@ -13,7 +13,7 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
   return (
     <div className="min-h-screen grid md:grid-cols-2">
       {/* Colonne de gauche */}
-      <div className="flex items-center justify-center p-3">
+      <div className="flex items-center justify-center pt-0 p-3">
         <div className="w-full max-w-md">
           <Card className="border-0 shadow-none">
             {!user ? (
@@ -40,7 +40,7 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
         />
         <div className="absolute inset-0 bg-black/60" />
         
-        <div className="relative z-20 h-full flex flex-col justify-center px-16 py-4">
+        <div className="relative z-20 h-full flex flex-col justify-center px-16 pt-0 pb-4">
           <div className="space-y-4">
             {/* En-tête */}
             <div className="space-y-2 mb-6">

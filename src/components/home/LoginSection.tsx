@@ -14,18 +14,20 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
     <div className="min-h-[90vh] grid md:grid-cols-2">
       {/* Colonne de gauche */}
       <div className="flex items-center justify-center p-0">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <Card className="border-0 shadow-none">
-            {!user ? (
-              <AuthForm 
-                onClose={() => {}} 
-                isLogin={true}
-                onToggleMode={onShowAuth}
-              />
-            ) : (
-              <BookingForm />
-            )}
-          </Card>
+        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
+          <div className="max-w-md mx-auto w-full">
+            <Card className="border-0 shadow-none">
+              {!user ? (
+                <AuthForm 
+                  onClose={() => {}} 
+                  isLogin={true}
+                  onToggleMode={onShowAuth}
+                />
+              ) : (
+                <BookingForm />
+              )}
+            </Card>
+          </div>
         </div>
       </div>
 

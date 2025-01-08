@@ -30,7 +30,16 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
       </div>
 
       {/* Colonne de droite */}
-      <div className="relative hidden md:block bg-[#ec6342]">
+      <div className="relative hidden md:block">
+        {/* Background image with overlay */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center" 
+          style={{ 
+            backgroundImage: 'url("/lovable-uploads/827450dc-c0dd-41bb-a327-eacaeda8445b.png")',
+          }}
+        />
+        <div className="absolute inset-0 bg-black/60" /> {/* Overlay sombre */}
+        
         <div className="relative z-20 h-full flex flex-col justify-center p-12 text-white">
           <div className="space-y-8">
             {/* En-tête */}
@@ -70,7 +79,7 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
                 <Users className="w-5 h-5 text-white/90 group-hover:rotate-6 transition-transform duration-200" />
                 <div>
                   <span className="font-medium">Entre Amis</span>
-                  <p className="text-sm text-white/80">Capacité jusqu'à 10 personnes</p>
+                  <p className="text-sm text-white/80">Capacité jusqu'à 15 personnes</p>
                 </div>
               </div>
             </div>
@@ -79,28 +88,28 @@ export const LoginSection = ({ user, onShowAuth }: LoginSectionProps) => {
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Moyens de paiement acceptés</h3>
               <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center p-4 bg-white/10 backdrop-blur-sm rounded-xl hover:bg-white/20 transition-colors duration-200">
+                <div className="flex items-center p-4 bg-black/20 backdrop-blur-sm rounded-xl hover:bg-black/30 transition-colors duration-200">
                   <CreditCard className="w-5 h-5 text-white mr-3" />
                   <div className="text-left">
                     <p className="text-sm font-medium text-white">Carte bancaire</p>
                     <p className="text-xs text-white/80">Paiement sécurisé</p>
                   </div>
                 </div>
-                <div className="flex items-center p-4 bg-white/10 backdrop-blur-sm rounded-xl hover:bg-white/20 transition-colors duration-200">
+                <div className="flex items-center p-4 bg-black/20 backdrop-blur-sm rounded-xl hover:bg-black/30 transition-colors duration-200">
                   <CreditCard className="w-5 h-5 text-white mr-3" />
                   <div className="text-left">
                     <p className="text-sm font-medium text-white">Apple Pay</p>
                     <p className="text-xs text-white/80">Paiement sécurisé</p>
                   </div>
                 </div>
-                <div className="flex items-center p-4 bg-white/10 backdrop-blur-sm rounded-xl hover:bg-white/20 transition-colors duration-200">
+                <div className="flex items-center p-4 bg-black/20 backdrop-blur-sm rounded-xl hover:bg-black/30 transition-colors duration-200">
                   <CreditCard className="w-5 h-5 text-white mr-3" />
                   <div className="text-left">
                     <p className="text-sm font-medium text-white">Paiement en 3x</p>
                     <p className="text-xs text-white/80">Sans frais avec Klarna</p>
                   </div>
                 </div>
-                <div className="flex items-center p-4 bg-white/10 backdrop-blur-sm rounded-xl hover:bg-white/20 transition-colors duration-200">
+                <div className="flex items-center p-4 bg-black/20 backdrop-blur-sm rounded-xl hover:bg-black/30 transition-colors duration-200">
                   <CircleDollarSign className="w-5 h-5 text-white mr-3" />
                   <div className="text-left">
                     <p className="text-sm font-medium text-white">PayPal</p>

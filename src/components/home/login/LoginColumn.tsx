@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { AuthForm } from "@/components/auth/AuthForm";
+import { User } from "@supabase/supabase-js";
 
 interface LoginColumnProps {
   user: User | null;
@@ -20,15 +21,11 @@ export const LoginColumn = ({ user, onClose }: LoginColumnProps) => {
                 Pas encore de compte ? Créez-en un en quelques clics.
               </p>
             </div>
-            {!user ? (
-              <AuthForm 
-                onClose={onClose} 
-                isLogin={true}
-                onToggleMode={() => {}}
-              />
-            ) : (
-              <BookingForm />
-            )}
+            <AuthForm 
+              onClose={onClose} 
+              isLogin={true}
+              onToggleMode={() => {}}
+            />
           </Card>
         </div>
       </div>

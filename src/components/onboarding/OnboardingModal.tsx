@@ -100,7 +100,7 @@ export const OnboardingModal = () => {
                   Précédent
                 </Button>
               ) : (
-                <div /> {/* Spacer */}
+                <div /> // Spacer
               )}
 
               {currentSlide < slides.length - 1 ? (

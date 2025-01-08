@@ -1,7 +1,7 @@
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { Eye, EyeOff, Flag } from "lucide-react"
+import { Eye, EyeOff } from "lucide-react"
 import { useState } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
@@ -82,7 +82,7 @@ export function SignupFormFields({
             value={selectedCountryCode}
             onValueChange={setSelectedCountryCode}
           >
-            <SelectTrigger className="w-[100px] h-11 rounded-xl bg-gray-50 border-gray-200">
+            <SelectTrigger className="w-[70px] h-11 rounded-xl bg-gray-50 border-gray-200">
               <SelectValue>
                 {phoneCountryCodes.find(c => c.code === selectedCountryCode)?.flag}
               </SelectValue>

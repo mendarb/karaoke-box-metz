@@ -64,7 +64,7 @@ export function LoginForm({ onToggleMode, onSuccess }: LoginFormProps) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
+    <form onSubmit={onSubmit} className="space-y-6 px-4 py-6">
       <LoginFormFields
         email={email}
         password={password}
@@ -83,7 +83,7 @@ export function LoginForm({ onToggleMode, onSuccess }: LoginFormProps) {
         {isLoading ? "Chargement..." : (showResetPassword ? "Réinitialiser le mot de passe" : "Se connecter")}
       </Button>
 
-      <div className="relative my-8">
+      <div className="relative my-6">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-gray-200"></div>
         </div>

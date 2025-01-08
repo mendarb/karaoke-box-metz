@@ -10,7 +10,7 @@ export function GoogleLoginButton({ onClick, isLoading }: GoogleLoginButtonProps
     <Button
       type="button"
       variant="outline"
-      className="w-full h-12 text-base rounded-xl border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-all duration-200"
+      className="w-full h-12 text-base rounded-xl border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-all duration-200 font-normal"
       onClick={onClick}
       disabled={isLoading}
     >

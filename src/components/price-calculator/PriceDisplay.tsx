@@ -1,4 +1,4 @@
-import { Check } from "lucide-react";
+import { formatPrice } from "@/utils/priceCalculations";
 
 interface PriceDisplayProps {
   groupSize: string;
@@ -19,45 +19,33 @@ export const PriceDisplay = ({
   promoCode,
   isPromoValid
 }: PriceDisplayProps) => {
-  const hasDiscount = isPromoValid && finalPrice < price;
-
   return (
-    <div className="rounded-lg border p-4 space-y-2">
-      <div className="flex justify-between items-center">
-        <div>
-          <h3 className="font-semibold">Résumé</h3>
-          <p className="text-sm text-gray-500">
-            {groupSize} {parseInt(groupSize) > 1 ? "personnes" : "personne"} - {duration}h
-          </p>
-        </div>
-        <div className="text-right">
-          {hasDiscount ? (
-            <>
-              <p className="text-lg font-bold text-green-600">{finalPrice}€</p>
-              <p className="text-sm text-gray-500 line-through">{price}€</p>
-            </>
-          ) : (
-            <p className="text-lg font-bold">{price}€</p>
-          )}
-          <p className="text-xs text-gray-500">
-            {pricePerPersonPerHour.toFixed(2)}€/personne/heure
-          </p>
+    <div className="space-y-2">
+      <h3 className="text-base font-medium">Résumé</h3>
+      <div className="text-sm text-gray-600">
+        {groupSize} personnes - {duration}h
+      </div>
+      
+      <div className="space-y-1">
+        {promoCode && isPromoValid && (
+          <>
+            <div className="text-lg font-semibold line-through text-gray-400">
+              {formatPrice(price)}
+            </div>
+            <div className="text-lg font-semibold text-green-600">
+              {formatPrice(finalPrice)}
+            </div>
+          </>
+        )}
+        {(!promoCode || !isPromoValid) && (
+          <div className="text-lg font-semibold">
+            {formatPrice(finalPrice)}
+          </div>
+        )}
+        <div className="text-sm text-gray-500">
+          {formatPrice(pricePerPersonPerHour)}/personne/heure
         </div>
       </div>
-
-      {promoCode && (
-        <div className="flex items-center justify-between pt-2 border-t">
-          <span className="text-sm">
-            Code promo : <span className="font-mono uppercase">{promoCode}</span>
-          </span>
-          {isPromoValid && (
-            <span className="text-green-600 flex items-center text-sm">
-              <Check className="w-4 h-4 mr-1" />
-              Appliqué
-            </span>
-          )}
-        </div>
-      )}
     </div>
   );
 };

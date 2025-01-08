@@ -6,7 +6,7 @@ interface PersonalInfoFieldsProps {
   form: UseFormReturn<any>;
 }
 
-const PersonalInfoFields = ({ form }: PersonalInfoFieldsProps) => {
+export const PersonalInfoFields = ({ form }: PersonalInfoFieldsProps) => {
   return (
     <div className="space-y-4 animate-fadeIn">
       <FormField
@@ -65,5 +65,3 @@ const PersonalInfoFields = ({ form }: PersonalInfoFieldsProps) => {
     </div>
   );
 };
-
-export default PersonalInfoFields;

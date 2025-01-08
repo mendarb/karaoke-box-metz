@@ -71,6 +71,13 @@ const App = () => {
               <GoogleVerification />
               <div className="flex flex-col min-h-screen">
                 <Navbar onShowAuth={() => setShowAuthModal(true)} />
+                <div className="bg-kbox-coral text-white py-2 overflow-hidden whitespace-nowrap">
+                  <div className="animate-[slideIn_20s_linear_infinite]">
+                    <p className="inline-block">
+                      🎉 Ouverture le 17 janvier ! Profitez de -10% sur votre réservation avec le code OUVERTURE 🎉
+                    </p>
+                  </div>
+                </div>
                 <main className="flex-grow">
                   <AppRoutes />
                 </main>

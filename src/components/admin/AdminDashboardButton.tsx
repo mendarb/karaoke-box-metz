@@ -9,11 +9,11 @@ export const AdminDashboardButton = () => {
   if (!isAdmin) return null;
 
   return (
-    <div className="mb-6 flex justify-end">
+    <div className="mb-6">
       <Button
         onClick={() => navigate("/admin")}
         variant="outline"
-        className="mb-4"
+        className="w-full md:w-auto"
       >
         Accéder au tableau de bord
       </Button>

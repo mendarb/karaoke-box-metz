@@ -4,6 +4,7 @@ import { SignupFormFields } from "./signup/SignupFormFields"
 import { SignupButtons } from "./signup/SignupButtons"
 import { supabase } from "@/lib/supabase"
 import { useToast } from "@/hooks/use-toast"
+import { Button } from "../ui/button"
 
 interface SignupFormProps {
   onToggleMode: () => void;
@@ -58,6 +59,24 @@ export function SignupForm({ onToggleMode, onSuccess }: SignupFormProps) {
 
   return (
     <form onSubmit={onSubmit} className="space-y-6 px-4 py-6">
+      <div className="space-y-2 text-left">
+        <h1 className="text-xl font-semibold text-gray-900">
+          Créez votre compte
+        </h1>
+        <p className="text-sm text-gray-500">
+          Déjà un compte ?{" "}
+          <Button
+            type="button"
+            variant="link"
+            className="text-kbox-coral hover:text-kbox-orange-dark font-normal p-0"
+            onClick={onToggleMode}
+            disabled={isLoading}
+          >
+            Se connecter
+          </Button>
+        </p>
+      </div>
+
       <SignupFormFields
         email={email}
         setEmail={setEmail}

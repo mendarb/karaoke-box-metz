@@ -67,3 +67,7 @@ export const formatPriceDescription = (
   }
   return description;
 };
+
+export const formatPrice = (price: number): string => {
+  return `${price.toFixed(2)}€`;
+};

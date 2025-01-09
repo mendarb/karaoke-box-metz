@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 
 export const AnnouncementBanner = () => {
   const [isVisible, setIsVisible] = useState(true);

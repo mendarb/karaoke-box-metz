@@ -39,29 +39,53 @@ export const HeroSection = () => {
             </Link>
           </Button>
           
-          <div className="flex items-center justify-center md:justify-start gap-3 text-white/90">
-  <span className="text-sm">Paiements acceptés :</span>
-  <div className="flex gap-3 items-center">
-    {/* Logo Carte bancaire */}
-    <img
-      src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg"
-      alt="Carte bancaire"
-      className="w-6 h-6"
-    />
+          <div className="flex flex-col items-center md:items-start gap-3 text-white/90">
+  <span className="text-sm font-semibold">Paiements acceptés :</span>
+  <div className="grid grid-cols-2 gap-4">
+    {/* Logo Visa */}
+    <div className="flex items-center justify-center bg-white/10 rounded-lg p-2">
+      <img
+        src="/lovable-uploads/visa.png"
+        alt="Visa"
+        className="w-12 h-12 object-contain"
+      />
+    </div>
 
-    {/* Logo Paiement en plusieurs fois */}
-    <img
-      src="https://upload.wikimedia.org/wikipedia/commons/5/5e/MasterCard_Logo.svg"
-      alt="Paiement en plusieurs fois"
-      className="w-6 h-6"
-    />
+    {/* Logo MasterCard */}
+    <div className="flex items-center justify-center bg-white/10 rounded-lg p-2">
+      <img
+        src="/lovable-uploads/mastercard.png"
+        alt="MasterCard"
+        className="w-12 h-12 object-contain"
+      />
+    </div>
 
-    {/* Logo Apple Pay */}
-    <img
-      src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Apple_Pay_logo.svg"
-      alt="Apple Pay"
-      className="w-6 h-6"
-    />
+    {/* Logo PayPal */}
+    <div className="flex items-center justify-center bg-white/10 rounded-lg p-2">
+      <img
+        src="/lovable-uploads/paypal.png"
+        alt="PayPal"
+        className="w-12 h-12 object-contain"
+      />
+    </div>
+
+    {/* Logo Klarna */}
+    <div className="flex items-center justify-center bg-white/10 rounded-lg p-2">
+      <img
+        src="/lovable-uploads/klarna.png"
+        alt="Klarna"
+        className="w-12 h-12 object-contain"
+      />
+    </div>
+
+    {/* Logo Stripe */}
+    <div className="flex items-center justify-center bg-white/10 rounded-lg p-2">
+      <img
+        src="/lovable-uploads/stripe.png"
+        alt="Stripe"
+        className="w-12 h-12 object-contain"
+      />
+    </div>
   </div>
 </div>
         </div>

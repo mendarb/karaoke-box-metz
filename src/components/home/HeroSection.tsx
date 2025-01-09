@@ -55,7 +55,7 @@ export const HeroSection = () => {
     <img
       src="/lovable-uploads/paypal.svg"
       alt="PayPal"
-      class="w-16 h-12 object-contain opacity-80 hover:opacity-100  transition-opacity duration-300"
+      class="w-16 h-10 object-contain opacity-80 hover:opacity-100  transition-opacity duration-300"
     />
     <img
       src="/lovable-uploads/klarna.svg"

@@ -12,6 +12,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { SupportButton } from "@/components/support/SupportButton";
 import { Navbar } from "@/components/navigation/Navbar";
 import { AuthModal } from "@/components/auth/AuthModal";
+import { AnnouncementBanner } from "@/components/announcements/AnnouncementBanner";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -70,6 +71,7 @@ const App = () => {
             <Suspense fallback={<LoadingSpinner fullScreen />}>
               <GoogleVerification />
               <div className="flex flex-col min-h-screen">
+                <AnnouncementBanner />
                 <Navbar onShowAuth={() => setShowAuthModal(true)} />
                 <main className="flex-grow">
                   <AppRoutes />

@@ -43,27 +43,27 @@ export const HeroSection = () => {
   <span class="text-sm font-semibold">Paiements acceptés</span>
   <div class="w-full grid grid-cols-3 gap-4">
     <img
-      src="/lovable-uploads/visa.png"
+      src="/lovable-uploads/visa.svg"
       alt="Visa"
       class="w-full h-full object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
     />
     <img
-      src="/lovable-uploads/mastercard.png"
+      src="/lovable-uploads/mastercard.svg"
       alt="MasterCard"
       class="w-full h-full object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
     />
     <img
-      src="/lovable-uploads/paypal.png"
+      src="/lovable-uploads/paypal.svg"
       alt="PayPal"
       class="w-full h-full object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
     />
     <img
-      src="/lovable-uploads/klarna.png"
+      src="/lovable-uploads/klarna.svg"
       alt="Klarna"
       class="w-full h-full object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
     />
     <img
-      src="/lovable-uploads/stripe.png"
+      src="/lovable-uploads/stripe.svg"
       alt="Stripe"
       class="w-full h-full object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
     />

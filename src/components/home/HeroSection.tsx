@@ -39,17 +39,29 @@ export const HeroSection = () => {
             </Link>
           </Button>
           
-          <div class="flex items-center justify-center md:justify-start gap-3 text-white/90">
-  <span class="text-sm">Paiements acceptés :</span>
-  <div class="flex gap-3 items-center">
-    <!-- Logo Carte bancaire -->
-    <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg" alt="Carte bancaire" class="w-6 h-6" />
-    
-    <!-- Logo Paiement en plusieurs fois -->
-    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/MasterCard_Logo.svg" alt="Paiement en plusieurs fois" class="w-6 h-6" />
-    
-    <!-- Logo Apple Pay -->
-    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Apple_Pay_logo.svg" alt="Apple Pay" class="w-6 h-6" />
+          <div className="flex items-center justify-center md:justify-start gap-3 text-white/90">
+  <span className="text-sm">Paiements acceptés :</span>
+  <div className="flex gap-3 items-center">
+    {/* Logo Carte bancaire */}
+    <img
+      src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg"
+      alt="Carte bancaire"
+      className="w-6 h-6"
+    />
+
+    {/* Logo Paiement en plusieurs fois */}
+    <img
+      src="https://upload.wikimedia.org/wikipedia/commons/5/5e/MasterCard_Logo.svg"
+      alt="Paiement en plusieurs fois"
+      className="w-6 h-6"
+    />
+
+    {/* Logo Apple Pay */}
+    <img
+      src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Apple_Pay_logo.svg"
+      alt="Apple Pay"
+      className="w-6 h-6"
+    />
   </div>
 </div>
         </div>

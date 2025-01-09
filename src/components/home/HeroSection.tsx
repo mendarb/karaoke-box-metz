@@ -40,7 +40,7 @@ export const HeroSection = () => {
 
           <div className="flex flex-col items-center md:items-start gap-3 text-white/90">
             <span className="text-sm font-semibold">Paiements acceptés</span>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 items-center">
+            <div className="grid grid-cols-5 md:grid-cols-5 gap-4 items-center">
               <img
                 src="/lovable-uploads/visa.svg"
                 alt="Visa"

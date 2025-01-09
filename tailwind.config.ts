@@ -24,9 +24,6 @@ export default {
       },
     },
     extend: {
-      fontFamily: {
-        serif: ['"DM Serif Text"', 'serif'],
-      },
       colors: {
         kbox: {
           coral: "#FF5733",

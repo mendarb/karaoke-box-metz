@@ -85,40 +85,30 @@ export const GroupSizeAndDurationFields = ({
   }, [groupSize, duration, settings]);
 
   return (
-    <div className="space-y-4">
-      <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-        <GroupSizeSelector 
-          form={form} 
-          onGroupSizeChange={handleGroupSizeChange} 
-        />
-      </div>
-      
-      <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-        <DurationSelector 
-          form={form} 
-          onDurationChange={handleDurationChange}
-          availableHours={availableHours}
-        />
-      </div>
-
+    <div className="space-y-6">
+      <GroupSizeSelector 
+        form={form} 
+        onGroupSizeChange={handleGroupSizeChange} 
+      />
+      <DurationSelector 
+        form={form} 
+        onDurationChange={handleDurationChange}
+        availableHours={availableHours}
+      />
       {groupSize && duration && currentPrice > 0 && (
         <>
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <PromoCodeField
-              onPromoValidated={handlePromoValidated}
-            />
-          </div>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-            <PriceDisplay
-              groupSize={groupSize}
-              duration={duration}
-              price={currentPrice}
-              finalPrice={finalPrice}
-              pricePerPersonPerHour={pricePerPerson}
-              promoCode={promoData?.code}
-              isPromoValid={isPromoValid}
-            />
-          </div>
+          <PromoCodeField
+            onPromoValidated={handlePromoValidated}
+          />
+          <PriceDisplay
+            groupSize={groupSize}
+            duration={duration}
+            price={currentPrice}
+            finalPrice={finalPrice}
+            pricePerPersonPerHour={pricePerPerson}
+            promoCode={promoData?.code}
+            isPromoValid={isPromoValid}
+          />
         </>
       )}
     </div>

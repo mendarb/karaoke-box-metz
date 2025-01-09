@@ -1,5 +1,5 @@
 import { UseFormReturn } from "react-hook-form";
-import PersonalInfoFields from "./PersonalInfoFields";
+import { PersonalInfoFields } from "./PersonalInfoFields";
 import { DateTimeFields } from "./DateTimeFields";
 import { GroupSizeAndDurationFields } from "./GroupSizeAndDurationFields";
 import { AdditionalFields } from "./AdditionalFields";

@@ -1,46 +1,41 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog"
 import { AuthForm } from "./AuthForm"
-import { useIsMobile } from "@/hooks/use-mobile"
-
-interface AuthModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  defaultMode?: 'login' | 'signup';
-}
 
 export function AuthModal({
   isOpen,
   onClose,
-  defaultMode = 'login'
-}: AuthModalProps) {
-  const [isLogin, setIsLogin] = useState(defaultMode === 'login');
-  const isMobile = useIsMobile();
-
-  useEffect(() => {
-    if (isOpen) {
-      setIsLogin(defaultMode === 'login');
-    }
-  }, [isOpen, defaultMode]);
+}: {
+  isOpen: boolean
+  onClose: () => void
+}) {
+  const [isLogin, setIsLogin] = useState(true)
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={`
-        sm:max-w-[400px] p-0 gap-0 bg-white
-        ${isMobile ? 'h-[100vh] w-full mt-0 rounded-none' : 'rounded-[24px] border-0 shadow-none'}
-      `}>
-        <div className={`p-0 h-full flex flex-col`}>
-          <div className="flex-1 overflow-y-auto">
-            <AuthForm 
-              onClose={onClose}
-              isLogin={isLogin}
-              onToggleMode={() => setIsLogin(!isLogin)}
-            />
-          </div>
-        </div>
+      <DialogContent className="sm:max-w-[400px] p-6">
+        <DialogHeader className="space-y-3">
+          <DialogTitle className="text-xl">
+            {isLogin ? "Connexion" : "Créer un compte"}
+          </DialogTitle>
+          <DialogDescription className="text-sm text-gray-600">
+            {isLogin 
+              ? "Connectez-vous à votre compte pour réserver"
+              : "Créez un compte pour réserver votre box"
+            }
+          </DialogDescription>
+        </DialogHeader>
+        <AuthForm 
+          onClose={onClose}
+          isLogin={isLogin}
+          onToggleMode={() => setIsLogin(!isLogin)}
+        />
       </DialogContent>
     </Dialog>
   )

@@ -1,41 +1,54 @@
-import { useNavigate } from "react-router-dom";
-import { useUserState } from "@/hooks/useUserState";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import { User } from "lucide-react";
 
-export const UserNav = () => {
+interface UserNavProps {
+  onSignOut: () => Promise<void>;
+  isAdmin: boolean;
+}
+
+export const UserNav = ({ onSignOut, isAdmin }: UserNavProps) => {
   const navigate = useNavigate();
-  const { isAdmin } = useUserState();
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-          <User className="h-5 w-5" />
+        <Button 
+          variant="outline" 
+          className="relative w-8 h-8 rounded-full border-gray-300 hover:bg-gray-100 p-0"
+        >
+          <User className="h-4 w-4 text-gray-700" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end">
-        <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => navigate("/my-bookings")}>
+      <DropdownMenuContent className="w-56" align="end" forceMount>
+        <DropdownMenuItem onClick={() => navigate('/my-bookings')}>
           Mes réservations
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate("/account")}>
-          Paramètres
+        <DropdownMenuItem onClick={() => navigate('/account')}>
+          Mon compte
         </DropdownMenuItem>
         {isAdmin && (
-          <DropdownMenuItem onClick={() => navigate("/admin")}>
-            Administration
-          </DropdownMenuItem>
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => navigate('/admin')}>
+              Administration
+            </DropdownMenuItem>
+          </>
         )}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem 
+          onClick={onSignOut} 
+          className="text-red-600 focus:bg-red-50 focus:text-red-600"
+        >
+          Déconnexion
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -19,9 +19,9 @@ export const BookingFormActions = ({
           type="button"
           variant="outline"
           onClick={onPrevious}
-          className="flex items-center gap-2 hover:bg-gray-100 transition-all duration-200 group"
+          className="flex items-center gap-2 hover:bg-gray-100"
         >
-          <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+          <ArrowLeft className="w-4 h-4" />
           Précédent
         </Button>
       ) : (
@@ -30,14 +30,14 @@ export const BookingFormActions = ({
       <Button
         type="submit"
         disabled={isSubmitting}
-        className="bg-[#ec6342] hover:bg-[#d55538] text-white flex items-center gap-2 px-6 py-2 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-100"
+        className="bg-violet-600 hover:bg-violet-700 text-white flex items-center gap-2 px-6 py-2 rounded-lg transition-colors duration-200"
       >
         {isSubmitting ? (
           "Chargement..."
         ) : currentStep < 4 ? (
           <>
             Suivant
-            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            <ArrowRight className="w-4 h-4" />
           </>
         ) : (
           "Confirmer et payer"

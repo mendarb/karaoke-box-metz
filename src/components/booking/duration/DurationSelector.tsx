@@ -26,17 +26,20 @@ export const DurationSelector = ({
   const filteredDurations = durations.filter(d => Number(d.value) <= availableHours);
 
   return (
-    <div className="w-full">
-      <div className="flex items-center gap-2 mb-3">
-        <Clock className="h-4 w-4 text-violet-600" />
-        <h2 className="text-sm font-medium text-gray-700">
+    <div className="w-full space-y-4">
+      <div className="flex items-center gap-2">
+        <Clock className="h-5 w-5 text-violet-600" />
+        <h2 className="text-lg md:text-xl text-gray-900">
           Quelle durée souhaitez-vous ?
         </h2>
       </div>
+      <p className="text-sm text-gray-600">
+        Choisissez la durée de votre session
+      </p>
       
       {availableHours < 4 && (
-        <Alert variant="warning" className="py-1.5 mb-2 border-none bg-amber-50">
-          <AlertTriangle className="h-3 w-3" />
+        <Alert variant="warning" className="py-2 border-none bg-amber-50">
+          <AlertTriangle className="h-4 w-4" />
           <AlertDescription className="text-xs">
             Certaines durées ne sont pas disponibles pour ce créneau
           </AlertDescription>
@@ -50,18 +53,20 @@ export const DurationSelector = ({
             type="button"
             variant={selectedDuration === value ? "default" : "outline"}
             className={cn(
-              "relative h-10 font-medium transition-all w-full",
-              selectedDuration === value ? "bg-violet-600 hover:bg-violet-700" : "hover:bg-violet-50 border-gray-200",
+              "relative h-14 md:h-16 font-medium transition-all w-full",
+              selectedDuration === value ? "bg-violet-600 hover:bg-violet-700" : "hover:bg-violet-50",
               "flex flex-col items-center justify-center text-center",
-              "transform active:scale-[0.98] transition-transform duration-200",
-              "rounded-xl"
+              "transform active:scale-[0.98] transition-transform duration-200"
             )}
             onClick={() => {
               form.setValue("duration", value);
               onDurationChange(value);
             }}
           >
-            <div className="text-sm">{label}</div>
+            <div className="text-base">{label}</div>
+            <div className="text-xs opacity-75">
+              de karaoké
+            </div>
           </Button>
         ))}
       </div>

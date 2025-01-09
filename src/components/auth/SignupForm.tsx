@@ -1,10 +1,9 @@
 import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { useSignupHandler } from "@/hooks/auth/useSignupHandler"
 import { SignupFormFields } from "./signup/SignupFormFields"
-import { SignupButtons } from "./signup/SignupButtons"
-import { supabase } from "@/lib/supabase"
-import { useToast } from "@/hooks/use-toast"
-import { Button } from "../ui/button"
 
 interface SignupFormProps {
   onToggleMode: () => void;
@@ -17,7 +16,6 @@ export function SignupForm({ onToggleMode, onSuccess }: SignupFormProps) {
   const [fullName, setFullName] = useState("")
   const [phone, setPhone] = useState("")
   const { handleSignup, isLoading } = useSignupHandler()
-  const { toast } = useToast()
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -30,53 +28,8 @@ export function SignupForm({ onToggleMode, onSuccess }: SignupFormProps) {
     }
   }
 
-  const handleGoogleSignup = async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`
-        }
-      })
-
-      if (error) {
-        console.error("Erreur Google signup:", error)
-        toast({
-          title: "Erreur",
-          description: "Une erreur est survenue lors de la connexion avec Google",
-          variant: "destructive",
-        })
-      }
-    } catch (error) {
-      console.error("Erreur inattendue:", error)
-      toast({
-        title: "Erreur",
-        description: "Une erreur inattendue s'est produite",
-        variant: "destructive",
-      })
-    }
-  }
-
   return (
-    <form onSubmit={onSubmit} className="space-y-6 px-4 py-6">
-      <div className="space-y-2 text-left">
-        <h1 className="text-xl font-semibold text-gray-900">
-          Créez votre compte
-        </h1>
-        <p className="text-sm text-gray-500">
-          Déjà un compte ?{" "}
-          <Button
-            type="button"
-            variant="link"
-            className="text-kbox-coral hover:text-kbox-orange-dark font-normal p-0"
-            onClick={onToggleMode}
-            disabled={isLoading}
-          >
-            Se connecter
-          </Button>
-        </p>
-      </div>
-
+    <form onSubmit={onSubmit} className="space-y-4 pt-4">
       <SignupFormFields
         email={email}
         setEmail={setEmail}
@@ -88,11 +41,18 @@ export function SignupForm({ onToggleMode, onSuccess }: SignupFormProps) {
         setPhone={setPhone}
         isLoading={isLoading}
       />
-
-      <SignupButtons 
-        isLoading={isLoading}
-        handleGoogleSignup={handleGoogleSignup}
-      />
+      <Button type="submit" className="w-full" disabled={isLoading}>
+        {isLoading ? "Chargement..." : "S'inscrire"}
+      </Button>
+      <Button
+        type="button"
+        variant="link"
+        className="w-full"
+        onClick={onToggleMode}
+        disabled={isLoading}
+      >
+        Déjà un compte ? Se connecter
+      </Button>
     </form>
   )
 }

@@ -28,15 +28,6 @@
   }
 }
 
-@keyframes slideIn {
-  0% {
-    transform: translateX(100%);
-  }
-  100% {
-    transform: translateX(-100%);
-  }
-}
-
 @media (prefers-reduced-motion: no-preference) {
   a:nth-of-type(2) .logo {
     animation: logo-spin infinite 20s linear;
@@ -61,15 +52,6 @@
   .card {
     padding: 1em;
   }
-
-  /* Styles spécifiques pour les modales sur mobile */
-  [data-radix-popper-content-wrapper] {
-    position: fixed !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    transform: none !important;
-  }
 }
 
 /* Optimisations de performance */
@@ -80,27 +62,4 @@
 
 img {
   content-visibility: auto;
-}
-
-/* Animations du carousel d'onboarding */
-.carousel-slide-enter {
-  opacity: 0;
-  transform: translateX(100%);
-}
-
-.carousel-slide-enter-active {
-  opacity: 1;
-  transform: translateX(0);
-  transition: opacity 300ms, transform 300ms;
-}
-
-.carousel-slide-exit {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-.carousel-slide-exit-active {
-  opacity: 0;
-  transform: translateX(-100%);
-  transition: opacity 300ms, transform 300ms;
 }

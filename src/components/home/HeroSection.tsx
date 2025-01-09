@@ -13,7 +13,7 @@ export const HeroSection = () => {
       }}
     >
       {/* Overlay sombre */}
-      <div className="absolute inset-0 bg-black/40" />
+      <div className="absolute inset-0 bg-black/60" />
       
       <div className="relative z-10 md:text-left text-center space-y-4 max-w-3xl mx-auto px-6 md:px-8">
         <div className="space-y-1">
@@ -41,51 +41,41 @@ export const HeroSection = () => {
           
           <div className="flex flex-col items-center md:items-start gap-3 text-white/90">
   <span className="text-sm font-semibold">Paiements acceptés :</span>
-  <div className="grid grid-cols-2 gap-4">
+  <div className="grid grid-cols-3 gap-4">
     {/* Logo Visa */}
-    <div className="flex items-center justify-center bg-white/10 rounded-lg p-2">
-      <img
-        src="/lovable-uploads/visa.png"
-        alt="Visa"
-        className="w-12 h-12 object-contain"
-      />
-    </div>
+    <img
+      src="/lovable-uploads/visa.png"
+      alt="Visa"
+      className="w-12 h-12 object-contain"
+    />
 
     {/* Logo MasterCard */}
-    <div className="flex items-center justify-center bg-white/10 rounded-lg p-2">
-      <img
-        src="/lovable-uploads/mastercard.png"
-        alt="MasterCard"
-        className="w-12 h-12 object-contain"
-      />
-    </div>
+    <img
+      src="/lovable-uploads/mastercard.png"
+      alt="MasterCard"
+      className="w-12 h-12 object-contain"
+    />
 
     {/* Logo PayPal */}
-    <div className="flex items-center justify-center bg-white/10 rounded-lg p-2">
-      <img
-        src="/lovable-uploads/paypal.png"
-        alt="PayPal"
-        className="w-12 h-12 object-contain"
-      />
-    </div>
+    <img
+      src="/lovable-uploads/paypal.png"
+      alt="PayPal"
+      className="w-12 h-12 object-contain"
+    />
 
     {/* Logo Klarna */}
-    <div className="flex items-center justify-center bg-white/10 rounded-lg p-2">
-      <img
-        src="/lovable-uploads/klarna.png"
-        alt="Klarna"
-        className="w-12 h-12 object-contain"
-      />
-    </div>
+    <img
+      src="/lovable-uploads/klarna.png"
+      alt="Klarna"
+      className="w-12 h-12 object-contain"
+    />
 
     {/* Logo Stripe */}
-    <div className="flex items-center justify-center bg-white/10 rounded-lg p-2">
-      <img
-        src="/lovable-uploads/stripe.png"
-        alt="Stripe"
-        className="w-12 h-12 object-contain"
-      />
-    </div>
+    <img
+      src="/lovable-uploads/stripe.png"
+      alt="Stripe"
+      className="w-12 h-12 object-contain"
+    />
   </div>
 </div>
         </div>

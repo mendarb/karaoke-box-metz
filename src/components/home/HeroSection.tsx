@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { CreditCard, Paypal } from "lucide-react";
+import { CreditCard, Wallet } from "lucide-react";
 
 export const HeroSection = () => {
   return (
@@ -43,7 +43,7 @@ export const HeroSection = () => {
             <span className="text-sm">Paiements acceptés:</span>
             <div className="flex gap-2">
               <CreditCard className="w-6 h-6" />
-              <Paypal className="w-6 h-6" />
+              <Wallet className="w-6 h-6" />
             </div>
           </div>
         </div>

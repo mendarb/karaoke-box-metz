@@ -28,7 +28,7 @@ export const BookingForm = () => {
       <div className="flex flex-col items-center justify-center space-y-4 p-8 text-center">
         <h2 className="text-2xl font-semibold">Connectez-vous pour réserver</h2>
         <p className="text-gray-600">
-          Pour effectuer une réservation et profiter de notre box karaoké, vous devez être connecté à votre compte.
+          Pour effectuer une réservation et profiter de notre box karaoké, vous devez être connecté à votre compte. Vous pouvez vous connecter rapidement avec Google ou créer un compte.
         </p>
         <div className="flex flex-col gap-2 w-full max-w-xs">
           <Button 

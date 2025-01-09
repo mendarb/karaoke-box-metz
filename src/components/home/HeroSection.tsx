@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { CreditCard, Apple, Wallet } from "lucide-react";
 
 export const HeroSection = () => {
   return (
@@ -41,11 +42,9 @@ export const HeroSection = () => {
           <div className="flex items-center justify-center md:justify-start gap-3 text-white/90">
             <span className="text-sm">Paiements acceptés:</span>
             <div className="flex gap-3 items-center">
-              <img src="/lovable-uploads/85294882-1624-4fa6-a2d0-09d415c43674.png" alt="Visa" className="h-6" />
-              <img src="/lovable-uploads/b4b03af7-d741-46f7-a7f3-e927b989289f.png" alt="Mastercard" className="h-6" />
-              <img src="/lovable-uploads/ca07e869-5579-405d-a730-cbd5aeb68818.png" alt="PayPal" className="h-6" />
-              <img src="/lovable-uploads/cfa63d4d-3758-45b6-8316-13d7d026d109.png" alt="Klarna" className="h-6" />
-              <img src="/lovable-uploads/d45fd1b9-de1b-40a3-ae6b-4072948883a6.png" alt="Apple Pay" className="h-6" />
+              <CreditCard className="w-6 h-6" aria-label="Carte bancaire" />
+              <Wallet className="w-6 h-6" aria-label="Paiement en plusieurs fois" />
+              <Apple className="w-6 h-6" aria-label="Apple Pay" />
             </div>
           </div>
         </div>

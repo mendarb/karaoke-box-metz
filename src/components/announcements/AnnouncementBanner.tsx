@@ -8,10 +8,7 @@ export const AnnouncementBanner = () => {
   return (
     <div className="bg-kbox-orange text-white overflow-hidden py-2 relative">
       <div className="flex items-center justify-center">
-        <div className="animate-[marquee_20s_linear_infinite] whitespace-nowrap flex items-center gap-8">
-          <span className="text-sm font-medium">
-            🎉 Ouverture le 17 janvier ! Utilisez le code <span className="font-bold">OUVERTURE</span> pour bénéficier de -10% sur votre réservation
-          </span>
+        <div className="animate-[marquee_20s_linear_infinite] whitespace-nowrap">
           <span className="text-sm font-medium">
             🎉 Ouverture le 17 janvier ! Utilisez le code <span className="font-bold">OUVERTURE</span> pour bénéficier de -10% sur votre réservation
           </span>

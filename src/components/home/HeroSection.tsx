@@ -45,27 +45,27 @@ export const HeroSection = () => {
     <img
       src="/lovable-uploads/visa.svg"
       alt="Visa"
-      class="w-full h-full object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
+      class="w-20 h-auto object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
     />
     <img
       src="/lovable-uploads/mastercard.svg"
       alt="MasterCard"
-      class="w-full h-full object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
+      class="w-20 h-auto object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
     />
     <img
       src="/lovable-uploads/paypal.svg"
       alt="PayPal"
-      class="w-full h-full object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
+      class="w-20 h-auto object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
     />
     <img
       src="/lovable-uploads/klarna.svg"
       alt="Klarna"
-      class="w-full h-full object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
+      class="w-20 h-auto object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
     />
     <img
       src="/lovable-uploads/stripe.svg"
       alt="Stripe"
-      class="w-full h-full object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
+      class="w-20 h-auto object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
     />
   </div>
 </div>

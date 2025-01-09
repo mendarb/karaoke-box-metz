@@ -13,20 +13,20 @@ export const HeroSection = () => {
       }}
     >
       {/* Overlay sombre */}
-      <div className="absolute inset-0 bg-black/60" />
+      <div className="absolute inset-0 bg-black/80" />
       
       <div className="relative z-10 md:text-left text-center space-y-4 max-w-3xl mx-auto px-6 md:px-8">
         <div className="space-y-1">
           <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold flex flex-col items-center md:items-start gap-1.5">
             <span className="bg-white/20 text-white px-3 py-1 rounded-full text-sm md:text-base mb-1.5">METZ</span>
-            <span>Découvrez K.Box</span>
+            <span>Karaoké BOX</span>
           </h1>
           <p className="text-lg md:text-xl lg:text-2xl font-medium text-white/90">
-            La première box karaoké privative
+            La première box karaoké privative de Metz
           </p>
         </div>
         <p className="text-base md:text-lg">
-          Une expérience unique pour chanter en toute intimité
+          profitez d'une expérience unique pour chanter en toute intimité
         </p>
         <div className="flex flex-col gap-4">
           <Button 
@@ -39,42 +39,33 @@ export const HeroSection = () => {
             </Link>
           </Button>
           
-          <div className="flex flex-col items-center md:items-start gap-3 text-white/90">
-  <span className="text-sm font-semibold">Paiements acceptés :</span>
-  <div className="grid grid-cols-3 gap-4">
-    {/* Logo Visa */}
+          <div class="flex flex-col items-center md:items-start gap-3 text-white/90">
+  <span class="text-sm font-semibold">Paiements acceptés</span>
+  <div class="w-full grid grid-cols-3 gap-4">
     <img
       src="/lovable-uploads/visa.png"
       alt="Visa"
-      className="w-12 h-12 object-contain"
+      class="w-full h-full object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
     />
-
-    {/* Logo MasterCard */}
     <img
       src="/lovable-uploads/mastercard.png"
       alt="MasterCard"
-      className="w-12 h-12 object-contain"
+      class="w-full h-full object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
     />
-
-    {/* Logo PayPal */}
     <img
       src="/lovable-uploads/paypal.png"
       alt="PayPal"
-      className="w-12 h-12 object-contain"
+      class="w-full h-full object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
     />
-
-    {/* Logo Klarna */}
     <img
       src="/lovable-uploads/klarna.png"
       alt="Klarna"
-      className="w-12 h-12 object-contain"
+      class="w-full h-full object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
     />
-
-    {/* Logo Stripe */}
     <img
       src="/lovable-uploads/stripe.png"
       alt="Stripe"
-      className="w-12 h-12 object-contain"
+      class="w-full h-full object-contain opacity-50 hover:opacity-100 transition-opacity duration-300"
     />
   </div>
 </div>

@@ -41,7 +41,7 @@ export const HeroSection = () => {
           
           <div class="flex flex-col items-center md:items-start gap-3 text-white/90">
   <span class="text-sm font-semibold">Paiements acceptés</span>
-  <div class="w-full grid grid-cols-3 gap-4">
+  <div class="w-full grid grid-cols-3 gap-4 items-center">
     <img
       src="/lovable-uploads/visa.svg"
       alt="Visa"
@@ -55,7 +55,7 @@ export const HeroSection = () => {
     <img
       src="/lovable-uploads/paypal.svg"
       alt="PayPal"
-      class="w-16 h-16 object-contain opacity-80 hover:opacity-100  transition-opacity duration-300"
+      class="w-16 h-12 object-contain opacity-80 hover:opacity-100  transition-opacity duration-300"
     />
     <img
       src="/lovable-uploads/klarna.svg"

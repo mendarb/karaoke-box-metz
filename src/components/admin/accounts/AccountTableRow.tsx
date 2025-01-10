@@ -49,27 +49,27 @@ export const AccountTableRow = ({ profile }: AccountTableRowProps) => {
 
   return (
     <TableRow key={profile.id}>
-      <TableCell className="font-medium">
-        <div className="truncate max-w-[180px]">
+      <TableCell className="py-2">
+        <div className="truncate max-w-[140px]">
           {displayName()}
         </div>
       </TableCell>
-      <TableCell>
-        <div className="space-y-1">
+      <TableCell className="py-2">
+        <div className="space-y-0.5">
           {profile.email && (
-            <div className="flex items-center gap-2 text-sm">
-              <Mail className="h-4 w-4 text-gray-500 shrink-0" />
+            <div className="flex items-center gap-1.5 text-sm">
+              <Mail className="h-3.5 w-3.5 text-gray-500 shrink-0" />
               <a 
                 href={`mailto:${profile.email}`} 
-                className="hover:text-violet-500 truncate max-w-[250px]"
+                className="hover:text-violet-500 truncate max-w-[200px]"
               >
                 {profile.email}
               </a>
             </div>
           )}
           {profile.phone && (
-            <div className="flex items-center gap-2 text-sm">
-              <Phone className="h-4 w-4 text-gray-500 shrink-0" />
+            <div className="flex items-center gap-1.5 text-sm">
+              <Phone className="h-3.5 w-3.5 text-gray-500 shrink-0" />
               <a 
                 href={`tel:${formatPhoneNumber(profile.phone)}`} 
                 className="hover:text-violet-500"
@@ -80,15 +80,15 @@ export const AccountTableRow = ({ profile }: AccountTableRowProps) => {
           )}
         </div>
       </TableCell>
-      <TableCell className="text-sm text-gray-600">
+      <TableCell className="text-sm text-gray-600 py-2">
         {new Date(profile.created_at).toLocaleDateString('fr-FR')}
       </TableCell>
-      <TableCell>
+      <TableCell className="py-2">
         <Button
           variant="ghost"
           size="sm"
           onClick={handleEdit}
-          className="text-sm"
+          className="text-sm h-8 px-2"
         >
           Modifier
         </Button>

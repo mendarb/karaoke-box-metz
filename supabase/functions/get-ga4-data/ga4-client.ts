@@ -1,4 +1,6 @@
 export async function fetchGA4Data(propertyId: string, accessToken: string, startDate: string, endDate: string) {
+  console.log('Fetching GA4 data with:', { propertyId, startDate, endDate });
+  
   const response = await fetch(
     `https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:runReport`,
     {
@@ -18,7 +20,12 @@ export async function fetchGA4Data(propertyId: string, accessToken: string, star
           { name: 'engagedSessions' },
           { name: 'engagementRate' },
           { name: 'eventsPerSession' },
-          { name: 'totalUsers' }
+          { name: 'totalUsers' },
+          { 
+            name: 'eventCount',
+            alias: 'formStartCount',
+            expression: "eventName:form_start" 
+          }
         ],
         dimensions: [
           { name: 'date' },
@@ -47,7 +54,8 @@ export function processGA4Data(data: any) {
       averageSessionDuration: 0,
       bounceRate: 0,
       engagementRate: 0,
-      totalUsers: 0
+      totalUsers: 0,
+      formStartCount: 0
     },
     byDate: {},
     byDevice: {},
@@ -67,17 +75,20 @@ export function processGA4Data(data: any) {
     processedData.summary.bounceRate = metrics[4];
     processedData.summary.engagementRate = metrics[6];
     processedData.summary.totalUsers = metrics[8];
+    processedData.summary.formStartCount += metrics[9] || 0;
 
     if (!processedData.byDate[date]) {
       processedData.byDate[date] = {
         activeUsers: 0,
         pageViews: 0,
-        sessions: 0
+        sessions: 0,
+        formStartCount: 0
       };
     }
     processedData.byDate[date].activeUsers += metrics[0];
     processedData.byDate[date].pageViews += metrics[1];
     processedData.byDate[date].sessions += metrics[2];
+    processedData.byDate[date].formStartCount += metrics[9] || 0;
 
     if (!processedData.byDevice[device]) {
       processedData.byDevice[device] = {

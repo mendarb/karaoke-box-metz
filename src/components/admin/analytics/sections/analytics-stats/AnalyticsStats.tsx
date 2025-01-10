@@ -24,10 +24,10 @@ export const AnalyticsStats = ({ bookings, previousBookings, events, previousEve
     },
     {
       title: "Réservations débutées",
-      value: stats.currentPeriod.startedBookings,
-      change: stats.variations.startedBookings ? `${Math.round(stats.variations.startedBookings)}%` : '0%',
+      value: stats.currentPeriod.formStartCount || 0,
+      change: stats.variations.formStartCount ? `${Math.round(stats.variations.formStartCount)}%` : '0%',
       icon: Calendar,
-      trend: stats.variations.startedBookings >= 0 ? "up" : "down"
+      trend: stats.variations.formStartCount >= 0 ? "up" : "down"
     },
     {
       title: "Réservations payées",

@@ -31,6 +31,11 @@ export const GeneralStats = () => {
     ? ((completedBookings / totalBookings) * 100).toFixed(1) 
     : '0';
 
+  // Calcul de la durée moyenne en heures
+  const averageDuration = bookings && bookings.length > 0
+    ? (bookings.reduce((sum, booking) => sum + parseInt(booking.duration), 0) / bookings.length).toFixed(1)
+    : '0';
+
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <Card className="p-6">
@@ -62,9 +67,7 @@ export const GeneralStats = () => {
           <Clock className="h-4 w-4 text-muted-foreground" />
           <h3 className="text-sm font-medium">Durée moyenne</h3>
         </div>
-        <p className="text-2xl font-bold mt-2">
-          {bookings?.reduce((acc, b) => acc + parseInt(b.duration), 0) / totalBookings || 0}h
-        </p>
+        <p className="text-2xl font-bold mt-2">{averageDuration}h</p>
       </Card>
     </div>
   );

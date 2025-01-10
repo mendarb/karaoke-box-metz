@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AdminBookingForm } from "../BookingForm";
 import { Plus, Trash2 } from "lucide-react";
 import { CleanupBookingsDialog } from "../actions/CleanupBookingsDialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface DashboardContentProps {
   bookings: Booking[];
@@ -23,20 +24,21 @@ export const DashboardContent = ({
   const dummyOnStatusChange = async () => {};
 
   return (
-    <div className="p-4 md:p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Tableau de bord administrateur</h1>
-        <div className="flex gap-2">
+    <div className="p-4 md:p-6 pb-20 md:pb-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <h1 className="text-xl md:text-2xl font-semibold text-gray-900">Tableau de bord</h1>
+        <div className="flex w-full md:w-auto gap-2">
           <Button
             variant="destructive"
             onClick={() => setIsCleanupDialogOpen(true)}
+            className="flex-1 md:flex-none text-sm"
           >
             <Trash2 className="mr-2 h-4 w-4" />
-            Nettoyer les réservations
+            Nettoyer
           </Button>
           <Dialog>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="flex-1 md:flex-none text-sm">
                 <Plus className="mr-2 h-4 w-4" />
                 Nouvelle réservation
               </Button>
@@ -51,18 +53,42 @@ export const DashboardContent = ({
         </div>
       </div>
       
-      <div className="mb-8">
+      <div className="mb-6">
         <DashboardStats bookings={bookings} />
       </div>
-      
-      <div className="bg-white rounded-lg shadow-lg p-2 md:p-6 overflow-x-auto">
-        <BookingsTable
-          data={bookings}
-          onViewDetails={onViewDetails}
-          onStatusChange={dummyOnStatusChange}
-          isLoading={isLoading}
-        />
-      </div>
+
+      <Tabs defaultValue="bookings" className="w-full">
+        <TabsList className="w-full mb-4 h-12 bg-gray-50/90 p-1">
+          <TabsTrigger 
+            value="bookings"
+            className="flex-1 h-10 text-sm data-[state=active]:bg-white"
+          >
+            Réservations
+          </TabsTrigger>
+          <TabsTrigger 
+            value="invoices"
+            className="flex-1 h-10 text-sm data-[state=active]:bg-white"
+          >
+            Factures
+          </TabsTrigger>
+          <TabsTrigger 
+            value="payments"
+            className="flex-1 h-10 text-sm data-[state=active]:bg-white"
+          >
+            Paiements
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="bookings" className="mt-0">
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <BookingsTable
+              data={bookings}
+              onViewDetails={onViewDetails}
+              onStatusChange={dummyOnStatusChange}
+              isLoading={isLoading}
+            />
+          </div>
+        </TabsContent>
+      </Tabs>
 
       <CleanupBookingsDialog 
         isOpen={isCleanupDialogOpen}

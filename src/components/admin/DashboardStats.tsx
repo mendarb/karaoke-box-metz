@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Users, Calendar, Clock, Euro } from "lucide-react";
 import { Booking } from "@/hooks/useBookings";
 
@@ -17,49 +17,53 @@ export const DashboardStats = ({ bookings }: DashboardStatsProps) => {
   };
 
   return (
-    <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mt-2">
-      <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
-        <CardHeader className="flex flex-row items-center justify-between pb-2 pt-4 px-4 space-y-0">
-          <CardTitle className="text-sm font-medium text-gray-600">Total</CardTitle>
-          <Calendar className="h-4 w-4 text-violet-500" />
-        </CardHeader>
-        <CardContent className="pb-4 px-4">
-          <div className="text-2xl font-bold text-gray-900">{stats.totalBookings}</div>
-          <p className="text-xs text-gray-500 mt-1">Réservations totales</p>
-        </CardContent>
+    <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
+      <Card className="bg-white shadow-sm hover:shadow-md transition-shadow p-4">
+        <div className="flex items-center gap-3">
+          <div className="rounded-lg bg-violet-100 p-2">
+            <Calendar className="h-4 w-4 text-violet-600" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-500">Total</p>
+            <p className="text-lg font-semibold">{stats.totalBookings}</p>
+          </div>
+        </div>
       </Card>
 
-      <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
-        <CardHeader className="flex flex-row items-center justify-between pb-2 pt-4 px-4 space-y-0">
-          <CardTitle className="text-sm font-medium text-gray-600">En attente</CardTitle>
-          <Clock className="h-4 w-4 text-orange-500" />
-        </CardHeader>
-        <CardContent className="pb-4 px-4">
-          <div className="text-2xl font-bold text-gray-900">{stats.pendingBookings}</div>
-          <p className="text-xs text-gray-500 mt-1">Réservations en attente</p>
-        </CardContent>
+      <Card className="bg-white shadow-sm hover:shadow-md transition-shadow p-4">
+        <div className="flex items-center gap-3">
+          <div className="rounded-lg bg-orange-100 p-2">
+            <Clock className="h-4 w-4 text-orange-600" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-500">En attente</p>
+            <p className="text-lg font-semibold">{stats.pendingBookings}</p>
+          </div>
+        </div>
       </Card>
 
-      <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
-        <CardHeader className="flex flex-row items-center justify-between pb-2 pt-4 px-4 space-y-0">
-          <CardTitle className="text-sm font-medium text-gray-600">Confirmées</CardTitle>
-          <Users className="h-4 w-4 text-green-500" />
-        </CardHeader>
-        <CardContent className="pb-4 px-4">
-          <div className="text-2xl font-bold text-gray-900">{stats.confirmedBookings}</div>
-          <p className="text-xs text-gray-500 mt-1">Réservations confirmées</p>
-        </CardContent>
+      <Card className="bg-white shadow-sm hover:shadow-md transition-shadow p-4">
+        <div className="flex items-center gap-3">
+          <div className="rounded-lg bg-green-100 p-2">
+            <Users className="h-4 w-4 text-green-600" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-500">Confirmées</p>
+            <p className="text-lg font-semibold">{stats.confirmedBookings}</p>
+          </div>
+        </div>
       </Card>
 
-      <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
-        <CardHeader className="flex flex-row items-center justify-between pb-2 pt-4 px-4 space-y-0">
-          <CardTitle className="text-sm font-medium text-gray-600">Revenus</CardTitle>
-          <Euro className="h-4 w-4 text-violet-500" />
-        </CardHeader>
-        <CardContent className="pb-4 px-4">
-          <div className="text-2xl font-bold text-gray-900">{stats.totalRevenue.toFixed(2)}€</div>
-          <p className="text-xs text-gray-500 mt-1">Total des revenus</p>
-        </CardContent>
+      <Card className="bg-white shadow-sm hover:shadow-md transition-shadow p-4">
+        <div className="flex items-center gap-3">
+          <div className="rounded-lg bg-violet-100 p-2">
+            <Euro className="h-4 w-4 text-violet-600" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-500">Revenus</p>
+            <p className="text-lg font-semibold">{stats.totalRevenue.toFixed(2)}€</p>
+          </div>
+        </div>
       </Card>
     </div>
   );

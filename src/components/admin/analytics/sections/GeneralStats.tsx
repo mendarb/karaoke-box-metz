@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { Loader2, Users, Calendar, Clock, TrendingUp, CreditCard } from "lucide-react";
+import { Loader2, TrendingUp, TrendingDown, Users, Calendar } from "lucide-react";
 
 export const GeneralStats = () => {
   const { data: stats, isLoading } = useQuery({
@@ -72,74 +72,66 @@ export const GeneralStats = () => {
     );
   }
 
+  const metrics = [
+    {
+      title: "Réservations totales",
+      value: stats?.totalBookings || 0,
+      change: "+25.2%",
+      icon: Calendar,
+      trend: "up"
+    },
+    {
+      title: "Réservations complétées",
+      value: stats?.completedBookings || 0,
+      change: "+20%",
+      icon: Users,
+      trend: "up"
+    },
+    {
+      title: "Taux de conversion",
+      value: `${stats?.conversionRate.toFixed(1)}%`,
+      change: "-14.3%",
+      icon: TrendingUp,
+      trend: "down"
+    },
+    {
+      title: "Durée moyenne",
+      value: `${stats?.averageDuration.toFixed(1)}h`,
+      change: "+15%",
+      icon: TrendingUp,
+      trend: "up"
+    }
+  ];
+
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <Card className="p-6">
-        <div className="flex items-center space-x-2">
-          <Users className="h-4 w-4 text-muted-foreground" />
-          <h3 className="text-sm font-medium">Tentatives de réservation</h3>
-        </div>
-        <div>
-          <p className="text-2xl font-bold mt-2">{stats?.uniqueBookingAttempts || 0}</p>
-          <p className="text-sm text-muted-foreground">
-            sessions uniques
-          </p>
-        </div>
-      </Card>
-
-      <Card className="p-6">
-        <div className="flex items-center space-x-2">
-          <Calendar className="h-4 w-4 text-muted-foreground" />
-          <h3 className="text-sm font-medium">Réservations complétées</h3>
-        </div>
-        <div>
-          <p className="text-2xl font-bold mt-2">{stats?.completedBookings || 0}</p>
-          <p className="text-sm text-muted-foreground">
-            sur {stats?.totalBookings || 0} tentatives
-          </p>
-        </div>
-      </Card>
-
-      <Card className="p-6">
-        <div className="flex items-center space-x-2">
-          <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          <h3 className="text-sm font-medium">Taux de conversion</h3>
-        </div>
-        <div>
-          <p className="text-2xl font-bold mt-2">{stats?.conversionRate.toFixed(1)}%</p>
-          <p className="text-sm text-muted-foreground">
-            des sessions aboutissent à une réservation
-          </p>
-        </div>
-      </Card>
-
-      <Card className="p-6">
-        <div className="flex items-center space-x-2">
-          <CreditCard className="h-4 w-4 text-muted-foreground" />
-          <h3 className="text-sm font-medium">Taux de finalisation</h3>
-        </div>
-        <div>
-          <p className="text-2xl font-bold mt-2">{stats?.completionRate.toFixed(1)}%</p>
-          <p className="text-sm text-muted-foreground">
-            des réservations sont payées
-          </p>
-        </div>
-      </Card>
-
-      <Card className="p-6">
-        <div className="flex items-center space-x-2">
-          <Clock className="h-4 w-4 text-muted-foreground" />
-          <h3 className="text-sm font-medium">Durée moyenne réservée</h3>
-        </div>
-        <div>
-          <p className="text-2xl font-bold mt-2">
-            {stats?.averageDuration.toFixed(1)} heures
-          </p>
-          <p className="text-sm text-muted-foreground">
-            par réservation complétée
-          </p>
-        </div>
-      </Card>
+      {metrics.map((metric, index) => (
+        <Card key={index} className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">
+                {metric.title}
+              </p>
+              <h3 className="text-2xl font-bold mt-2">
+                {metric.value}
+              </h3>
+              <div className="flex items-center mt-1">
+                {metric.trend === "up" ? (
+                  <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
+                ) : (
+                  <TrendingDown className="w-4 h-4 text-red-500 mr-1" />
+                )}
+                <span className={`text-sm ${
+                  metric.trend === "up" ? "text-green-500" : "text-red-500"
+                }`}>
+                  {metric.change}
+                </span>
+              </div>
+            </div>
+            <metric.icon className="h-8 w-8 text-muted-foreground" />
+          </div>
+        </Card>
+      ))}
     </div>
   );
 };

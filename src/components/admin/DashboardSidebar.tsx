@@ -43,8 +43,8 @@ export const DashboardSidebar = () => {
   const SidebarContent = () => (
     <ScrollArea className="h-full">
       <div className="flex flex-col h-full min-h-[calc(100vh-4rem)]">
-        <div className="p-3 border-b">
-          <h2 className="text-base font-semibold">Karaoke Admin</h2>
+        <div className="p-2 border-b">
+          <h2 className="text-sm font-medium px-2">Karaoke Admin</h2>
         </div>
 
         <nav className="flex-1 p-2">
@@ -53,7 +53,7 @@ export const DashboardSidebar = () => {
               <Button 
                 key={item.path}
                 variant={isActive(item.path) ? "secondary" : "ghost"} 
-                className="w-full justify-start h-9 text-sm" 
+                className="w-full justify-start h-8 text-sm" 
                 onClick={() => navigate(item.path)}
               >
                 <item.icon className="mr-2 h-4 w-4" />
@@ -66,7 +66,7 @@ export const DashboardSidebar = () => {
         <div className="p-2 border-t space-y-1">
           <Button
             variant="ghost"
-            className="w-full justify-start h-9 text-sm"
+            className="w-full justify-start h-8 text-sm"
             onClick={() => navigate("/")}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -74,7 +74,7 @@ export const DashboardSidebar = () => {
           </Button>
           <Button 
             variant="ghost" 
-            className="w-full justify-start h-9 text-sm text-red-500 hover:text-red-600 hover:bg-red-50" 
+            className="w-full justify-start h-8 text-sm text-red-500 hover:text-red-600 hover:bg-red-50" 
             onClick={handleLogout}
           >
             <LogOut className="mr-2 h-4 w-4" />
@@ -92,7 +92,7 @@ export const DashboardSidebar = () => {
           <Button 
             variant="ghost" 
             size="sm" 
-            className="fixed top-4 left-4 z-50 bg-white shadow-sm"
+            className="fixed top-3 left-3 z-50 bg-white shadow-sm h-8 w-8 p-0"
           >
             <Menu className="h-4 w-4" />
           </Button>

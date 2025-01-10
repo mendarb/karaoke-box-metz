@@ -91,11 +91,11 @@ export const Calendar = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-4 p-4 md:p-6 pb-24 md:pb-6">
+      <div className="space-y-4">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
-            <CalendarIcon className="h-5 w-5 text-violet-500" />
-            <h1 className="text-xl font-semibold">Calendrier</h1>
+            <CalendarIcon className="h-4 w-4 text-violet-500" />
+            <h1 className="text-base font-medium">Calendrier</h1>
           </div>
           <p className="text-sm text-muted-foreground">
             Gérez les réservations et consultez le planning
@@ -103,14 +103,14 @@ export const Calendar = () => {
         </div>
 
         {isMobile ? (
-          <Tabs defaultValue="calendar" className="space-y-4">
+          <Tabs defaultValue="calendar" className="space-y-3">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="calendar">Calendrier</TabsTrigger>
               <TabsTrigger value="bookings">Réservations</TabsTrigger>
             </TabsList>
             
             <TabsContent value="calendar">
-              <Card className="p-4 bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+              <Card className="p-2 bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                 <CalendarComponent
                   mode="single"
                   selected={selectedDate}
@@ -133,7 +133,7 @@ export const Calendar = () => {
             
             <TabsContent value="bookings">
               <Card className="relative overflow-hidden bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                <ScrollArea className="h-[calc(100vh-20rem)]">
+                <ScrollArea className="h-[calc(100vh-16rem)]">
                   <BookingsList
                     bookings={bookingsForSelectedDate}
                     onViewDetails={setSelectedBooking}
@@ -144,8 +144,8 @@ export const Calendar = () => {
             </TabsContent>
           </Tabs>
         ) : (
-          <div className="grid gap-6 lg:grid-cols-[auto,1fr]">
-            <Card className="p-4 bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="grid gap-4 lg:grid-cols-[auto,1fr]">
+            <Card className="p-3 bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-background/60">
               <CalendarComponent
                 mode="single"
                 selected={selectedDate}

@@ -10,15 +10,10 @@ import { Settings as SettingsIcon } from "lucide-react";
 export const Settings = () => {
   return (
     <DashboardLayout>
-      <div className="space-y-4">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2">
-            <SettingsIcon className="h-4 w-4 text-violet-500" />
-            <h1 className="text-base font-medium">Paramètres</h1>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Configurez les paramètres de votre application
-          </p>
+      <div className="p-4 md:p-8 max-w-[1200px]">
+        <div className="mb-8">
+          <h1 className="text-3xl font-semibold text-gray-900 mb-2">Paramètres</h1>
+          <p className="text-gray-600">Configurez les paramètres de votre application</p>
         </div>
         
         <ScrollArea className="w-full">

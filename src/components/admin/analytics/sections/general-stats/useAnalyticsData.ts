@@ -1,85 +1,25 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { PeriodSelection } from "../../types/analytics";
-import { getGA4Data } from "@/lib/analytics/ga4";
 import { format, subDays } from "date-fns";
+import { getDateRange } from "./utils/dateRangeUtils";
+import { calculatePercentageChange, calculateConversionRate } from "./utils/analyticsCalculations";
+import { fetchAnalyticsData } from "./services/analyticsService";
 
 export const useAnalyticsData = (period: PeriodSelection) => {
-  const getDateRange = () => {
-    const now = new Date();
-    switch (period.type) {
-      case "24h":
-        return {
-          startDate: format(subDays(now, 1), 'yyyy-MM-dd'),
-          endDate: format(now, 'yyyy-MM-dd')
-        };
-      case "7d":
-        return {
-          startDate: format(subDays(now, 7), 'yyyy-MM-dd'),
-          endDate: format(now, 'yyyy-MM-dd')
-        };
-      case "30d":
-        return {
-          startDate: format(subDays(now, 30), 'yyyy-MM-dd'),
-          endDate: format(now, 'yyyy-MM-dd')
-        };
-      case "90d":
-        return {
-          startDate: format(subDays(now, 90), 'yyyy-MM-dd'),
-          endDate: format(now, 'yyyy-MM-dd')
-        };
-      case "custom":
-        if (period.dateRange?.from && period.dateRange?.to) {
-          return {
-            startDate: format(period.dateRange.from, 'yyyy-MM-dd'),
-            endDate: format(period.dateRange.to, 'yyyy-MM-dd')
-          };
-        }
-      default:
-        return {
-          startDate: format(subDays(now, 30), 'yyyy-MM-dd'),
-          endDate: format(now, 'yyyy-MM-dd')
-        };
-    }
-  };
-
-  const dateRange = getDateRange();
+  const dateRange = getDateRange(period);
   const previousStartDate = format(subDays(new Date(dateRange.startDate), 30), 'yyyy-MM-dd');
 
   return useQuery({
     queryKey: ['analytics-general', period, dateRange],
     queryFn: async () => {
-      const [
+      const {
         ga4Stats,
-        { data: currentEvents },
-        { data: previousEvents },
-        { data: currentBookings },
-        { data: previousBookings }
-      ] = await Promise.all([
-        getGA4Data(dateRange.startDate, dateRange.endDate),
-        supabase
-          .from('user_events')
-          .select('*')
-          .gte('created_at', dateRange.startDate)
-          .lte('created_at', dateRange.endDate),
-        supabase
-          .from('user_events')
-          .select('*')
-          .gte('created_at', previousStartDate)
-          .lt('created_at', dateRange.startDate),
-        supabase
-          .from('bookings')
-          .select('*')
-          .gte('created_at', dateRange.startDate)
-          .lte('created_at', dateRange.endDate)
-          .is('deleted_at', null),
-        supabase
-          .from('bookings')
-          .select('*')
-          .gte('created_at', previousStartDate)
-          .lt('created_at', dateRange.startDate)
-          .is('deleted_at', null)
-      ]);
+        currentEvents,
+        previousEvents,
+        currentBookings,
+        previousBookings
+      } = await fetchAnalyticsData(supabase, dateRange, previousStartDate);
 
       // Compter les inscriptions en filtrant les événements de type SIGNUP
       const currentSignups = currentEvents?.filter(e => e.event_type === 'SIGNUP').length || 0;
@@ -94,13 +34,8 @@ export const useAnalyticsData = (period: PeriodSelection) => {
       const previousCompleted = previousBookings?.filter(b => b.payment_status === 'paid').length || 0;
 
       // Calculer le taux de conversion
-      const currentConversionRate = currentBookingStarts > 0 ? (currentCompleted / currentBookingStarts) * 100 : 0;
-      const previousConversionRate = previousBookingStarts > 0 ? (previousCompleted / previousBookingStarts) * 100 : 0;
-
-      const calculatePercentageChange = (current: number, previous: number) => {
-        if (previous === 0) return current > 0 ? 100 : 0;
-        return ((current - previous) / previous) * 100;
-      };
+      const currentConversionRate = calculateConversionRate(currentCompleted, currentBookingStarts);
+      const previousConversionRate = calculateConversionRate(previousCompleted, previousBookingStarts);
 
       return {
         ga4: ga4Stats || {

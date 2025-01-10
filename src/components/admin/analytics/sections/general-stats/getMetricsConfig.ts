@@ -1,7 +1,17 @@
 import { Users, TrendingUp, TrendingDown, UserPlus, Calendar, Euro } from "lucide-react";
 import { calculatePercentageChange } from "./utils/analyticsCalculations";
 
-export const getMetricsConfig = (stats: any) => [
+type MetricConfig = {
+  title: string;
+  value: string | number;
+  icon: any; // Using any for icon type as it's a Lucide component
+  description: string;
+  change?: string;
+  trend?: "up" | "down";
+  isPercentage?: boolean;
+}
+
+export const getMetricsConfig = (stats: any): MetricConfig[] => [
   {
     title: "Utilisateurs inscrits",
     value: stats.currentPeriod.signups,

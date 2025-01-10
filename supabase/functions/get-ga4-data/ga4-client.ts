@@ -21,26 +21,21 @@ export async function fetchGA4Data(propertyId: string, accessToken: string, star
           { name: 'engagementRate' },
           { name: 'eventsPerSession' },
           { name: 'totalUsers' },
-          // Event counts using custom metrics
           { 
             name: 'eventCount',
-            expression: 'totalEvents',
-            filterExpression: "eventName = 'booking_started'"
+            expression: "eventName == 'booking_started'"
           },
           { 
             name: 'eventCount',
-            expression: 'totalEvents',
-            filterExpression: "eventName = 'booking_completed'"
+            expression: "eventName == 'booking_completed'"
           },
           { 
             name: 'eventCount',
-            expression: 'totalEvents',
-            filterExpression: "eventName = 'payment_initiated'"
+            expression: "eventName == 'payment_initiated'"
           },
           { 
             name: 'eventCount',
-            expression: 'totalEvents',
-            filterExpression: "eventName = 'payment_completed'"
+            expression: "eventName == 'payment_completed'"
           }
         ],
         dimensions: [

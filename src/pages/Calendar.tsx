@@ -93,14 +93,14 @@ export const Calendar = () => {
 
   return (
     <DashboardLayout title="Calendrier des réservations">
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div className="flex items-center gap-2">
           <CalendarIcon className="h-5 w-5 text-violet-500" />
           <h2 className="text-lg font-semibold">Sélectionnez une date</h2>
         </div>
 
-        <div className={`grid gap-6 ${isMobile ? '' : 'md:grid-cols-2'}`}>
-          <Card className="p-4 shadow-none border-none bg-transparent">
+        <div className={`grid gap-4 ${isMobile ? '' : 'md:grid-cols-[auto,1fr]'}`}>
+          <Card className="p-4 shadow-none border-none bg-transparent w-fit">
             <CalendarComponent
               mode="single"
               selected={selectedDate}

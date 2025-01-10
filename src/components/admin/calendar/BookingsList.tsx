@@ -25,7 +25,7 @@ export const BookingsList = ({
 
   return (
     <Card className="bg-card border-none shadow-none">
-      <div className="p-4 border-b">
+      <div className="p-4 border-b bg-white sticky top-0 z-10">
         <h2 className="text-lg font-semibold">
           {selectedDate ? (
             `Réservations du ${format(selectedDate, 'd MMMM yyyy', { locale: fr })}`
@@ -50,7 +50,7 @@ export const BookingsList = ({
                 key={booking.id}
                 className="p-4 hover:bg-accent/5 transition-colors"
               >
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <div className="flex justify-between items-start gap-4">
                     <div className="space-y-1 min-w-0 flex-1">
                       <div className="flex items-center gap-2">

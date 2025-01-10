@@ -48,6 +48,23 @@ export const trackPageView = (path: string) => {
   }
 };
 
+export const trackEvent = (
+  eventName: string,
+  eventParams?: Record<string, any>
+) => {
+  try {
+    if (window.gtag && window.GA_MEASUREMENT_ID) {
+      window.gtag('event', eventName, {
+        ...eventParams,
+        send_to: window.GA_MEASUREMENT_ID
+      });
+      console.log(`GA4 event tracked: ${eventName}`, eventParams);
+    }
+  } catch (error) {
+    console.error('Error tracking event:', error);
+  }
+};
+
 // Nouveaux événements de suivi pour les réservations
 export const trackBookingEvent = (
   eventName: 'booking_started' | 'booking_completed' | 'payment_initiated' | 'payment_completed',

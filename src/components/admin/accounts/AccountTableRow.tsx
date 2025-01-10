@@ -23,15 +23,12 @@ export const AccountTableRow = ({ profile }: AccountTableRowProps) => {
   const formatPhoneNumber = (phone: string | null) => {
     if (!phone) return null;
     
-    // Remove any non-digit characters except +
     let cleaned = phone.replace(/[^\d+]/g, '');
     
-    // If it starts with 0, replace with +33
     if (cleaned.startsWith('0')) {
       cleaned = '+33' + cleaned.substring(1);
     }
     
-    // If it doesn't start with +, add +
     if (!cleaned.startsWith('+')) {
       cleaned = '+' + cleaned;
     }
@@ -53,10 +50,12 @@ export const AccountTableRow = ({ profile }: AccountTableRowProps) => {
   return (
     <TableRow key={profile.id}>
       <TableCell className="font-medium">
-        {displayName()}
+        <div className="truncate max-w-[180px]">
+          {displayName()}
+        </div>
       </TableCell>
       <TableCell>
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           {profile.email && (
             <div className="flex items-center gap-2 text-sm">
               <Mail className="h-4 w-4 text-gray-500 shrink-0" />
@@ -89,6 +88,7 @@ export const AccountTableRow = ({ profile }: AccountTableRowProps) => {
           variant="ghost"
           size="sm"
           onClick={handleEdit}
+          className="text-sm"
         >
           Modifier
         </Button>

@@ -4,37 +4,45 @@ import { BookingSettings } from "@/components/admin/settings/BookingSettings";
 import { NotificationSettings } from "@/components/admin/settings/NotificationSettings";
 import { PromoCodesSettings } from "@/components/admin/settings/PromoCodesSettings";
 import { SiteSettingsForm } from "@/components/admin/settings/SiteSettingsForm";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const Settings = () => {
   return (
     <DashboardLayout>
-      <div className="p-4 md:p-6">
-        <h1 className="text-2xl font-bold mb-6">Paramètres</h1>
+      <div className="p-4 md:p-6 space-y-6">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-xl md:text-2xl font-semibold">Paramètres</h1>
+          <p className="text-sm text-muted-foreground">
+            Configurez les paramètres de votre application
+          </p>
+        </div>
         
-        <Tabs defaultValue="booking" className="space-y-4">
-          <TabsList className="w-full justify-start">
-            <TabsTrigger value="booking">Réservations</TabsTrigger>
-            <TabsTrigger value="promo">Codes promo</TabsTrigger>
-            <TabsTrigger value="notifications">Notifications</TabsTrigger>
-            <TabsTrigger value="site">Site</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="booking" className="space-y-4">
-            <BookingSettings />
-          </TabsContent>
-          
-          <TabsContent value="promo" className="space-y-4">
-            <PromoCodesSettings />
-          </TabsContent>
-          
-          <TabsContent value="notifications" className="space-y-4">
-            <NotificationSettings />
-          </TabsContent>
+        <ScrollArea className="w-full">
+          <Tabs defaultValue="booking" className="space-y-6">
+            <TabsList className="w-full justify-start mb-2 overflow-x-auto">
+              <TabsTrigger value="booking" className="text-sm">Réservations</TabsTrigger>
+              <TabsTrigger value="promo" className="text-sm">Codes promo</TabsTrigger>
+              <TabsTrigger value="notifications" className="text-sm">Notifications</TabsTrigger>
+              <TabsTrigger value="site" className="text-sm">Site</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="booking" className="space-y-4 min-w-full">
+              <BookingSettings />
+            </TabsContent>
+            
+            <TabsContent value="promo" className="space-y-4 min-w-full">
+              <PromoCodesSettings />
+            </TabsContent>
+            
+            <TabsContent value="notifications" className="space-y-4 min-w-full">
+              <NotificationSettings />
+            </TabsContent>
 
-          <TabsContent value="site" className="space-y-4">
-            <SiteSettingsForm />
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="site" className="space-y-4 min-w-full">
+              <SiteSettingsForm />
+            </TabsContent>
+          </Tabs>
+        </ScrollArea>
       </div>
     </DashboardLayout>
   );

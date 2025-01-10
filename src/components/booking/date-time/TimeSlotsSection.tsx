@@ -1,8 +1,5 @@
-import { useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { TimeSlots } from "./TimeSlots";
-import { useBookingOverlap } from "@/hooks/useBookingOverlap";
-import { supabase } from "@/lib/supabase";
 
 interface TimeSlotsSectionProps {
   form: any;
@@ -19,8 +16,10 @@ export const TimeSlotsSection = ({
   const selectedDate = watch("date");
 
   return (
-    <div className="space-y-4">
-      <h3 className="font-medium">Choisissez votre horaire</h3>
+    <div className="space-y-6">
+      <h3 className="text-lg font-semibold text-center px-4 sm:px-0">
+        Choisissez votre horaire
+      </h3>
       <TimeSlots
         form={form}
         availableSlots={availableSlots}

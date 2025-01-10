@@ -16,9 +16,10 @@ export const TimeSlot = ({ slot, isSelected, isDisabled, onSelect }: TimeSlotPro
       type="button"
       variant={isSelected ? "default" : "outline"}
       className={cn(
-        "w-full flex items-center gap-2 transition-all duration-200",
+        "w-full h-14 sm:h-12 flex items-center justify-center gap-2 rounded-xl transition-all duration-200 text-base",
         isDisabled && "opacity-50 bg-gray-100 hover:bg-gray-100 cursor-not-allowed",
-        isSelected && "bg-violet-600 hover:bg-violet-700 scale-105"
+        isSelected && "bg-violet-600 hover:bg-violet-700 scale-105 text-white",
+        !isSelected && !isDisabled && "hover:border-violet-600 hover:text-violet-600"
       )}
       disabled={isDisabled}
       onClick={() => onSelect(slot)}

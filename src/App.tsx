@@ -1,96 +1,28 @@
-import React from 'react';
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { useEffect } from "react";
+import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, useLocation } from "react-router-dom";
-import { AppRoutes } from "@/components/routing/AppRoutes";
-import { useEffect, useState, Suspense } from "react";
-import { initializeGoogleAnalytics, trackPageView } from "@/lib/analytics";
-import { GoogleVerification } from "@/components/seo/GoogleVerification";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { SupportButton } from "@/components/support/SupportButton";
-import { Navbar } from "@/components/navigation/Navbar";
-import { AuthModal } from "@/components/auth/AuthModal";
-import { AnnouncementBanner } from "@/components/announcements/AnnouncementBanner";
+import { Toaster } from "@/components/ui/sonner";
+import { AppRoutes } from "./components/routing/AppRoutes";
+import { initGA4 } from "./lib/analytics/ga4";
+import "./App.css";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-      staleTime: 30000,
-      gcTime: 3600000,
-      refetchOnMount: false,
-    },
-  },
-});
+const queryClient = new QueryClient();
 
-const PageTracker = () => {
-  const location = useLocation();
-
+function App() {
   useEffect(() => {
-    trackPageView(location.pathname + location.search);
-  }, [location]);
-
-  return null;
-};
-
-const App = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-
-  useEffect(() => {
-    const initGA = async () => {
-      try {
-        await initializeGoogleAnalytics();
-      } catch (error) {
-        console.error('Erreur lors de l\'initialisation de GA:', error);
-      }
-    };
-    
-    initGA();
-    
-    const minLoadingTime = 500;
-    const loadingTimeout = setTimeout(() => {
-      setIsLoading(false);
-    }, minLoadingTime);
-
-    return () => clearTimeout(loadingTimeout);
+    initGA4();
   }, []);
 
-  if (isLoading) {
-    return <LoadingSpinner fullScreen />;
-  }
-
   return (
-    <React.StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <TooltipProvider>
-            <Suspense fallback={<LoadingSpinner fullScreen />}>
-              <GoogleVerification />
-              <div className="flex flex-col min-h-screen">
-                <AnnouncementBanner />
-                <Navbar onShowAuth={() => setShowAuthModal(true)} />
-                <main className="flex-grow">
-                  <AppRoutes />
-                </main>
-              </div>
-              <Toaster />
-              <Sonner />
-              <PageTracker />
-              <SupportButton />
-              <AuthModal 
-                isOpen={showAuthModal} 
-                onClose={() => setShowAuthModal(false)} 
-              />
-            </Suspense>
-          </TooltipProvider>
-        </BrowserRouter>
-      </QueryClientProvider>
-    </React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <main className="min-h-screen">
+          <AppRoutes />
+          <Toaster />
+        </main>
+      </BrowserRouter>
+    </QueryClientProvider>
   );
-};
+}
 
 export default App;

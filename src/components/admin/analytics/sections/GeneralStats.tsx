@@ -1,8 +1,9 @@
 import { Card } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { Loader2, TrendingUp, TrendingDown, Users, Calendar, Clock, Target } from "lucide-react";
+import { Loader2, TrendingUp, TrendingDown, Users, Calendar, Clock, Target, Eye, Activity } from "lucide-react";
 import { PeriodSelection } from "../types/analytics";
+import { getGA4Data } from "@/lib/analytics/ga4";
 
 interface GeneralStatsProps {
   period: PeriodSelection;
@@ -17,75 +18,80 @@ export const GeneralStats = ({ period }: GeneralStatsProps) => {
   const { data: stats, isLoading } = useQuery({
     queryKey: ['analytics-general', period],
     queryFn: async () => {
-      const now = new Date();
-      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+      const [dbStats, ga4Stats] = await Promise.all([
+        fetchDatabaseStats(),
+        getGA4Data()
+      ]);
 
-      // Récupération des événements utilisateurs
-      const { data: currentEvents } = await supabase
+      return {
+        ...dbStats,
+        ga4: ga4Stats
+      };
+    }
+  });
+
+  const fetchDatabaseStats = async () => {
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+
+    const [
+      { data: currentEvents },
+      { data: previousEvents },
+      { data: currentBookings },
+      { data: previousBookings }
+    ] = await Promise.all([
+      supabase
         .from('user_events')
         .select('*')
         .gte('created_at', thirtyDaysAgo.toISOString())
-        .lt('created_at', now.toISOString());
-
-      const { data: previousEvents } = await supabase
+        .lt('created_at', now.toISOString()),
+      supabase
         .from('user_events')
         .select('*')
         .gte('created_at', sixtyDaysAgo.toISOString())
-        .lt('created_at', thirtyDaysAgo.toISOString());
-
-      // Récupération des réservations
-      const { data: currentBookings } = await supabase
+        .lt('created_at', thirtyDaysAgo.toISOString()),
+      supabase
         .from('bookings')
         .select('*')
         .gte('created_at', thirtyDaysAgo.toISOString())
         .lt('created_at', now.toISOString())
-        .is('deleted_at', null);
-
-      const { data: previousBookings } = await supabase
+        .is('deleted_at', null),
+      supabase
         .from('bookings')
         .select('*')
         .gte('created_at', sixtyDaysAgo.toISOString())
         .lt('created_at', thirtyDaysAgo.toISOString())
-        .is('deleted_at', null);
+        .is('deleted_at', null)
+    ]);
 
-      // Calculs pour la période actuelle
-      const currentSignups = currentEvents?.filter(e => e.event_type === 'SIGNUP').length || 0;
-      const previousSignups = previousEvents?.filter(e => e.event_type === 'SIGNUP').length || 0;
-      
-      const currentBookingStarts = currentEvents?.filter(e => e.event_type === 'BOOKING_STARTED').length || 0;
-      const previousBookingStarts = previousEvents?.filter(e => e.event_type === 'BOOKING_STARTED').length || 0;
-      
-      const currentCompleted = currentBookings?.filter(b => b.payment_status === 'paid').length || 0;
-      const previousCompleted = previousBookings?.filter(b => b.payment_status === 'paid').length || 0;
+    const currentSignups = currentEvents?.filter(e => e.event_type === 'SIGNUP').length || 0;
+    const previousSignups = previousEvents?.filter(e => e.event_type === 'SIGNUP').length || 0;
+    
+    const currentBookingStarts = currentEvents?.filter(e => e.event_type === 'BOOKING_STARTED').length || 0;
+    const previousBookingStarts = previousEvents?.filter(e => e.event_type === 'BOOKING_STARTED').length || 0;
+    
+    const currentCompleted = currentBookings?.filter(b => b.payment_status === 'paid').length || 0;
+    const previousCompleted = previousBookings?.filter(b => b.payment_status === 'paid').length || 0;
 
-      const currentAverageDuration = currentBookings?.filter(b => b.payment_status === 'paid')
-        .reduce((acc, b) => acc + Number(b.duration), 0) / (currentCompleted || 1);
-      const previousAverageDuration = previousBookings?.filter(b => b.payment_status === 'paid')
-        .reduce((acc, b) => acc + Number(b.duration), 0) / (previousCompleted || 1);
+    const currentConversionRate = currentBookingStarts > 0 ? (currentCompleted / currentBookingStarts) * 100 : 0;
+    const previousConversionRate = previousBookingStarts > 0 ? (previousCompleted / previousBookingStarts) * 100 : 0;
 
-      // Calcul du taux de conversion
-      const currentConversionRate = currentBookingStarts > 0 ? (currentCompleted / currentBookingStarts) * 100 : 0;
-      const previousConversionRate = previousBookingStarts > 0 ? (previousCompleted / previousBookingStarts) * 100 : 0;
-
-      return {
-        currentPeriod: {
-          signups: currentSignups,
-          bookingStarts: currentBookingStarts,
-          completedBookings: currentCompleted,
-          averageDuration: Math.round(currentAverageDuration),
-          conversionRate: Math.round(currentConversionRate)
-        },
-        variations: {
-          signups: calculatePercentageChange(currentSignups, previousSignups),
-          bookingStarts: calculatePercentageChange(currentBookingStarts, previousBookingStarts),
-          completedBookings: calculatePercentageChange(currentCompleted, previousCompleted),
-          averageDuration: calculatePercentageChange(currentAverageDuration, previousAverageDuration),
-          conversionRate: calculatePercentageChange(currentConversionRate, previousConversionRate)
-        }
-      };
-    }
-  });
+    return {
+      currentPeriod: {
+        signups: currentSignups,
+        bookingStarts: currentBookingStarts,
+        completedBookings: currentCompleted,
+        conversionRate: Math.round(currentConversionRate)
+      },
+      variations: {
+        signups: calculatePercentageChange(currentSignups, previousSignups),
+        bookingStarts: calculatePercentageChange(currentBookingStarts, previousBookingStarts),
+        completedBookings: calculatePercentageChange(currentCompleted, previousCompleted),
+        conversionRate: calculatePercentageChange(currentConversionRate, previousConversionRate)
+      }
+    };
+  };
 
   if (isLoading) {
     return (
@@ -97,20 +103,22 @@ export const GeneralStats = ({ period }: GeneralStatsProps) => {
 
   const metrics = [
     {
-      title: "Nouveaux utilisateurs",
-      value: stats?.currentPeriod.signups || 0,
-      change: stats?.variations.signups ? `${Math.round(stats.variations.signups)}%` : '0%',
+      title: "Visiteurs actifs",
+      value: stats?.ga4?.activeUsers || 0,
       icon: Users,
-      trend: stats?.variations.signups >= 0 ? "up" : "down",
-      description: "Utilisateurs inscrits sur la période"
+      description: "Nombre de visiteurs actifs sur les 30 derniers jours"
     },
     {
-      title: "Réservations initiées",
-      value: stats?.currentPeriod.bookingStarts || 0,
-      change: stats?.variations.bookingStarts ? `${Math.round(stats.variations.bookingStarts)}%` : '0%',
-      icon: Calendar,
-      trend: stats?.variations.bookingStarts >= 0 ? "up" : "down",
-      description: "Nombre de réservations commencées"
+      title: "Pages vues",
+      value: stats?.ga4?.pageViews || 0,
+      icon: Eye,
+      description: "Nombre total de pages vues"
+    },
+    {
+      title: "Sessions",
+      value: stats?.ga4?.sessions || 0,
+      icon: Activity,
+      description: "Nombre total de sessions utilisateurs"
     },
     {
       title: "Taux de conversion",
@@ -119,14 +127,6 @@ export const GeneralStats = ({ period }: GeneralStatsProps) => {
       icon: Target,
       trend: stats?.variations.conversionRate >= 0 ? "up" : "down",
       description: "Réservations payées / Réservations initiées"
-    },
-    {
-      title: "Durée moyenne",
-      value: `${stats?.currentPeriod.averageDuration || 0}min`,
-      change: stats?.variations.averageDuration ? `${Math.round(stats.variations.averageDuration)}%` : '0%',
-      icon: Clock,
-      trend: stats?.variations.averageDuration >= 0 ? "up" : "down",
-      description: "Durée moyenne des sessions réservées"
     }
   ];
 
@@ -144,17 +144,19 @@ export const GeneralStats = ({ period }: GeneralStatsProps) => {
             <p className="text-2xl font-bold">
               {metric.value}
             </p>
-            <div className="flex items-center text-sm">
-              {metric.trend === "up" ? (
-                <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-              ) : (
-                <TrendingDown className="w-4 h-4 text-red-500 mr-1" />
-              )}
-              <span className={metric.trend === "up" ? "text-green-500" : "text-red-500"}>
-                {metric.change}
-              </span>
-              <span className="text-muted-foreground ml-1">vs 30j précédents</span>
-            </div>
+            {metric.change && (
+              <div className="flex items-center text-sm">
+                {metric.trend === "up" ? (
+                  <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
+                ) : (
+                  <TrendingDown className="w-4 h-4 text-red-500 mr-1" />
+                )}
+                <span className={metric.trend === "up" ? "text-green-500" : "text-red-500"}>
+                  {metric.change}
+                </span>
+                <span className="text-muted-foreground ml-1">vs 30j précédents</span>
+              </div>
+            )}
           </div>
           <div className="absolute inset-0 bg-black/75 text-white p-4 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center text-center">
             <p className="text-sm">{metric.description}</p>

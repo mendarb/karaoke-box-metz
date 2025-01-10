@@ -45,7 +45,6 @@ serve(async (req) => {
     const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
       httpClient: Stripe.createFetchHttpClient(),
-      stripeAccount: 'acct_1PJFrf08cLtke4H4',
     });
 
     console.log('💳 Création de la session Stripe...');

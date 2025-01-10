@@ -8,18 +8,31 @@ serve(async (req) => {
   }
 
   try {
+    // Récupérer et vérifier les variables d'environnement
+    const clientEmail = Deno.env.get('GA4_CLIENT_EMAIL');
+    const privateKey = Deno.env.get('GA4_PRIVATE_KEY');
+    const propertyId = Deno.env.get('GA4_PROPERTY_ID');
+
+    if (!clientEmail || !privateKey || !propertyId) {
+      console.error('Missing required environment variables:', {
+        hasClientEmail: !!clientEmail,
+        hasPrivateKey: !!privateKey,
+        hasPropertyId: !!propertyId
+      });
+      throw new Error('Missing required GA4 credentials');
+    }
+
+    // S'assurer que la clé privée est correctement formatée
+    const formattedPrivateKey = privateKey.replace(/\\n/g, '\n');
+
     const analyticsDataClient = new BetaAnalyticsDataClient({
       credentials: {
-        client_email: Deno.env.get('GA4_CLIENT_EMAIL'),
-        private_key: Deno.env.get('GA4_PRIVATE_KEY')?.replace(/\\n/g, '\n'),
+        client_email: clientEmail,
+        private_key: formattedPrivateKey
       },
     });
 
-    const propertyId = Deno.env.get('GA4_PROPERTY_ID');
-    
-    if (!propertyId) {
-      throw new Error('GA4_PROPERTY_ID is not set');
-    }
+    console.log('Attempting to fetch GA4 data for property:', propertyId);
 
     const [response] = await analyticsDataClient.runReport({
       property: `properties/${propertyId}`,
@@ -38,6 +51,7 @@ serve(async (req) => {
     });
 
     if (!response.rows || response.rows.length === 0) {
+      console.log('No data returned from GA4');
       return new Response(
         JSON.stringify({
           activeUsers: 0,

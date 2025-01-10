@@ -51,29 +51,31 @@ async function importPrivateKey(pem: string): Promise<CryptoKey> {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
+    const url = new URL(req.url)
+    const startDate = url.searchParams.get('startDate') || '30daysAgo'
+    const endDate = url.searchParams.get('endDate') || 'today'
+
     const clientEmail = Deno.env.get('GA4_CLIENT_EMAIL')
     const privateKey = Deno.env.get('GA4_PRIVATE_KEY')
     const propertyId = Deno.env.get('GA4_PROPERTY_ID')
 
     if (!clientEmail || !privateKey || !propertyId) {
-      console.error('Missing required environment variables:', {
-        hasClientEmail: !!clientEmail,
-        hasPrivateKey: !!privateKey,
-        hasPropertyId: !!propertyId
-      })
+      console.error('Missing required environment variables')
       throw new Error('Missing required GA4 credentials')
     }
 
-    console.log('Starting GA4 data fetch with client email:', clientEmail)
-    console.log('Property ID:', propertyId)
+    console.log('Starting GA4 data fetch with:', {
+      clientEmail,
+      propertyId,
+      startDate,
+      endDate
+    })
 
-    // Create JWT token
     const key = await importPrivateKey(privateKey)
     const now = Math.floor(Date.now() / 1000)
     const jwt = await new SignJWT({
@@ -89,7 +91,6 @@ serve(async (req) => {
 
     console.log('JWT token created, requesting access token...')
 
-    // Exchange JWT for access token
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: {
@@ -110,7 +111,6 @@ serve(async (req) => {
     const { access_token } = await tokenResponse.json()
     console.log('Access token obtained, fetching GA4 data...')
 
-    // Make request to GA4 API
     const ga4Response = await fetch(
       `https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:runReport`,
       {
@@ -120,12 +120,22 @@ serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
+          dateRanges: [{ startDate, endDate }],
           metrics: [
             { name: 'activeUsers' },
             { name: 'screenPageViews' },
             { name: 'sessions' },
-            { name: 'averageSessionDuration' }
+            { name: 'averageSessionDuration' },
+            { name: 'bounceRate' },
+            { name: 'engagedSessions' },
+            { name: 'engagementRate' },
+            { name: 'eventsPerSession' },
+            { name: 'totalUsers' }
+          ],
+          dimensions: [
+            { name: 'date' },
+            { name: 'deviceCategory' },
+            { name: 'country' }
           ]
         })
       }
@@ -140,17 +150,73 @@ serve(async (req) => {
     const data = await ga4Response.json()
     console.log('GA4 data received:', data)
 
-    // Extract metrics from response
-    const metrics = data.rows?.[0]?.metricValues || []
-    const analyticsData = {
-      activeUsers: parseInt(metrics[0]?.value || '0'),
-      pageViews: parseInt(metrics[1]?.value || '0'),
-      sessions: parseInt(metrics[2]?.value || '0'),
-      averageSessionDuration: parseFloat(metrics[3]?.value || '0')
+    // Traitement des données pour les rendre plus faciles à utiliser
+    const processedData = {
+      summary: {
+        activeUsers: 0,
+        pageViews: 0,
+        sessions: 0,
+        averageSessionDuration: 0,
+        bounceRate: 0,
+        engagementRate: 0,
+        totalUsers: 0
+      },
+      byDate: {},
+      byDevice: {},
+      byCountry: {}
     }
 
+    // Traitement des lignes de données
+    data.rows?.forEach((row: any) => {
+      const date = row.dimensionValues[0].value
+      const device = row.dimensionValues[1].value
+      const country = row.dimensionValues[2].value
+      const metrics = row.metricValues.map((m: any) => parseFloat(m.value))
+
+      // Mise à jour des totaux
+      processedData.summary.activeUsers += metrics[0]
+      processedData.summary.pageViews += metrics[1]
+      processedData.summary.sessions += metrics[2]
+      processedData.summary.averageSessionDuration = metrics[3]
+      processedData.summary.bounceRate = metrics[4]
+      processedData.summary.engagementRate = metrics[6]
+      processedData.summary.totalUsers = metrics[8]
+
+      // Données par date
+      if (!processedData.byDate[date]) {
+        processedData.byDate[date] = {
+          activeUsers: 0,
+          pageViews: 0,
+          sessions: 0
+        }
+      }
+      processedData.byDate[date].activeUsers += metrics[0]
+      processedData.byDate[date].pageViews += metrics[1]
+      processedData.byDate[date].sessions += metrics[2]
+
+      // Données par appareil
+      if (!processedData.byDevice[device]) {
+        processedData.byDevice[device] = {
+          sessions: 0,
+          users: 0
+        }
+      }
+      processedData.byDevice[device].sessions += metrics[2]
+      processedData.byDevice[device].users += metrics[0]
+
+      // Données par pays
+      if (!processedData.byCountry[country]) {
+        processedData.byCountry[country] = {
+          sessions: 0,
+          users: 0
+        }
+      }
+      processedData.byCountry[country].sessions += metrics[2]
+      processedData.byCountry[country].users += metrics[0]
+    })
+
     return new Response(
-      JSON.stringify(analyticsData),
+      JSON.stringify(processedData),
       { 
         headers: { 
           ...corsHeaders,

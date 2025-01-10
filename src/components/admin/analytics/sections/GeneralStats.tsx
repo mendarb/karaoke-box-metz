@@ -3,64 +3,92 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Loader2, TrendingUp, TrendingDown, Users, Calendar, Clock, Target } from "lucide-react";
 
+const calculatePercentageChange = (current: number, previous: number) => {
+  if (previous === 0) return 0;
+  return ((current - previous) / previous) * 100;
+};
+
 export const GeneralStats = () => {
   const { data: stats, isLoading } = useQuery({
     queryKey: ['analytics-general'],
     queryFn: async () => {
-      // Récupérer toutes les réservations
-      const { data: bookings, error: bookingsError } = await supabase
+      const now = new Date();
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+
+      // Réservations des 30 derniers jours
+      const { data: currentBookings, error: currentError } = await supabase
         .from('bookings')
         .select('*')
+        .gte('created_at', thirtyDaysAgo.toISOString())
+        .lt('created_at', now.toISOString())
         .is('deleted_at', null);
-      
-      if (bookingsError) throw bookingsError;
 
-      // Récupérer les données de tracking des étapes
-      const { data: stepsTracking, error: trackingError } = await supabase
-        .from('booking_steps_tracking')
+      // Réservations des 30 jours précédents
+      const { data: previousBookings, error: previousError } = await supabase
+        .from('bookings')
         .select('*')
-        .eq('step', 1) // On ne compte que les sessions qui ont commencé la réservation
-        .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()); // Dernier mois
+        .gte('created_at', sixtyDaysAgo.toISOString())
+        .lt('created_at', thirtyDaysAgo.toISOString())
+        .is('deleted_at', null);
 
-      if (trackingError) throw trackingError;
+      if (currentError || previousError) throw new Error('Erreur lors de la récupération des données');
 
-      // Calculer les statistiques
-      const totalBookings = bookings?.length || 0;
-      const completedBookings = bookings?.filter(b => b.payment_status === 'paid').length || 0;
-      
-      // Calculer la durée moyenne en minutes pour les réservations payées
-      const paidBookings = bookings?.filter(b => b.payment_status === 'paid') || [];
-      const averageDurationInMinutes = paidBookings.length > 0
-        ? Math.round((paidBookings.reduce((sum, booking) => sum + Number(booking.duration), 0) / paidBookings.length) * 60)
-        : 0;
-      
-      // Calculer le taux de conversion basé sur les sessions uniques du dernier mois
-      const uniqueBookingAttempts = new Set(stepsTracking?.map(track => track.session_id)).size || 0;
+      // Calculs pour la période actuelle
+      const currentTotal = currentBookings?.length || 0;
+      const currentCompleted = currentBookings?.filter(b => b.payment_status === 'paid').length || 0;
+      const currentAverageDuration = currentBookings?.filter(b => b.payment_status === 'paid')
+        .reduce((acc, b) => acc + Number(b.duration), 0) / (currentCompleted || 1);
+
+      // Calculs pour la période précédente
+      const previousTotal = previousBookings?.length || 0;
+      const previousCompleted = previousBookings?.filter(b => b.payment_status === 'paid').length || 0;
+      const previousAverageDuration = previousBookings?.filter(b => b.payment_status === 'paid')
+        .reduce((acc, b) => acc + Number(b.duration), 0) / (previousCompleted || 1);
+
+      // Calcul du taux de conversion
+      const { data: sessions } = await supabase
+        .from('booking_steps_tracking')
+        .select('session_id')
+        .gte('created_at', thirtyDaysAgo.toISOString())
+        .eq('step', 1)
+        .is('completed', true);
+
+      const { data: previousSessions } = await supabase
+        .from('booking_steps_tracking')
+        .select('session_id')
+        .gte('created_at', sixtyDaysAgo.toISOString())
+        .lt('created_at', thirtyDaysAgo.toISOString())
+        .eq('step', 1)
+        .is('completed', true);
+
+      const uniqueSessions = new Set(sessions?.map(s => s.session_id)).size;
+      const previousUniqueSessions = new Set(previousSessions?.map(s => s.session_id)).size;
+
+      const currentConversionRate = uniqueSessions > 0 ? (currentCompleted / uniqueSessions) * 100 : 0;
+      const previousConversionRate = previousUniqueSessions > 0 ? (previousCompleted / previousUniqueSessions) * 100 : 0;
+
       console.log('Statistiques de conversion:', {
-        uniqueBookingAttempts,
-        completedBookings,
-        stepsTracking: stepsTracking?.length,
-        periode: 'dernier mois'
+        période: '30 derniers jours',
+        sessions_uniques: uniqueSessions,
+        réservations_complétées: currentCompleted,
+        taux_conversion: currentConversionRate,
+        évolution: calculatePercentageChange(currentConversionRate, previousConversionRate)
       });
-      
-      const conversionRate = uniqueBookingAttempts > 0
-        ? ((completedBookings / uniqueBookingAttempts) * 100)
-        : 0;
-
-      // Calculer les variations (à implémenter avec des vraies données historiques)
-      const variations = {
-        totalBookings: '+12%',
-        completedBookings: '+8%',
-        conversionRate: '+5%',
-        averageDuration: '+2%'
-      };
 
       return {
-        totalBookings,
-        completedBookings,
-        averageDuration: averageDurationInMinutes,
-        conversionRate,
-        variations
+        currentPeriod: {
+          totalBookings: currentTotal,
+          completedBookings: currentCompleted,
+          averageDuration: Math.round(currentAverageDuration),
+          conversionRate: Math.round(currentConversionRate)
+        },
+        variations: {
+          totalBookings: calculatePercentageChange(currentTotal, previousTotal),
+          completedBookings: calculatePercentageChange(currentCompleted, previousCompleted),
+          conversionRate: calculatePercentageChange(currentConversionRate, previousConversionRate),
+          averageDuration: calculatePercentageChange(currentAverageDuration, previousAverageDuration)
+        }
       };
     }
   });
@@ -76,31 +104,31 @@ export const GeneralStats = () => {
   const metrics = [
     {
       title: "Réservations totales",
-      value: stats?.totalBookings || 0,
-      change: stats?.variations.totalBookings,
+      value: stats?.currentPeriod.totalBookings || 0,
+      change: stats?.variations.totalBookings ? `${Math.round(stats.variations.totalBookings)}%` : '0%',
       icon: Calendar,
-      trend: "up"
+      trend: stats?.variations.totalBookings >= 0 ? "up" : "down"
     },
     {
       title: "Réservations complétées",
-      value: stats?.completedBookings || 0,
-      change: stats?.variations.completedBookings,
+      value: stats?.currentPeriod.completedBookings || 0,
+      change: stats?.variations.completedBookings ? `${Math.round(stats.variations.completedBookings)}%` : '0%',
       icon: Users,
-      trend: "up"
+      trend: stats?.variations.completedBookings >= 0 ? "up" : "down"
     },
     {
       title: "Taux de conversion",
-      value: `${Math.round(stats?.conversionRate || 0)}%`,
-      change: stats?.variations.conversionRate,
+      value: `${stats?.currentPeriod.conversionRate || 0}%`,
+      change: stats?.variations.conversionRate ? `${Math.round(stats.variations.conversionRate)}%` : '0%',
       icon: Target,
-      trend: "up"
+      trend: stats?.variations.conversionRate >= 0 ? "up" : "down"
     },
     {
       title: "Durée moyenne",
-      value: `${stats?.averageDuration || 0}min`,
-      change: stats?.variations.averageDuration,
+      value: `${stats?.currentPeriod.averageDuration || 0}min`,
+      change: stats?.variations.averageDuration ? `${Math.round(stats.variations.averageDuration)}%` : '0%',
       icon: Clock,
-      trend: "up"
+      trend: stats?.variations.averageDuration >= 0 ? "up" : "down"
     }
   ];
 
@@ -109,24 +137,23 @@ export const GeneralStats = () => {
       {metrics.map((metric, index) => (
         <Card key={index} className="p-4">
           <div className="flex items-center justify-between">
-            <div>
+            <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">
                 {metric.title}
               </p>
-              <p className="text-2xl font-bold mt-1">
+              <p className="text-2xl font-bold">
                 {metric.value}
               </p>
-              <div className="flex items-center mt-1">
+              <div className="flex items-center text-sm">
                 {metric.trend === "up" ? (
                   <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
                 ) : (
                   <TrendingDown className="w-4 h-4 text-red-500 mr-1" />
                 )}
-                <span className={`text-sm ${
-                  metric.trend === "up" ? "text-green-500" : "text-red-500"
-                }`}>
+                <span className={metric.trend === "up" ? "text-green-500" : "text-red-500"}>
                   {metric.change}
                 </span>
+                <span className="text-muted-foreground ml-1">vs 30j précédents</span>
               </div>
             </div>
             <metric.icon className="h-8 w-8 text-muted-foreground opacity-50" />

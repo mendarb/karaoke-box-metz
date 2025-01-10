@@ -2,6 +2,8 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { format } from "https://esm.sh/date-fns@2.30.0";
 import { fr } from "https://esm.sh/date-fns@2.30.0/locale";
 
+const SENDGRID_API_KEY = Deno.env.get('SENDGRID_API_KEY');
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -25,11 +27,6 @@ serve(async (req) => {
     const startHour = parseInt(booking.time_slot);
     const endHour = startHour + parseInt(booking.duration);
     const formatHour = (hour: number) => `${hour.toString().padStart(2, '0')}:00`;
-
-    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-    if (!RESEND_API_KEY) {
-      throw new Error('Clé API Resend manquante');
-    }
 
     const emailContent = `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
@@ -82,31 +79,38 @@ serve(async (req) => {
       </div>
     `;
 
-    console.log('📧 Envoi de l\'email avec Resend API');
-    const res = await fetch('https://api.resend.com/emails', {
+    console.log('📧 Envoi de l\'email via SendGrid');
+    const res = await fetch('https://api.sendgrid.com/v3/mail/send', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${SENDGRID_API_KEY}`,
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: 'Karaoke Box <onboarding@resend.dev>', // Utilisation de l'adresse par défaut
-        to: [booking.user_email],
-        subject: 'Votre réservation est confirmée ! - Karaoke Box Metz',
-        html: emailContent,
+        personalizations: [{
+          to: [{ email: booking.user_email }],
+        }],
+        from: {
+          email: "contact@karaoke-box-metz.fr",
+          name: "Karaoké Box Metz"
+        },
+        subject: 'Votre réservation est confirmée ! - Karaoké Box Metz',
+        content: [{
+          type: 'text/html',
+          value: emailContent,
+        }],
       }),
     });
 
     if (!res.ok) {
       const error = await res.text();
-      console.error('❌ Erreur Resend API:', error);
+      console.error('❌ Erreur SendGrid:', error);
       throw new Error(`Échec de l'envoi de l'email: ${error}`);
     }
 
-    const data = await res.json();
-    console.log('✅ Email envoyé avec succès:', data);
+    console.log('✅ Email envoyé avec succès');
 
-    return new Response(JSON.stringify(data), {
+    return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });

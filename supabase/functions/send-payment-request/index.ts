@@ -2,6 +2,8 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { format } from "https://esm.sh/date-fns@2.30.0";
 import { fr } from "https://esm.sh/date-fns@2.30.0/locale";
 
+const SENDGRID_API_KEY = Deno.env.get('SENDGRID_API_KEY');
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -85,37 +87,38 @@ serve(async (req) => {
       </div>
     `;
 
-    const resendApiKey = Deno.env.get('RESEND_API_KEY');
-    if (!resendApiKey) {
-      throw new Error('Clé API Resend non configurée');
-    }
-
-    console.log('📧 Envoi de l\'email via Resend...');
-
-    const res = await fetch('https://api.resend.com/emails', {
+    console.log('📧 Envoi de l\'email via SendGrid');
+    const res = await fetch('https://api.sendgrid.com/v3/mail/send', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${SENDGRID_API_KEY}`,
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${resendApiKey}`,
       },
       body: JSON.stringify({
-        from: 'Karaoké Box <onboarding@resend.dev>', // Utilisation de l'adresse par défaut
-        to: [booking.userEmail],
+        personalizations: [{
+          to: [{ email: booking.userEmail }],
+        }],
+        from: {
+          email: "contact@karaoke-box-metz.fr",
+          name: "Karaoké Box Metz"
+        },
         subject: '🎤 Confirmez votre réservation - K-Box',
-        html: emailHtml,
+        content: [{
+          type: 'text/html',
+          value: emailHtml,
+        }],
       }),
     });
 
     if (!res.ok) {
       const error = await res.text();
-      console.error('❌ Erreur Resend:', error);
+      console.error('❌ Erreur SendGrid:', error);
       throw new Error(`Erreur lors de l'envoi de l'email: ${error}`);
     }
 
-    const data = await res.json();
-    console.log('✅ Email envoyé avec succès:', data);
+    console.log('✅ Email envoyé avec succès');
 
-    return new Response(JSON.stringify(data), {
+    return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });

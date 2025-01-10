@@ -17,44 +17,48 @@ export const DashboardStats = ({ bookings }: DashboardStatsProps) => {
   };
 
   return (
-    <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total</CardTitle>
-          <Calendar className="h-4 w-4 text-muted-foreground" />
+    <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+      <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
+        <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+          <CardTitle className="text-sm font-medium text-gray-600">Total</CardTitle>
+          <Calendar className="h-4 w-4 text-violet-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{stats.totalBookings}</div>
+          <div className="text-2xl font-bold text-gray-900">{stats.totalBookings}</div>
+          <p className="text-xs text-gray-500 mt-1">Réservations totales</p>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">En attente</CardTitle>
-          <Clock className="h-4 w-4 text-muted-foreground" />
+      <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
+        <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+          <CardTitle className="text-sm font-medium text-gray-600">En attente</CardTitle>
+          <Clock className="h-4 w-4 text-orange-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{stats.pendingBookings}</div>
+          <div className="text-2xl font-bold text-gray-900">{stats.pendingBookings}</div>
+          <p className="text-xs text-gray-500 mt-1">Réservations en attente</p>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Confirmées</CardTitle>
-          <Users className="h-4 w-4 text-muted-foreground" />
+      <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
+        <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+          <CardTitle className="text-sm font-medium text-gray-600">Confirmées</CardTitle>
+          <Users className="h-4 w-4 text-green-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{stats.confirmedBookings}</div>
+          <div className="text-2xl font-bold text-gray-900">{stats.confirmedBookings}</div>
+          <p className="text-xs text-gray-500 mt-1">Réservations confirmées</p>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Revenus</CardTitle>
-          <Euro className="h-4 w-4 text-muted-foreground" />
+      <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
+        <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+          <CardTitle className="text-sm font-medium text-gray-600">Revenus</CardTitle>
+          <Euro className="h-4 w-4 text-violet-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{stats.totalRevenue}€</div>
+          <div className="text-2xl font-bold text-gray-900">{stats.totalRevenue.toFixed(2)}€</div>
+          <p className="text-xs text-gray-500 mt-1">Total des revenus</p>
         </CardContent>
       </Card>
     </div>

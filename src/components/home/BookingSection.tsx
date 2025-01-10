@@ -1,6 +1,8 @@
 import { LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { BookingForm } from "@/components/BookingForm";
 
 interface BookingSectionProps {
   user: any;
@@ -8,6 +10,8 @@ interface BookingSectionProps {
 }
 
 const BookingSection = ({ user, onShowAuth }: BookingSectionProps) => {
+  const isMobile = useIsMobile();
+  
   const handleGoogleLogin = async () => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
@@ -31,16 +35,16 @@ const BookingSection = ({ user, onShowAuth }: BookingSectionProps) => {
   };
 
   return (
-    <div className="bg-white h-full p-6 flex flex-col justify-center">
+    <div className={`bg-white p-6 flex flex-col justify-center ${isMobile ? 'min-h-screen' : 'h-full'}`}>
       {user ? (
         <BookingForm />
       ) : (
-        <div className="flex flex-col justify-center items-center h-full max-w-md mx-auto space-y-3">
+        <div className="flex flex-col items-center justify-center h-full space-y-4 p-8 text-center">
           <div className="rounded-full bg-violet-100 p-3 mb-2">
             <LogIn className="h-6 w-6 text-violet-600" />
           </div>
           <div className="text-center">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-1.5">
+            <h2 className="text-2xl font-semibold text-gray-900">
               Connectez-vous pour réserver
             </h2>
             <p className="text-gray-600 text-sm max-w-sm mb-3">

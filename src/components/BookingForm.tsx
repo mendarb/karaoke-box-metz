@@ -11,19 +11,24 @@ export const BookingForm = () => {
   const { user } = useUserState();
 
   const handleGoogleLogin = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-        queryParams: {
-          access_type: 'offline',
-          prompt: 'consent',
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
         }
+      });
+      
+      if (error) {
+        console.error("Erreur de connexion Google:", error);
+        throw error;
       }
-    });
-    
-    if (error) {
-      console.error("Erreur de connexion Google:", error);
+    } catch (error) {
+      console.error("Erreur lors de la connexion:", error);
     }
   };
 

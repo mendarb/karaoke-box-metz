@@ -18,6 +18,7 @@ serve(async (req) => {
 
     // Validation de l'email
     if (!requestBody.userEmail || !requestBody.userEmail.includes('@')) {
+      console.error('❌ Email invalide:', requestBody.userEmail)
       throw new Error('Email invalide')
     }
 

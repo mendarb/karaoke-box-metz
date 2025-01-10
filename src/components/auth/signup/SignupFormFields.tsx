@@ -82,8 +82,8 @@ export function SignupFormFields({
             onValueChange={setPhoneCountryCode}
             disabled={isLoading}
           >
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="Indicatif" />
+            <SelectTrigger className="w-[100px] flex-shrink-0">
+              <SelectValue placeholder="Code" />
             </SelectTrigger>
             <SelectContent>
               {COUNTRY_CODES.map((code) => (

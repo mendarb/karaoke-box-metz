@@ -1,11 +1,11 @@
 import { supabase } from '@/lib/supabase';
 
-interface GA4Data {
+export interface GA4Data {
   summary: {
     activeUsers: number;
     pageViews: number;
     sessions: number;
-    averageSessionDuration: number;
+    averageEngagementTime: number;
     bounceRate: number;
     engagementRate: number;
     totalUsers: number;
@@ -36,7 +36,16 @@ export const getGA4Data = async (startDate?: string, endDate?: string): Promise<
       return null;
     }
 
-    return data as GA4Data;
+    // Map averageSessionDuration to averageEngagementTime if needed
+    const mappedData = {
+      ...data,
+      summary: {
+        ...data.summary,
+        averageEngagementTime: data.summary.averageSessionDuration || data.summary.averageEngagementTime || 0
+      }
+    };
+
+    return mappedData as GA4Data;
   } catch (error) {
     console.error('Error in getGA4Data:', error);
     return null;

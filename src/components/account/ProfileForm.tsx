@@ -29,7 +29,6 @@ interface ProfileFormProps {
 export const ProfileForm = ({ initialData, onSubmit, isLoading }: ProfileFormProps) => {
   const form = useForm<ProfileFormData>();
 
-  // Mettre à jour le formulaire quand initialData change
   useEffect(() => {
     if (initialData) {
       console.log("Setting form values with:", initialData);
@@ -42,34 +41,36 @@ export const ProfileForm = ({ initialData, onSubmit, isLoading }: ProfileFormPro
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="first_name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Prénom</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <div className="grid gap-6 sm:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="first_name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Prénom</FormLabel>
+                <FormControl>
+                  <Input {...field} className="bg-white" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <FormField
-          control={form.control}
-          name="last_name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nom</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+          <FormField
+            control={form.control}
+            name="last_name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nom</FormLabel>
+                <FormControl>
+                  <Input {...field} className="bg-white" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <FormField
           control={form.control}
@@ -79,8 +80,8 @@ export const ProfileForm = ({ initialData, onSubmit, isLoading }: ProfileFormPro
               <FormLabel>Email</FormLabel>
               <FormControl>
                 <div className="relative">
-                  <Input {...field} disabled className="pr-10 bg-gray-50" />
-                  <Mail className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
+                  <Input {...field} disabled className="pr-10 bg-muted" />
+                  <Mail className="absolute right-3 top-2.5 h-5 w-5 text-muted-foreground" />
                 </div>
               </FormControl>
               <FormDescription className="text-sm text-muted-foreground">
@@ -97,23 +98,25 @@ export const ProfileForm = ({ initialData, onSubmit, isLoading }: ProfileFormPro
             <FormItem>
               <FormLabel>Téléphone</FormLabel>
               <FormControl>
-                <Input {...field} type="tel" />
+                <Input {...field} type="tel" className="bg-white" />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Mise à jour...
-            </>
-          ) : (
-            "Mettre à jour"
-          )}
-        </Button>
+        <div className="flex justify-end">
+          <Button type="submit" disabled={isLoading} className="bg-violet-600 hover:bg-violet-700">
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Mise à jour...
+              </>
+            ) : (
+              "Mettre à jour"
+            )}
+          </Button>
+        </div>
       </form>
     </Form>
   );

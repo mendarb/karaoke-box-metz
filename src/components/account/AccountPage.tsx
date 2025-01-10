@@ -6,27 +6,28 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export const AccountPage = () => {
   return (
     <AccountLayout>
-      <div className="space-y-6 px-4 md:px-0">
-        <div className="flex items-center justify-center md:justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">Mon compte</h1>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Mon compte</h1>
+          <p className="text-muted-foreground">
+            Gérez vos informations personnelles et vos préférences de sécurité
+          </p>
         </div>
         
-        <div className="glass rounded-lg p-6">
-          <Tabs defaultValue="profile" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 max-w-[400px] mx-auto">
-              <TabsTrigger value="profile">Profil</TabsTrigger>
-              <TabsTrigger value="security">Sécurité</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="profile" className="space-y-6">
-              <ProfileSection />
-            </TabsContent>
-            
-            <TabsContent value="security" className="space-y-6">
-              <SecuritySection />
-            </TabsContent>
-          </Tabs>
-        </div>
+        <Tabs defaultValue="profile" className="space-y-6">
+          <TabsList className="bg-muted/50 p-1">
+            <TabsTrigger value="profile">Profil</TabsTrigger>
+            <TabsTrigger value="security">Sécurité</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="profile" className="space-y-6">
+            <ProfileSection />
+          </TabsContent>
+          
+          <TabsContent value="security" className="space-y-6">
+            <SecuritySection />
+          </TabsContent>
+        </Tabs>
       </div>
     </AccountLayout>
   );

@@ -51,8 +51,8 @@ export const ProfileSection = () => {
   };
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="border-none shadow-none bg-white/50">
+      <CardHeader className="pb-4">
         <CardTitle>Mon profil</CardTitle>
         <CardDescription>
           Gérez vos informations personnelles

@@ -61,7 +61,6 @@ serve(async (req) => {
       payment_method_types: ['card', 'paypal', 'klarna'],
       customer_email: requestBody.userEmail,
       customer_creation: 'always',
-      payment_method_collection: 'always',
       billing_address_collection: 'required',
       phone_number_collection: {
         enabled: true,

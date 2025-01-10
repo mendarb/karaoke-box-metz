@@ -18,80 +18,85 @@ export const GeneralStats = ({ period }: GeneralStatsProps) => {
   const { data: stats, isLoading } = useQuery({
     queryKey: ['analytics-general', period],
     queryFn: async () => {
-      const [dbStats, ga4Stats] = await Promise.all([
-        fetchDatabaseStats(),
+      const now = new Date();
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+
+      const [
+        { data: currentEvents },
+        { data: previousEvents },
+        { data: currentBookings },
+        { data: previousBookings },
+        ga4Stats
+      ] = await Promise.all([
+        // Événements utilisateurs actuels
+        supabase
+          .from('user_events')
+          .select('*')
+          .gte('created_at', thirtyDaysAgo.toISOString())
+          .lt('created_at', now.toISOString()),
+        // Événements utilisateurs précédents
+        supabase
+          .from('user_events')
+          .select('*')
+          .gte('created_at', sixtyDaysAgo.toISOString())
+          .lt('created_at', thirtyDaysAgo.toISOString()),
+        // Réservations actuelles
+        supabase
+          .from('bookings')
+          .select('*')
+          .gte('created_at', thirtyDaysAgo.toISOString())
+          .lt('created_at', now.toISOString())
+          .is('deleted_at', null),
+        // Réservations précédentes
+        supabase
+          .from('bookings')
+          .select('*')
+          .gte('created_at', sixtyDaysAgo.toISOString())
+          .lt('created_at', thirtyDaysAgo.toISOString())
+          .is('deleted_at', null),
+        // Données Google Analytics
         getGA4Data()
       ]);
 
+      // Calcul des inscriptions
+      const currentSignups = currentEvents?.filter(e => e.event_type === 'SIGNUP').length || 0;
+      const previousSignups = previousEvents?.filter(e => e.event_type === 'SIGNUP').length || 0;
+      
+      // Calcul des démarrages de réservation
+      const currentBookingStarts = currentEvents?.filter(e => e.event_type === 'BOOKING_STARTED').length || 0;
+      const previousBookingStarts = previousEvents?.filter(e => e.event_type === 'BOOKING_STARTED').length || 0;
+      
+      // Calcul des réservations complétées
+      const currentCompleted = currentBookings?.filter(b => b.payment_status === 'paid').length || 0;
+      const previousCompleted = previousBookings?.filter(b => b.payment_status === 'paid').length || 0;
+
+      // Calcul du taux de conversion
+      const currentConversionRate = currentBookingStarts > 0 ? (currentCompleted / currentBookingStarts) * 100 : 0;
+      const previousConversionRate = previousBookingStarts > 0 ? (previousCompleted / previousBookingStarts) * 100 : 0;
+
       return {
-        ...dbStats,
-        ga4: ga4Stats
+        currentPeriod: {
+          signups: currentSignups,
+          bookingStarts: currentBookingStarts,
+          completedBookings: currentCompleted,
+          conversionRate: Math.round(currentConversionRate)
+        },
+        variations: {
+          signups: calculatePercentageChange(currentSignups, previousSignups),
+          bookingStarts: calculatePercentageChange(currentBookingStarts, previousBookingStarts),
+          completedBookings: calculatePercentageChange(currentCompleted, previousCompleted),
+          conversionRate: calculatePercentageChange(currentConversionRate, previousConversionRate)
+        },
+        ga4: ga4Stats || {
+          activeUsers: 0,
+          pageViews: 0,
+          sessions: 0,
+          averageSessionDuration: 0
+        }
       };
     }
   });
-
-  const fetchDatabaseStats = async () => {
-    const now = new Date();
-    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-    const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
-
-    const [
-      { data: currentEvents },
-      { data: previousEvents },
-      { data: currentBookings },
-      { data: previousBookings }
-    ] = await Promise.all([
-      supabase
-        .from('user_events')
-        .select('*')
-        .gte('created_at', thirtyDaysAgo.toISOString())
-        .lt('created_at', now.toISOString()),
-      supabase
-        .from('user_events')
-        .select('*')
-        .gte('created_at', sixtyDaysAgo.toISOString())
-        .lt('created_at', thirtyDaysAgo.toISOString()),
-      supabase
-        .from('bookings')
-        .select('*')
-        .gte('created_at', thirtyDaysAgo.toISOString())
-        .lt('created_at', now.toISOString())
-        .is('deleted_at', null),
-      supabase
-        .from('bookings')
-        .select('*')
-        .gte('created_at', sixtyDaysAgo.toISOString())
-        .lt('created_at', thirtyDaysAgo.toISOString())
-        .is('deleted_at', null)
-    ]);
-
-    const currentSignups = currentEvents?.filter(e => e.event_type === 'SIGNUP').length || 0;
-    const previousSignups = previousEvents?.filter(e => e.event_type === 'SIGNUP').length || 0;
-    
-    const currentBookingStarts = currentEvents?.filter(e => e.event_type === 'BOOKING_STARTED').length || 0;
-    const previousBookingStarts = previousEvents?.filter(e => e.event_type === 'BOOKING_STARTED').length || 0;
-    
-    const currentCompleted = currentBookings?.filter(b => b.payment_status === 'paid').length || 0;
-    const previousCompleted = previousBookings?.filter(b => b.payment_status === 'paid').length || 0;
-
-    const currentConversionRate = currentBookingStarts > 0 ? (currentCompleted / currentBookingStarts) * 100 : 0;
-    const previousConversionRate = previousBookingStarts > 0 ? (previousCompleted / previousBookingStarts) * 100 : 0;
-
-    return {
-      currentPeriod: {
-        signups: currentSignups,
-        bookingStarts: currentBookingStarts,
-        completedBookings: currentCompleted,
-        conversionRate: Math.round(currentConversionRate)
-      },
-      variations: {
-        signups: calculatePercentageChange(currentSignups, previousSignups),
-        bookingStarts: calculatePercentageChange(currentBookingStarts, previousBookingStarts),
-        completedBookings: calculatePercentageChange(currentCompleted, previousCompleted),
-        conversionRate: calculatePercentageChange(currentConversionRate, previousConversionRate)
-      }
-    };
-  };
 
   if (isLoading) {
     return (
@@ -115,10 +120,12 @@ export const GeneralStats = ({ period }: GeneralStatsProps) => {
       description: "Nombre total de pages vues"
     },
     {
-      title: "Sessions",
-      value: stats?.ga4?.sessions || 0,
+      title: "Utilisateurs inscrits",
+      value: stats?.currentPeriod.signups || 0,
+      change: stats?.variations.signups ? `${Math.round(stats.variations.signups)}%` : '0%',
       icon: Activity,
-      description: "Nombre total de sessions utilisateurs"
+      trend: stats?.variations.signups >= 0 ? "up" : "down",
+      description: "Nombre d'utilisateurs inscrits"
     },
     {
       title: "Taux de conversion",

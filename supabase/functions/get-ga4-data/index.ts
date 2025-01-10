@@ -9,7 +9,7 @@ serve(async (req) => {
 
   try {
     const clientEmail = Deno.env.get('GA4_CLIENT_EMAIL')
-    const privateKey = Deno.env.get('GA4_PRIVATE_KEY')
+    const privateKey = Deno.env.get('GA4_PRIVATE_KEY')?.replace(/\\n/g, '\n')
     const propertyId = Deno.env.get('GA4_PROPERTY_ID')
 
     if (!clientEmail || !privateKey || !propertyId) {
@@ -38,9 +38,10 @@ serve(async (req) => {
     const signInput = `${encodedHeader}.${encodedClaim}`
 
     // Sign JWT
+    const keyData = privateKey.trim()
     const key = await crypto.subtle.importKey(
       'pkcs8',
-      new TextEncoder().encode(privateKey),
+      new TextEncoder().encode(keyData),
       { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
       false,
       ['sign']

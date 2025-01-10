@@ -11,6 +11,7 @@ export const BookingForm = () => {
   const { user } = useUserState();
 
   const handleGoogleLogin = async () => {
+    console.log('🔑 Tentative de connexion Google');
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -19,7 +20,7 @@ export const BookingForm = () => {
     });
     
     if (error) {
-      console.error("Erreur de connexion Google:", error);
+      console.error("❌ Erreur de connexion Google:", error);
     }
   };
 
@@ -81,5 +82,6 @@ export const BookingForm = () => {
     );
   }
 
+  console.log('👤 User email:', user.email); // Ajout du log pour vérifier l'email
   return <BookingFormWrapper />;
 };

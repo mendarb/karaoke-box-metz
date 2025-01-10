@@ -36,7 +36,7 @@ const BookingSection = ({ user, onShowAuth }: BookingSectionProps) => {
 
   return (
     <div className={`bg-white flex flex-col ${isMobile ? 'min-h-screen' : 'h-full'}`}>
-      {isMobile && (
+      {isMobile && !user && (
         <div className="px-4 py-3 border-b border-gray-100 flex items-center">
           <img 
             src="/lovable-uploads/b4b03af7-d741-46f7-a7f3-e927b989289f.png" 
@@ -50,7 +50,7 @@ const BookingSection = ({ user, onShowAuth }: BookingSectionProps) => {
         </div>
       )}
       
-      <div className="flex-1 p-6 flex flex-col justify-center">
+      <div className="flex-1 flex flex-col justify-center">
         {user ? (
           <BookingForm />
         ) : (

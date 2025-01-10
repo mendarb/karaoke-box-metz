@@ -23,7 +23,9 @@ interface AnalyticsData {
     signups: number;
     conversionRate: number;
   };
-  variations:conversionRate: number;
+  variations: {
+    signups: number;
+    conversionRate: number;
   };
 }
 

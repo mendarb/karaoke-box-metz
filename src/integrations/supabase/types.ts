@@ -33,6 +33,50 @@ export type Database = {
         }
         Relationships: []
       }
+      booking_steps_tracking: {
+        Row: {
+          booking_id: string | null
+          completed: boolean | null
+          created_at: string
+          id: string
+          session_id: string
+          step: number
+          step_name: string
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          booking_id?: string | null
+          completed?: boolean | null
+          created_at?: string
+          id?: string
+          session_id: string
+          step: number
+          step_name: string
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          booking_id?: string | null
+          completed?: boolean | null
+          created_at?: string
+          id?: string
+          session_id?: string
+          step?: number
+          step_name?: string
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_steps_tracking_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
           cabin: string

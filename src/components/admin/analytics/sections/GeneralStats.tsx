@@ -22,20 +22,31 @@ export const GeneralStats = () => {
 
       if (usersError) throw usersError;
 
+      // Récupérer les données de tracking des étapes
+      const { data: stepsTracking, error: trackingError } = await supabase
+        .from('booking_steps_tracking')
+        .select('*');
+
+      if (trackingError) throw trackingError;
+
       // Calculer les statistiques
       const totalBookings = bookings?.length || 0;
       const completedBookings = bookings?.filter(b => b.payment_status === 'paid').length || 0;
       const abandonedBookings = bookings?.filter(b => b.payment_status === 'pending').length || 0;
-      const averageDuration = bookings && completedBookings > 0
-        ? (bookings
-            .filter(b => b.payment_status === 'paid')
-            .reduce((sum, booking) => sum + parseInt(booking.duration), 0) / completedBookings)
+
+      // Calculer la durée moyenne uniquement pour les réservations payées
+      const paidBookings = bookings?.filter(b => b.payment_status === 'paid') || [];
+      const averageDuration = paidBookings.length > 0
+        ? (paidBookings.reduce((sum, booking) => sum + parseInt(booking.duration), 0) / paidBookings.length)
         : 0;
       
-      const conversionRate = totalUsers > 0
-        ? ((completedBookings / totalUsers) * 100)
+      // Calculer le taux de conversion basé sur les utilisateurs qui ont commencé une réservation
+      const uniqueBookingAttempts = new Set(stepsTracking?.map(track => track.session_id)).size || 0;
+      const conversionRate = uniqueBookingAttempts > 0
+        ? ((completedBookings / uniqueBookingAttempts) * 100)
         : 0;
 
+      // Calculer le taux de finalisation
       const completionRate = totalBookings > 0
         ? ((completedBookings / totalBookings) * 100)
         : 0;
@@ -47,7 +58,8 @@ export const GeneralStats = () => {
         averageDuration,
         conversionRate,
         completionRate,
-        totalUsers
+        totalUsers,
+        uniqueBookingAttempts
       };
     }
   });
@@ -65,9 +77,14 @@ export const GeneralStats = () => {
       <Card className="p-6">
         <div className="flex items-center space-x-2">
           <Users className="h-4 w-4 text-muted-foreground" />
-          <h3 className="text-sm font-medium">Utilisateurs inscrits</h3>
+          <h3 className="text-sm font-medium">Tentatives de réservation</h3>
         </div>
-        <p className="text-2xl font-bold mt-2">{stats?.totalUsers || 0}</p>
+        <div>
+          <p className="text-2xl font-bold mt-2">{stats?.uniqueBookingAttempts || 0}</p>
+          <p className="text-sm text-muted-foreground">
+            sessions uniques
+          </p>
+        </div>
       </Card>
 
       <Card className="p-6">
@@ -91,7 +108,7 @@ export const GeneralStats = () => {
         <div>
           <p className="text-2xl font-bold mt-2">{stats?.conversionRate.toFixed(1)}%</p>
           <p className="text-sm text-muted-foreground">
-            des utilisateurs réservent
+            des sessions aboutissent à une réservation
           </p>
         </div>
       </Card>
@@ -116,7 +133,7 @@ export const GeneralStats = () => {
         </div>
         <div>
           <p className="text-2xl font-bold mt-2">
-            {stats?.averageDuration.toFixed(1)}h
+            {stats?.averageDuration.toFixed(1)} heures
           </p>
           <p className="text-sm text-muted-foreground">
             par réservation complétée

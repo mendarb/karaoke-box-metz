@@ -25,22 +25,22 @@ export const GroupSizeSelector = ({
     <div className="w-full space-y-4">
       <div className="flex items-center gap-2">
         <Users className="h-5 w-5 text-violet-600" />
-        <h2 className="text-lg md:text-xl text-gray-900">
+        <h2 className="text-lg font-medium text-gray-900">
           Combien serez-vous ?
         </h2>
       </div>
       <p className="text-sm text-gray-600">
         Sélectionnez le nombre de personnes
       </p>
-      <div className="grid grid-cols-2 gap-2 w-full">
+      <div className="grid grid-cols-2 gap-3">
         {groupSizes.map(({ label, value }) => (
           <Button
             key={value}
             type="button"
             variant={selectedSize === value ? "default" : "outline"}
             className={cn(
-              "relative h-14 md:h-16 font-medium transition-all w-full",
-              selectedSize === value ? "bg-violet-600 hover:bg-violet-700" : "hover:bg-violet-50",
+              "relative h-16 font-medium transition-all",
+              selectedSize === value ? "bg-violet-600 hover:bg-violet-700 scale-105" : "hover:bg-violet-50",
               "flex flex-col items-center justify-center text-center",
               "transform active:scale-[0.98] transition-transform duration-200"
             )}

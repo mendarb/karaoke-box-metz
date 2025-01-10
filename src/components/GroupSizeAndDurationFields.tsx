@@ -7,6 +7,7 @@ import { PriceDisplay } from "@/components/price-calculator/PriceDisplay";
 import { PromoCodeField } from "@/components/price-calculator/PromoCodeField";
 import { usePromoCode } from "@/components/price-calculator/usePromoCode";
 import { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface GroupSizeAndDurationFieldsProps {
   form: UseFormReturn<any>;
@@ -85,32 +86,34 @@ export const GroupSizeAndDurationFields = ({
   }, [groupSize, duration, settings]);
 
   return (
-    <div className="space-y-6">
-      <GroupSizeSelector 
-        form={form} 
-        onGroupSizeChange={handleGroupSizeChange} 
-      />
-      <DurationSelector 
-        form={form} 
-        onDurationChange={handleDurationChange}
-        availableHours={availableHours}
-      />
-      {groupSize && duration && currentPrice > 0 && (
-        <>
-          <PromoCodeField
-            onPromoValidated={handlePromoValidated}
-          />
-          <PriceDisplay
-            groupSize={groupSize}
-            duration={duration}
-            price={currentPrice}
-            finalPrice={finalPrice}
-            pricePerPersonPerHour={pricePerPerson}
-            promoCode={promoData?.code}
-            isPromoValid={isPromoValid}
-          />
-        </>
-      )}
-    </div>
+    <Card className="bg-white/50 backdrop-blur-sm border-none">
+      <CardContent className="space-y-6 p-6">
+        <GroupSizeSelector 
+          form={form} 
+          onGroupSizeChange={handleGroupSizeChange} 
+        />
+        <DurationSelector 
+          form={form} 
+          onDurationChange={handleDurationChange}
+          availableHours={availableHours}
+        />
+        {groupSize && duration && currentPrice > 0 && (
+          <>
+            <PromoCodeField
+              onPromoValidated={handlePromoValidated}
+            />
+            <PriceDisplay
+              groupSize={groupSize}
+              duration={duration}
+              price={currentPrice}
+              finalPrice={finalPrice}
+              pricePerPersonPerHour={pricePerPerson}
+              promoCode={promoData?.code}
+              isPromoValid={isPromoValid}
+            />
+          </>
+        )}
+      </CardContent>
+    </Card>
   );
 };

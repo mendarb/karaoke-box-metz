@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, Users, Calendar, Clock, Target, UserCheck, UserCog } from "lucide-react";
 import { calculateAnalyticsStats } from "../../utils/analyticsCalculations";
-import { PeriodSelection } from "../../AnalyticsContent";
+import { PeriodSelection } from "../../types/analytics";
 
 interface AnalyticsStatsProps {
   bookings: any[];

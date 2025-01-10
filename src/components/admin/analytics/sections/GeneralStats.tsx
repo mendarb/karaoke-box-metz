@@ -2,13 +2,18 @@ import { Card } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Loader2, TrendingUp, TrendingDown, Users, Calendar, Clock, Target } from "lucide-react";
+import { PeriodSelection } from "../types/analytics";
+
+interface GeneralStatsProps {
+  period: PeriodSelection;
+}
 
 const calculatePercentageChange = (current: number, previous: number) => {
   if (previous === 0) return 0;
   return ((current - previous) / previous) * 100;
 };
 
-export const GeneralStats = () => {
+export const GeneralStats = ({ period }: GeneralStatsProps) => {
   const { data: stats, isLoading } = useQuery({
     queryKey: ['analytics-general'],
     queryFn: async () => {

@@ -9,7 +9,7 @@ serve(async (req) => {
 
   try {
     const clientEmail = Deno.env.get('GA4_CLIENT_EMAIL')
-    const privateKey = Deno.env.get('GA4_PRIVATE_KEY')?.replace(/\\n/g, '\n')
+    const privateKey = Deno.env.get('GA4_PRIVATE_KEY')
     const propertyId = Deno.env.get('GA4_PROPERTY_ID')
 
     if (!clientEmail || !privateKey || !propertyId) {
@@ -20,6 +20,14 @@ serve(async (req) => {
       })
       throw new Error('Missing required GA4 credentials')
     }
+
+    // Format private key correctly
+    const formattedKey = privateKey
+      .replace(/\\n/g, '\n')
+      .replace(/["']/g, '') // Remove any quotes
+      .replace(/^\s+|\s+$/g, '') // Trim whitespace
+      .replace(/^-----BEGIN PRIVATE KEY-----/, '-----BEGIN PRIVATE KEY-----\n')
+      .replace(/-----END PRIVATE KEY-----$/, '\n-----END PRIVATE KEY-----')
 
     // Create JWT token
     const header = { alg: 'RS256', typ: 'JWT' }
@@ -37,21 +45,27 @@ serve(async (req) => {
     const encodedClaim = btoa(JSON.stringify(claim))
     const signInput = `${encodedHeader}.${encodedClaim}`
 
+    console.log('Attempting to import private key...')
+
     // Sign JWT
-    const keyData = privateKey.trim()
     const key = await crypto.subtle.importKey(
       'pkcs8',
-      new TextEncoder().encode(keyData),
+      new TextEncoder().encode(formattedKey),
       { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
       false,
       ['sign']
     )
+
+    console.log('Key imported successfully')
+
     const signature = await crypto.subtle.sign(
       { name: 'RSASSA-PKCS1-v1_5' },
       key,
       new TextEncoder().encode(signInput)
     )
     const jwt = `${signInput}.${btoa(String.fromCharCode(...new Uint8Array(signature)))}`
+
+    console.log('JWT created successfully')
 
     // Make request to GA4 API
     const response = await fetch(

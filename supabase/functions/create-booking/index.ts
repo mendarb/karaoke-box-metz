@@ -36,13 +36,15 @@ serve(async (req) => {
       phone: requestBody.userPhone || '',
     }
 
+    console.log('📋 Billing details:', billingDetails)
+
     // Créer la session de paiement
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       success_url: `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get('origin')}`,
       payment_method_types: ['card', 'paypal', 'klarna'],
-      customer_email: billingDetails.email,
+      customer_email: requestBody.userEmail,
       billing_address_collection: 'required',
       phone_number_collection: {
         enabled: true,
@@ -75,6 +77,16 @@ serve(async (req) => {
           optional: true,
         },
       ],
+      payment_intent_data: {
+        metadata: {
+          booking_id: requestBody.bookingId,
+          user_id: requestBody.userId || null,
+        },
+        shipping: {
+          name: billingDetails.name,
+          phone: billingDetails.phone,
+        },
+      },
     })
 
     console.log('✅ Checkout session created:', session.id)

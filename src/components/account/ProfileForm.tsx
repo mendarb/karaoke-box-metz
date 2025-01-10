@@ -12,13 +12,17 @@ import {
 import { Input } from "@/components/ui/input";
 import { Loader2, Mail } from "lucide-react";
 import { useEffect } from "react";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-interface ProfileFormData {
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
-}
+const profileSchema = z.object({
+  first_name: z.string().min(1, "Le prénom est requis"),
+  last_name: z.string().min(1, "Le nom est requis"),
+  email: z.string().email("Email invalide"),
+  phone: z.string().min(1, "Le téléphone est requis"),
+});
+
+type ProfileFormData = z.infer<typeof profileSchema>;
 
 interface ProfileFormProps {
   initialData: ProfileFormData;
@@ -27,16 +31,15 @@ interface ProfileFormProps {
 }
 
 export const ProfileForm = ({ initialData, onSubmit, isLoading }: ProfileFormProps) => {
-  const form = useForm<ProfileFormData>();
+  const form = useForm<ProfileFormData>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: initialData,
+  });
 
-  // Mettre à jour le formulaire quand initialData change
   useEffect(() => {
     if (initialData) {
       console.log("Setting form values with:", initialData);
-      form.setValue("first_name", initialData.first_name || "");
-      form.setValue("last_name", initialData.last_name || "");
-      form.setValue("email", initialData.email || "");
-      form.setValue("phone", initialData.phone || "");
+      form.reset(initialData);
     }
   }, [initialData, form]);
 
@@ -97,7 +100,7 @@ export const ProfileForm = ({ initialData, onSubmit, isLoading }: ProfileFormPro
             <FormItem>
               <FormLabel>Téléphone</FormLabel>
               <FormControl>
-                <Input {...field} type="tel" />
+                <Input {...field} type="tel" placeholder="Ex: 06 12 34 56 78" />
               </FormControl>
               <FormMessage />
             </FormItem>

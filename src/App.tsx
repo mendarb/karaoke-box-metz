@@ -25,8 +25,8 @@ function App() {
           <AppRoutes />
           <Toaster />
           <AuthModal 
-            open={showAuthModal} 
-            onOpenChange={setShowAuthModal} 
+            isOpen={showAuthModal} 
+            onClose={() => setShowAuthModal(false)} 
           />
         </main>
       </BrowserRouter>

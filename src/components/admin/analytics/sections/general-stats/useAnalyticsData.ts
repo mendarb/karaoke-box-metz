@@ -5,6 +5,8 @@ import { format, subDays } from "date-fns";
 import { getDateRange } from "./utils/dateRangeUtils";
 import { calculatePercentageChange } from "./utils/analyticsCalculations";
 import { fetchAnalyticsData } from "./services/analyticsService";
+import { fetchUserSignups } from "./services/userAnalyticsService";
+import { fetchBookings, calculateBookingMetrics } from "./services/bookingAnalyticsService";
 
 export const useAnalyticsData = (period: PeriodSelection) => {
   const dateRange = getDateRange(period);
@@ -13,63 +15,43 @@ export const useAnalyticsData = (period: PeriodSelection) => {
   return useQuery({
     queryKey: ['analytics-general', period, dateRange],
     queryFn: async () => {
-      const { ga4Stats } = await fetchAnalyticsData(supabase, dateRange, previousStartDate);
+      console.log('Fetching analytics data for period:', period);
 
-      // Récupérer les inscriptions pour la période actuelle
-      const { count: currentSignupsCount } = await supabase
-        .from('user_events')
-        .select('count')
-        .eq('event_type', 'SIGNUP')
-        .gte('created_at', dateRange.startDate)
-        .lte('created_at', dateRange.endDate)
-        .single() || { count: 0 };
+      const [
+        { ga4Stats },
+        currentSignupsCount,
+        previousSignupsCount,
+        currentBookings,
+        previousBookings
+      ] = await Promise.all([
+        fetchAnalyticsData(supabase, dateRange, previousStartDate),
+        fetchUserSignups(supabase, dateRange.startDate, dateRange.endDate),
+        fetchUserSignups(supabase, previousStartDate, dateRange.startDate),
+        fetchBookings(supabase, dateRange.startDate, dateRange.endDate),
+        fetchBookings(supabase, previousStartDate, dateRange.startDate)
+      ]);
 
-      // Récupérer les réservations payées et confirmées pour la période actuelle
-      const { data: currentConfirmedBookings } = await supabase
-        .from('bookings')
-        .select('id, price')
-        .eq('payment_status', 'paid')
-        .eq('status', 'confirmed')
-        .gte('created_at', dateRange.startDate)
-        .lte('created_at', dateRange.endDate);
+      const currentMetrics = calculateBookingMetrics(currentBookings);
+      const previousMetrics = calculateBookingMetrics(previousBookings);
 
-      // Récupérer les données pour la période précédente
-      const { count: previousSignupsCount } = await supabase
-        .from('user_events')
-        .select('count')
-        .eq('event_type', 'SIGNUP')
-        .gte('created_at', previousStartDate)
-        .lt('created_at', dateRange.startDate)
-        .single() || { count: 0 };
-
-      const { data: previousConfirmedBookings } = await supabase
-        .from('bookings')
-        .select('id, price')
-        .eq('payment_status', 'paid')
-        .eq('status', 'confirmed')
-        .gte('created_at', previousStartDate)
-        .lt('created_at', dateRange.startDate);
-
-      // Calculer les métriques
-      const currentBookingsCount = currentConfirmedBookings?.length || 0;
-      const previousBookingsCount = previousConfirmedBookings?.length || 0;
-
-      // Calculer les revenus
-      const currentRevenue = currentConfirmedBookings?.reduce((sum, booking) => sum + Number(booking.price), 0) || 0;
-      const previousRevenue = previousConfirmedBookings?.reduce((sum, booking) => sum + Number(booking.price), 0) || 0;
-
-      // Calculer le taux de conversion (réservations confirmées / inscriptions)
+      // Calculer le taux de conversion
       const currentConversionRate = currentSignupsCount > 0 
-        ? (currentBookingsCount / currentSignupsCount) * 100 
+        ? (currentMetrics.bookingsCount / currentSignupsCount) * 100 
         : 0;
       const previousConversionRate = previousSignupsCount > 0 
-        ? (previousBookingsCount / previousSignupsCount) * 100 
+        ? (previousMetrics.bookingsCount / previousSignupsCount) * 100 
         : 0;
 
       console.log('Analytics metrics:', {
         signups: { current: currentSignupsCount, previous: previousSignupsCount },
-        confirmedBookings: { current: currentBookingsCount, previous: previousBookingsCount },
-        revenue: { current: currentRevenue, previous: previousRevenue },
+        confirmedBookings: { 
+          current: currentMetrics.bookingsCount, 
+          previous: previousMetrics.bookingsCount 
+        },
+        revenue: { 
+          current: currentMetrics.revenue, 
+          previous: previousMetrics.revenue 
+        },
         conversionRates: { 
           current: currentConversionRate.toFixed(2) + '%', 
           previous: previousConversionRate.toFixed(2) + '%' 
@@ -90,15 +72,24 @@ export const useAnalyticsData = (period: PeriodSelection) => {
         },
         currentPeriod: {
           signups: currentSignupsCount,
-          confirmedBookings: currentBookingsCount,
+          confirmedBookings: currentMetrics.bookingsCount,
           conversionRate: Number(currentConversionRate.toFixed(1)),
-          revenue: currentRevenue
+          revenue: currentMetrics.revenue
         },
         variations: {
           signups: calculatePercentageChange(currentSignupsCount, previousSignupsCount),
-          confirmedBookings: calculatePercentageChange(currentBookingsCount, previousBookingsCount),
-          conversionRate: calculatePercentageChange(currentConversionRate, previousConversionRate),
-          revenue: calculatePercentageChange(currentRevenue, previousRevenue)
+          confirmedBookings: calculatePercentageChange(
+            currentMetrics.bookingsCount, 
+            previousMetrics.bookingsCount
+          ),
+          conversionRate: calculatePercentageChange(
+            currentConversionRate, 
+            previousConversionRate
+          ),
+          revenue: calculatePercentageChange(
+            currentMetrics.revenue, 
+            previousMetrics.revenue
+          )
         }
       };
     }

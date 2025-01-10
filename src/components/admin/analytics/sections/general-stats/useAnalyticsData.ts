@@ -81,20 +81,24 @@ export const useAnalyticsData = (period: PeriodSelection) => {
           .is('deleted_at', null)
       ]);
 
+      // Compter les inscriptions en filtrant les événements de type SIGNUP
       const currentSignups = currentEvents?.filter(e => e.event_type === 'SIGNUP').length || 0;
       const previousSignups = previousEvents?.filter(e => e.event_type === 'SIGNUP').length || 0;
       
+      // Compter les démarrages de réservation
       const currentBookingStarts = currentEvents?.filter(e => e.event_type === 'BOOKING_STARTED').length || 0;
       const previousBookingStarts = previousEvents?.filter(e => e.event_type === 'BOOKING_STARTED').length || 0;
       
+      // Compter les réservations complétées (payées)
       const currentCompleted = currentBookings?.filter(b => b.payment_status === 'paid').length || 0;
       const previousCompleted = previousBookings?.filter(b => b.payment_status === 'paid').length || 0;
 
+      // Calculer le taux de conversion
       const currentConversionRate = currentBookingStarts > 0 ? (currentCompleted / currentBookingStarts) * 100 : 0;
       const previousConversionRate = previousBookingStarts > 0 ? (previousCompleted / previousBookingStarts) * 100 : 0;
 
       const calculatePercentageChange = (current: number, previous: number) => {
-        if (previous === 0) return 0;
+        if (previous === 0) return current > 0 ? 100 : 0;
         return ((current - previous) / previous) * 100;
       };
 

@@ -10,23 +10,24 @@ const corsHeaders = {
 async function importPrivateKey(pem: string): Promise<CryptoKey> {
   console.log('Starting private key import...')
   
-  const pemHeader = "-----BEGIN PRIVATE KEY-----"
-  const pemFooter = "-----END PRIVATE KEY-----"
-  
-  // Clean the key and extract the base64 content
-  let pemContents = pem
-    .replace(/\\n/g, '\n') // Replace escaped newlines
-    .replace(/["']/g, '') // Remove quotes
-    .replace(pemHeader, '')
-    .replace(pemFooter, '')
-    .replace(/\s+/g, '') // Remove all whitespace
-    
-  console.log('Cleaned PEM contents length:', pemContents.length)
+  // Clean the key string first
+  let cleanKey = pem
+    .replace(/\\n/g, '\n')  // Replace escaped newlines with actual newlines
+    .replace(/["']/g, '')   // Remove any quotes
+    .trim()                 // Remove leading/trailing whitespace
+
+  // Extract the base64 content between the markers
+  const matches = cleanKey.match(/-----BEGIN PRIVATE KEY-----\n?([\s\S]+)\n?-----END PRIVATE KEY-----/)
+  if (!matches || !matches[1]) {
+    throw new Error('Invalid PEM format: Missing key content')
+  }
+
+  const base64Content = matches[1].replace(/\s/g, '')
+  console.log('Base64 content length:', base64Content.length)
   
   try {
-    // Decode base64 to get DER binary format
-    const binaryDer = base64Decode(pemContents)
-    console.log('Decoded DER length:', binaryDer.length)
+    const binaryDer = base64Decode(base64Content)
+    console.log('Binary DER length:', binaryDer.length)
 
     return await crypto.subtle.importKey(
       "pkcs8",
@@ -40,6 +41,11 @@ async function importPrivateKey(pem: string): Promise<CryptoKey> {
     )
   } catch (error) {
     console.error('Error importing private key:', error)
+    console.error('Key details:', {
+      originalLength: pem.length,
+      cleanedLength: cleanKey.length,
+      base64Length: base64Content.length,
+    })
     throw error
   }
 }

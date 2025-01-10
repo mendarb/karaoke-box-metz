@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { Loader2, TrendingUp, TrendingDown, Users, Calendar, Clock, Target, Eye, Activity, Globe, Smartphone, Gauge } from "lucide-react";
+import { Loader2, TrendingUp, TrendingDown, Users, Calendar, Clock, Target, Eye, Activity, Globe, Smartphone, Gauge, UserPlus } from "lucide-react";
 import { PeriodSelection } from "../types/analytics";
 import { getGA4Data } from "@/lib/analytics/ga4";
 import { format, subDays } from "date-fns";
@@ -178,7 +178,7 @@ export const GeneralStats = ({ period }: GeneralStatsProps) => {
       title: "Utilisateurs inscrits",
       value: stats?.currentPeriod.signups || 0,
       change: stats?.variations.signups ? `${Math.round(stats.variations.signups)}%` : '0%',
-      icon: UserCheck,
+      icon: UserPlus,
       trend: stats?.variations.signups >= 0 ? "up" : "down",
       description: "Nombre d'utilisateurs inscrits"
     },

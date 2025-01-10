@@ -27,12 +27,8 @@ interface GA4Data {
 
 export const getGA4Data = async (startDate?: string, endDate?: string): Promise<GA4Data | null> => {
   try {
-    const params = new URLSearchParams();
-    if (startDate) params.append('startDate', startDate);
-    if (endDate) params.append('endDate', endDate);
-    
     const { data, error } = await supabase.functions.invoke('get-ga4-data', {
-      query: params
+      body: { startDate, endDate }
     });
     
     if (error) {

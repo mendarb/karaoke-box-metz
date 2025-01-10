@@ -11,19 +11,21 @@ interface DateTimeFieldsProps {
   form: UseFormReturn<any>;
   onAvailabilityChange: (date: Date | undefined, availableHours: number) => void;
   showTimeSlots?: boolean;
+  requiredDuration?: number;
 }
 
 export const DateTimeFields = ({ 
   form, 
   onAvailabilityChange,
-  showTimeSlots = false 
+  showTimeSlots = false,
+  requiredDuration = 1
 }: DateTimeFieldsProps) => {
   const {
     selectedDate,
     availableSlots,
     handleDateSelect,
     handleTimeSlotChange
-  } = useDateTimeSelection(form, onAvailabilityChange);
+  } = useDateTimeSelection(form, onAvailabilityChange, requiredDuration);
 
   const { minDate, maxDate, settings } = useBookingSettings();
   const { disabledDates } = useDisabledDates({ minDate, maxDate });
@@ -75,6 +77,7 @@ export const DateTimeFields = ({
           form={form}
           availableSlots={availableSlots}
           isLoading={false}
+          requiredDuration={requiredDuration}
         />
       )}
     </div>

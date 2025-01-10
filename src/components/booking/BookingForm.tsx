@@ -1,29 +1,30 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useRouter } from "next/router";
+import { useNavigate } from "react-router-dom";
 import { useUserState } from "@/hooks/useUserState";
 import { useBookingSession } from "@/hooks/useBookingSession";
 import { Button } from "@/components/ui/button";
-import { BookingSteps } from "./BookingSteps";
+import { BookingSteps } from "@/components/BookingSteps";
 import { useBookingSteps } from "@/hooks/useBookingSteps";
-import { UserInfoStep } from "./steps/UserInfoStep";
-import { DateTimeStep } from "./steps/DateTimeStep";
-import { GroupSizeStep } from "./steps/GroupSizeStep";
-import { PaymentStep } from "./steps/PaymentStep";
 import { createBooking } from "@/lib/api/bookings";
 import { useToast } from "@/hooks/use-toast";
 import { trackEvent } from "@/lib/analytics";
+import { Form } from "@/components/ui/form";
 
 export type BookingFormData = {
   email: string;
   fullName: string;
   phone: string;
-  date: string;
+  date: Date | undefined;
   timeSlot: string;
   duration: string;
   groupSize: string;
   message?: string;
   calculatedPrice?: number;
+  isTestMode?: boolean;
+  promoCode?: string;
+  promoCodeId?: string;
+  finalPrice?: number;
 };
 
 export const BookingForm = () => {
@@ -32,15 +33,15 @@ export const BookingForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [calculatedPrice, setCalculatedPrice] = useState<number>(0);
-  const router = useRouter();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const steps = useBookingSteps(currentStep);
 
   const form = useForm<BookingFormData>({
     defaultValues: {
       email: user?.email || "",
-      fullName: user?.full_name || "",
-      phone: user?.phone || "",
+      fullName: user?.user_metadata?.full_name || "",
+      phone: user?.user_metadata?.phone || "",
     },
   });
 
@@ -75,7 +76,7 @@ export const BookingForm = () => {
           booking_id: bookingId,
           price: calculatedPrice,
         });
-        router.push(url);
+        navigate(url);
       } else {
         throw new Error(error || "Une erreur est survenue");
       }
@@ -115,37 +116,73 @@ export const BookingForm = () => {
     <div className="w-full max-w-2xl mx-auto">
       <BookingSteps steps={steps} currentStep={currentStep} />
       
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
-        {currentStep === 1 && (
-          <UserInfoStep
-            form={form}
-            onNext={handleNext}
-          />
-        )}
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+          {currentStep === 1 && (
+            <div className="space-y-6">
+              <div className="grid gap-4">
+                <div className="space-y-2">
+                  <h2 className="text-2xl font-semibold">Vos coordonnées</h2>
+                  <p className="text-gray-500">
+                    Entrez vos informations de contact pour la réservation
+                  </p>
+                </div>
+              </div>
+              <Button onClick={handleNext} type="button">
+                Continuer
+              </Button>
+            </div>
+          )}
 
-        {currentStep === 2 && (
-          <DateTimeStep
-            form={form}
-            onNext={handleNext}
-          />
-        )}
+          {currentStep === 2 && (
+            <div className="space-y-6">
+              <div className="grid gap-4">
+                <div className="space-y-2">
+                  <h2 className="text-2xl font-semibold">Date et heure</h2>
+                  <p className="text-gray-500">
+                    Choisissez votre créneau de réservation
+                  </p>
+                </div>
+              </div>
+              <Button onClick={handleNext} type="button">
+                Continuer
+              </Button>
+            </div>
+          )}
 
-        {currentStep === 3 && (
-          <GroupSizeStep
-            form={form}
-            onNext={handleNext}
-            onPriceCalculated={handlePriceCalculated}
-          />
-        )}
+          {currentStep === 3 && (
+            <div className="space-y-6">
+              <div className="grid gap-4">
+                <div className="space-y-2">
+                  <h2 className="text-2xl font-semibold">Taille du groupe</h2>
+                  <p className="text-gray-500">
+                    Indiquez le nombre de personnes et la durée souhaitée
+                  </p>
+                </div>
+              </div>
+              <Button onClick={handleNext} type="button">
+                Continuer
+              </Button>
+            </div>
+          )}
 
-        {currentStep === 4 && (
-          <PaymentStep
-            form={form}
-            isLoading={isLoading}
-            calculatedPrice={calculatedPrice}
-          />
-        )}
-      </form>
+          {currentStep === 4 && (
+            <div className="space-y-6">
+              <div className="grid gap-4">
+                <div className="space-y-2">
+                  <h2 className="text-2xl font-semibold">Paiement</h2>
+                  <p className="text-gray-500">
+                    Finalisez votre réservation
+                  </p>
+                </div>
+              </div>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? "Chargement..." : "Payer"}
+              </Button>
+            </div>
+          )}
+        </form>
+      </Form>
     </div>
   );
 };

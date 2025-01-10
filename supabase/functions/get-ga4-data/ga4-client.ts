@@ -23,8 +23,7 @@ export async function fetchGA4Data(propertyId: string, accessToken: string, star
           { name: 'totalUsers' },
           { 
             name: 'eventCount',
-            alias: 'formStartCount',
-            expression: "eventName:form_start" 
+            expression: "eventName = 'form_start'"
           }
         ],
         dimensions: [

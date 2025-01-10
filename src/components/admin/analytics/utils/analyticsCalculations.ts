@@ -6,6 +6,7 @@ interface AnalyticsStats {
     adminBookings: number;
     confirmedAccounts: number;
     conversionRate: number;
+    formStartCount: number;
   };
   variations: {
     registeredUsers: number;
@@ -14,6 +15,7 @@ interface AnalyticsStats {
     adminBookings: number;
     confirmedAccounts: number;
     conversionRate: number;
+    formStartCount: number;
   };
 }
 
@@ -30,6 +32,7 @@ export const calculateAnalyticsStats = (
   const adminBookings = currentBookings?.filter(b => b.is_admin_booking).length || 0;
   const confirmedAccounts = currentEvents?.filter(e => e.event_type === 'EMAIL_CONFIRMED').length || 0;
   const conversionRate = startedBookings > 0 ? Math.round((paidBookings / startedBookings) * 100) : 0;
+  const formStartCount = currentEvents?.filter(e => e.event_type === 'FORM_START').length || 0;
 
   // Previous period calculations
   const prevRegisteredUsers = previousEvents?.filter(e => e.event_type === 'SIGNUP').length || 0;
@@ -38,6 +41,7 @@ export const calculateAnalyticsStats = (
   const prevAdminBookings = previousBookings?.filter(b => b.is_admin_booking).length || 0;
   const prevConfirmedAccounts = previousEvents?.filter(e => e.event_type === 'EMAIL_CONFIRMED').length || 0;
   const prevConversionRate = prevStartedBookings > 0 ? Math.round((prevPaidBookings / prevStartedBookings) * 100) : 0;
+  const prevFormStartCount = previousEvents?.filter(e => e.event_type === 'FORM_START').length || 0;
 
   // Calculate variations
   const calculateVariation = (current: number, previous: number) => {
@@ -52,7 +56,8 @@ export const calculateAnalyticsStats = (
       paidBookings,
       adminBookings,
       confirmedAccounts,
-      conversionRate
+      conversionRate,
+      formStartCount
     },
     variations: {
       registeredUsers: calculateVariation(registeredUsers, prevRegisteredUsers),
@@ -60,7 +65,8 @@ export const calculateAnalyticsStats = (
       paidBookings: calculateVariation(paidBookings, prevPaidBookings),
       adminBookings: calculateVariation(adminBookings, prevAdminBookings),
       confirmedAccounts: calculateVariation(confirmedAccounts, prevConfirmedAccounts),
-      conversionRate: calculateVariation(conversionRate, prevConversionRate)
+      conversionRate: calculateVariation(conversionRate, prevConversionRate),
+      formStartCount: calculateVariation(formStartCount, prevFormStartCount)
     }
   };
 };

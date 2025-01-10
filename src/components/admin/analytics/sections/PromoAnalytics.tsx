@@ -1,42 +1,32 @@
 import { Card } from "@/components/ui/card";
+import { PeriodSelection } from "../AnalyticsContent";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Loader2 } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-export const PromoAnalytics = () => {
+interface PromoAnalyticsProps {
+  period: PeriodSelection;
+}
+
+export const PromoAnalytics = ({ period }: PromoAnalyticsProps) => {
   const { data: promoStats, isLoading } = useQuery({
-    queryKey: ['analytics-promos'],
+    queryKey: ['promo-analytics', period],
     queryFn: async () => {
-      // Récupérer les codes promo
-      const { data: promoCodes, error: promoError } = await supabase
+      const { data, error } = await supabase
         .from('promo_codes')
-        .select('*')
-        .is('deleted_at', null);
+        .select(`
+          code,
+          uses,
+          bookings (
+            id,
+            total_amount,
+            created_at
+          )
+        `);
       
-      if (promoError) throw promoError;
-
-      // Récupérer les réservations avec codes promo
-      const { data: bookings, error: bookingsError } = await supabase
-        .from('bookings')
-        .select('promo_code_id')
-        .is('deleted_at', null)
-        .eq('payment_status', 'paid');
-
-      if (bookingsError) throw bookingsError;
-
-      // Calculer les utilisations réelles
-      const usageCount = bookings.reduce((acc, booking) => {
-        if (booking.promo_code_id) {
-          acc[booking.promo_code_id] = (acc[booking.promo_code_id] || 0) + 1;
-        }
-        return acc;
-      }, {});
-
-      // Combiner les données
-      return promoCodes?.map(promo => ({
-        ...promo,
-        actual_uses: usageCount[promo.id] || 0
-      }));
+      if (error) throw error;
+      return data;
     }
   });
 
@@ -48,51 +38,45 @@ export const PromoAnalytics = () => {
     );
   }
 
-  return (
-    <div className="space-y-4">
-      <Card className="p-6">
-        <h3 className="text-lg font-medium mb-4">Utilisation des codes promo</h3>
-        <div className="divide-y">
-          {promoStats?.map((promo) => (
-            <div key={promo.id} className="py-3 flex justify-between items-center">
-              <div>
-                <p className="font-medium">{promo.code}</p>
-                <p className="text-sm text-muted-foreground">
-                  {promo.type === 'percentage' ? `${promo.value}% de réduction` :
-                   promo.type === 'fixed_amount' ? `${promo.value}€ de réduction` :
-                   'Gratuit'}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="font-medium">{promo.actual_uses} utilisations</p>
-                <p className="text-sm text-muted-foreground">
-                  {promo.max_uses ? `Max: ${promo.max_uses}` : 'Illimité'}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </Card>
+  const chartData = promoStats?.map(promo => ({
+    name: promo.code,
+    uses: promo.uses,
+    revenue: promo.bookings?.reduce((sum, booking) => sum + (booking.total_amount || 0), 0) || 0
+  })) || [];
 
-      <Card className="p-6">
-        <h3 className="text-lg font-medium mb-4">Impact des promotions</h3>
-        <div className="space-y-4">
-          <div>
-            <p className="text-sm text-muted-foreground">Codes les plus utilisés</p>
-            <div className="mt-2">
-              {promoStats
-                ?.sort((a, b) => b.actual_uses - a.actual_uses)
-                .slice(0, 3)
-                .map((promo) => (
-                  <div key={promo.id} className="flex justify-between items-center py-2">
-                    <span className="font-medium">{promo.code}</span>
-                    <span className="text-sm">{promo.actual_uses} utilisations</span>
-                  </div>
-                ))}
-            </div>
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card className="p-4">
+          <h3 className="text-lg font-semibold mb-4">Utilisation des codes promo</h3>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="uses" fill="#8884d8" name="Utilisations" />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
-        </div>
-      </Card>
+        </Card>
+
+        <Card className="p-4">
+          <h3 className="text-lg font-semibold mb-4">Revenus par code promo</h3>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="revenue" fill="#82ca9d" name="Revenus" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+      </div>
     </div>
   );
 };

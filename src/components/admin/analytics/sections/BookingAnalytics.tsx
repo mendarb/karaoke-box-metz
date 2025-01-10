@@ -22,15 +22,15 @@ export const BookingAnalytics = ({ period }: BookingAnalyticsProps) => {
   return (
     <div className="space-y-6">
       <AnalyticsStats 
-        bookings={bookings} 
-        previousBookings={previousBookings}
-        events={events}
-        previousEvents={previousEvents}
+        bookings={bookings || []} 
+        previousBookings={previousBookings || []}
+        events={events || []}
+        previousEvents={previousEvents || []}
         period={period}
       />
       <AnalyticsCharts 
-        bookings={bookings} 
-        events={events}
+        bookings={bookings || []} 
+        events={events || []}
       />
     </div>
   );

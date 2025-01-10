@@ -9,16 +9,17 @@ import {
   calculateStepData 
 } from "../../utils/analyticsCalculations";
 
-interface AnalyticsChartsProps {
+export interface AnalyticsChartsProps {
   bookings: any[];
-  stepsTracking: any[];
+  events: any[];
+  stepsTracking?: any[];
 }
 
-export const AnalyticsCharts = ({ bookings, stepsTracking }: AnalyticsChartsProps) => {
+export const AnalyticsCharts = ({ bookings, events, stepsTracking }: AnalyticsChartsProps) => {
   const groupSizeChartData = calculateGroupSizeData(bookings);
   const durationChartData = calculateDurationData(bookings);
   const dayChartData = calculateDayData(bookings);
-  const stepChartData = calculateStepData(stepsTracking);
+  const stepChartData = calculateStepData(stepsTracking || []);
 
   return (
     <div className="space-y-6">

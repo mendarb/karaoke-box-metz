@@ -12,7 +12,7 @@ export const DocumentationPage = () => {
   
   return (
     <DashboardLayout>
-      <div className="p-4 md:p-8 max-w-[1200px] mx-auto">
+      <div className="p-4 md:p-8 max-w-[1200px]">
         <div className="mb-8">
           <h1 className="text-3xl font-semibold text-gray-900 mb-2">Documentation</h1>
           <p className="text-gray-600">Guides complets pour l'utilisation de la plateforme</p>
@@ -45,15 +45,15 @@ export const DocumentationPage = () => {
           
           <ScrollArea className="h-[calc(100vh-250px)]">
             <div className="pr-6">
-              <TabsContent value="dev" className="space-y-6 mt-0">
+              <TabsContent value="dev" className="mt-0">
                 <DeveloperDocs />
               </TabsContent>
               
-              <TabsContent value="admin" className="space-y-6 mt-0">
+              <TabsContent value="admin" className="mt-0">
                 <AdminDocs />
               </TabsContent>
               
-              <TabsContent value="user" className="space-y-6 mt-0">
+              <TabsContent value="user" className="mt-0">
                 <UserDocs />
               </TabsContent>
             </div>

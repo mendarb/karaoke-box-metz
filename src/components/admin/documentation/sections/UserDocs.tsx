@@ -1,10 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Users } from "lucide-react";
+import { FileText, Users, Calendar, CreditCard } from "lucide-react";
 
 export const userDocs = [
   {
     title: "Réservation",
     description: "Guide de réservation pour les utilisateurs",
+    icon: Calendar,
     content: `
       Le processus de réservation :
       1. Sélection de la date et durée
@@ -49,6 +50,7 @@ export const userDocs = [
   {
     title: "Compte Utilisateur",
     description: "Gestion du compte utilisateur",
+    icon: Users,
     content: `
       Fonctionnalités du compte :
       
@@ -99,7 +101,7 @@ export const UserDocs = () => {
           <CardHeader className="bg-gray-50 border-b border-gray-200">
             <div className="flex items-start gap-4">
               <div className="p-2 rounded-lg bg-white shadow-sm">
-                <Users className="w-5 h-5 text-green-600" />
+                {doc.icon && <doc.icon className="w-5 h-5 text-violet-600" />}
               </div>
               <div>
                 <CardTitle className="text-xl font-semibold text-gray-900">{doc.title}</CardTitle>
@@ -114,10 +116,10 @@ export const UserDocs = () => {
                   if (paragraph.trim().startsWith('-')) {
                     const items = paragraph.split('\n').filter(item => item.trim());
                     return (
-                      <ul key={idx} className="space-y-2">
+                      <ul key={idx} className="space-y-2 list-none pl-0">
                         {items.map((item, itemIdx) => (
                           <li key={itemIdx} className="flex items-start gap-2">
-                            <FileText className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                            <FileText className="w-5 h-5 text-violet-500 mt-0.5 flex-shrink-0" />
                             <span>{item.replace('-', '').trim()}</span>
                           </li>
                         ))}

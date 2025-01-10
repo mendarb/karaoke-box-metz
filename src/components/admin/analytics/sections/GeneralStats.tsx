@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { Loader2, TrendingUp, TrendingDown, Users, Calendar } from "lucide-react";
+import { Loader2, TrendingUp, TrendingDown, Users, Calendar, Clock, Target } from "lucide-react";
 
 export const GeneralStats = () => {
   const { data: stats, isLoading } = useQuery({
@@ -19,7 +19,8 @@ export const GeneralStats = () => {
       const { data: stepsTracking, error: trackingError } = await supabase
         .from('booking_steps_tracking')
         .select('*')
-        .eq('step', 1); // On ne compte que les sessions qui ont commencé la réservation
+        .eq('step', 1) // On ne compte que les sessions qui ont commencé la réservation
+        .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()); // Dernier mois
 
       if (trackingError) throw trackingError;
 
@@ -27,16 +28,20 @@ export const GeneralStats = () => {
       const totalBookings = bookings?.length || 0;
       const completedBookings = bookings?.filter(b => b.payment_status === 'paid').length || 0;
       
-      // Calculer la durée moyenne uniquement pour les réservations payées (en heures)
+      // Calculer la durée moyenne en minutes pour les réservations payées
       const paidBookings = bookings?.filter(b => b.payment_status === 'paid') || [];
-      const averageDuration = paidBookings.length > 0
-        ? Math.round(paidBookings.reduce((sum, booking) => sum + Number(booking.duration), 0) / paidBookings.length)
+      const averageDurationInMinutes = paidBookings.length > 0
+        ? Math.round((paidBookings.reduce((sum, booking) => sum + Number(booking.duration), 0) / paidBookings.length) * 60)
         : 0;
       
-      // Calculer le taux de conversion basé sur les sessions uniques qui ont commencé une réservation
+      // Calculer le taux de conversion basé sur les sessions uniques du dernier mois
       const uniqueBookingAttempts = new Set(stepsTracking?.map(track => track.session_id)).size || 0;
-      console.log('Tentatives uniques:', uniqueBookingAttempts);
-      console.log('Réservations complétées:', completedBookings);
+      console.log('Statistiques de conversion:', {
+        uniqueBookingAttempts,
+        completedBookings,
+        stepsTracking: stepsTracking?.length,
+        periode: 'dernier mois'
+      });
       
       const conversionRate = uniqueBookingAttempts > 0
         ? ((completedBookings / uniqueBookingAttempts) * 100)
@@ -53,7 +58,7 @@ export const GeneralStats = () => {
       return {
         totalBookings,
         completedBookings,
-        averageDuration,
+        averageDuration: averageDurationInMinutes,
         conversionRate,
         variations
       };
@@ -87,14 +92,14 @@ export const GeneralStats = () => {
       title: "Taux de conversion",
       value: `${Math.round(stats?.conversionRate || 0)}%`,
       change: stats?.variations.conversionRate,
-      icon: TrendingUp,
+      icon: Target,
       trend: "up"
     },
     {
       title: "Durée moyenne",
-      value: `${stats?.averageDuration || 0}h`,
+      value: `${stats?.averageDuration || 0}min`,
       change: stats?.variations.averageDuration,
-      icon: TrendingUp,
+      icon: Clock,
       trend: "up"
     }
   ];
@@ -102,16 +107,16 @@ export const GeneralStats = () => {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       {metrics.map((metric, index) => (
-        <Card key={index} className="p-6">
+        <Card key={index} className="p-4">
           <div className="flex items-center justify-between">
-            <div className="space-y-2">
+            <div>
               <p className="text-sm font-medium text-muted-foreground">
                 {metric.title}
               </p>
-              <h3 className="text-2xl font-bold">
+              <p className="text-2xl font-bold mt-1">
                 {metric.value}
-              </h3>
-              <div className="flex items-center">
+              </p>
+              <div className="flex items-center mt-1">
                 {metric.trend === "up" ? (
                   <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
                 ) : (
@@ -124,7 +129,7 @@ export const GeneralStats = () => {
                 </span>
               </div>
             </div>
-            <metric.icon className="h-8 w-8 text-muted-foreground" />
+            <metric.icon className="h-8 w-8 text-muted-foreground opacity-50" />
           </div>
         </Card>
       ))}

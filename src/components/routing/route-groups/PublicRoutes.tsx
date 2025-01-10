@@ -7,6 +7,7 @@ import { Error } from "@/pages/Error";
 import Terms from "@/pages/legal/Terms";
 import Privacy from "@/pages/legal/Privacy";
 import Cancellation from "@/pages/legal/Cancellation";
+import { AuthCallback } from "@/components/auth/AuthCallback";
 
 export const PublicRoutes = () => {
   return (
@@ -16,6 +17,7 @@ export const PublicRoutes = () => {
       <Route path="/success" element={<Success />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/error" element={<Error />} />
+      <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/legal/terms" element={<Terms />} />
       <Route path="/legal/privacy" element={<Privacy />} />
       <Route path="/legal/cancellation" element={<Cancellation />} />

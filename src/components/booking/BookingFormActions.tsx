@@ -13,7 +13,7 @@ export const BookingFormActions = ({
   onPrevious,
 }: BookingFormActionsProps) => {
   return (
-    <div className="flex justify-between items-center pt-6 border-t border-gray-100">
+    <div className="flex justify-between items-center pt-6 pb-4 px-6 border-t border-gray-100">
       {currentStep > 1 ? (
         <Button
           type="button"

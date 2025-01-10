@@ -16,8 +16,8 @@ export async function fetchGA4Data(propertyId: string, accessToken: string, star
           { name: 'screenPageViews' },
           { name: 'sessions' },
           { name: 'userEngagementDuration' },
-          { name: 'bounceRate' },
           { name: 'engagedSessions' },
+          { name: 'bounceRate' },
           { name: 'engagementRate' },
           { name: 'totalUsers' }
         ],
@@ -40,18 +40,17 @@ export async function fetchGA4Data(propertyId: string, accessToken: string, star
 }
 
 export function processGA4Data(data: any) {
-  console.log('Processing GA4 data:', data);
+  console.log('Processing raw GA4 data:', data);
 
   const processedData = {
     summary: {
       activeUsers: 0,
       pageViews: 0,
       sessions: 0,
-      averageSessionDuration: 0,
+      averageEngagementTime: 0,
       bounceRate: 0,
       engagementRate: 0,
-      totalUsers: 0,
-      averageEngagementTime: 0
+      totalUsers: 0
     },
     byDate: {},
     byDevice: {},
@@ -65,12 +64,9 @@ export function processGA4Data(data: any) {
 
   let totalEngagementTime = 0;
   let totalSessions = 0;
+  let engagedSessions = 0;
 
-  // Process each row of data
   data.rows.forEach((row: any) => {
-    const date = row.dimensionValues[0].value;
-    const device = row.dimensionValues[1].value;
-    const country = row.dimensionValues[2].value;
     const metrics = row.metricValues.map((m: any) => parseFloat(m.value));
 
     // Aggregate summary metrics
@@ -78,55 +74,29 @@ export function processGA4Data(data: any) {
     processedData.summary.pageViews += metrics[1] || 0;
     processedData.summary.sessions += metrics[2] || 0;
     totalEngagementTime += metrics[3] || 0;
-    processedData.summary.bounceRate = (metrics[4] || 0) * 100;
-    const engagedSessions = metrics[5] || 0;
-    processedData.summary.engagementRate = (engagedSessions / processedData.summary.sessions) * 100;
-    processedData.summary.totalUsers = metrics[7] || 0;
-
+    engagedSessions += metrics[4] || 0;
+    
+    // Store total sessions for rate calculations
     totalSessions += metrics[2] || 0;
-
-    // Process by date
-    if (!processedData.byDate[date]) {
-      processedData.byDate[date] = {
-        activeUsers: 0,
-        pageViews: 0,
-        sessions: 0
-      };
-    }
-    processedData.byDate[date].activeUsers += metrics[0] || 0;
-    processedData.byDate[date].pageViews += metrics[1] || 0;
-    processedData.byDate[date].sessions += metrics[2] || 0;
-
-    // Process by device
-    if (!processedData.byDevice[device]) {
-      processedData.byDevice[device] = {
-        sessions: 0,
-        users: 0
-      };
-    }
-    processedData.byDevice[device].sessions += metrics[2] || 0;
-    processedData.byDevice[device].users += metrics[0] || 0;
-
-    // Process by country
-    if (!processedData.byCountry[country]) {
-      processedData.byCountry[country] = {
-        sessions: 0,
-        users: 0
-      };
-    }
-    processedData.byCountry[country].sessions += metrics[2] || 0;
-    processedData.byCountry[country].users += metrics[0] || 0;
+    
+    // Update total users
+    processedData.summary.totalUsers = Math.max(processedData.summary.totalUsers, metrics[7] || 0);
   });
 
-  // Calculer le temps d'engagement moyen en secondes
-  processedData.summary.averageEngagementTime = totalSessions > 0 
-    ? Math.round(totalEngagementTime / totalSessions) 
-    : 0;
+  // Calculate rates and averages
+  processedData.summary.bounceRate = totalSessions > 0 ? ((totalSessions - engagedSessions) / totalSessions) * 100 : 0;
+  processedData.summary.engagementRate = totalSessions > 0 ? (engagedSessions / totalSessions) * 100 : 0;
+  processedData.summary.averageEngagementTime = totalSessions > 0 ? Math.round(totalEngagementTime / totalSessions) : 0;
 
-  // Arrondir les taux à 2 décimales
-  processedData.summary.bounceRate = Number(processedData.summary.bounceRate.toFixed(2));
-  processedData.summary.engagementRate = Number(processedData.summary.engagementRate.toFixed(2));
+  // Log processed metrics for debugging
+  console.log('Processed GA4 metrics:', {
+    activeUsers: processedData.summary.activeUsers,
+    pageViews: processedData.summary.pageViews,
+    sessions: processedData.summary.sessions,
+    engagementRate: processedData.summary.engagementRate.toFixed(2) + '%',
+    bounceRate: processedData.summary.bounceRate.toFixed(2) + '%',
+    avgEngagementTime: processedData.summary.averageEngagementTime + 's'
+  });
 
-  console.log('Processed GA4 data:', processedData);
   return processedData;
 }

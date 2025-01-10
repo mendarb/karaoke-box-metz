@@ -18,12 +18,14 @@ export const useAnalyticsData = (period: PeriodSelection) => {
         currentEvents,
         previousEvents,
         currentBookings,
-        previousBookings
+        previousBookings,
+        currentSignups,
+        previousSignups
       } = await fetchAnalyticsData(supabase, dateRange, previousStartDate);
 
-      // Compter les inscriptions en filtrant les événements de type SIGNUP
-      const currentSignups = currentEvents?.filter(e => e.event_type === 'SIGNUP').length || 0;
-      const previousSignups = previousEvents?.filter(e => e.event_type === 'SIGNUP').length || 0;
+      // Nombre d'inscriptions pour la période actuelle et précédente
+      const currentSignupsCount = currentSignups?.length || 0;
+      const previousSignupsCount = previousSignups?.length || 0;
       
       // Compter les démarrages de réservation
       const currentBookingStarts = currentEvents?.filter(e => e.event_type === 'BOOKING_STARTED').length || 0;
@@ -36,6 +38,9 @@ export const useAnalyticsData = (period: PeriodSelection) => {
       // Calculer le taux de conversion
       const currentConversionRate = calculateConversionRate(currentCompleted, currentBookingStarts);
       const previousConversionRate = calculateConversionRate(previousCompleted, previousBookingStarts);
+
+      console.log('Current signups:', currentSignupsCount);
+      console.log('Previous signups:', previousSignupsCount);
 
       return {
         ga4: ga4Stats || {
@@ -50,13 +55,13 @@ export const useAnalyticsData = (period: PeriodSelection) => {
           }
         },
         currentPeriod: {
-          signups: currentSignups,
+          signups: currentSignupsCount,
           bookingStarts: currentBookingStarts,
           completedBookings: currentCompleted,
           conversionRate: Math.round(currentConversionRate)
         },
         variations: {
-          signups: calculatePercentageChange(currentSignups, previousSignups),
+          signups: calculatePercentageChange(currentSignupsCount, previousSignupsCount),
           bookingStarts: calculatePercentageChange(currentBookingStarts, previousBookingStarts),
           completedBookings: calculatePercentageChange(currentCompleted, previousCompleted),
           conversionRate: calculatePercentageChange(currentConversionRate, previousConversionRate)

@@ -11,7 +11,9 @@ export const fetchAnalyticsData = async (
     { data: currentEvents },
     { data: previousEvents },
     { data: currentBookings },
-    { data: previousBookings }
+    { data: previousBookings },
+    { data: currentSignups },
+    { data: previousSignups }
   ] = await Promise.all([
     getGA4Data(dateRange.startDate, dateRange.endDate),
     supabase
@@ -35,7 +37,17 @@ export const fetchAnalyticsData = async (
       .select('*')
       .gte('created_at', previousStartDate)
       .lt('created_at', dateRange.startDate)
-      .is('deleted_at', null)
+      .is('deleted_at', null),
+    supabase
+      .from('profiles')
+      .select('*')
+      .gte('created_at', dateRange.startDate)
+      .lte('created_at', dateRange.endDate),
+    supabase
+      .from('profiles')
+      .select('*')
+      .gte('created_at', previousStartDate)
+      .lt('created_at', dateRange.startDate)
   ]);
 
   return {
@@ -43,6 +55,8 @@ export const fetchAnalyticsData = async (
     currentEvents,
     previousEvents,
     currentBookings,
-    previousBookings
+    previousBookings,
+    currentSignups,
+    previousSignups
   };
 };

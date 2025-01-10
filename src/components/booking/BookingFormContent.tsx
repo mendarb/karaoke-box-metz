@@ -39,9 +39,18 @@ export const BookingFormContent = ({
           <DateTimeFields 
             form={form} 
             onAvailabilityChange={onAvailabilityChange}
+            showTimeSlots={false}
           />
         );
       case 3:
+        return (
+          <DateTimeFields 
+            form={form} 
+            onAvailabilityChange={onAvailabilityChange}
+            showTimeSlots={true}
+          />
+        );
+      case 4:
         return (
           <GroupSizeAndDurationFields
             form={form}
@@ -51,7 +60,7 @@ export const BookingFormContent = ({
             availableHours={availableHours}
           />
         );
-      case 4:
+      case 5:
         return (
           <AdditionalFields 
             form={form} 
@@ -68,7 +77,7 @@ export const BookingFormContent = ({
   return (
     <Card className="bg-white/50 backdrop-blur-sm border-none shadow-none">
       <CardContent className="pt-6">
-        <div className="min-h-[300px] animate-fadeIn">
+        <div className="min-h-[400px] max-h-[calc(100vh-300px)] overflow-y-auto animate-fadeIn">
           {renderStepContent()}
         </div>
       </CardContent>

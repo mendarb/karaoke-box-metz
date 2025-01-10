@@ -25,10 +25,12 @@ interface AnalyticsData {
   };
   currentPeriod: {
     signups: number;
+    confirmedBookings: number;
     conversionRate: number;
   };
   variations: {
     signups: number;
+    confirmedBookings: number;
     conversionRate: number;
   };
 }
@@ -83,7 +85,7 @@ export const getMetricsConfig = (stats: AnalyticsData): Metric[] => {
       change: `${Math.round(stats.variations.conversionRate)}%`,
       icon: Target,
       trend: stats.variations.conversionRate >= 0 ? "up" : "down",
-      description: "Inscriptions / Visiteurs actifs",
+      description: "Réservations confirmées / Inscriptions",
       isPercentage: true
     }
   ];

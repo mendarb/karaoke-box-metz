@@ -13,20 +13,69 @@ export const useAnalyticsData = (period: PeriodSelection) => {
   return useQuery({
     queryKey: ['analytics-general', period, dateRange],
     queryFn: async () => {
-      const {
-        ga4Stats,
-        currentSignups,
-        previousSignups
-      } = await fetchAnalyticsData(supabase, dateRange, previousStartDate);
+      // Récupérer les données GA4
+      const { ga4Stats } = await fetchAnalyticsData(supabase, dateRange, previousStartDate);
 
-      // Calculer le taux de conversion basé sur les inscriptions
-      const activeUsers = ga4Stats?.summary.activeUsers || 1; // Éviter division par 0
-      const currentConversionRate = (currentSignups / activeUsers) * 100;
-      const previousConversionRate = (previousSignups / activeUsers) * 100;
+      // Récupérer les inscriptions pour la période actuelle
+      const { data: currentSignups } = await supabase
+        .from('user_events')
+        .select('count')
+        .eq('event_type', 'SIGNUP')
+        .gte('created_at', dateRange.startDate)
+        .lte('created_at', dateRange.endDate)
+        .single();
+
+      // Récupérer les réservations payées et confirmées pour la période actuelle
+      const { data: currentConfirmedBookings } = await supabase
+        .from('bookings')
+        .select('count')
+        .eq('payment_status', 'paid')
+        .eq('status', 'confirmed')
+        .gte('created_at', dateRange.startDate)
+        .lte('created_at', dateRange.endDate)
+        .single();
+
+      // Récupérer les données pour la période précédente
+      const { data: previousSignups } = await supabase
+        .from('user_events')
+        .select('count')
+        .eq('event_type', 'SIGNUP')
+        .gte('created_at', previousStartDate)
+        .lt('created_at', dateRange.startDate)
+        .single();
+
+      const { data: previousConfirmedBookings } = await supabase
+        .from('bookings')
+        .select('count')
+        .eq('payment_status', 'paid')
+        .eq('status', 'confirmed')
+        .gte('created_at', previousStartDate)
+        .lt('created_at', dateRange.startDate)
+        .single();
+
+      // Calculer les taux de conversion
+      const currentSignupsCount = currentSignups?.count || 0;
+      const currentBookingsCount = currentConfirmedBookings?.count || 0;
+      const previousSignupsCount = previousSignups?.count || 0;
+      const previousBookingsCount = previousConfirmedBookings?.count || 0;
+
+      const currentConversionRate = currentSignupsCount > 0 
+        ? (currentBookingsCount / currentSignupsCount) * 100 
+        : 0;
+      const previousConversionRate = previousSignupsCount > 0 
+        ? (previousBookingsCount / previousSignupsCount) * 100 
+        : 0;
+
+      console.log('Analytics data fetched:', {
+        currentSignups: currentSignupsCount,
+        previousSignups: previousSignupsCount,
+        currentBookings: currentBookingsCount,
+        previousBookings: previousBookingsCount
+      });
 
       console.log('Analytics metrics:', {
-        signups: { current: currentSignups, previous: previousSignups },
-        activeUsers,
+        signups: { current: currentSignupsCount, previous: previousSignupsCount },
+        activeUsers: ga4Stats?.summary.activeUsers || 0,
         conversionRates: { 
           current: currentConversionRate.toFixed(2) + '%', 
           previous: previousConversionRate.toFixed(2) + '%' 
@@ -46,11 +95,13 @@ export const useAnalyticsData = (period: PeriodSelection) => {
           }
         },
         currentPeriod: {
-          signups: currentSignups,
+          signups: currentSignupsCount,
+          confirmedBookings: currentBookingsCount,
           conversionRate: Number(currentConversionRate.toFixed(2))
         },
         variations: {
-          signups: calculatePercentageChange(currentSignups, previousSignups),
+          signups: calculatePercentageChange(currentSignupsCount, previousSignupsCount),
+          confirmedBookings: calculatePercentageChange(currentBookingsCount, previousBookingsCount),
           conversionRate: calculatePercentageChange(currentConversionRate, previousConversionRate)
         }
       };

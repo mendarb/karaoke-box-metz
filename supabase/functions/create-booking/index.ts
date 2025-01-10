@@ -1,117 +1,188 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
-import Stripe from 'https://esm.sh/stripe@14.21.0?target=deno'
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import Stripe from "https://esm.sh/stripe@14.21.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, stripe-signature',
+};
 
 serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
   try {
-    if (req.method === 'OPTIONS') {
-      return new Response(null, { headers: corsHeaders })
+    const requestBody = await req.json();
+    console.log('📦 Données de réservation reçues:', {
+      email: requestBody.userEmail,
+      fullName: requestBody.userName,
+      date: requestBody.date,
+      timeSlot: requestBody.timeSlot,
+      duration: requestBody.duration,
+      groupSize: requestBody.groupSize,
+      originalPrice: requestBody.price,
+      finalPrice: requestBody.finalPrice,
+      promoCode: requestBody.promoCode,
+      discountAmount: requestBody.discountAmount,
+      isTestMode: requestBody.isTestMode,
+      userId: requestBody.userId,
+    });
+
+    const price = parseFloat(requestBody.finalPrice || requestBody.price);
+    if (isNaN(price) || price < 0) {
+      console.error('❌ Prix invalide:', price);
+      throw new Error('Prix invalide');
     }
 
-    const requestBody = await req.json()
-    console.log('📝 Request body:', requestBody)
+    const stripeKey = requestBody.isTestMode ? 
+      Deno.env.get('STRIPE_TEST_SECRET_KEY')! : 
+      Deno.env.get('STRIPE_SECRET_KEY')!;
 
-    // Validation de l'email
-    if (!requestBody.userEmail || !requestBody.userEmail.includes('@')) {
-      console.error('❌ Email invalide:', requestBody.userEmail)
-      throw new Error('Email invalide')
+    if (!stripeKey) {
+      throw new Error(`Clé Stripe ${requestBody.isTestMode ? 'test' : 'live'} non configurée`);
     }
 
-    // Créer le client Stripe
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
+    const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
       httpClient: Stripe.createFetchHttpClient(),
-    })
+    });
 
-    console.log('🔍 Creating checkout session...')
+    console.log('💳 Création de la session Stripe...');
 
-    // Préparer les détails de facturation
-    const billingDetails = {
-      name: requestBody.userName || '',
-      email: requestBody.userEmail || '',
-      phone: requestBody.userPhone || '',
+    const origin = req.headers.get('origin') || 'https://k-box.fr';
+    console.log('🌐 URL d\'origine pour la redirection:', origin);
+
+    // Créer un objet pour la description du produit
+    let description = `${requestBody.groupSize} personnes - ${requestBody.duration}h`;
+    if (requestBody.promoCode) {
+      description += ` (Code promo: ${requestBody.promoCode})`;
     }
 
-    console.log('📋 Billing details:', billingDetails)
-
-    // Créer la session de paiement
     const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
-      success_url: `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get('origin')}`,
       payment_method_types: ['card', 'paypal', 'klarna'],
       customer_email: requestBody.userEmail,
-      billing_address_collection: 'required',
+      line_items: [{
+        price_data: {
+          currency: 'eur',
+          unit_amount: Math.round(price * 100),
+          product_data: {
+            name: requestBody.isTestMode ? '[TEST MODE] Karaoké BOX - MB EI' : 'Karaoké BOX - MB EI',
+            description: description,
+          },
+        },
+        quantity: 1,
+      }],
+      mode: 'payment',
+      success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}`,
+      payment_intent_data: {
+        metadata: {
+          userId: requestBody.userId,
+          userEmail: requestBody.userEmail,
+          userName: requestBody.userName,
+          userPhone: requestBody.userPhone,
+          date: requestBody.date,
+          timeSlot: requestBody.timeSlot,
+          duration: requestBody.duration,
+          groupSize: requestBody.groupSize,
+          price: String(price),
+          promoCode: requestBody.promoCode || '',
+          discountAmount: String(requestBody.discountAmount || 0),
+          message: requestBody.message || '',
+          isTestMode: String(requestBody.isTestMode),
+        }
+      },
+      metadata: {
+        userId: requestBody.userId,
+        userEmail: requestBody.userEmail,
+        userName: requestBody.userName,
+        userPhone: requestBody.userPhone,
+        date: requestBody.date,
+        timeSlot: requestBody.timeSlot,
+        duration: requestBody.duration,
+        groupSize: requestBody.groupSize,
+        price: String(price),
+        promoCode: requestBody.promoCode || '',
+        discountAmount: String(requestBody.discountAmount || 0),
+        message: requestBody.message || '',
+        isTestMode: String(requestBody.isTestMode),
+      },
+      billing_details_collection: 'auto',
+      customer_creation: 'always',
+      payment_method_collection: 'always',
       phone_number_collection: {
         enabled: true,
       },
-      metadata: {
-        booking_id: requestBody.bookingId,
-        user_id: requestBody.userId || null,
-      },
-      line_items: [
-        {
-          price_data: {
-            currency: 'eur',
-            product_data: {
-              name: `Réservation Box Karaoké - ${requestBody.date}`,
-              description: `${requestBody.duration}h - ${requestBody.groupSize} personnes`,
+    });
+
+    console.log('✅ Session Stripe créée:', {
+      sessionId: session.id,
+      paymentIntentId: session.payment_intent,
+      userId: requestBody.userId,
+      price: price,
+      metadata: session.metadata,
+      successUrl: session.success_url,
+      cancelUrl: session.cancel_url
+    });
+
+    if (!session.url) {
+      console.error('❌ Pas d\'URL de paiement retournée par Stripe');
+      throw new Error('Pas d\'URL de paiement retournée par Stripe');
+    }
+
+    // Envoyer l'email de demande de paiement seulement si demandé
+    if (requestBody.sendEmail) {
+      try {
+        await fetch(
+          `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-payment-request`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
             },
-            unit_amount: Math.round(requestBody.price * 100),
-          },
-          quantity: 1,
-        },
-      ],
-      custom_fields: [
-        {
-          key: 'booking_message',
-          label: {
-            type: 'custom',
-            custom: 'Message pour votre réservation (optionnel)',
-          },
-          type: 'text',
-          optional: true,
-        },
-      ],
-      payment_intent_data: {
-        metadata: {
-          booking_id: requestBody.bookingId,
-          user_id: requestBody.userId || null,
-        },
-        shipping: {
-          name: billingDetails.name,
-          phone: billingDetails.phone,
-        },
-      },
-    })
-
-    console.log('✅ Checkout session created:', session.id)
+            body: JSON.stringify({
+              booking: {
+                userEmail: requestBody.userEmail,
+                userName: requestBody.userName,
+                date: requestBody.date,
+                timeSlot: requestBody.timeSlot,
+                duration: requestBody.duration,
+                groupSize: requestBody.groupSize,
+                price: price,
+                promoCode: requestBody.promoCode,
+                message: requestBody.message,
+                paymentUrl: session.url
+              }
+            }),
+          }
+        );
+        console.log('📧 Email de demande de paiement envoyé avec succès');
+      } catch (emailError) {
+        console.error('❌ Erreur lors de l\'envoi de l\'email:', emailError);
+        // On ne relance pas l'erreur pour ne pas bloquer la création de la session
+      }
+    }
 
     return new Response(
-      JSON.stringify({
-        sessionId: session.id,
-        url: session.url,
+      JSON.stringify({ 
+        success: true,
+        url: session.url 
       }),
-      {
+      { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
+        status: 200 
       }
-    )
+    );
+
   } catch (error) {
-    console.error('❌ Error:', error)
+    console.error('❌ Erreur dans le processus de réservation:', error);
     return new Response(
-      JSON.stringify({
-        error: error.message,
-      }),
-      {
+      JSON.stringify({ error: error.message }),
+      { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
+        status: 500 
       }
-    )
+    );
   }
-})
+});

@@ -1,16 +1,35 @@
 import { supabase } from '@/lib/supabase';
 
 interface GA4Data {
-  activeUsers: number;
-  pageViews: number;
-  sessions: number;
-  averageSessionDuration: number;
+  summary: {
+    activeUsers: number;
+    pageViews: number;
+    sessions: number;
+    averageSessionDuration: number;
+    bounceRate: number;
+    engagementRate: number;
+    totalUsers: number;
+  };
+  byDate: Record<string, {
+    activeUsers: number;
+    pageViews: number;
+    sessions: number;
+  }>;
+  byDevice: Record<string, {
+    sessions: number;
+    users: number;
+  }>;
+  byCountry: Record<string, {
+    sessions: number;
+    users: number;
+  }>;
 }
 
-export const getGA4Data = async (): Promise<GA4Data | null> => {
+export const getGA4Data = async (startDate?: string, endDate?: string): Promise<GA4Data | null> => {
   try {
-    // Utiliser la fonction Edge pour obtenir les données GA4
-    const { data, error } = await supabase.functions.invoke('get-ga4-data');
+    const { data, error } = await supabase.functions.invoke('get-ga4-data', {
+      body: { startDate, endDate }
+    });
     
     if (error) {
       console.error('Error fetching GA4 data:', error);

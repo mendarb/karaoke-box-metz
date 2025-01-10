@@ -92,7 +92,7 @@ export const Calendar = () => {
   return (
     <DashboardLayout>
       <div className="space-y-4">
-        <div className="flex flex-col gap-1">
+        <div className="space-y-1">
           <div className="flex items-center gap-2">
             <CalendarIcon className="h-4 w-4 text-violet-500" />
             <h1 className="text-base font-medium">Calendrier</h1>

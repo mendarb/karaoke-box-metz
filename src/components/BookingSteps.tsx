@@ -17,7 +17,7 @@ interface BookingStepsProps {
 
 export const BookingSteps = ({ steps, currentStep }: BookingStepsProps) => {
   return (
-    <div className="w-full mb-8">
+    <div className="w-full mb-8 mt-[30px]">
       <div className="flex justify-between">
         {steps.map((step, index) => (
           <div

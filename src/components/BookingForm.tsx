@@ -93,5 +93,37 @@ export const BookingForm = () => {
     );
   }
 
-  return <BookingFormWrapper />;
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="hidden md:block md:col-span-1 space-y-6">
+        <div className="bg-white/50 backdrop-blur-sm rounded-lg p-6 space-y-4">
+          <h3 className="text-xl font-semibold text-gray-900">
+            Comment ça marche ?
+          </h3>
+          <div className="space-y-4 text-gray-600">
+            <p>
+              Réservez votre session de karaoké en quelques étapes simples :
+            </p>
+            <ol className="list-decimal list-inside space-y-2">
+              <li>Renseignez vos coordonnées</li>
+              <li>Choisissez votre date et créneau</li>
+              <li>Sélectionnez la durée et le nombre de personnes</li>
+              <li>Confirmez et payez votre réservation</li>
+            </ol>
+            <div className="pt-4 border-t">
+              <h4 className="font-medium text-gray-900 mb-2">
+                Première étape : Vos coordonnées
+              </h4>
+              <p className="text-sm">
+                Nous avons besoin de vos informations pour vous contacter et vous envoyer la confirmation de réservation. Toutes vos données sont sécurisées et ne seront utilisées que dans le cadre de votre réservation.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="md:col-span-2">
+        <BookingFormWrapper />
+      </div>
+    </div>
+  );
 };

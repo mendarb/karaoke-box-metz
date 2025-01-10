@@ -23,19 +23,23 @@ export async function fetchGA4Data(propertyId: string, accessToken: string, star
           { name: 'totalUsers' },
           { 
             name: 'eventCount',
-            expression: 'eventName:booking_started'
+            expression: 'eventName:booking_started',
+            alias: 'bookingStartedCount'
           },
           { 
             name: 'eventCount',
-            expression: 'eventName:booking_completed'
+            expression: 'eventName:booking_completed',
+            alias: 'bookingCompletedCount'
           },
           { 
             name: 'eventCount',
-            expression: 'eventName:payment_initiated'
+            expression: 'eventName:payment_initiated',
+            alias: 'paymentInitiatedCount'
           },
           { 
             name: 'eventCount',
-            expression: 'eventName:payment_completed'
+            expression: 'eventName:payment_completed',
+            alias: 'paymentCompletedCount'
           }
         ],
         dimensions: [

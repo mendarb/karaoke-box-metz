@@ -7,13 +7,18 @@ export const fetchUserSignups = async (
 ) => {
   console.log('Fetching user signups for period:', { startDate, endDate });
 
-  const { count } = await supabase
+  const { data, error } = await supabase
     .from('profiles')
-    .select('count')
+    .select('id')
     .gte('created_at', startDate)
-    .lte('created_at', endDate)
-    .single() || { count: 0 };
+    .lte('created_at', endDate);
 
-  console.log('User signups count:', count);
-  return count || 0;
+  if (error) {
+    console.error('Error fetching user signups:', error);
+    return 0;
+  }
+
+  const signupsCount = data?.length || 0;
+  console.log('User signups count:', signupsCount);
+  return signupsCount;
 };

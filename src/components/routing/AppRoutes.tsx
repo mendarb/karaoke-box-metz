@@ -17,6 +17,7 @@ import { Accounts } from "@/pages/Accounts";
 import { EditAccountPage } from "@/components/admin/accounts/EditAccountPage";
 import { DocumentationPage } from "@/components/admin/documentation/DocumentationPage";
 import { AuthCallback } from "@/components/auth/AuthCallback";
+import { Analytics } from "@/pages/Analytics";
 
 export const AppRoutes = () => {
   return (
@@ -65,6 +66,14 @@ export const AppRoutes = () => {
         element={
           <ProtectedRoute adminOnly>
             <Calendar />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/analytics"
+        element={
+          <ProtectedRoute adminOnly>
+            <Analytics />
           </ProtectedRoute>
         }
       />

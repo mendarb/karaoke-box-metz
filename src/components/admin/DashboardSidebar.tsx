@@ -1,4 +1,4 @@
-import { Home, Calendar, Settings, LogOut, ArrowLeft, BookOpen, Users } from "lucide-react";
+import { Home, Calendar, Settings, LogOut, ArrowLeft, BookOpen, Users, BarChart } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,7 @@ export const DashboardSidebar = () => {
   const menuItems = [
     { path: "/admin", icon: Home, label: "Dashboard" },
     { path: "/admin/calendar", icon: Calendar, label: "Calendrier" },
+    { path: "/admin/analytics", icon: BarChart, label: "Analytics" },
     { path: "/admin/accounts", icon: Users, label: "Comptes" },
     { path: "/admin/settings", icon: Settings, label: "Paramètres" },
     { path: "/admin/documentation", icon: BookOpen, label: "Documentation" },

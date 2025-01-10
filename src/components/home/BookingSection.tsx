@@ -35,12 +35,12 @@ const BookingSection = ({ user, onShowAuth }: BookingSectionProps) => {
   };
 
   return (
-    <div className={`bg-white flex flex-col ${isMobile ? 'min-h-screen safe-top pb-safe' : 'h-full'}`}>
-      <div className="flex-1 flex flex-col">
+    <div className="flex-1 flex flex-col bg-white mobile-scroll">
+      <div className={`flex-1 flex flex-col p-6 ${isMobile ? 'safe-top' : ''}`}>
         {user ? (
           <BookingForm />
         ) : (
-          <div className="flex flex-col items-center justify-center h-full space-y-4 p-8 text-center">
+          <div className="flex-1 flex flex-col items-center justify-center space-y-4 text-center">
             <div className="rounded-full bg-violet-100 p-3 mb-2">
               <LogIn className="h-6 w-6 text-violet-600" />
             </div>
@@ -48,7 +48,7 @@ const BookingSection = ({ user, onShowAuth }: BookingSectionProps) => {
               <h2 className="text-2xl font-semibold text-gray-900">
                 Connectez-vous pour réserver
               </h2>
-              <p className="text-gray-600 text-sm max-w-sm mb-3">
+              <p className="text-gray-600 text-sm max-w-sm mb-6">
                 Pour effectuer une réservation et profiter de notre box karaoké, vous devez être connecté à votre compte.
               </p>
             </div>

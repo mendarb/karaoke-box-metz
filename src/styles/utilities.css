@@ -9,6 +9,10 @@
     padding-top: env(safe-area-inset-top, 1rem);
   }
 
+  .safe-top {
+    padding-top: max(env(safe-area-inset-top), 1rem);
+  }
+
   .glass {
     @apply bg-white/80 backdrop-blur-[8px];
     transform: translateZ(0);
@@ -48,7 +52,7 @@ img, svg, video {
 
   /* Mobile scrolling */
   .mobile-scroll {
-    @apply overflow-auto overscroll-none;
+    @apply overflow-y-auto overscroll-none h-full;
     -webkit-overflow-scrolling: touch;
   }
 
@@ -67,12 +71,5 @@ img, svg, video {
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-/* Mobile app status bar */
-@supports (padding-top: env(safe-area-inset-top)) {
-  .safe-top {
-    padding-top: env(safe-area-inset-top);
   }
 }

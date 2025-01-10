@@ -21,7 +21,6 @@ export const Calendar = () => {
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
-  // Activer les mises à jour en temps réel
   useRealtimeBookings();
 
   const { data: bookings = [], isLoading } = useQuery({
@@ -65,14 +64,12 @@ export const Calendar = () => {
     refetchOnMount: true,
   });
 
-  // Filtrer les réservations pour la date sélectionnée
   const bookingsForSelectedDate = selectedDate 
     ? bookings.filter(booking => 
         booking.date === format(selectedDate, 'yyyy-MM-dd')
       )
     : [];
 
-  // Obtenir les dates avec des réservations pour le style du calendrier
   const datesWithBookings = bookings.reduce((dates: Date[], booking) => {
     const bookingDate = new Date(booking.date);
     if (!dates.some(date => date.getTime() === bookingDate.getTime())) {
@@ -92,15 +89,20 @@ export const Calendar = () => {
   }
 
   return (
-    <DashboardLayout title="Calendrier des réservations">
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
+    <DashboardLayout>
+      <div className="space-y-6 p-4 md:p-6">
+        <div className="flex items-center gap-2 mb-6">
           <CalendarIcon className="h-5 w-5 text-violet-500" />
-          <h2 className="text-lg font-semibold">Sélectionnez une date</h2>
+          <div>
+            <h2 className="text-lg font-semibold">Calendrier des réservations</h2>
+            <p className="text-sm text-muted-foreground">
+              Gérez les réservations par date
+            </p>
+          </div>
         </div>
 
-        <div className={`grid gap-4 ${isMobile ? '' : 'md:grid-cols-[auto,1fr]'}`}>
-          <Card className="p-4 shadow-none border-none bg-transparent w-fit">
+        <div className={`grid gap-6 ${isMobile ? '' : 'lg:grid-cols-[auto,1fr]'}`}>
+          <Card className="p-4 shadow-sm bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <CalendarComponent
               mode="single"
               selected={selectedDate}
@@ -120,13 +122,17 @@ export const Calendar = () => {
             />
           </Card>
 
-          <ScrollArea className={isMobile ? "h-[calc(100vh-24rem)]" : "h-[600px]"}>
-            <BookingsList
-              bookings={bookingsForSelectedDate}
-              onViewDetails={setSelectedBooking}
-              selectedDate={selectedDate}
-            />
-          </ScrollArea>
+          <Card className="relative overflow-hidden shadow-sm bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <ScrollArea className={isMobile ? "h-[calc(100vh-32rem)]" : "h-[600px]"}>
+              <div className="p-4">
+                <BookingsList
+                  bookings={bookingsForSelectedDate}
+                  onViewDetails={setSelectedBooking}
+                  selectedDate={selectedDate}
+                />
+              </div>
+            </ScrollArea>
+          </Card>
         </div>
       </div>
 

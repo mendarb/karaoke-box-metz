@@ -20,7 +20,7 @@ export const PromoAnalytics = ({ period }: PromoAnalyticsProps) => {
           uses,
           bookings (
             id,
-            total_amount,
+            price,
             created_at
           )
         `);
@@ -41,7 +41,7 @@ export const PromoAnalytics = ({ period }: PromoAnalyticsProps) => {
   const chartData = promoStats?.map(promo => ({
     name: promo.code,
     uses: promo.uses,
-    revenue: promo.bookings?.reduce((sum, booking) => sum + (booking.total_amount || 0), 0) || 0
+    revenue: promo.bookings?.reduce((sum, booking) => sum + (booking.price || 0), 0) || 0
   })) || [];
 
   return (

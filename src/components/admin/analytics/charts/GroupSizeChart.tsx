@@ -12,28 +12,25 @@ interface GroupSizeChartProps {
 
 export const GroupSizeChart = ({ data }: GroupSizeChartProps) => {
   return (
-    <Card className="p-6">
-      <h3 className="text-lg font-medium mb-4">Répartition par taille de groupe</h3>
-      <div className="h-[300px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={data}
-              dataKey="value"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
-              outerRadius={100}
-              label={({ name, value }) => `${name}: ${value}`}
-            >
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
-    </Card>
+    <div className="h-[300px]">
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={data}
+            dataKey="value"
+            nameKey="name"
+            cx="50%"
+            cy="50%"
+            outerRadius={100}
+            label={({ name, value }) => `${name}: ${value}`}
+          >
+            {data.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
   );
 };

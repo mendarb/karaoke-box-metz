@@ -25,6 +25,38 @@ export const BookingAnalytics = ({ period }: BookingAnalyticsProps) => {
 
   const stats = calculateAnalyticsStats(bookings || [], previousBookings || [], events || [], previousEvents || []);
 
+  // Transform booking data for charts
+  const getDurationData = () => {
+    const durationCounts: { [key: string]: number } = {};
+    bookings?.forEach(booking => {
+      durationCounts[booking.duration] = (durationCounts[booking.duration] || 0) + 1;
+    });
+    return Object.entries(durationCounts).map(([name, value]) => ({ name, value }));
+  };
+
+  const getGroupSizeData = () => {
+    const groupSizeCounts: { [key: string]: number } = {};
+    bookings?.forEach(booking => {
+      groupSizeCounts[booking.group_size] = (groupSizeCounts[booking.group_size] || 0) + 1;
+    });
+    return Object.entries(groupSizeCounts).map(([name, value]) => ({ name, value }));
+  };
+
+  const getWeekdayData = () => {
+    const weekdays = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+    const weekdayCounts = new Array(7).fill(0);
+    
+    bookings?.forEach(booking => {
+      const date = new Date(booking.date);
+      weekdayCounts[date.getDay()]++;
+    });
+    
+    return weekdays.map((name, index) => ({
+      name,
+      value: weekdayCounts[index]
+    }));
+  };
+
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -85,7 +117,7 @@ export const BookingAnalytics = ({ period }: BookingAnalyticsProps) => {
             <CardDescription>Distribution des durées de réservation</CardDescription>
           </CardHeader>
           <CardContent className="pt-4">
-            <DurationChart bookings={bookings || []} />
+            <DurationChart data={getDurationData()} />
           </CardContent>
         </Card>
 
@@ -95,7 +127,7 @@ export const BookingAnalytics = ({ period }: BookingAnalyticsProps) => {
             <CardDescription>Distribution de la taille des groupes</CardDescription>
           </CardHeader>
           <CardContent className="pt-4">
-            <GroupSizeChart bookings={bookings || []} />
+            <GroupSizeChart data={getGroupSizeData()} />
           </CardContent>
         </Card>
 
@@ -105,7 +137,7 @@ export const BookingAnalytics = ({ period }: BookingAnalyticsProps) => {
             <CardDescription>Distribution des réservations par jour</CardDescription>
           </CardHeader>
           <CardContent className="pt-4">
-            <WeekdayChart bookings={bookings || []} />
+            <WeekdayChart data={getWeekdayData()} />
           </CardContent>
         </Card>
       </div>

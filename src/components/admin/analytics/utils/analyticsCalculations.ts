@@ -1,90 +1,66 @@
 interface AnalyticsStats {
   currentPeriod: {
-    totalBookings: number;
-    completedBookings: number;
-    averageDuration: number;
+    registeredUsers: number;
+    startedBookings: number;
+    paidBookings: number;
+    adminBookings: number;
+    confirmedAccounts: number;
     conversionRate: number;
   };
   variations: {
-    totalBookings: number;
-    completedBookings: number;
+    registeredUsers: number;
+    startedBookings: number;
+    paidBookings: number;
+    adminBookings: number;
+    confirmedAccounts: number;
     conversionRate: number;
-    averageDuration: number;
   };
 }
 
-export const calculateAnalyticsStats = (bookings: any[], stepsTracking: any[]): AnalyticsStats => {
-  const now = new Date();
-  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-  const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+export const calculateAnalyticsStats = (
+  currentBookings: any[],
+  previousBookings: any[],
+  currentEvents: any[],
+  previousEvents: any[]
+): AnalyticsStats => {
+  // Current period calculations
+  const registeredUsers = currentEvents?.filter(e => e.event_type === 'SIGNUP').length || 0;
+  const startedBookings = currentEvents?.filter(e => e.event_type === 'BOOKING_STARTED').length || 0;
+  const paidBookings = currentBookings?.filter(b => b.payment_status === 'paid').length || 0;
+  const adminBookings = currentBookings?.filter(b => b.is_admin_booking).length || 0;
+  const confirmedAccounts = currentEvents?.filter(e => e.event_type === 'EMAIL_CONFIRMED').length || 0;
+  const conversionRate = startedBookings > 0 ? Math.round((paidBookings / startedBookings) * 100) : 0;
 
-  // Filtrer les réservations pour les périodes actuelles et précédentes
-  const currentBookings = bookings.filter(b => {
-    const bookingDate = new Date(b.created_at);
-    return bookingDate >= thirtyDaysAgo && bookingDate <= now;
-  });
+  // Previous period calculations
+  const prevRegisteredUsers = previousEvents?.filter(e => e.event_type === 'SIGNUP').length || 0;
+  const prevStartedBookings = previousEvents?.filter(e => e.event_type === 'BOOKING_STARTED').length || 0;
+  const prevPaidBookings = previousBookings?.filter(b => b.payment_status === 'paid').length || 0;
+  const prevAdminBookings = previousBookings?.filter(b => b.is_admin_booking).length || 0;
+  const prevConfirmedAccounts = previousEvents?.filter(e => e.event_type === 'EMAIL_CONFIRMED').length || 0;
+  const prevConversionRate = prevStartedBookings > 0 ? Math.round((prevPaidBookings / prevStartedBookings) * 100) : 0;
 
-  const previousBookings = bookings.filter(b => {
-    const bookingDate = new Date(b.created_at);
-    return bookingDate >= sixtyDaysAgo && bookingDate < thirtyDaysAgo;
-  });
-
-  // Calculs pour la période actuelle
-  const currentTotal = currentBookings.length;
-  const currentCompleted = currentBookings.filter(b => b.payment_status === 'paid').length;
-  const currentAverageDuration = currentBookings.length > 0
-    ? Math.round(currentBookings.reduce((acc, b) => acc + Number(b.duration), 0) / currentBookings.length)
-    : 0;
-
-  // Calculs pour la période précédente
-  const previousTotal = previousBookings.length;
-  const previousCompleted = previousBookings.filter(b => b.payment_status === 'paid').length;
-  const previousAverageDuration = previousBookings.length > 0
-    ? Math.round(previousBookings.reduce((acc, b) => acc + Number(b.duration), 0) / previousBookings.length)
-    : 0;
-
-  // Calcul du taux de conversion
-  const currentSessions = new Set(
-    stepsTracking
-      .filter(s => new Date(s.created_at) >= thirtyDaysAgo)
-      .map(s => s.session_id)
-  ).size;
-
-  const previousSessions = new Set(
-    stepsTracking
-      .filter(s => {
-        const date = new Date(s.created_at);
-        return date >= sixtyDaysAgo && date < thirtyDaysAgo;
-      })
-      .map(s => s.session_id)
-  ).size;
-
-  const currentConversionRate = currentSessions > 0
-    ? Math.round((currentCompleted / currentSessions) * 100)
-    : 0;
-
-  const previousConversionRate = previousSessions > 0
-    ? Math.round((previousCompleted / previousSessions) * 100)
-    : 0;
-
-  // Calcul des variations
+  // Calculate variations
   const calculateVariation = (current: number, previous: number) => {
-    if (previous === 0) return 0;
+    if (previous === 0) return current > 0 ? 100 : 0;
     return ((current - previous) / previous) * 100;
   };
 
   return {
     currentPeriod: {
-      totalBookings: currentTotal,
-      completedBookings: currentCompleted,
-      averageDuration: currentAverageDuration,
-      conversionRate: currentConversionRate
+      registeredUsers,
+      startedBookings,
+      paidBookings,
+      adminBookings,
+      confirmedAccounts,
+      conversionRate
     },
     variations: {
-      totalBookings: calculateVariation(currentTotal, previousTotal),
-      completedBookings: calculateVariation(currentCompleted, previousCompleted),
-      conversionRate: calculateVariation(currentConversionRate, previousConversionRate),
-      averageDuration: calculateVariation(currentAverageDuration, previousAverageDuration)
+      registeredUsers: calculateVariation(registeredUsers, prevRegisteredUsers),
+      startedBookings: calculateVariation(startedBookings, prevStartedBookings),
+      paidBookings: calculateVariation(paidBookings, prevPaidBookings),
+      adminBookings: calculateVariation(adminBookings, prevAdminBookings),
+      confirmedAccounts: calculateVariation(confirmedAccounts, prevConfirmedAccounts),
+      conversionRate: calculateVariation(conversionRate, prevConversionRate)
     }
   };
 };

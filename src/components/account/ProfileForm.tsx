@@ -41,16 +41,16 @@ export const ProfileForm = ({ initialData, onSubmit, isLoading }: ProfileFormPro
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <div className="grid gap-6 sm:grid-cols-2">
           <FormField
             control={form.control}
             name="first_name"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="text-left">
                 <FormLabel>Prénom</FormLabel>
                 <FormControl>
-                  <Input {...field} className="bg-white" />
+                  <Input {...field} className="bg-white/50 backdrop-blur-sm border-gray-200" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -61,10 +61,10 @@ export const ProfileForm = ({ initialData, onSubmit, isLoading }: ProfileFormPro
             control={form.control}
             name="last_name"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="text-left">
                 <FormLabel>Nom</FormLabel>
                 <FormControl>
-                  <Input {...field} className="bg-white" />
+                  <Input {...field} className="bg-white/50 backdrop-blur-sm border-gray-200" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -76,11 +76,11 @@ export const ProfileForm = ({ initialData, onSubmit, isLoading }: ProfileFormPro
           control={form.control}
           name="email"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="text-left">
               <FormLabel>Email</FormLabel>
               <FormControl>
                 <div className="relative">
-                  <Input {...field} disabled className="pr-10 bg-muted" />
+                  <Input {...field} disabled className="pr-10 bg-muted/50 backdrop-blur-sm" />
                   <Mail className="absolute right-3 top-2.5 h-5 w-5 text-muted-foreground" />
                 </div>
               </FormControl>
@@ -95,18 +95,22 @@ export const ProfileForm = ({ initialData, onSubmit, isLoading }: ProfileFormPro
           control={form.control}
           name="phone"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="text-left">
               <FormLabel>Téléphone</FormLabel>
               <FormControl>
-                <Input {...field} type="tel" className="bg-white" />
+                <Input {...field} type="tel" className="bg-white/50 backdrop-blur-sm border-gray-200" />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <div className="flex justify-end">
-          <Button type="submit" disabled={isLoading} className="bg-violet-600 hover:bg-violet-700">
+        <div className="flex justify-start">
+          <Button 
+            type="submit" 
+            disabled={isLoading} 
+            className="bg-violet-600 hover:bg-violet-700 text-white"
+          >
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

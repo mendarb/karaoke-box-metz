@@ -24,7 +24,7 @@ export const GeneralStats = ({ period }: GeneralStatsProps) => {
   const metrics = getMetricsConfig(stats);
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       {metrics.map((metric, index) => (
         <MetricCard key={index} {...metric} />
       ))}

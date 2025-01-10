@@ -1,5 +1,4 @@
-import { Users, TrendingUp, TrendingDown, UserPlus, Calendar, Euro } from "lucide-react";
-import { calculatePercentageChange } from "./utils/analyticsCalculations";
+import { Users, TrendingUp, TrendingDown, UserPlus, Calendar, Euro, Eye, Clock, BarChart } from "lucide-react";
 
 type MetricConfig = {
   title: string;
@@ -12,6 +11,31 @@ type MetricConfig = {
 }
 
 export const getMetricsConfig = (stats: any): MetricConfig[] => [
+  {
+    title: "Utilisateurs actifs",
+    value: stats.ga4.summary.activeUsers || 0,
+    icon: Users,
+    description: "Nombre d'utilisateurs actifs sur la période",
+  },
+  {
+    title: "Pages vues",
+    value: stats.ga4.summary.pageViews || 0,
+    icon: Eye,
+    description: "Nombre total de pages vues sur la période",
+  },
+  {
+    title: "Temps moyen",
+    value: `${Math.round((stats.ga4.summary.averageEngagementTime || 0) / 60)}min`,
+    icon: Clock,
+    description: "Temps moyen passé sur le site",
+  },
+  {
+    title: "Taux d'engagement",
+    value: stats.ga4.summary.engagementRate || 0,
+    icon: BarChart,
+    description: "Pourcentage de sessions engagées",
+    isPercentage: true
+  },
   {
     title: "Utilisateurs inscrits",
     value: stats.currentPeriod.signups,

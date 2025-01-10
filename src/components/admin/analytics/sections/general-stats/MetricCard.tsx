@@ -33,7 +33,7 @@ export const MetricCard = ({
             <p className="text-sm font-medium text-muted-foreground">
               {title}
             </p>
-            <p className="text-3xl font-bold mt-2">
+            <p className="text-2xl font-bold mt-2">
               {formattedValue}
             </p>
           </div>

@@ -19,9 +19,7 @@ export async function fetchGA4Data(propertyId: string, accessToken: string, star
           { name: 'bounceRate' },
           { name: 'engagedSessions' },
           { name: 'engagementRate' },
-          { name: 'eventsPerSession' },
-          { name: 'totalUsers' },
-          { name: 'eventCount' }
+          { name: 'totalUsers' }
         ],
         dimensions: [
           { name: 'date' },
@@ -43,6 +41,8 @@ export async function fetchGA4Data(propertyId: string, accessToken: string, star
 }
 
 export function processGA4Data(data: any) {
+  console.log('Processing GA4 data:', data);
+
   const processedData = {
     summary: {
       activeUsers: 0,
@@ -51,66 +51,67 @@ export function processGA4Data(data: any) {
       averageSessionDuration: 0,
       bounceRate: 0,
       engagementRate: 0,
-      totalUsers: 0,
-      formStartCount: 0
+      totalUsers: 0
     },
     byDate: {},
     byDevice: {},
     byCountry: {}
   };
 
-  data.rows?.forEach((row: any) => {
+  if (!data.rows) {
+    console.warn('No rows found in GA4 data');
+    return processedData;
+  }
+
+  // Process each row of data
+  data.rows.forEach((row: any) => {
     const date = row.dimensionValues[0].value;
     const device = row.dimensionValues[1].value;
     const country = row.dimensionValues[2].value;
-    const eventName = row.dimensionValues[3].value;
     const metrics = row.metricValues.map((m: any) => parseFloat(m.value));
 
-    processedData.summary.activeUsers += metrics[0];
-    processedData.summary.pageViews += metrics[1];
-    processedData.summary.sessions += metrics[2];
-    processedData.summary.averageSessionDuration = metrics[3];
-    processedData.summary.bounceRate = metrics[4];
-    processedData.summary.engagementRate = metrics[6];
-    processedData.summary.totalUsers = metrics[8];
-    
-    if (eventName === 'form_start') {
-      processedData.summary.formStartCount += metrics[9] || 0;
-    }
+    // Aggregate summary metrics
+    processedData.summary.activeUsers += metrics[0] || 0;
+    processedData.summary.pageViews += metrics[1] || 0;
+    processedData.summary.sessions += metrics[2] || 0;
+    processedData.summary.averageSessionDuration = metrics[3] || 0;
+    processedData.summary.bounceRate = metrics[4] || 0;
+    processedData.summary.engagementRate = metrics[6] || 0;
+    processedData.summary.totalUsers = metrics[7] || 0;
 
+    // Process by date
     if (!processedData.byDate[date]) {
       processedData.byDate[date] = {
         activeUsers: 0,
         pageViews: 0,
-        sessions: 0,
-        formStartCount: 0
+        sessions: 0
       };
     }
-    processedData.byDate[date].activeUsers += metrics[0];
-    processedData.byDate[date].pageViews += metrics[1];
-    processedData.byDate[date].sessions += metrics[2];
-    if (eventName === 'form_start') {
-      processedData.byDate[date].formStartCount += metrics[9] || 0;
-    }
+    processedData.byDate[date].activeUsers += metrics[0] || 0;
+    processedData.byDate[date].pageViews += metrics[1] || 0;
+    processedData.byDate[date].sessions += metrics[2] || 0;
 
+    // Process by device
     if (!processedData.byDevice[device]) {
       processedData.byDevice[device] = {
         sessions: 0,
         users: 0
       };
     }
-    processedData.byDevice[device].sessions += metrics[2];
-    processedData.byDevice[device].users += metrics[0];
+    processedData.byDevice[device].sessions += metrics[2] || 0;
+    processedData.byDevice[device].users += metrics[0] || 0;
 
+    // Process by country
     if (!processedData.byCountry[country]) {
       processedData.byCountry[country] = {
         sessions: 0,
         users: 0
       };
     }
-    processedData.byCountry[country].sessions += metrics[2];
-    processedData.byCountry[country].users += metrics[0];
+    processedData.byCountry[country].sessions += metrics[2] || 0;
+    processedData.byCountry[country].users += metrics[0] || 0;
   });
 
+  console.log('Processed GA4 data:', processedData);
   return processedData;
 }

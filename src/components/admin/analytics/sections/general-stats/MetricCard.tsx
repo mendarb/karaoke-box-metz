@@ -26,17 +26,22 @@ export const MetricCard = ({
     : value;
 
   return (
-    <Card className="p-4 relative group hover:shadow-lg transition-shadow">
-      <div className="space-y-2">
+    <Card className="relative overflow-hidden">
+      <div className="p-6 flex flex-col gap-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium text-muted-foreground">
-            {title}
-          </h3>
-          <Icon className="h-4 w-4 text-muted-foreground opacity-50" />
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">
+              {title}
+            </p>
+            <p className="text-3xl font-bold mt-2">
+              {formattedValue}
+            </p>
+          </div>
+          <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Icon className="h-6 w-6 text-primary" />
+          </div>
         </div>
-        <p className="text-2xl font-bold">
-          {formattedValue}
-        </p>
+        
         {change && (
           <div className="flex items-center text-sm">
             {trend === "up" ? (
@@ -51,7 +56,8 @@ export const MetricCard = ({
           </div>
         )}
       </div>
-      <div className="absolute inset-0 bg-black/75 text-white p-4 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center text-center">
+      
+      <div className="absolute inset-0 bg-black/75 text-white p-6 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center text-center">
         <p className="text-sm">{description}</p>
       </div>
     </Card>

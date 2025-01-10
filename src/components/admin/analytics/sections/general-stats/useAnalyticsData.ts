@@ -13,7 +13,6 @@ export const useAnalyticsData = (period: PeriodSelection) => {
   return useQuery({
     queryKey: ['analytics-general', period, dateRange],
     queryFn: async () => {
-      // Récupérer les données GA4
       const { ga4Stats } = await fetchAnalyticsData(supabase, dateRange, previousStartDate);
 
       // Récupérer les inscriptions pour la période actuelle
@@ -28,12 +27,11 @@ export const useAnalyticsData = (period: PeriodSelection) => {
       // Récupérer les réservations payées et confirmées pour la période actuelle
       const { data: currentConfirmedBookings } = await supabase
         .from('bookings')
-        .select('count')
+        .select('id, price')
         .eq('payment_status', 'paid')
         .eq('status', 'confirmed')
         .gte('created_at', dateRange.startDate)
-        .lte('created_at', dateRange.endDate)
-        .single();
+        .lte('created_at', dateRange.endDate);
 
       // Récupérer les données pour la période précédente
       const { data: previousSignups } = await supabase
@@ -46,19 +44,23 @@ export const useAnalyticsData = (period: PeriodSelection) => {
 
       const { data: previousConfirmedBookings } = await supabase
         .from('bookings')
-        .select('count')
+        .select('id, price')
         .eq('payment_status', 'paid')
         .eq('status', 'confirmed')
         .gte('created_at', previousStartDate)
-        .lt('created_at', dateRange.startDate)
-        .single();
+        .lt('created_at', dateRange.startDate);
 
-      // Calculer les taux de conversion
+      // Calculer les métriques
       const currentSignupsCount = currentSignups?.count || 0;
-      const currentBookingsCount = currentConfirmedBookings?.count || 0;
+      const currentBookingsCount = currentConfirmedBookings?.length || 0;
       const previousSignupsCount = previousSignups?.count || 0;
-      const previousBookingsCount = previousConfirmedBookings?.count || 0;
+      const previousBookingsCount = previousConfirmedBookings?.length || 0;
 
+      // Calculer les revenus
+      const currentRevenue = currentConfirmedBookings?.reduce((sum, booking) => sum + Number(booking.price), 0) || 0;
+      const previousRevenue = previousConfirmedBookings?.reduce((sum, booking) => sum + Number(booking.price), 0) || 0;
+
+      // Calculer le taux de conversion (réservations confirmées / inscriptions)
       const currentConversionRate = currentSignupsCount > 0 
         ? (currentBookingsCount / currentSignupsCount) * 100 
         : 0;
@@ -66,16 +68,10 @@ export const useAnalyticsData = (period: PeriodSelection) => {
         ? (previousBookingsCount / previousSignupsCount) * 100 
         : 0;
 
-      console.log('Analytics data fetched:', {
-        currentSignups: currentSignupsCount,
-        previousSignups: previousSignupsCount,
-        currentBookings: currentBookingsCount,
-        previousBookings: previousBookingsCount
-      });
-
       console.log('Analytics metrics:', {
         signups: { current: currentSignupsCount, previous: previousSignupsCount },
-        activeUsers: ga4Stats?.summary.activeUsers || 0,
+        confirmedBookings: { current: currentBookingsCount, previous: previousBookingsCount },
+        revenue: { current: currentRevenue, previous: previousRevenue },
         conversionRates: { 
           current: currentConversionRate.toFixed(2) + '%', 
           previous: previousConversionRate.toFixed(2) + '%' 
@@ -97,12 +93,14 @@ export const useAnalyticsData = (period: PeriodSelection) => {
         currentPeriod: {
           signups: currentSignupsCount,
           confirmedBookings: currentBookingsCount,
-          conversionRate: Number(currentConversionRate.toFixed(2))
+          conversionRate: Number(currentConversionRate.toFixed(1)),
+          revenue: currentRevenue
         },
         variations: {
           signups: calculatePercentageChange(currentSignupsCount, previousSignupsCount),
           confirmedBookings: calculatePercentageChange(currentBookingsCount, previousBookingsCount),
-          conversionRate: calculatePercentageChange(currentConversionRate, previousConversionRate)
+          conversionRate: calculatePercentageChange(currentConversionRate, previousConversionRate),
+          revenue: calculatePercentageChange(currentRevenue, previousRevenue)
         }
       };
     }

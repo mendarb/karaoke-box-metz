@@ -21,16 +21,23 @@ export async function fetchGA4Data(propertyId: string, accessToken: string, star
           { name: 'engagementRate' },
           { name: 'eventsPerSession' },
           { name: 'totalUsers' },
-          { 
-            name: 'eventCount',
-            expression: "eventName = 'form_start'"
-          }
+          { name: 'eventCount' }
         ],
         dimensions: [
           { name: 'date' },
           { name: 'deviceCategory' },
-          { name: 'country' }
-        ]
+          { name: 'country' },
+          { name: 'eventName' }
+        ],
+        dimensionFilter: {
+          filter: {
+            fieldName: "eventName",
+            stringFilter: {
+              value: "form_start",
+              matchType: "EXACT"
+            }
+          }
+        }
       })
     }
   );
@@ -65,6 +72,7 @@ export function processGA4Data(data: any) {
     const date = row.dimensionValues[0].value;
     const device = row.dimensionValues[1].value;
     const country = row.dimensionValues[2].value;
+    const eventName = row.dimensionValues[3].value;
     const metrics = row.metricValues.map((m: any) => parseFloat(m.value));
 
     processedData.summary.activeUsers += metrics[0];
@@ -74,7 +82,10 @@ export function processGA4Data(data: any) {
     processedData.summary.bounceRate = metrics[4];
     processedData.summary.engagementRate = metrics[6];
     processedData.summary.totalUsers = metrics[8];
-    processedData.summary.formStartCount += metrics[9] || 0;
+    
+    if (eventName === 'form_start') {
+      processedData.summary.formStartCount += metrics[9] || 0;
+    }
 
     if (!processedData.byDate[date]) {
       processedData.byDate[date] = {
@@ -87,7 +98,9 @@ export function processGA4Data(data: any) {
     processedData.byDate[date].activeUsers += metrics[0];
     processedData.byDate[date].pageViews += metrics[1];
     processedData.byDate[date].sessions += metrics[2];
-    processedData.byDate[date].formStartCount += metrics[9] || 0;
+    if (eventName === 'form_start') {
+      processedData.byDate[date].formStartCount += metrics[9] || 0;
+    }
 
     if (!processedData.byDevice[device]) {
       processedData.byDevice[device] = {

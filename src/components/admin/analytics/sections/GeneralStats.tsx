@@ -1,19 +1,54 @@
 import { Card } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { Loader2, Users, Calendar, Clock, TrendingUp } from "lucide-react";
+import { Loader2, Users, Calendar, Clock, TrendingUp, CreditCard } from "lucide-react";
 
 export const GeneralStats = () => {
-  const { data: bookings, isLoading } = useQuery({
-    queryKey: ['analytics-bookings'],
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ['analytics-general'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Récupérer toutes les réservations
+      const { data: bookings, error: bookingsError } = await supabase
         .from('bookings')
         .select('*')
         .is('deleted_at', null);
       
-      if (error) throw error;
-      return data;
+      if (bookingsError) throw bookingsError;
+
+      // Récupérer le nombre total d'utilisateurs
+      const { count: totalUsers, error: usersError } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+
+      if (usersError) throw usersError;
+
+      // Calculer les statistiques
+      const totalBookings = bookings?.length || 0;
+      const completedBookings = bookings?.filter(b => b.payment_status === 'paid').length || 0;
+      const abandonedBookings = bookings?.filter(b => b.payment_status === 'pending').length || 0;
+      const averageDuration = bookings && completedBookings > 0
+        ? (bookings
+            .filter(b => b.payment_status === 'paid')
+            .reduce((sum, booking) => sum + parseInt(booking.duration), 0) / completedBookings)
+        : 0;
+      
+      const conversionRate = totalUsers > 0
+        ? ((completedBookings / totalUsers) * 100)
+        : 0;
+
+      const completionRate = totalBookings > 0
+        ? ((completedBookings / totalBookings) * 100)
+        : 0;
+
+      return {
+        totalBookings,
+        completedBookings,
+        abandonedBookings,
+        averageDuration,
+        conversionRate,
+        completionRate,
+        totalUsers
+      };
     }
   });
 
@@ -25,25 +60,14 @@ export const GeneralStats = () => {
     );
   }
 
-  const totalBookings = bookings?.length || 0;
-  const completedBookings = bookings?.filter(b => b.payment_status === 'paid').length || 0;
-  const conversionRate = totalBookings > 0 
-    ? ((completedBookings / totalBookings) * 100).toFixed(1) 
-    : '0';
-
-  // Calcul de la durée moyenne en heures
-  const averageDuration = bookings && bookings.length > 0
-    ? (bookings.reduce((sum, booking) => sum + parseInt(booking.duration), 0) / bookings.length).toFixed(1)
-    : '0';
-
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <Card className="p-6">
         <div className="flex items-center space-x-2">
           <Users className="h-4 w-4 text-muted-foreground" />
-          <h3 className="text-sm font-medium">Total réservations</h3>
+          <h3 className="text-sm font-medium">Utilisateurs inscrits</h3>
         </div>
-        <p className="text-2xl font-bold mt-2">{totalBookings}</p>
+        <p className="text-2xl font-bold mt-2">{stats?.totalUsers || 0}</p>
       </Card>
 
       <Card className="p-6">
@@ -51,7 +75,12 @@ export const GeneralStats = () => {
           <Calendar className="h-4 w-4 text-muted-foreground" />
           <h3 className="text-sm font-medium">Réservations complétées</h3>
         </div>
-        <p className="text-2xl font-bold mt-2">{completedBookings}</p>
+        <div>
+          <p className="text-2xl font-bold mt-2">{stats?.completedBookings || 0}</p>
+          <p className="text-sm text-muted-foreground">
+            sur {stats?.totalBookings || 0} tentatives
+          </p>
+        </div>
       </Card>
 
       <Card className="p-6">
@@ -59,15 +88,40 @@ export const GeneralStats = () => {
           <TrendingUp className="h-4 w-4 text-muted-foreground" />
           <h3 className="text-sm font-medium">Taux de conversion</h3>
         </div>
-        <p className="text-2xl font-bold mt-2">{conversionRate}%</p>
+        <div>
+          <p className="text-2xl font-bold mt-2">{stats?.conversionRate.toFixed(1)}%</p>
+          <p className="text-sm text-muted-foreground">
+            des utilisateurs réservent
+          </p>
+        </div>
+      </Card>
+
+      <Card className="p-6">
+        <div className="flex items-center space-x-2">
+          <CreditCard className="h-4 w-4 text-muted-foreground" />
+          <h3 className="text-sm font-medium">Taux de finalisation</h3>
+        </div>
+        <div>
+          <p className="text-2xl font-bold mt-2">{stats?.completionRate.toFixed(1)}%</p>
+          <p className="text-sm text-muted-foreground">
+            des réservations sont payées
+          </p>
+        </div>
       </Card>
 
       <Card className="p-6">
         <div className="flex items-center space-x-2">
           <Clock className="h-4 w-4 text-muted-foreground" />
-          <h3 className="text-sm font-medium">Durée moyenne</h3>
+          <h3 className="text-sm font-medium">Durée moyenne réservée</h3>
         </div>
-        <p className="text-2xl font-bold mt-2">{averageDuration}h</p>
+        <div>
+          <p className="text-2xl font-bold mt-2">
+            {stats?.averageDuration.toFixed(1)}h
+          </p>
+          <p className="text-sm text-muted-foreground">
+            par réservation complétée
+          </p>
+        </div>
       </Card>
     </div>
   );

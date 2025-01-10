@@ -15,17 +15,13 @@ export const PromoAnalytics = ({ period }: PromoAnalyticsProps) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('promo_codes')
-        .select(`
-          code,
-          uses,
-          bookings (
-            id,
-            price,
-            created_at
-          )
-        `);
+        .select('code, current_uses, bookings!bookings_promo_code_id_fkey (id, price, created_at)');
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching promo codes:', error);
+        throw error;
+      }
+      
       return data;
     }
   });
@@ -40,7 +36,7 @@ export const PromoAnalytics = ({ period }: PromoAnalyticsProps) => {
 
   const chartData = promoStats?.map(promo => ({
     name: promo.code,
-    uses: promo.uses,
+    uses: promo.current_uses || 0,
     revenue: promo.bookings?.reduce((sum, booking) => sum + (booking.price || 0), 0) || 0
   })) || [];
 

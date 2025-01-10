@@ -17,21 +17,17 @@ async function importPrivateKey(pem: string): Promise<CryptoKey> {
   let pemContents = pem
     .replace(/\\n/g, '\n') // Replace escaped newlines
     .replace(/["']/g, '') // Remove quotes
-    .trim()
-  
-  // Remove header and footer if present
-  pemContents = pemContents
     .replace(pemHeader, '')
     .replace(pemFooter, '')
     .replace(/\s+/g, '') // Remove all whitespace
     
   console.log('Cleaned PEM contents length:', pemContents.length)
   
-  // Decode base64 to get DER binary format
-  const binaryDer = base64Decode(pemContents)
-  console.log('Decoded DER length:', binaryDer.length)
-
   try {
+    // Decode base64 to get DER binary format
+    const binaryDer = base64Decode(pemContents)
+    console.log('Decoded DER length:', binaryDer.length)
+
     return await crypto.subtle.importKey(
       "pkcs8",
       binaryDer,
@@ -68,11 +64,11 @@ serve(async (req) => {
       throw new Error('Missing required GA4 credentials')
     }
 
-    console.log('Importing private key...')
-    const key = await importPrivateKey(privateKey)
-    console.log('Private key imported successfully')
+    console.log('Starting GA4 data fetch with client email:', clientEmail)
+    console.log('Property ID:', propertyId)
 
     // Create JWT token
+    const key = await importPrivateKey(privateKey)
     const now = Math.floor(Date.now() / 1000)
     const jwt = await new SignJWT({
       scope: 'https://www.googleapis.com/auth/analytics.readonly'
@@ -161,7 +157,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in get-ga4-data:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: 'Check the function logs for more information'
+      }),
       { 
         headers: { 
           ...corsHeaders,

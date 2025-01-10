@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { UserNav } from "./UserNav";
+import { CalendarPlus } from "lucide-react";
 
 interface DesktopNavProps {
   user: any;
@@ -15,8 +16,12 @@ export const DesktopNav = ({ user, isAdmin, onSignOut, onShowAuth }: DesktopNavP
       {user ? (
         <div className="flex items-center gap-4">
           <Link to="/">
-            <Button variant="ghost">
-              Réserver
+            <Button 
+              variant="default"
+              className="bg-kbox-coral hover:bg-kbox-orange-dark transition-all duration-200 flex items-center gap-2 px-6 py-2 rounded-full shadow-md hover:shadow-lg"
+            >
+              <CalendarPlus className="h-4 w-4" />
+              Réserver maintenant
             </Button>
           </Link>
           <UserNav onSignOut={onSignOut} isAdmin={isAdmin} />

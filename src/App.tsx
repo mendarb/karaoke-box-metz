@@ -20,11 +20,9 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <main className="min-h-screen flex flex-col">
+        <main className="min-h-screen">
           <Navbar onShowAuth={() => setShowAuthModal(true)} />
-          <div className="flex-1 flex flex-col">
-            <AppRoutes />
-          </div>
+          <AppRoutes />
           <Toaster />
           <AuthModal 
             isOpen={showAuthModal} 

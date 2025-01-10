@@ -35,12 +35,12 @@ const BookingSection = ({ user, onShowAuth }: BookingSectionProps) => {
   };
 
   return (
-    <div className="flex flex-col bg-white h-full">
-      <div className={`flex flex-col p-6 ${isMobile ? 'safe-top' : ''}`}>
+    <div className={`bg-white flex flex-col ${isMobile ? 'min-h-screen' : 'h-full'}`}>
+      <div className="flex-1 flex flex-col">
         {user ? (
           <BookingForm />
         ) : (
-          <div className="flex flex-col items-center justify-center min-h-[40vh] md:min-h-[60vh] space-y-4 text-center pt-[50px]">
+          <div className="flex flex-col items-center justify-center h-full space-y-4 p-8 text-center">
             <div className="rounded-full bg-violet-100 p-3 mb-2">
               <LogIn className="h-6 w-6 text-violet-600" />
             </div>
@@ -48,7 +48,7 @@ const BookingSection = ({ user, onShowAuth }: BookingSectionProps) => {
               <h2 className="text-2xl font-semibold text-gray-900">
                 Connectez-vous pour réserver
               </h2>
-              <p className="text-gray-600 text-sm max-w-sm mb-6">
+              <p className="text-gray-600 text-sm max-w-sm mb-3">
                 Pour effectuer une réservation et profiter de notre box karaoké, vous devez être connecté à votre compte.
               </p>
             </div>
@@ -56,7 +56,7 @@ const BookingSection = ({ user, onShowAuth }: BookingSectionProps) => {
               <Button 
                 onClick={handleGoogleLogin}
                 variant="outline"
-                className="mobile-button bg-white"
+                className="w-full flex items-center justify-center gap-2"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path
@@ -76,7 +76,7 @@ const BookingSection = ({ user, onShowAuth }: BookingSectionProps) => {
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                   />
                 </svg>
-                <span className="ml-2">Continuer avec Google</span>
+                Continuer avec Google
               </Button>
               <div className="relative my-2">
                 <div className="absolute inset-0 flex items-center">
@@ -88,7 +88,7 @@ const BookingSection = ({ user, onShowAuth }: BookingSectionProps) => {
               </div>
               <Button 
                 onClick={onShowAuth}
-                className="mobile-button bg-violet-600 hover:bg-violet-700 text-white"
+                className="bg-violet-600 hover:bg-violet-700"
               >
                 <LogIn className="h-4 w-4 mr-2" />
                 Se connecter / S'inscrire

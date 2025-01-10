@@ -26,27 +26,14 @@
 
   * {
     @apply border-border;
-    -webkit-tap-highlight-color: transparent;
   }
 
   html {
     -webkit-tap-highlight-color: transparent;
-    @apply overscroll-none;
   }
 
   body {
     @apply bg-background text-foreground antialiased min-h-screen overscroll-none;
     text-rendering: optimizeLegibility;
-  }
-
-  /* Mobile app-like styles */
-  @media (max-width: 640px) {
-    body {
-      @apply touch-none select-none;
-    }
-
-    input, select, textarea {
-      @apply appearance-none;
-    }
   }
 }

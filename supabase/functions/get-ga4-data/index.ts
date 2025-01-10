@@ -1,9 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { importPKCS8, SignJWT } from "https://deno.land/x/jose@v4.9.1/index.ts"
-import { corsHeaders } from "../_shared/cors.ts"
+import { SignJWT } from "https://deno.land/x/jose@v4.9.1/index.ts"
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
 
 serve(async (req) => {
-  // Handle CORS
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -28,12 +32,10 @@ serve(async (req) => {
       .replace(/["']/g, '')
       .trim()
 
-    console.log('Attempting to create JWT...')
+    console.log('Creating JWT token...')
 
-    // Create JWT token using jose
-    const privateKeyObject = await importPKCS8(formattedKey, 'RS256')
+    // Create JWT token
     const now = Math.floor(Date.now() / 1000)
-    
     const jwt = await new SignJWT({
       scope: 'https://www.googleapis.com/auth/analytics.readonly'
     })
@@ -42,18 +44,45 @@ serve(async (req) => {
       .setExpirationTime(now + 3600)
       .setIssuer(clientEmail)
       .setSubject(clientEmail)
-      .setAudience('https://analyticsdata.googleapis.com/')
-      .sign(privateKeyObject)
+      .setAudience('https://oauth2.googleapis.com/token')
+      .sign(await crypto.subtle.importKey(
+        'pkcs8',
+        new TextEncoder().encode(formattedKey),
+        { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+        false,
+        ['sign']
+      ))
 
-    console.log('JWT created successfully')
+    console.log('JWT token created, requesting access token...')
+
+    // Exchange JWT for access token
+    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+        assertion: jwt,
+      }),
+    })
+
+    if (!tokenResponse.ok) {
+      const error = await tokenResponse.text()
+      console.error('Token exchange failed:', error)
+      throw new Error(`Token exchange failed: ${error}`)
+    }
+
+    const { access_token } = await tokenResponse.json()
+    console.log('Access token obtained, fetching GA4 data...')
 
     // Make request to GA4 API
-    const response = await fetch(
+    const ga4Response = await fetch(
       `https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:runReport`,
       {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${jwt}`,
+          'Authorization': `Bearer ${access_token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -68,13 +97,13 @@ serve(async (req) => {
       }
     )
 
-    if (!response.ok) {
-      const error = await response.text()
+    if (!ga4Response.ok) {
+      const error = await ga4Response.text()
       console.error('GA4 API error:', error)
-      throw new Error(`GA4 API returned ${response.status}: ${error}`)
+      throw new Error(`GA4 API returned ${ga4Response.status}: ${error}`)
     }
 
-    const data = await response.json()
+    const data = await ga4Response.json()
     console.log('GA4 data received:', data)
 
     // Extract metrics from response

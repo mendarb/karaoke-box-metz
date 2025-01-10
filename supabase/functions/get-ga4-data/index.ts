@@ -1,9 +1,51 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { SignJWT } from "https://deno.land/x/jose@v4.9.1/index.ts"
+import { decode as base64Decode } from "https://deno.land/std@0.129.0/encoding/base64.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+async function importPrivateKey(pem: string): Promise<CryptoKey> {
+  console.log('Starting private key import...')
+  
+  const pemHeader = "-----BEGIN PRIVATE KEY-----"
+  const pemFooter = "-----END PRIVATE KEY-----"
+  
+  // Clean the key and extract the base64 content
+  let pemContents = pem
+    .replace(/\\n/g, '\n') // Replace escaped newlines
+    .replace(/["']/g, '') // Remove quotes
+    .trim()
+  
+  // Remove header and footer if present
+  pemContents = pemContents
+    .replace(pemHeader, '')
+    .replace(pemFooter, '')
+    .replace(/\s+/g, '') // Remove all whitespace
+    
+  console.log('Cleaned PEM contents length:', pemContents.length)
+  
+  // Decode base64 to get DER binary format
+  const binaryDer = base64Decode(pemContents)
+  console.log('Decoded DER length:', binaryDer.length)
+
+  try {
+    return await crypto.subtle.importKey(
+      "pkcs8",
+      binaryDer,
+      {
+        name: "RSASSA-PKCS1-v1_5",
+        hash: "SHA-256",
+      },
+      false,
+      ["sign"]
+    )
+  } catch (error) {
+    console.error('Error importing private key:', error)
+    throw error
+  }
 }
 
 serve(async (req) => {
@@ -26,24 +68,9 @@ serve(async (req) => {
       throw new Error('Missing required GA4 credentials')
     }
 
-    // Format private key correctly by:
-    // 1. Replacing escaped newlines with actual newlines
-    // 2. Removing any quotes
-    // 3. Ensuring proper PEM format
-    let formattedKey = privateKey
-      .replace(/\\n/g, '\n')
-      .replace(/["']/g, '')
-      .replace(/^\s+|\s+$/g, '') // Remove any leading/trailing whitespace
-
-    // Ensure proper PEM format with header and footer
-    if (!formattedKey.startsWith('-----BEGIN PRIVATE KEY-----')) {
-      formattedKey = `-----BEGIN PRIVATE KEY-----\n${formattedKey}`
-    }
-    if (!formattedKey.endsWith('-----END PRIVATE KEY-----')) {
-      formattedKey = `${formattedKey}\n-----END PRIVATE KEY-----`
-    }
-
-    console.log('Creating JWT token...')
+    console.log('Importing private key...')
+    const key = await importPrivateKey(privateKey)
+    console.log('Private key imported successfully')
 
     // Create JWT token
     const now = Math.floor(Date.now() / 1000)
@@ -56,13 +83,7 @@ serve(async (req) => {
       .setIssuer(clientEmail)
       .setSubject(clientEmail)
       .setAudience('https://oauth2.googleapis.com/token')
-      .sign(await crypto.subtle.importKey(
-        'pkcs8',
-        new TextEncoder().encode(formattedKey),
-        { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
-        false,
-        ['sign']
-      ))
+      .sign(key)
 
     console.log('JWT token created, requesting access token...')
 

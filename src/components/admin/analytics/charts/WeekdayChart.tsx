@@ -1,11 +1,13 @@
 import { Card } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
+interface ChartData {
+  name: string;
+  value: number;
+}
+
 interface WeekdayChartProps {
-  data: {
-    name: string;
-    value: number;
-  }[];
+  data: ChartData[];
 }
 
 export const WeekdayChart = ({ data }: WeekdayChartProps) => {

@@ -23,22 +23,17 @@ export const useAnalyticsData = (period: PeriodSelection) => {
         previousSignups
       } = await fetchAnalyticsData(supabase, dateRange, previousStartDate);
 
-      // Compter les démarrages de réservation
-      const currentBookingStarts = currentEvents?.filter(e => e.event_type === 'BOOKING_STARTED').length || 0;
-      const previousBookingStarts = previousEvents?.filter(e => e.event_type === 'BOOKING_STARTED').length || 0;
-      
-      // Compter les réservations complétées (payées)
-      const currentCompleted = currentBookings?.filter(b => b.payment_status === 'paid').length || 0;
-      const previousCompleted = previousBookings?.filter(b => b.payment_status === 'paid').length || 0;
+      // Calculer le taux de conversion basé sur les inscriptions
+      const currentConversionRate = ga4Stats?.summary.activeUsers > 0 
+        ? (currentSignups / ga4Stats.summary.activeUsers) * 100 
+        : 0;
 
-      // Calculer le taux de conversion
-      const currentConversionRate = calculateConversionRate(currentCompleted, currentBookingStarts);
-      const previousConversionRate = calculateConversionRate(previousCompleted, previousBookingStarts);
+      const previousActiveUsers = ga4Stats?.summary.activeUsers || 1; // Éviter division par 0
+      const previousConversionRate = (previousSignups / previousActiveUsers) * 100;
 
       console.log('Analytics metrics:', {
         signups: { current: currentSignups, previous: previousSignups },
-        bookingStarts: { current: currentBookingStarts, previous: previousBookingStarts },
-        completedBookings: { current: currentCompleted, previous: previousCompleted },
+        activeUsers: ga4Stats?.summary.activeUsers,
         conversionRates: { current: currentConversionRate, previous: previousConversionRate }
       });
 
@@ -51,19 +46,16 @@ export const useAnalyticsData = (period: PeriodSelection) => {
             averageSessionDuration: 0,
             bounceRate: 0,
             engagementRate: 0,
-            totalUsers: 0
+            totalUsers: 0,
+            averageEngagementTime: 0
           }
         },
         currentPeriod: {
           signups: currentSignups,
-          bookingStarts: currentBookingStarts,
-          completedBookings: currentCompleted,
-          conversionRate: Math.round(currentConversionRate)
+          conversionRate: Number(currentConversionRate.toFixed(2))
         },
         variations: {
           signups: calculatePercentageChange(currentSignups, previousSignups),
-          bookingStarts: calculatePercentageChange(currentBookingStarts, previousBookingStarts),
-          completedBookings: calculatePercentageChange(currentCompleted, previousCompleted),
           conversionRate: calculatePercentageChange(currentConversionRate, previousConversionRate)
         }
       };

@@ -15,12 +15,11 @@ export async function fetchGA4Data(propertyId: string, accessToken: string, star
           { name: 'activeUsers' },
           { name: 'screenPageViews' },
           { name: 'sessions' },
-          { name: 'averageSessionDuration' },
+          { name: 'userEngagementDuration' },
           { name: 'bounceRate' },
           { name: 'engagedSessions' },
           { name: 'engagementRate' },
-          { name: 'totalUsers' },
-          { name: 'userEngagementDuration' }
+          { name: 'totalUsers' }
         ],
         dimensions: [
           { name: 'date' },
@@ -52,7 +51,6 @@ export function processGA4Data(data: any) {
       bounceRate: 0,
       engagementRate: 0,
       totalUsers: 0,
-      conversionRate: 0, // Calculé à partir des inscriptions
       averageEngagementTime: 0
     },
     byDate: {},
@@ -79,12 +77,12 @@ export function processGA4Data(data: any) {
     processedData.summary.activeUsers += metrics[0] || 0;
     processedData.summary.pageViews += metrics[1] || 0;
     processedData.summary.sessions += metrics[2] || 0;
-    processedData.summary.averageSessionDuration = metrics[3] || 0;
-    processedData.summary.bounceRate = (metrics[4] || 0) * 100; // Convertir en pourcentage
-    processedData.summary.engagementRate = (metrics[6] || 0) * 100; // Convertir en pourcentage
+    totalEngagementTime += metrics[3] || 0;
+    processedData.summary.bounceRate = (metrics[4] || 0) * 100;
+    const engagedSessions = metrics[5] || 0;
+    processedData.summary.engagementRate = (engagedSessions / processedData.summary.sessions) * 100;
     processedData.summary.totalUsers = metrics[7] || 0;
 
-    totalEngagementTime += metrics[8] || 0;
     totalSessions += metrics[2] || 0;
 
     // Process by date
@@ -120,10 +118,14 @@ export function processGA4Data(data: any) {
     processedData.byCountry[country].users += metrics[0] || 0;
   });
 
-  // Calculer le temps d'engagement moyen
+  // Calculer le temps d'engagement moyen en secondes
   processedData.summary.averageEngagementTime = totalSessions > 0 
     ? Math.round(totalEngagementTime / totalSessions) 
     : 0;
+
+  // Arrondir les taux à 2 décimales
+  processedData.summary.bounceRate = Number(processedData.summary.bounceRate.toFixed(2));
+  processedData.summary.engagementRate = Number(processedData.summary.engagementRate.toFixed(2));
 
   console.log('Processed GA4 data:', processedData);
   return processedData;

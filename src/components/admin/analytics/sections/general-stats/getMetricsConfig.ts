@@ -19,6 +19,8 @@ interface AnalyticsData {
       engagementRate: number;
       bounceRate: number;
       averageEngagementTime: number;
+      totalUsers: number;
+      sessions: number;
     };
   };
   currentPeriod: {

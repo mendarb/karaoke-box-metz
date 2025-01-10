@@ -10,10 +10,8 @@ declare global {
 
 export const initializeGoogleAnalytics = async () => {
   try {
-    // Utilisation directe du nouvel ID GA
     const measurementId = 'G-NYBP6KX13X';
 
-    // Configuration de base de gtag
     window.dataLayer = window.dataLayer || [];
     window.gtag = function() {
       window.dataLayer.push(arguments);
@@ -21,7 +19,6 @@ export const initializeGoogleAnalytics = async () => {
     window.gtag('js', new Date());
     window.GA_MEASUREMENT_ID = measurementId;
 
-    // Configuration avancée
     window.gtag('config', measurementId, {
       send_page_view: false,
       cookie_domain: 'reservation-kbox.netlify.app',
@@ -51,7 +48,58 @@ export const trackPageView = (path: string) => {
   }
 };
 
-export const trackEvent = (
+// Nouveaux événements de suivi pour les réservations
+export const trackBookingEvent = (
+  eventName: 'booking_started' | 'booking_completed' | 'payment_initiated' | 'payment_completed',
+  eventParams?: Record<string, any>
+) => {
+  try {
+    if (window.gtag && window.GA_MEASUREMENT_ID) {
+      const baseParams = {
+        send_to: window.GA_MEASUREMENT_ID,
+        ...eventParams
+      };
+
+      // Paramètres spécifiques selon le type d'événement
+      const eventSpecificParams = {
+        booking_started: {
+          event_category: 'Booking',
+          event_label: 'Start Booking Process'
+        },
+        booking_completed: {
+          event_category: 'Booking',
+          event_label: 'Complete Booking',
+          value: eventParams?.price
+        },
+        payment_initiated: {
+          event_category: 'Payment',
+          event_label: 'Start Payment',
+          value: eventParams?.price
+        },
+        payment_completed: {
+          event_category: 'Payment',
+          event_label: 'Complete Payment',
+          value: eventParams?.price,
+          transaction_id: eventParams?.bookingId
+        }
+      };
+
+      window.gtag('event', eventName, {
+        ...baseParams,
+        ...eventSpecificParams[eventName]
+      });
+
+      console.log(`GA4 event tracked: ${eventName}`, {
+        ...baseParams,
+        ...eventSpecificParams[eventName]
+      });
+    }
+  } catch (error) {
+    console.error('Error tracking event:', error);
+  }
+};
+
+export const trackEngagementEvent = (
   eventName: string,
   eventParams?: Record<string, any>
 ) => {
@@ -59,7 +107,8 @@ export const trackEvent = (
     if (window.gtag && window.GA_MEASUREMENT_ID) {
       window.gtag('event', eventName, {
         ...eventParams,
-        send_to: window.GA_MEASUREMENT_ID
+        send_to: window.GA_MEASUREMENT_ID,
+        event_category: 'Engagement'
       });
     }
   } catch (error) {

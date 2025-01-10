@@ -18,7 +18,12 @@ export async function fetchGA4Data(propertyId: string, accessToken: string, star
           { name: 'engagedSessions' },
           { name: 'engagementRate' },
           { name: 'eventsPerSession' },
-          { name: 'totalUsers' }
+          { name: 'totalUsers' },
+          // Nouveaux événements personnalisés
+          { name: 'eventCount', eventName: 'booking_started' },
+          { name: 'eventCount', eventName: 'booking_completed' },
+          { name: 'eventCount', eventName: 'payment_initiated' },
+          { name: 'eventCount', eventName: 'payment_completed' }
         ],
         dimensions: [
           { name: 'date' },
@@ -47,7 +52,11 @@ export function processGA4Data(data: any) {
       averageSessionDuration: 0,
       bounceRate: 0,
       engagementRate: 0,
-      totalUsers: 0
+      totalUsers: 0,
+      bookingStarts: 0,
+      bookingCompletions: 0,
+      paymentInitiations: 0,
+      paymentCompletions: 0
     },
     byDate: {},
     byDevice: {},
@@ -60,6 +69,7 @@ export function processGA4Data(data: any) {
     const country = row.dimensionValues[2].value;
     const metrics = row.metricValues.map((m: any) => parseFloat(m.value));
 
+    // Métriques de base
     processedData.summary.activeUsers += metrics[0];
     processedData.summary.pageViews += metrics[1];
     processedData.summary.sessions += metrics[2];
@@ -68,17 +78,29 @@ export function processGA4Data(data: any) {
     processedData.summary.engagementRate = metrics[6];
     processedData.summary.totalUsers = metrics[8];
 
+    // Événements personnalisés
+    processedData.summary.bookingStarts += metrics[9] || 0;
+    processedData.summary.bookingCompletions += metrics[10] || 0;
+    processedData.summary.paymentInitiations += metrics[11] || 0;
+    processedData.summary.paymentCompletions += metrics[12] || 0;
+
+    // Données par date
     if (!processedData.byDate[date]) {
       processedData.byDate[date] = {
         activeUsers: 0,
         pageViews: 0,
-        sessions: 0
+        sessions: 0,
+        bookingStarts: 0,
+        bookingCompletions: 0
       };
     }
     processedData.byDate[date].activeUsers += metrics[0];
     processedData.byDate[date].pageViews += metrics[1];
     processedData.byDate[date].sessions += metrics[2];
+    processedData.byDate[date].bookingStarts += metrics[9] || 0;
+    processedData.byDate[date].bookingCompletions += metrics[10] || 0;
 
+    // Données par appareil
     if (!processedData.byDevice[device]) {
       processedData.byDevice[device] = {
         sessions: 0,
@@ -88,6 +110,7 @@ export function processGA4Data(data: any) {
     processedData.byDevice[device].sessions += metrics[2];
     processedData.byDevice[device].users += metrics[0];
 
+    // Données par pays
     if (!processedData.byCountry[country]) {
       processedData.byCountry[country] = {
         sessions: 0,
@@ -98,5 +121,6 @@ export function processGA4Data(data: any) {
     processedData.byCountry[country].users += metrics[0];
   });
 
+  console.log('Processed GA4 data:', processedData);
   return processedData;
 }

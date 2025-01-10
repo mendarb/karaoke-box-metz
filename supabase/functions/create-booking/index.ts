@@ -45,7 +45,7 @@ serve(async (req) => {
     const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
       httpClient: Stripe.createFetchHttpClient(),
-      stripeAccount: 'acct_1PJFrf08cLtke4H4', // Ajout de l'ID du compte connecté
+      stripeAccount: 'acct_1PJFrf08cLtke4H4',
     });
 
     console.log('💳 Création de la session Stripe...');
@@ -53,7 +53,6 @@ serve(async (req) => {
     const origin = req.headers.get('origin') || 'https://k-box.fr';
     console.log('🌐 URL d\'origine pour la redirection:', origin);
 
-    // Créer un objet pour la description du produit
     let description = `${requestBody.groupSize} personnes - ${requestBody.duration}h`;
     if (requestBody.promoCode) {
       description += ` (Code promo: ${requestBody.promoCode})`;
@@ -62,6 +61,12 @@ serve(async (req) => {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card', 'paypal', 'klarna'],
       customer_email: requestBody.userEmail,
+      customer_creation: 'always',
+      payment_method_collection: 'always',
+      billing_address_collection: 'required',
+      phone_number_collection: {
+        enabled: true,
+      },
       line_items: [{
         price_data: {
           currency: 'eur',
@@ -76,23 +81,6 @@ serve(async (req) => {
       mode: 'payment',
       success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}`,
-      payment_intent_data: {
-        metadata: {
-          userId: requestBody.userId,
-          userEmail: requestBody.userEmail,
-          userName: requestBody.userName,
-          userPhone: requestBody.userPhone,
-          date: requestBody.date,
-          timeSlot: requestBody.timeSlot,
-          duration: requestBody.duration,
-          groupSize: requestBody.groupSize,
-          price: String(price),
-          promoCode: requestBody.promoCode || '',
-          discountAmount: String(requestBody.discountAmount || 0),
-          message: requestBody.message || '',
-          isTestMode: String(requestBody.isTestMode),
-        }
-      },
       metadata: {
         userId: requestBody.userId,
         userEmail: requestBody.userEmail,
@@ -107,12 +95,6 @@ serve(async (req) => {
         discountAmount: String(requestBody.discountAmount || 0),
         message: requestBody.message || '',
         isTestMode: String(requestBody.isTestMode),
-      },
-      billing_details_collection: 'auto',
-      customer_creation: 'always',
-      payment_method_collection: 'always',
-      phone_number_collection: {
-        enabled: true,
       },
     });
 
@@ -131,40 +113,6 @@ serve(async (req) => {
       throw new Error('Pas d\'URL de paiement retournée par Stripe');
     }
 
-    // Envoyer l'email de demande de paiement seulement si demandé
-    if (requestBody.sendEmail) {
-      try {
-        await fetch(
-          `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-payment-request`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
-            },
-            body: JSON.stringify({
-              booking: {
-                userEmail: requestBody.userEmail,
-                userName: requestBody.userName,
-                date: requestBody.date,
-                timeSlot: requestBody.timeSlot,
-                duration: requestBody.duration,
-                groupSize: requestBody.groupSize,
-                price: price,
-                promoCode: requestBody.promoCode,
-                message: requestBody.message,
-                paymentUrl: session.url
-              }
-            }),
-          }
-        );
-        console.log('📧 Email de demande de paiement envoyé avec succès');
-      } catch (emailError) {
-        console.error('❌ Erreur lors de l\'envoi de l\'email:', emailError);
-        // On ne relance pas l'erreur pour ne pas bloquer la création de la session
-      }
-    }
-
     return new Response(
       JSON.stringify({ 
         success: true,
@@ -179,7 +127,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('❌ Erreur dans le processus de réservation:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: error.toString()
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500 

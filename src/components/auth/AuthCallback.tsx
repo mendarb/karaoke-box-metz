@@ -16,11 +16,27 @@ export function AuthCallback() {
         if (error) throw error;
         
         if (session) {
-          toast({
-            title: "Connexion réussie",
-            description: "Bienvenue sur K.Box !",
-          });
-          navigate("/", { replace: true });
+          // Vérifier si l'utilisateur a un numéro de téléphone
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('phone')
+            .eq('id', session.user.id)
+            .single();
+
+          if (!profile?.phone) {
+            // Rediriger vers la page de profil si pas de numéro
+            navigate("/account", { replace: true });
+            toast({
+              title: "Complétez votre profil",
+              description: "Veuillez ajouter votre numéro de téléphone pour finaliser votre inscription.",
+            });
+          } else {
+            toast({
+              title: "Connexion réussie",
+              description: "Bienvenue sur K.Box !",
+            });
+            navigate("/", { replace: true });
+          }
         }
       } catch (error) {
         console.error("Erreur lors de la connexion:", error);

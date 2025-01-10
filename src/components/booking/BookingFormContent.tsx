@@ -61,6 +61,8 @@ export const BookingFormContent = ({
           <AdditionalFields
             form={form}
             calculatedPrice={calculatedPrice}
+            groupSize={groupSize}
+            duration={duration}
           />
         );
       default:

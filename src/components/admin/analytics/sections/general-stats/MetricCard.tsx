@@ -9,9 +9,22 @@ interface MetricCardProps {
   description: string;
   change?: string;
   trend?: "up" | "down";
+  isPercentage?: boolean;
 }
 
-export const MetricCard = ({ title, value, icon: Icon, description, change, trend }: MetricCardProps) => {
+export const MetricCard = ({ 
+  title, 
+  value, 
+  icon: Icon, 
+  description, 
+  change, 
+  trend,
+  isPercentage 
+}: MetricCardProps) => {
+  const formattedValue = isPercentage 
+    ? `${typeof value === 'number' ? value.toFixed(1) : value}%`
+    : value;
+
   return (
     <Card className="p-4 relative group hover:shadow-lg transition-shadow">
       <div className="space-y-2">
@@ -22,7 +35,7 @@ export const MetricCard = ({ title, value, icon: Icon, description, change, tren
           <Icon className="h-4 w-4 text-muted-foreground opacity-50" />
         </div>
         <p className="text-2xl font-bold">
-          {value}
+          {formattedValue}
         </p>
         {change && (
           <div className="flex items-center text-sm">

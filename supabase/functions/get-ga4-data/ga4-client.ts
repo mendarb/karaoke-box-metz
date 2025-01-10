@@ -19,13 +19,13 @@ export async function fetchGA4Data(propertyId: string, accessToken: string, star
           { name: 'bounceRate' },
           { name: 'engagedSessions' },
           { name: 'engagementRate' },
-          { name: 'totalUsers' }
+          { name: 'totalUsers' },
+          { name: 'userEngagementDuration' }
         ],
         dimensions: [
           { name: 'date' },
           { name: 'deviceCategory' },
-          { name: 'country' },
-          { name: 'eventName' }
+          { name: 'country' }
         ]
       })
     }
@@ -51,7 +51,9 @@ export function processGA4Data(data: any) {
       averageSessionDuration: 0,
       bounceRate: 0,
       engagementRate: 0,
-      totalUsers: 0
+      totalUsers: 0,
+      conversionRate: 0, // Calculé à partir des inscriptions
+      averageEngagementTime: 0
     },
     byDate: {},
     byDevice: {},
@@ -62,6 +64,9 @@ export function processGA4Data(data: any) {
     console.warn('No rows found in GA4 data');
     return processedData;
   }
+
+  let totalEngagementTime = 0;
+  let totalSessions = 0;
 
   // Process each row of data
   data.rows.forEach((row: any) => {
@@ -75,9 +80,12 @@ export function processGA4Data(data: any) {
     processedData.summary.pageViews += metrics[1] || 0;
     processedData.summary.sessions += metrics[2] || 0;
     processedData.summary.averageSessionDuration = metrics[3] || 0;
-    processedData.summary.bounceRate = metrics[4] || 0;
-    processedData.summary.engagementRate = metrics[6] || 0;
+    processedData.summary.bounceRate = (metrics[4] || 0) * 100; // Convertir en pourcentage
+    processedData.summary.engagementRate = (metrics[6] || 0) * 100; // Convertir en pourcentage
     processedData.summary.totalUsers = metrics[7] || 0;
+
+    totalEngagementTime += metrics[8] || 0;
+    totalSessions += metrics[2] || 0;
 
     // Process by date
     if (!processedData.byDate[date]) {
@@ -111,6 +119,11 @@ export function processGA4Data(data: any) {
     processedData.byCountry[country].sessions += metrics[2] || 0;
     processedData.byCountry[country].users += metrics[0] || 0;
   });
+
+  // Calculer le temps d'engagement moyen
+  processedData.summary.averageEngagementTime = totalSessions > 0 
+    ? Math.round(totalEngagementTime / totalSessions) 
+    : 0;
 
   console.log('Processed GA4 data:', processedData);
   return processedData;

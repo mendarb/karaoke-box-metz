@@ -8,6 +8,7 @@ interface Metric {
   description: string;
   change?: string;
   trend?: "up" | "down";
+  isPercentage?: boolean;
 }
 
 interface AnalyticsData {
@@ -17,6 +18,7 @@ interface AnalyticsData {
       pageViews: number;
       engagementRate: number;
       bounceRate: number;
+      averageEngagementTime: number;
     };
   };
   currentPeriod: {
@@ -44,15 +46,17 @@ export const getMetricsConfig = (stats: AnalyticsData): Metric[] => [
   },
   {
     title: "Taux d'engagement",
-    value: `${Math.round(stats.ga4.summary.engagementRate || 0)}%`,
+    value: stats.ga4.summary.engagementRate || 0,
     icon: Gauge,
-    description: "Pourcentage de sessions engagées"
+    description: "Pourcentage de sessions engagées",
+    isPercentage: true
   },
   {
     title: "Taux de rebond",
-    value: `${Math.round(stats.ga4.summary.bounceRate || 0)}%`,
+    value: stats.ga4.summary.bounceRate || 0,
     icon: Activity,
-    description: "Pourcentage de visites avec une seule page vue"
+    description: "Pourcentage de visites avec une seule page vue",
+    isPercentage: true
   },
   {
     title: "Utilisateurs inscrits",
@@ -64,10 +68,11 @@ export const getMetricsConfig = (stats: AnalyticsData): Metric[] => [
   },
   {
     title: "Taux de conversion",
-    value: `${stats.currentPeriod.conversionRate || 0}%`,
+    value: stats.currentPeriod.conversionRate || 0,
     change: `${Math.round(stats.variations.conversionRate)}%`,
     icon: Target,
     trend: stats.variations.conversionRate >= 0 ? "up" : "down",
-    description: "Réservations payées / Réservations initiées"
+    description: "Inscriptions / Visiteurs actifs",
+    isPercentage: true
   }
 ];

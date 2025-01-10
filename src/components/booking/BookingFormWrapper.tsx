@@ -42,8 +42,8 @@ export const BookingFormWrapper = () => {
   const validateStep = (step: number) => {
     const requiredFields: { [key: number]: Array<keyof BookingFormValues> } = {
       1: ['email', 'fullName', 'phone'],
-      2: ['date', 'timeSlot'],
-      3: ['groupSize', 'duration'],
+      2: ['groupSize', 'duration'],
+      3: ['date', 'timeSlot'],
       4: []
     };
 

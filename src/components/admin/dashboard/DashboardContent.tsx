@@ -24,9 +24,13 @@ export const DashboardContent = ({
   const dummyOnStatusChange = async () => {};
 
   return (
-    <div className="p-4 md:p-6 pb-20 md:pb-6">
+    <div className="p-4 md:p-8 max-w-[1200px]">
+      <div className="mb-8">
+        <h1 className="text-3xl font-semibold text-gray-900 mb-2">Tableau de bord</h1>
+        <p className="text-gray-600">Gestion des réservations et statistiques</p>
+      </div>
+
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <h1 className="text-xl md:text-2xl font-semibold text-gray-900">Tableau de bord</h1>
         <div className="flex w-full md:w-auto gap-2">
           <Button
             variant="destructive"

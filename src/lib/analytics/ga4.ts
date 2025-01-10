@@ -1,41 +1,16 @@
 import { supabase } from '@/lib/supabase';
 
 interface GA4Data {
-  summary: {
-    activeUsers: number;
-    pageViews: number;
-    sessions: number;
-    averageSessionDuration: number;
-    bounceRate: number;
-    engagementRate: number;
-    totalUsers: number;
-    bookingStarts: number;
-    bookingCompletions: number;
-    paymentInitiations: number;
-    paymentCompletions: number;
-  };
-  byDate: Record<string, {
-    activeUsers: number;
-    pageViews: number;
-    sessions: number;
-    bookingStarts: number;
-    bookingCompletions: number;
-  }>;
-  byDevice: Record<string, {
-    sessions: number;
-    users: number;
-  }>;
-  byCountry: Record<string, {
-    sessions: number;
-    users: number;
-  }>;
+  activeUsers: number;
+  pageViews: number;
+  sessions: number;
+  averageSessionDuration: number;
 }
 
-export const getGA4Data = async (startDate?: string, endDate?: string): Promise<GA4Data | null> => {
+export const getGA4Data = async (): Promise<GA4Data | null> => {
   try {
-    const { data, error } = await supabase.functions.invoke('get-ga4-data', {
-      body: { startDate, endDate }
-    });
+    // Utiliser la fonction Edge pour obtenir les données GA4
+    const { data, error } = await supabase.functions.invoke('get-ga4-data');
     
     if (error) {
       console.error('Error fetching GA4 data:', error);
@@ -51,8 +26,9 @@ export const getGA4Data = async (startDate?: string, endDate?: string): Promise<
 
 export const initGA4 = () => {
   if (typeof window !== 'undefined') {
+    // Initialize Google Analytics 4
     const script = document.createElement('script');
-    script.src = `https://www.googletagmanager.com/gtag/js?id=G-NYBP6KX13X`;
+    script.src = `https://www.googletagmanager.com/gtag/js?id=G-471434397`;
     script.async = true;
     document.head.appendChild(script);
 
@@ -61,29 +37,15 @@ export const initGA4 = () => {
       window.dataLayer.push(arguments);
     }
     gtag('js', new Date());
-    gtag('config', 'G-NYBP6KX13X', {
-      custom_map: {
-        dimension1: 'booking_type',
-        dimension2: 'payment_method',
-        metric1: 'booking_value',
-        metric2: 'booking_duration'
-      }
-    });
+    gtag('config', 'G-471434397');
 
+    // Make gtag available globally
     window.gtag = gtag;
   }
 };
 
 export const trackGA4Event = ({ name, params = {} }: { name: string; params?: Record<string, any> }) => {
   if (typeof window !== 'undefined' && window.gtag) {
-    // Ajout de paramètres communs pour tous les événements
-    const enhancedParams = {
-      ...params,
-      timestamp: new Date().toISOString(),
-      environment: import.meta.env.MODE
-    };
-
-    window.gtag('event', name, enhancedParams);
-    console.log(`GA4 event tracked: ${name}`, enhancedParams);
+    window.gtag('event', name, params);
   }
 };

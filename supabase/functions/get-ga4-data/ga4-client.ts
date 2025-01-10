@@ -23,23 +23,19 @@ export async function fetchGA4Data(propertyId: string, accessToken: string, star
           { name: 'totalUsers' },
           { 
             name: 'eventCount',
-            expression: "eventName == 'booking_started'",
-            alias: 'bookingStartedCount'
+            expression: "eventName == 'booking_started'"
           },
           { 
             name: 'eventCount',
-            expression: "eventName == 'booking_completed'",
-            alias: 'bookingCompletedCount'
+            expression: "eventName == 'booking_completed'"
           },
           { 
             name: 'eventCount',
-            expression: "eventName == 'payment_initiated'",
-            alias: 'paymentInitiatedCount'
+            expression: "eventName == 'payment_initiated'"
           },
           { 
             name: 'eventCount',
-            expression: "eventName == 'payment_completed'",
-            alias: 'paymentCompletedCount'
+            expression: "eventName == 'payment_completed'"
           }
         ],
         dimensions: [

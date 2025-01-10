@@ -16,13 +16,13 @@ export const useAnalyticsData = (period: PeriodSelection) => {
       const { ga4Stats } = await fetchAnalyticsData(supabase, dateRange, previousStartDate);
 
       // Récupérer les inscriptions pour la période actuelle
-      const { data: currentSignups } = await supabase
+      const { count: currentSignupsCount } = await supabase
         .from('user_events')
         .select('count')
         .eq('event_type', 'SIGNUP')
         .gte('created_at', dateRange.startDate)
         .lte('created_at', dateRange.endDate)
-        .single();
+        .single() || { count: 0 };
 
       // Récupérer les réservations payées et confirmées pour la période actuelle
       const { data: currentConfirmedBookings } = await supabase
@@ -34,13 +34,13 @@ export const useAnalyticsData = (period: PeriodSelection) => {
         .lte('created_at', dateRange.endDate);
 
       // Récupérer les données pour la période précédente
-      const { data: previousSignups } = await supabase
+      const { count: previousSignupsCount } = await supabase
         .from('user_events')
         .select('count')
         .eq('event_type', 'SIGNUP')
         .gte('created_at', previousStartDate)
         .lt('created_at', dateRange.startDate)
-        .single();
+        .single() || { count: 0 };
 
       const { data: previousConfirmedBookings } = await supabase
         .from('bookings')
@@ -51,9 +51,7 @@ export const useAnalyticsData = (period: PeriodSelection) => {
         .lt('created_at', dateRange.startDate);
 
       // Calculer les métriques
-      const currentSignupsCount = currentSignups?.count || 0;
       const currentBookingsCount = currentConfirmedBookings?.length || 0;
-      const previousSignupsCount = previousSignups?.count || 0;
       const previousBookingsCount = previousConfirmedBookings?.length || 0;
 
       // Calculer les revenus

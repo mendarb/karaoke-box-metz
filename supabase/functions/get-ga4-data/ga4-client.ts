@@ -28,16 +28,7 @@ export async function fetchGA4Data(propertyId: string, accessToken: string, star
           { name: 'deviceCategory' },
           { name: 'country' },
           { name: 'eventName' }
-        ],
-        dimensionFilter: {
-          filter: {
-            fieldName: "eventName",
-            stringFilter: {
-              value: "form_start",
-              matchType: "EXACT"
-            }
-          }
-        }
+        ]
       })
     }
   );

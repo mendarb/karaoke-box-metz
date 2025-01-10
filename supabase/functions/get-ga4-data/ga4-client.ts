@@ -1,4 +1,6 @@
 export async function fetchGA4Data(propertyId: string, accessToken: string, startDate: string, endDate: string) {
+  console.log('Fetching GA4 data with:', { propertyId, startDate, endDate });
+  
   const response = await fetch(
     `https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:runReport`,
     {
@@ -19,11 +21,23 @@ export async function fetchGA4Data(propertyId: string, accessToken: string, star
           { name: 'engagementRate' },
           { name: 'eventsPerSession' },
           { name: 'totalUsers' },
-          // Nouveaux événements personnalisés
-          { name: 'eventCount', eventName: 'booking_started' },
-          { name: 'eventCount', eventName: 'booking_completed' },
-          { name: 'eventCount', eventName: 'payment_initiated' },
-          { name: 'eventCount', eventName: 'payment_completed' }
+          // Event counts using eventCount metric
+          { 
+            name: 'eventCount',
+            expression: "event_name = 'booking_started'"
+          },
+          { 
+            name: 'eventCount',
+            expression: "event_name = 'booking_completed'"
+          },
+          { 
+            name: 'eventCount',
+            expression: "event_name = 'payment_initiated'"
+          },
+          { 
+            name: 'eventCount',
+            expression: "event_name = 'payment_completed'"
+          }
         ],
         dimensions: [
           { name: 'date' },
@@ -40,7 +54,9 @@ export async function fetchGA4Data(propertyId: string, accessToken: string, star
     throw new Error(`GA4 API returned ${response.status}: ${error}`);
   }
 
-  return response.json();
+  const data = await response.json();
+  console.log('GA4 API response:', JSON.stringify(data, null, 2));
+  return data;
 }
 
 export function processGA4Data(data: any) {

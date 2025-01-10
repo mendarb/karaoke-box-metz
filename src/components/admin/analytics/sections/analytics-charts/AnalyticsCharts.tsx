@@ -11,11 +11,11 @@ import {
 
 export interface AnalyticsChartsProps {
   bookings: any[];
-  events: any[];
+  events?: any[];
   stepsTracking?: any[];
 }
 
-export const AnalyticsCharts = ({ bookings, events, stepsTracking }: AnalyticsChartsProps) => {
+export const AnalyticsCharts = ({ bookings, events = [], stepsTracking }: AnalyticsChartsProps) => {
   const groupSizeChartData = calculateGroupSizeData(bookings);
   const durationChartData = calculateDurationData(bookings);
   const dayChartData = calculateDayData(bookings);

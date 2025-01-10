@@ -6,6 +6,11 @@ export const fetchAnalyticsData = async (
   dateRange: { startDate: string; endDate: string },
   previousStartDate: string
 ) => {
+  console.log('Fetching analytics data for:', {
+    currentPeriod: { start: dateRange.startDate, end: dateRange.endDate },
+    previousPeriod: { start: previousStartDate, end: dateRange.startDate }
+  });
+
   const [
     ga4Stats,
     { data: currentEvents },
@@ -40,15 +45,24 @@ export const fetchAnalyticsData = async (
       .is('deleted_at', null),
     supabase
       .from('profiles')
-      .select('*')
+      .select('count')
       .gte('created_at', dateRange.startDate)
-      .lte('created_at', dateRange.endDate),
+      .lte('created_at', dateRange.endDate)
+      .single(),
     supabase
       .from('profiles')
-      .select('*')
+      .select('count')
       .gte('created_at', previousStartDate)
       .lt('created_at', dateRange.startDate)
+      .single()
   ]);
+
+  console.log('Analytics data fetched:', {
+    currentSignups,
+    previousSignups,
+    currentBookings: currentBookings?.length,
+    previousBookings: previousBookings?.length
+  });
 
   return {
     ga4Stats,
@@ -56,7 +70,7 @@ export const fetchAnalyticsData = async (
     previousEvents,
     currentBookings,
     previousBookings,
-    currentSignups,
-    previousSignups
+    currentSignups: currentSignups?.count || 0,
+    previousSignups: previousSignups?.count || 0
   };
 };

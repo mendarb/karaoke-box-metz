@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { HeroSection } from "@/components/home/HeroSection";
 import { FeatureGrid } from "@/components/home/FeatureGrid";
+import { AnnouncementBanner } from "@/components/announcements/AnnouncementBanner";
 
 const BookingSection = lazy(() => import("@/components/home/BookingSection"));
 const Footer = lazy(() => import("@/components/home/Footer"));
@@ -37,6 +38,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-kbox-coral">
+      <AnnouncementBanner />
       <main className="flex-grow container mx-auto pb-20 md:pb-0">
         <div className={`grid grid-cols-1 md:grid-cols-3 gap-0 ${isMobile ? 'min-h-screen' : 'min-h-[500px]'}`}>
           {isMobile ? (

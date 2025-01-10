@@ -35,12 +35,12 @@ const BookingSection = ({ user, onShowAuth }: BookingSectionProps) => {
   };
 
   return (
-    <div className="flex flex-col bg-white mobile-scroll min-h-[60vh]">
-      <div className={`flex-1 flex flex-col p-6 ${isMobile ? 'safe-top' : ''}`}>
+    <div className="flex flex-col bg-white mobile-scroll md:min-h-[60vh] min-h-[40vh]">
+      <div className={`flex flex-col p-6 ${isMobile ? 'safe-top' : ''}`}>
         {user ? (
           <BookingForm />
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center min-h-[40vh] space-y-4 text-center">
+          <div className="flex flex-col items-center justify-center min-h-[40vh] md:min-h-[60vh] space-y-4 text-center">
             <div className="rounded-full bg-violet-100 p-3 mb-2">
               <LogIn className="h-6 w-6 text-violet-600" />
             </div>

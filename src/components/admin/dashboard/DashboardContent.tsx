@@ -7,7 +7,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AdminBookingForm } from "../BookingForm";
 import { Plus, Trash2 } from "lucide-react";
 import { CleanupBookingsDialog } from "../actions/CleanupBookingsDialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface DashboardContentProps {
   bookings: Booking[];
@@ -61,38 +60,14 @@ export const DashboardContent = ({
         <DashboardStats bookings={bookings} />
       </div>
 
-      <Tabs defaultValue="bookings" className="w-full">
-        <TabsList className="w-full mb-4 h-12 bg-gray-50/90 p-1">
-          <TabsTrigger 
-            value="bookings"
-            className="flex-1 h-10 text-sm data-[state=active]:bg-white"
-          >
-            Réservations
-          </TabsTrigger>
-          <TabsTrigger 
-            value="invoices"
-            className="flex-1 h-10 text-sm data-[state=active]:bg-white"
-          >
-            Factures
-          </TabsTrigger>
-          <TabsTrigger 
-            value="payments"
-            className="flex-1 h-10 text-sm data-[state=active]:bg-white"
-          >
-            Paiements
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="bookings" className="mt-0">
-          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-            <BookingsTable
-              data={bookings}
-              onViewDetails={onViewDetails}
-              onStatusChange={dummyOnStatusChange}
-              isLoading={isLoading}
-            />
-          </div>
-        </TabsContent>
-      </Tabs>
+      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <BookingsTable
+          data={bookings}
+          onViewDetails={onViewDetails}
+          onStatusChange={dummyOnStatusChange}
+          isLoading={isLoading}
+        />
+      </div>
 
       <CleanupBookingsDialog 
         isOpen={isCleanupDialogOpen}

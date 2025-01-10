@@ -5,6 +5,7 @@ export interface SignupData {
   password: string;
   fullName: string;
   phone: string;
+  phoneCountryCode: string;
 }
 
 export interface AuthResponse {

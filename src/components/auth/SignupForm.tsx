@@ -1,7 +1,5 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { useSignupHandler } from "@/hooks/auth/useSignupHandler"
 import { SignupFormFields } from "./signup/SignupFormFields"
 import { supabase } from "@/lib/supabase"
@@ -16,13 +14,18 @@ export function SignupForm({ onToggleMode, onSuccess }: SignupFormProps) {
   const [password, setPassword] = useState("")
   const [fullName, setFullName] = useState("")
   const [phone, setPhone] = useState("")
+  const [phoneCountryCode, setPhoneCountryCode] = useState("+33")
   const { handleSignup, isLoading } = useSignupHandler()
 
   const handleGoogleSignup = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`
+        redirectTo: `${window.location.origin}/auth/callback`,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        }
       }
     })
     
@@ -33,7 +36,13 @@ export function SignupForm({ onToggleMode, onSuccess }: SignupFormProps) {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const { success, shouldSwitchToLogin } = await handleSignup(email, password, fullName, phone)
+    const { success, shouldSwitchToLogin } = await handleSignup(
+      email, 
+      password, 
+      fullName, 
+      phone,
+      phoneCountryCode
+    )
     
     if (shouldSwitchToLogin) {
       onToggleMode()
@@ -93,6 +102,8 @@ export function SignupForm({ onToggleMode, onSuccess }: SignupFormProps) {
           setFullName={setFullName}
           phone={phone}
           setPhone={setPhone}
+          phoneCountryCode={phoneCountryCode}
+          setPhoneCountryCode={setPhoneCountryCode}
           isLoading={isLoading}
         />
         <Button type="submit" className="w-full" disabled={isLoading}>

@@ -40,7 +40,7 @@ const BookingSection = ({ user, onShowAuth }: BookingSectionProps) => {
         {user ? (
           <BookingForm />
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] space-y-4 text-center">
+          <div className="flex-1 flex flex-col items-center justify-center min-h-[40vh] space-y-4 text-center">
             <div className="rounded-full bg-violet-100 p-3 mb-2">
               <LogIn className="h-6 w-6 text-violet-600" />
             </div>

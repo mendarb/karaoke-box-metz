@@ -15,13 +15,6 @@ export const GeneralStats = () => {
       
       if (bookingsError) throw bookingsError;
 
-      // Récupérer le nombre total d'utilisateurs
-      const { count: totalUsers, error: usersError } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true });
-
-      if (usersError) throw usersError;
-
       // Récupérer les données de tracking des étapes
       const { data: stepsTracking, error: trackingError } = await supabase
         .from('booking_steps_tracking')
@@ -32,12 +25,11 @@ export const GeneralStats = () => {
       // Calculer les statistiques
       const totalBookings = bookings?.length || 0;
       const completedBookings = bookings?.filter(b => b.payment_status === 'paid').length || 0;
-      const abandonedBookings = bookings?.filter(b => b.payment_status === 'pending').length || 0;
-
+      
       // Calculer la durée moyenne uniquement pour les réservations payées
       const paidBookings = bookings?.filter(b => b.payment_status === 'paid') || [];
       const averageDuration = paidBookings.length > 0
-        ? (paidBookings.reduce((sum, booking) => sum + parseInt(booking.duration), 0) / paidBookings.length)
+        ? (paidBookings.reduce((sum, booking) => sum + parseFloat(booking.duration), 0) / paidBookings.length)
         : 0;
       
       // Calculer le taux de conversion basé sur les utilisateurs qui ont commencé une réservation
@@ -46,20 +38,20 @@ export const GeneralStats = () => {
         ? ((completedBookings / uniqueBookingAttempts) * 100)
         : 0;
 
-      // Calculer le taux de finalisation
-      const completionRate = totalBookings > 0
-        ? ((completedBookings / totalBookings) * 100)
-        : 0;
+      // Simuler les variations pour la démo (à remplacer par des vraies données historiques)
+      const variations = {
+        totalBookings: '+25.2%',
+        completedBookings: '+20%',
+        conversionRate: '-14.3%',
+        averageDuration: '+15%'
+      };
 
       return {
         totalBookings,
         completedBookings,
-        abandonedBookings,
         averageDuration,
         conversionRate,
-        completionRate,
-        totalUsers,
-        uniqueBookingAttempts
+        variations
       };
     }
   });
@@ -76,28 +68,28 @@ export const GeneralStats = () => {
     {
       title: "Réservations totales",
       value: stats?.totalBookings || 0,
-      change: "+25.2%",
+      change: stats?.variations.totalBookings,
       icon: Calendar,
       trend: "up"
     },
     {
       title: "Réservations complétées",
       value: stats?.completedBookings || 0,
-      change: "+20%",
+      change: stats?.variations.completedBookings,
       icon: Users,
       trend: "up"
     },
     {
       title: "Taux de conversion",
       value: `${stats?.conversionRate.toFixed(1)}%`,
-      change: "-14.3%",
+      change: stats?.variations.conversionRate,
       icon: TrendingUp,
       trend: "down"
     },
     {
       title: "Durée moyenne",
       value: `${stats?.averageDuration.toFixed(1)}h`,
-      change: "+15%",
+      change: stats?.variations.averageDuration,
       icon: TrendingUp,
       trend: "up"
     }
@@ -108,14 +100,14 @@ export const GeneralStats = () => {
       {metrics.map((metric, index) => (
         <Card key={index} className="p-6">
           <div className="flex items-center justify-between">
-            <div>
+            <div className="space-y-2">
               <p className="text-sm font-medium text-muted-foreground">
                 {metric.title}
               </p>
-              <h3 className="text-2xl font-bold mt-2">
+              <h3 className="text-2xl font-bold">
                 {metric.value}
               </h3>
-              <div className="flex items-center mt-1">
+              <div className="flex items-center">
                 {metric.trend === "up" ? (
                   <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
                 ) : (

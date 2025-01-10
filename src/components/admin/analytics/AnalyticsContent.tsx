@@ -7,7 +7,7 @@ import { PromoAnalytics } from "./sections/PromoAnalytics";
 export const AnalyticsContent = () => {
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">Analytics</h1>
         <select className="bg-white border rounded-md px-3 py-2">
           <option>Ce mois</option>
@@ -19,7 +19,7 @@ export const AnalyticsContent = () => {
       <GeneralStats />
 
       <Tabs defaultValue="general" className="space-y-4">
-        <TabsList className="w-full justify-start">
+        <TabsList>
           <TabsTrigger value="general">Vue d'ensemble</TabsTrigger>
           <TabsTrigger value="bookings">Réservations</TabsTrigger>
           <TabsTrigger value="promos">Promotions</TabsTrigger>

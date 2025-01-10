@@ -30,38 +30,13 @@ export const AccountsTable = () => {
     queryKey: ['admin-profiles'],
     queryFn: async () => {
       try {
-        console.log("Début de la requête des profils");
-        
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
-          .select('*');
+          .select('*')
+          .order('created_at', { ascending: false });
 
         if (profilesError) throw profilesError;
-
-        // Get user emails from the Edge Function
-        const { data: emailsResponse, error: emailsError } = await supabase.functions.invoke(
-          'get-user-emails'
-        );
-
-        if (emailsError) {
-          console.error('Error fetching emails:', emailsError);
-          throw emailsError;
-        }
-
-        const userEmails = emailsResponse.userEmails;
-
-        // Format profiles with email from the Edge Function
-        const formattedProfiles = (profiles || []).map((profile: any) => ({
-          id: profile.id,
-          first_name: profile.first_name,
-          last_name: profile.last_name,
-          phone: profile.phone,
-          email: userEmails[profile.id],
-          created_at: profile.created_at
-        }));
-
-        console.log("Profils récupérés:", formattedProfiles);
-        return formattedProfiles || [];
+        return profiles || [];
       } catch (err) {
         console.error('Query error:', err);
         return [];
@@ -89,17 +64,19 @@ export const AccountsTable = () => {
 
   return (
     <div className="space-y-4">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Utilisateur</TableHead>
-            <TableHead>Contact</TableHead>
-            <TableHead>Date d'inscription</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <AccountTableContent profiles={profiles} />
-      </Table>
+      <div className="rounded-lg border bg-white">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[200px]">Utilisateur</TableHead>
+              <TableHead className="min-w-[300px]">Contact</TableHead>
+              <TableHead className="w-[150px]">Date d'inscription</TableHead>
+              <TableHead className="w-[100px]">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <AccountTableContent profiles={profiles} />
+        </Table>
+      </div>
     </div>
   );
 };

@@ -20,42 +20,68 @@ interface AccountTableRowProps {
 export const AccountTableRow = ({ profile }: AccountTableRowProps) => {
   const navigate = useNavigate();
 
+  const formatPhoneNumber = (phone: string | null) => {
+    if (!phone) return null;
+    
+    // Remove any non-digit characters except +
+    let cleaned = phone.replace(/[^\d+]/g, '');
+    
+    // If it starts with 0, replace with +33
+    if (cleaned.startsWith('0')) {
+      cleaned = '+33' + cleaned.substring(1);
+    }
+    
+    // If it doesn't start with +, add +
+    if (!cleaned.startsWith('+')) {
+      cleaned = '+' + cleaned;
+    }
+    
+    return cleaned;
+  };
+
   const handleEdit = () => {
     navigate(`/admin/accounts/${profile.id}`);
   };
 
+  const displayName = () => {
+    if (profile.first_name || profile.last_name) {
+      return `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+    }
+    return profile.email ? profile.email.split('@')[0] : 'Utilisateur';
+  };
+
   return (
     <TableRow key={profile.id}>
-      <TableCell>
-        <div className="space-y-1">
-          {profile.first_name || profile.last_name ? (
-            <span className="font-medium">
-              {`${profile.first_name || ''} ${profile.last_name || ''}`}
-            </span>
-          ) : (
-            <span className="text-gray-500">Non renseigné</span>
-          )}
-        </div>
+      <TableCell className="font-medium">
+        {displayName()}
       </TableCell>
       <TableCell>
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-sm">
-            <Mail className="h-4 w-4 text-gray-500" />
-            <a href={`mailto:${profile.email}`} className="hover:text-violet-500">
-              {profile.email}
-            </a>
-          </div>
+        <div className="space-y-1.5">
+          {profile.email && (
+            <div className="flex items-center gap-2 text-sm">
+              <Mail className="h-4 w-4 text-gray-500 shrink-0" />
+              <a 
+                href={`mailto:${profile.email}`} 
+                className="hover:text-violet-500 truncate max-w-[250px]"
+              >
+                {profile.email}
+              </a>
+            </div>
+          )}
           {profile.phone && (
             <div className="flex items-center gap-2 text-sm">
-              <Phone className="h-4 w-4 text-gray-500" />
-              <a href={`tel:${profile.phone}`} className="hover:text-violet-500">
-                {profile.phone}
+              <Phone className="h-4 w-4 text-gray-500 shrink-0" />
+              <a 
+                href={`tel:${formatPhoneNumber(profile.phone)}`} 
+                className="hover:text-violet-500"
+              >
+                {formatPhoneNumber(profile.phone)}
               </a>
             </div>
           )}
         </div>
       </TableCell>
-      <TableCell>
+      <TableCell className="text-sm text-gray-600">
         {new Date(profile.created_at).toLocaleDateString('fr-FR')}
       </TableCell>
       <TableCell>

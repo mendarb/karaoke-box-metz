@@ -116,15 +116,23 @@ export const PromoCodesSettings = () => {
       </div>
 
       <PromoCodeDialog
-        open={showDialog}
-        onOpenChange={setShowDialog}
+        isOpen={showDialog}
+        onClose={() => setShowDialog(false)}
         promoCode={selectedCode}
+        onSuccess={() => {
+          setShowDialog(false);
+          setSelectedCode(null);
+        }}
       />
 
       <DeletePromoCodeDialog
-        open={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
         promoCode={selectedCode}
+        onSuccess={() => {
+          setShowDeleteDialog(false);
+          setSelectedCode(null);
+        }}
       />
     </Card>
   );

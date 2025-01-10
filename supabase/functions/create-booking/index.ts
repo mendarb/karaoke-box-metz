@@ -10,23 +10,16 @@ const corsHeaders = {
 serve(async (req) => {
   try {
     if (req.method === 'OPTIONS') {
-      return new Response('ok', { headers: corsHeaders })
+      return new Response(null, { headers: corsHeaders })
     }
 
     const requestBody = await req.json()
     console.log('📝 Request body:', requestBody)
 
-    // Créer le client Supabase
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        auth: {
-          persistSession: false,
-          autoRefreshToken: false,
-        },
-      }
-    )
+    // Validation de l'email
+    if (!requestBody.userEmail || !requestBody.userEmail.includes('@')) {
+      throw new Error('Email invalide')
+    }
 
     // Créer le client Stripe
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
@@ -46,11 +39,10 @@ serve(async (req) => {
     // Créer la session de paiement
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
-      success_url: `${requestBody.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${requestBody.origin}`,
+      success_url: `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${req.headers.get('origin')}`,
       payment_method_types: ['card', 'paypal', 'klarna'],
-      customer_email: requestBody.userEmail,
-      customer_creation: 'always',
+      customer_email: billingDetails.email,
       billing_address_collection: 'required',
       phone_number_collection: {
         enabled: true,
@@ -83,18 +75,6 @@ serve(async (req) => {
           optional: true,
         },
       ],
-      payment_intent_data: {
-        metadata: {
-          booking_id: requestBody.bookingId,
-          user_id: requestBody.userId || null,
-        },
-        shipping: {
-          name: billingDetails.name,
-          phone: billingDetails.phone,
-        },
-      },
-      customer_creation: 'always',
-      customer_email: billingDetails.email,
     })
 
     console.log('✅ Checkout session created:', session.id)
@@ -102,13 +82,10 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         sessionId: session.id,
-        sessionUrl: session.url,
+        url: session.url,
       }),
       {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json',
-        },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       }
     )
@@ -119,10 +96,7 @@ serve(async (req) => {
         error: error.message,
       }),
       {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json',
-        },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
       }
     )

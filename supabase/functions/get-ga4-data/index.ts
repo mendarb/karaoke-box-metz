@@ -29,15 +29,18 @@ serve(async (req) => {
     // Format private key correctly by:
     // 1. Replacing escaped newlines with actual newlines
     // 2. Removing any quotes
-    // 3. Adding header and footer if not present
+    // 3. Ensuring proper PEM format
     let formattedKey = privateKey
       .replace(/\\n/g, '\n')
       .replace(/["']/g, '')
-      .trim()
+      .replace(/^\s+|\s+$/g, '') // Remove any leading/trailing whitespace
 
-    // Add PEM header and footer if not present
-    if (!formattedKey.includes('-----BEGIN PRIVATE KEY-----')) {
-      formattedKey = `-----BEGIN PRIVATE KEY-----\n${formattedKey}\n-----END PRIVATE KEY-----`
+    // Ensure proper PEM format with header and footer
+    if (!formattedKey.startsWith('-----BEGIN PRIVATE KEY-----')) {
+      formattedKey = `-----BEGIN PRIVATE KEY-----\n${formattedKey}`
+    }
+    if (!formattedKey.endsWith('-----END PRIVATE KEY-----')) {
+      formattedKey = `${formattedKey}\n-----END PRIVATE KEY-----`
     }
 
     console.log('Creating JWT token...')

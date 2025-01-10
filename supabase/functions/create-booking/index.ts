@@ -60,7 +60,6 @@ serve(async (req) => {
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card', 'paypal', 'klarna'],
-      customer_email: requestBody.userEmail,
       line_items: [{
         price_data: {
           currency: 'eur',
@@ -75,23 +74,7 @@ serve(async (req) => {
       mode: 'payment',
       success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}`,
-      payment_intent_data: {
-        metadata: {
-          userId: requestBody.userId,
-          userEmail: requestBody.userEmail,
-          userName: requestBody.userName,
-          userPhone: requestBody.userPhone,
-          date: requestBody.date,
-          timeSlot: requestBody.timeSlot,
-          duration: requestBody.duration,
-          groupSize: requestBody.groupSize,
-          price: String(price),
-          promoCode: requestBody.promoCode || '',
-          discountAmount: String(requestBody.discountAmount || 0),
-          message: requestBody.message || '',
-          isTestMode: String(requestBody.isTestMode),
-        }
-      },
+      customer_email: requestBody.userEmail,
       metadata: {
         userId: requestBody.userId,
         userEmail: requestBody.userEmail,
@@ -106,12 +89,6 @@ serve(async (req) => {
         discountAmount: String(requestBody.discountAmount || 0),
         message: requestBody.message || '',
         isTestMode: String(requestBody.isTestMode),
-      },
-      billing_details_collection: 'auto',
-      customer_creation: 'always',
-      payment_method_collection: 'always',
-      phone_number_collection: {
-        enabled: true,
       },
     });
 

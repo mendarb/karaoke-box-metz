@@ -1,5 +1,7 @@
 import { Calendar } from "@/components/ui/calendar";
 import { fr } from "date-fns/locale";
+import { useToast } from "@/components/ui/use-toast";
+import { useEffect } from "react";
 
 interface BookingCalendarProps {
   selectedDate?: Date;
@@ -18,8 +20,28 @@ export const BookingCalendar = ({
   maxDate,
   defaultMonth,
 }: BookingCalendarProps) => {
+  const { toast } = useToast();
+
+  useEffect(() => {
+    // Notification discrète pour guider l'utilisateur
+    toast({
+      title: "Sélectionnez une date",
+      description: "Choisissez une date disponible pour votre réservation",
+      duration: 3000,
+    });
+  }, []);
+
   return (
     <div className="w-full max-w-lg mx-auto bg-white rounded-xl p-2 sm:p-4">
+      <div className="mb-4 text-center">
+        <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
+          Choisissez votre date
+        </h2>
+        <p className="text-sm text-gray-600 mt-1">
+          Les dates disponibles sont affichées en noir
+        </p>
+      </div>
+      
       <Calendar
         mode="single"
         selected={selectedDate}

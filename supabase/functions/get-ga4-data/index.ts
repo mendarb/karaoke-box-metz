@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { importPKCS8, SignJWT } from "https://deno.land/x/jose@v4.9.1/index.ts"
 import { corsHeaders } from "../_shared/cors.ts"
 
 serve(async (req) => {
@@ -24,46 +25,25 @@ serve(async (req) => {
     // Format private key correctly
     const formattedKey = privateKey
       .replace(/\\n/g, '\n')
-      .replace(/["']/g, '') // Remove any quotes
-      .replace(/^\s+|\s+$/g, '') // Trim whitespace
-      .replace(/^-----BEGIN PRIVATE KEY-----/, '-----BEGIN PRIVATE KEY-----\n')
-      .replace(/-----END PRIVATE KEY-----$/, '\n-----END PRIVATE KEY-----')
+      .replace(/["']/g, '')
+      .trim()
 
-    // Create JWT token
-    const header = { alg: 'RS256', typ: 'JWT' }
+    console.log('Attempting to create JWT...')
+
+    // Create JWT token using jose
+    const privateKeyObject = await importPKCS8(formattedKey, 'RS256')
     const now = Math.floor(Date.now() / 1000)
-    const claim = {
-      iss: clientEmail,
-      sub: clientEmail,
-      aud: 'https://analyticsdata.googleapis.com/',
-      iat: now,
-      exp: now + 3600
-    }
-
-    // Encode JWT parts
-    const encodedHeader = btoa(JSON.stringify(header))
-    const encodedClaim = btoa(JSON.stringify(claim))
-    const signInput = `${encodedHeader}.${encodedClaim}`
-
-    console.log('Attempting to import private key...')
-
-    // Sign JWT
-    const key = await crypto.subtle.importKey(
-      'pkcs8',
-      new TextEncoder().encode(formattedKey),
-      { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
-      false,
-      ['sign']
-    )
-
-    console.log('Key imported successfully')
-
-    const signature = await crypto.subtle.sign(
-      { name: 'RSASSA-PKCS1-v1_5' },
-      key,
-      new TextEncoder().encode(signInput)
-    )
-    const jwt = `${signInput}.${btoa(String.fromCharCode(...new Uint8Array(signature)))}`
+    
+    const jwt = await new SignJWT({
+      scope: 'https://www.googleapis.com/auth/analytics.readonly'
+    })
+      .setProtectedHeader({ alg: 'RS256', typ: 'JWT' })
+      .setIssuedAt(now)
+      .setExpirationTime(now + 3600)
+      .setIssuer(clientEmail)
+      .setSubject(clientEmail)
+      .setAudience('https://analyticsdata.googleapis.com/')
+      .sign(privateKeyObject)
 
     console.log('JWT created successfully')
 

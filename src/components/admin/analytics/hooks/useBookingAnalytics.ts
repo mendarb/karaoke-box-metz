@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { PeriodSelection } from "../AnalyticsContent";
+import { PeriodSelection } from "../types/analytics";
 import { endOfDay, startOfDay, subDays, startOfYear } from "date-fns";
 
 export const useBookingAnalytics = (period: PeriodSelection) => {

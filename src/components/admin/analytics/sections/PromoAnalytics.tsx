@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { PeriodSelection } from "../AnalyticsContent";
+import { PeriodSelection } from "../types/analytics";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Loader2 } from "lucide-react";

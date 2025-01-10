@@ -2,7 +2,7 @@ import { Loader2 } from "lucide-react";
 import { useBookingAnalytics } from "../hooks/useBookingAnalytics";
 import { AnalyticsCharts } from "./analytics-charts/AnalyticsCharts";
 import { AnalyticsStats } from "./analytics-stats/AnalyticsStats";
-import { PeriodSelection } from "../AnalyticsContent";
+import { PeriodSelection } from "../types/analytics";
 
 interface BookingAnalyticsProps {
   period: PeriodSelection;

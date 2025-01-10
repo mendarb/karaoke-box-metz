@@ -10,9 +10,14 @@ import { addDays, startOfDay } from "date-fns";
 interface DateTimeFieldsProps {
   form: UseFormReturn<any>;
   onAvailabilityChange: (date: Date | undefined, availableHours: number) => void;
+  showTimeSlots?: boolean;
 }
 
-export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsProps) => {
+export const DateTimeFields = ({ 
+  form, 
+  onAvailabilityChange,
+  showTimeSlots = false 
+}: DateTimeFieldsProps) => {
   const {
     selectedDate,
     availableSlots,
@@ -39,10 +44,9 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
     return minDate;
   };
 
-  const firstAvailableDate = getFirstAvailableDate();
-
   useEffect(() => {
     if (!selectedDate) {
+      const firstAvailableDate = getFirstAvailableDate();
       handleDateSelect(firstAvailableDate);
     }
   }, []);
@@ -54,27 +58,19 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
     }
   }, [form.watch("timeSlot")]);
 
-  console.log('DateTimeFields render:', {
-    selectedDate,
-    minDate,
-    maxDate,
-    disabledDates: disabledDates.length,
-    availableSlots,
-  });
-
   return (
     <div className="space-y-8">
-      <CalendarSection
-        form={form}
-        selectedDate={selectedDate}
-        minDate={minDate}
-        maxDate={maxDate}
-        disabledDates={disabledDates}
-        onDateSelect={handleDateSelect}
-        defaultMonth={firstAvailableDate}
-      />
-
-      {selectedDate && (
+      {!showTimeSlots ? (
+        <CalendarSection
+          form={form}
+          selectedDate={selectedDate}
+          minDate={minDate}
+          maxDate={maxDate}
+          disabledDates={disabledDates}
+          onDateSelect={handleDateSelect}
+          defaultMonth={getFirstAvailableDate()}
+        />
+      ) : selectedDate && (
         <TimeSlotsSection
           form={form}
           availableSlots={availableSlots}

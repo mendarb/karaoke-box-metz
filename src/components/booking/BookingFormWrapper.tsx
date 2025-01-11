@@ -101,39 +101,31 @@ export const BookingFormWrapper = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-violet-50 to-white">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm border-b border-gray-100 shadow-sm">
-            <div className="max-w-4xl mx-auto">
-              <BookingSteps steps={steps} currentStep={currentStep} />
-            </div>
-          </div>
-          
-          <div className="min-h-[calc(100vh-200px)]">
-            <BookingFormContent
-              currentStep={currentStep}
-              form={form}
-              groupSize={groupSize}
-              duration={duration}
-              calculatedPrice={calculatedPrice}
-              onGroupSizeChange={setGroupSize}
-              onDurationChange={setDuration}
-              onPriceCalculated={handlePriceCalculated}
-              onAvailabilityChange={handleAvailabilityChange}
-              availableHours={availableHours}
-            />
-          </div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <BookingSteps steps={steps} currentStep={currentStep} />
+        
+        <div className="min-h-[300px]">
+          <BookingFormContent
+            currentStep={currentStep}
+            form={form}
+            groupSize={groupSize}
+            duration={duration}
+            calculatedPrice={calculatedPrice}
+            onGroupSizeChange={setGroupSize}
+            onDurationChange={setDuration}
+            onPriceCalculated={handlePriceCalculated}
+            onAvailabilityChange={handleAvailabilityChange}
+            availableHours={availableHours}
+          />
+        </div>
 
-          <div className="sticky bottom-0 z-50">
-            <BookingFormActions
-              currentStep={currentStep}
-              isSubmitting={isSubmitting}
-              onPrevious={handlePrevious}
-            />
-          </div>
-        </form>
-      </Form>
-    </div>
+        <BookingFormActions
+          currentStep={currentStep}
+          isSubmitting={isSubmitting}
+          onPrevious={handlePrevious}
+        />
+      </form>
+    </Form>
   );
 };

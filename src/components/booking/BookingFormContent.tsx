@@ -66,14 +66,12 @@ export const BookingFormContent = ({
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <Card className="bg-white/50 backdrop-blur-sm border-none shadow-lg">
-        <CardContent className="p-8">
-          <div className="min-h-[400px] animate-fadeIn">
-            {renderStepContent()}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <Card className="bg-white/50 backdrop-blur-sm border-none shadow-none">
+      <CardContent className="pt-6">
+        <div className="min-h-[300px] animate-fadeIn">
+          {renderStepContent()}
+        </div>
+      </CardContent>
+    </Card>
   );
 };

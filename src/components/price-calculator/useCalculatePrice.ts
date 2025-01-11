@@ -12,14 +12,26 @@ export const useCalculatePrice = ({ settings }: CalculatePriceProps = {}) => {
 
   const isDiscountedTimeSlot = (timeSlot: string) => {
     const hour = parseInt(timeSlot);
-    return hour < 18;
+    const isBeforeSixPM = hour < 18;
+    console.log('⏰ Vérification créneau horaire:', {
+      timeSlot,
+      hour,
+      isBeforeSixPM
+    });
+    return isBeforeSixPM;
   };
 
-  const isDiscountedDay = (date: string) => {
-    const bookingDate = new Date(date);
-    const day = bookingDate.getDay();
+  const isDiscountedDay = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const day = date.getDay();
     // 3 = Mercredi, 4 = Jeudi
-    return day === 3 || day === 4;
+    const isWednesdayOrThursday = day === 3 || day === 4;
+    console.log('📅 Vérification jour:', {
+      date: dateStr,
+      day,
+      isWednesdayOrThursday
+    });
+    return isWednesdayOrThursday;
   };
 
   const calculatePrice = useCallback((groupSize: string, duration: string, date?: string, timeSlot?: string) => {
@@ -56,7 +68,8 @@ export const useCalculatePrice = ({ settings }: CalculatePriceProps = {}) => {
     // Vérifier si la réduction de 20% s'applique
     let shouldApplyDiscount = false;
     if (date && timeSlot) {
-      if (isDiscountedDay(date) && isDiscountedTimeSlot(timeSlot)) {
+      const isDiscounted = isDiscountedDay(date) && isDiscountedTimeSlot(timeSlot);
+      if (isDiscounted) {
         const originalPrice = totalPrice;
         totalPrice = totalPrice * 0.8; // -20%
         shouldApplyDiscount = true;
@@ -76,13 +89,15 @@ export const useCalculatePrice = ({ settings }: CalculatePriceProps = {}) => {
           isDiscountedTimeSlot: timeSlot ? isDiscountedTimeSlot(timeSlot) : false
         });
       }
+    } else {
+      console.log('⚠️ Date ou créneau manquant:', { date, timeSlot });
     }
 
     // Arrondir à 2 décimales
     const finalPrice = Number(totalPrice.toFixed(2));
     const pricePerPerson = Number((finalPrice / (size * hours)).toFixed(2));
 
-    console.log('💰 Calcul du prix:', {
+    console.log('💰 Calcul final du prix:', {
       groupSize,
       duration,
       basePrice,

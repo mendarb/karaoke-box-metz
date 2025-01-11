@@ -109,20 +109,22 @@ export const BookingCalendar = ({
         }}
       />
 
-      <style jsx global>{`
-        .discount-day::after {
-          content: "-20%";
-          position: absolute;
-          top: -2px;
-          right: -2px;
-          font-size: 0.6rem;
-          background-color: #22c55e;
-          color: white;
-          padding: 1px 3px;
-          border-radius: 4px;
-          transform: scale(0.8);
-        }
-      `}</style>
+      <style>
+        {`
+          .discount-day::after {
+            content: "-20%";
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            font-size: 0.6rem;
+            background-color: #22c55e;
+            color: white;
+            padding: 1px 3px;
+            border-radius: 4px;
+            transform: scale(0.8);
+          }
+        `}
+      </style>
     </div>
   );
 };

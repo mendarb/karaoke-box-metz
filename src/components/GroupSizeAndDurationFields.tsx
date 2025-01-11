@@ -41,7 +41,13 @@ export const GroupSizeAndDurationFields = ({
     const currentDate = form.getValues("date");
     const currentTimeSlot = form.getValues("timeSlot");
     
-    if (currentDuration) {
+    if (currentDuration && currentDate && currentTimeSlot) {
+      console.log('🔄 Mise à jour du prix (changement taille groupe):', {
+        size: value,
+        duration: currentDuration,
+        date: currentDate,
+        timeSlot: currentTimeSlot
+      });
       updatePrices(value, currentDuration, currentDate, currentTimeSlot);
     }
   };
@@ -54,14 +60,20 @@ export const GroupSizeAndDurationFields = ({
     const currentDate = form.getValues("date");
     const currentTimeSlot = form.getValues("timeSlot");
     
-    if (currentGroupSize) {
+    if (currentGroupSize && currentDate && currentTimeSlot) {
+      console.log('🔄 Mise à jour du prix (changement durée):', {
+        size: currentGroupSize,
+        duration: value,
+        date: currentDate,
+        timeSlot: currentTimeSlot
+      });
       updatePrices(currentGroupSize, value, currentDate, currentTimeSlot);
     }
   };
 
   useEffect(() => {
-    if (groupSize && duration) {
-      console.log('🔄 Mise à jour du prix avec:', {
+    if (groupSize && duration && date && timeSlot) {
+      console.log('🔄 Mise à jour du prix (changement date/créneau):', {
         groupSize,
         duration,
         date,

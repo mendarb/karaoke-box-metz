@@ -22,6 +22,10 @@ export const useBookingPrice = (
         hasSettings: !!settings
       });
 
+      if (!date || !timeSlot) {
+        console.log('⚠️ Date ou créneau manquant, pas de réduction possible');
+      }
+
       const calculatedPrice = calculatePrice(size, dur, date, timeSlot);
       const pricePerPersonPerHour = calculatedPrice / (parseInt(size) * parseInt(dur));
       
@@ -30,7 +34,8 @@ export const useBookingPrice = (
         pricePerPersonPerHour,
         hasDiscount,
         date,
-        timeSlot
+        timeSlot,
+        isDiscountApplied: hasDiscount
       });
       
       setCurrentPrice(calculatedPrice);

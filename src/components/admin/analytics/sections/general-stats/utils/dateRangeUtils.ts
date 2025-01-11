@@ -1,5 +1,5 @@
 import { PeriodSelection } from "../../../types/analytics";
-import { format, subDays, startOfYear } from "date-fns";
+import { format, subDays, startOfYear, startOfDay, endOfDay } from "date-fns";
 
 export const getDateRange = (period: PeriodSelection) => {
   const now = new Date();
@@ -8,8 +8,8 @@ export const getDateRange = (period: PeriodSelection) => {
   switch (period.type) {
     case "24h":
       return {
-        startDate: format(subDays(now, 1), 'yyyy-MM-dd'),
-        endDate: today
+        startDate: format(startOfDay(now), 'yyyy-MM-dd'),
+        endDate: format(endOfDay(now), 'yyyy-MM-dd')
       };
     case "7d":
       return {

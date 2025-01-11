@@ -41,6 +41,7 @@ export const TimeSlots = ({
           isSelected={selectedTimeSlot === slot}
           isDisabled={disabledSlots.includes(slot)}
           onSelect={(slot) => form.setValue("timeSlot", slot)}
+          date={selectedDate}
         />
       ))}
     </div>

@@ -38,8 +38,11 @@ export const GroupSizeAndDurationFields = ({
     onGroupSizeChange(value);
     
     const currentDuration = form.getValues("duration");
+    const currentDate = form.getValues("date");
+    const currentTimeSlot = form.getValues("timeSlot");
+    
     if (currentDuration) {
-      updatePrices(value, currentDuration, date, timeSlot);
+      updatePrices(value, currentDuration, currentDate, currentTimeSlot);
     }
   };
 
@@ -48,13 +51,22 @@ export const GroupSizeAndDurationFields = ({
     onDurationChange(value);
     
     const currentGroupSize = form.getValues("groupSize");
+    const currentDate = form.getValues("date");
+    const currentTimeSlot = form.getValues("timeSlot");
+    
     if (currentGroupSize) {
-      updatePrices(currentGroupSize, value, date, timeSlot);
+      updatePrices(currentGroupSize, value, currentDate, currentTimeSlot);
     }
   };
 
   useEffect(() => {
     if (groupSize && duration) {
+      console.log('🔄 Mise à jour du prix avec:', {
+        groupSize,
+        duration,
+        date,
+        timeSlot
+      });
       updatePrices(groupSize, duration, date, timeSlot);
     }
   }, [groupSize, duration, date, timeSlot]);

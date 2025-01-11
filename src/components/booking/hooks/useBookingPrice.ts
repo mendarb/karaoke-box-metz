@@ -14,25 +14,30 @@ export const useBookingPrice = (
 
   const updatePrices = (size: string, dur: string, date?: string, timeSlot?: string) => {
     if (size && dur) {
+      console.log('💰 Calcul du prix avec paramètres:', {
+        size,
+        dur,
+        date,
+        timeSlot,
+        hasSettings: !!settings
+      });
+
       const calculatedPrice = calculatePrice(size, dur, date, timeSlot);
       const pricePerPersonPerHour = calculatedPrice / (parseInt(size) * parseInt(dur));
+      
+      console.log('💰 Prix calculé:', {
+        calculatedPrice,
+        pricePerPersonPerHour,
+        hasDiscount,
+        date,
+        timeSlot
+      });
       
       setCurrentPrice(calculatedPrice);
       setPricePerPerson(pricePerPersonPerHour);
       onPriceCalculated(calculatedPrice);
       
       form.setValue("calculatedPrice", calculatedPrice);
-      
-      console.log('💰 Prix calculé:', {
-        groupSize: size,
-        duration: dur,
-        date,
-        timeSlot,
-        originalPrice: calculatedPrice,
-        pricePerPerson: pricePerPersonPerHour,
-        hasDiscount,
-        finalPrice: calculatedPrice
-      });
     }
   };
 

@@ -19,12 +19,13 @@ interface PeriodSelectorProps {
 export const PeriodSelector = ({ period, date, onPeriodChange, onDateChange }: PeriodSelectorProps) => {
   return (
     <div className="flex items-center gap-4">
-      <Select defaultValue="24h" onValueChange={onPeriodChange}>
+      <Select defaultValue="today" onValueChange={onPeriodChange}>
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder="Sélectionner une période" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="24h">Aujourd'hui vs Hier</SelectItem>
+          <SelectItem value="today">Aujourd'hui</SelectItem>
+          <SelectItem value="yesterday">Hier</SelectItem>
           <SelectItem value="7d">7 derniers jours</SelectItem>
           <SelectItem value="30d">30 derniers jours</SelectItem>
           <SelectItem value="90d">3 derniers mois</SelectItem>

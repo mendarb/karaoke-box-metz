@@ -7,12 +7,19 @@ export const useBookingAnalytics = (period: PeriodSelection) => {
   const getDateRange = () => {
     const now = new Date();
     switch (period.type) {
-      case "24h":
+      case "today":
         return {
-          start: startOfDay(now), // Aujourd'hui début
-          end: endOfDay(now), // Aujourd'hui fin
-          previousStart: startOfDay(subDays(now, 1)), // Hier début
-          previousEnd: endOfDay(subDays(now, 1)) // Hier fin
+          start: startOfDay(now),
+          end: endOfDay(now),
+          previousStart: startOfDay(subDays(now, 1)),
+          previousEnd: endOfDay(subDays(now, 1))
+        };
+      case "yesterday":
+        return {
+          start: startOfDay(subDays(now, 1)),
+          end: endOfDay(subDays(now, 1)),
+          previousStart: startOfDay(subDays(now, 2)),
+          previousEnd: endOfDay(subDays(now, 2))
         };
       case "7d":
         return {

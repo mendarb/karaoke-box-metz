@@ -7,7 +7,7 @@ import { AnalyticsTabs } from "./components/AnalyticsTabs";
 import { PeriodSelection } from "./types/analytics";
 
 export const AnalyticsContent = () => {
-  const [period, setPeriod] = useState<PeriodSelection>({ type: "7d" });
+  const [period, setPeriod] = useState<PeriodSelection>({ type: "today" });
   const [date, setDate] = useState<DateRange | undefined>({
     from: new Date(),
     to: addDays(new Date(), 7),

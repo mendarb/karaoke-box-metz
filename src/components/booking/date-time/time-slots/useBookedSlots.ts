@@ -38,6 +38,6 @@ export const useBookedSlots = (selectedDate: Date | null) => {
     },
     enabled: !!selectedDate,
     staleTime: 30000,
-    gcTime: 300000,
+    gcTime: 300000, // Remplace cacheTime
   });
 };

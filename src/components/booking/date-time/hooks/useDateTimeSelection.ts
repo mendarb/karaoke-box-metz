@@ -7,8 +7,7 @@ import { getAvailableHoursForSlot } from "../utils/availabilityUtils";
 
 export const useDateTimeSelection = (
   form: UseFormReturn<any>,
-  onAvailabilityChange: (date: Date | undefined, availableHours: number) => void,
-  requiredDuration: number = 1
+  onAvailabilityChange: (date: Date | undefined, availableHours: number) => void
 ) => {
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
@@ -21,21 +20,9 @@ export const useDateTimeSelection = (
     form.setValue("timeSlot", "");
     
     const slots = await getAvailableSlots(normalizedDate, settings);
-    // Filter slots that have enough available hours
-    const availableSlots = await Promise.all(
-      slots.map(async (slot) => {
-        const availableHours = await getAvailableHoursForSlot(normalizedDate, slot, settings);
-        return { slot, availableHours };
-      })
-    );
-    
-    const filteredSlots = availableSlots
-      .filter(({ availableHours }) => availableHours >= requiredDuration)
-      .map(({ slot }) => slot);
-
-    setAvailableSlots(filteredSlots);
+    setAvailableSlots(slots);
     onAvailabilityChange(normalizedDate, 0);
-  }, [form, settings, onAvailabilityChange, requiredDuration]);
+  }, [form, settings, onAvailabilityChange]);
 
   const handleTimeSlotChange = useCallback(async (timeSlot: string) => {
     if (!selectedDate || !timeSlot) {

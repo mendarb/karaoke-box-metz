@@ -1,8 +1,9 @@
 import { UseFormReturn } from "react-hook-form";
-import { DateTimeFields } from "./date-time/DateTimeFields";
-import { GroupSizeAndDurationFields } from "./GroupSizeAndDurationFields";
 import { PersonalInfoFields } from "./PersonalInfoFields";
-import { AdditionalFields } from "./additional/AdditionalFields";
+import { DateTimeFields } from "./DateTimeFields";
+import { GroupSizeAndDurationFields } from "./GroupSizeAndDurationFields";
+import { AdditionalFields } from "./AdditionalFields";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface BookingFormContentProps {
   currentStep: number;
@@ -13,7 +14,7 @@ interface BookingFormContentProps {
   onGroupSizeChange: (size: string) => void;
   onDurationChange: (duration: string) => void;
   onPriceCalculated: (price: number) => void;
-  onAvailabilityChange: (date: Date | undefined, availableHours: number) => void;
+  onAvailabilityChange: (date: Date | undefined, hours: number) => void;
   availableHours: number;
 }
 
@@ -29,15 +30,18 @@ export const BookingFormContent = ({
   onAvailabilityChange,
   availableHours,
 }: BookingFormContentProps) => {
-  const renderStep = () => {
+  const renderStepContent = () => {
     switch (currentStep) {
       case 1:
+        return <PersonalInfoFields form={form} />;
+      case 2:
         return (
-          <PersonalInfoFields
-            form={form}
+          <DateTimeFields 
+            form={form} 
+            onAvailabilityChange={onAvailabilityChange}
           />
         );
-      case 2:
+      case 3:
         return (
           <GroupSizeAndDurationFields
             form={form}
@@ -47,19 +51,10 @@ export const BookingFormContent = ({
             availableHours={availableHours}
           />
         );
-      case 3:
-        return groupSize && duration ? (
-          <DateTimeFields
-            form={form}
-            onAvailabilityChange={onAvailabilityChange}
-            showTimeSlots={true}
-            requiredDuration={parseInt(duration)}
-          />
-        ) : null;
       case 4:
         return (
-          <AdditionalFields
-            form={form}
+          <AdditionalFields 
+            form={form} 
             calculatedPrice={calculatedPrice}
             groupSize={groupSize}
             duration={duration}
@@ -71,8 +66,12 @@ export const BookingFormContent = ({
   };
 
   return (
-    <div className="space-y-6 animate-fadeIn">
-      {renderStep()}
-    </div>
+    <Card className="bg-white/50 backdrop-blur-sm border-none shadow-none">
+      <CardContent className="pt-6">
+        <div className="min-h-[300px] animate-fadeIn">
+          {renderStepContent()}
+        </div>
+      </CardContent>
+    </Card>
   );
 };

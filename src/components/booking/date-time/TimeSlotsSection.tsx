@@ -5,14 +5,12 @@ interface TimeSlotsSectionProps {
   form: any;
   availableSlots: string[];
   isLoading: boolean;
-  requiredDuration?: number;
 }
 
 export const TimeSlotsSection = ({
   form,
   availableSlots,
   isLoading,
-  requiredDuration = 1,
 }: TimeSlotsSectionProps) => {
   const { watch } = useFormContext();
   const selectedDate = watch("date");

@@ -57,12 +57,13 @@ export const useCalculatePrice = ({ settings }: CalculatePriceProps = {}) => {
     if (date && timeSlot) {
       const bookingDate = new Date(date);
       if (isDiscountedDay(bookingDate) && isDiscountedTimeSlot(timeSlot)) {
+        const originalPrice = totalPrice;
         totalPrice = totalPrice * 0.8; // -20%
         shouldApplyDiscount = true;
         console.log('💰 Réduction de 20% appliquée:', { 
           date, 
           timeSlot, 
-          originalPrice: totalPrice / 0.8,
+          originalPrice,
           finalPrice: totalPrice,
           day: bookingDate.getDay(),
           hour: parseInt(timeSlot)

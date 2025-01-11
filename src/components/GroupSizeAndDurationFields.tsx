@@ -50,14 +50,18 @@ export const GroupSizeAndDurationFields = ({
       setPricePerPerson(pricePerPersonPerHour);
       onPriceCalculated(calculatedPrice);
       
+      // Mettre à jour le prix calculé dans le formulaire
       form.setValue("calculatedPrice", calculatedPrice);
       
       console.log('💰 Prix calculé:', {
         groupSize: size,
         duration: dur,
+        date,
+        timeSlot,
         originalPrice: calculatedPrice,
         pricePerPerson: pricePerPersonPerHour,
-        hasDiscount
+        hasDiscount,
+        finalPrice: calculatedPrice
       });
     }
   };

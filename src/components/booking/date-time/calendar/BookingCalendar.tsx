@@ -2,6 +2,9 @@ import { Calendar } from "@/components/ui/calendar";
 import { fr } from "date-fns/locale";
 import { useToast } from "@/components/ui/use-toast";
 import { useEffect } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface BookingCalendarProps {
   selectedDate?: Date;
@@ -22,8 +25,13 @@ export const BookingCalendar = ({
 }: BookingCalendarProps) => {
   const { toast } = useToast();
 
+  const isDiscountedDay = (date: Date) => {
+    const day = date.getDay();
+    // 3 = Mercredi, 4 = Jeudi
+    return day === 3 || day === 4;
+  };
+
   useEffect(() => {
-    // Notification discrète pour guider l'utilisateur
     toast({
       title: "Sélectionnez une date",
       description: "Choisissez une date disponible pour votre réservation",
@@ -33,13 +41,27 @@ export const BookingCalendar = ({
 
   return (
     <div className="w-full max-w-lg mx-auto bg-white rounded-xl p-2 sm:p-4">
-      <div className="mb-4 text-center">
+      <div className="mb-4 text-center space-y-2">
         <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
           Choisissez votre date
         </h2>
-        <p className="text-sm text-gray-600 mt-1">
+        <p className="text-sm text-gray-600">
           Les dates disponibles sont affichées en noir
         </p>
+        
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center justify-center gap-2 text-sm text-green-600">
+                <Info className="h-4 w-4" />
+                <span>-20% les mercredis et jeudis avant 18h</span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Profitez d'une réduction de 20% en réservant le mercredi ou jeudi avant 18h</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
       
       <Calendar
@@ -54,6 +76,12 @@ export const BookingCalendar = ({
               disabledDate.toDateString() === date.toDateString()
           )
         }
+        modifiers={{
+          discount: (date) => isDiscountedDay(date),
+        }}
+        modifiersClassNames={{
+          discount: "bg-green-50 text-green-600 relative discount-day",
+        }}
         locale={fr}
         defaultMonth={defaultMonth}
         className="border-none shadow-none"
@@ -80,6 +108,21 @@ export const BookingCalendar = ({
           day_hidden: "invisible",
         }}
       />
+
+      <style jsx global>{`
+        .discount-day::after {
+          content: "-20%";
+          position: absolute;
+          top: -2px;
+          right: -2px;
+          font-size: 0.6rem;
+          background-color: #22c55e;
+          color: white;
+          padding: 1px 3px;
+          border-radius: 4px;
+          transform: scale(0.8);
+        }
+      `}</style>
     </div>
   );
 };

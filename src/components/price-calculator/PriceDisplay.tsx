@@ -22,7 +22,7 @@ export const PriceDisplay = ({
   isPromoValid,
   hasTimeDiscount
 }: PriceDisplayProps) => {
-  const hasDiscount = isPromoValid && finalPrice < price;
+  const hasDiscount = (isPromoValid && finalPrice < price) || hasTimeDiscount;
 
   return (
     <div className="space-y-4">

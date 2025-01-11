@@ -21,7 +21,7 @@ export const useCalculatePrice = ({ settings }: CalculatePriceProps = {}) => {
     return day === 3 || day === 4;
   };
 
-  const calculatePrice = useCallback((groupSize: string, duration: string, date?: Date, timeSlot?: string) => {
+  const calculatePrice = useCallback((groupSize: string, duration: string, date?: string, timeSlot?: string) => {
     if (!settings?.basePrice) {
       console.log('❌ Paramètres de prix manquants');
       return 0;
@@ -55,14 +55,15 @@ export const useCalculatePrice = ({ settings }: CalculatePriceProps = {}) => {
     // Appliquer la réduction de 20% si applicable
     let hasTimeDiscount = false;
     if (date && timeSlot) {
-      if (isDiscountedDay(date) && isDiscountedTimeSlot(timeSlot)) {
+      const bookingDate = new Date(date);
+      if (isDiscountedDay(bookingDate) && isDiscountedTimeSlot(timeSlot)) {
         totalPrice = totalPrice * 0.8; // -20%
         hasTimeDiscount = true;
-        console.log('💰 Réduction de 20% appliquée:', { date, timeSlot });
+        console.log('💰 Réduction de 20% appliquée:', { date, timeSlot, totalPrice });
       }
     }
 
-    // Arrondir à 2 décimales et forcer l'affichage des deux décimales
+    // Arrondir à 2 décimales
     const finalPrice = Number(totalPrice.toFixed(2));
     const pricePerPerson = Number((finalPrice / (size * hours)).toFixed(2));
 

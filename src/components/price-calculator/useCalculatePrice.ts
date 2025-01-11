@@ -8,8 +8,20 @@ interface CalculatePriceProps {
 export const useCalculatePrice = ({ settings }: CalculatePriceProps = {}) => {
   const [price, setPrice] = useState<number>(0);
   const [pricePerPersonPerHour, setPricePerPersonPerHour] = useState<number>(0);
+  const [hasDiscount, setHasDiscount] = useState<boolean>(false);
 
-  const calculatePrice = useCallback((groupSize: string, duration: string) => {
+  const isDiscountedTimeSlot = (timeSlot: string) => {
+    const hour = parseInt(timeSlot);
+    return hour < 18;
+  };
+
+  const isDiscountedDay = (date: Date) => {
+    const day = date.getDay();
+    // 3 = Mercredi, 4 = Jeudi
+    return day === 3 || day === 4;
+  };
+
+  const calculatePrice = useCallback((groupSize: string, duration: string, date?: Date, timeSlot?: string) => {
     if (!settings?.basePrice) {
       console.log('❌ Paramètres de prix manquants');
       return 0;
@@ -40,6 +52,16 @@ export const useCalculatePrice = ({ settings }: CalculatePriceProps = {}) => {
       totalPrice += additionalHoursPrice;
     }
 
+    // Appliquer la réduction de 20% si applicable
+    let hasTimeDiscount = false;
+    if (date && timeSlot) {
+      if (isDiscountedDay(date) && isDiscountedTimeSlot(timeSlot)) {
+        totalPrice = totalPrice * 0.8; // -20%
+        hasTimeDiscount = true;
+        console.log('💰 Réduction de 20% appliquée:', { date, timeSlot });
+      }
+    }
+
     // Arrondir à 2 décimales et forcer l'affichage des deux décimales
     const finalPrice = Number(totalPrice.toFixed(2));
     const pricePerPerson = Number((finalPrice / (size * hours)).toFixed(2));
@@ -49,14 +71,16 @@ export const useCalculatePrice = ({ settings }: CalculatePriceProps = {}) => {
       duration,
       basePrice,
       totalPrice: finalPrice,
-      pricePerPerson
+      pricePerPerson,
+      hasDiscount: hasTimeDiscount
     });
 
     setPrice(finalPrice);
     setPricePerPersonPerHour(pricePerPerson);
+    setHasDiscount(hasTimeDiscount);
 
     return finalPrice;
   }, [settings]);
 
-  return { price, pricePerPersonPerHour, calculatePrice };
+  return { price, pricePerPersonPerHour, calculatePrice, hasDiscount };
 };

@@ -25,12 +25,14 @@ export const GroupSizeAndDurationFields = ({
   availableHours,
 }: GroupSizeAndDurationFieldsProps) => {
   const { data: settings } = usePriceSettings();
-  const { calculatePrice } = useCalculatePrice({ settings });
+  const { calculatePrice, hasDiscount } = useCalculatePrice({ settings });
   const [currentPrice, setCurrentPrice] = useState<number>(0);
   const [pricePerPerson, setPricePerPerson] = useState<number>(0);
 
   const groupSize = form.watch("groupSize");
   const duration = form.watch("duration");
+  const date = form.watch("date");
+  const timeSlot = form.watch("timeSlot");
 
   const {
     finalPrice,
@@ -41,7 +43,7 @@ export const GroupSizeAndDurationFields = ({
 
   const updatePrices = (size: string, dur: string) => {
     if (size && dur) {
-      const calculatedPrice = calculatePrice(size, dur);
+      const calculatedPrice = calculatePrice(size, dur, date, timeSlot);
       const pricePerPersonPerHour = calculatedPrice / (parseInt(size) * parseInt(dur));
       
       setCurrentPrice(calculatedPrice);
@@ -54,7 +56,8 @@ export const GroupSizeAndDurationFields = ({
         groupSize: size,
         duration: dur,
         originalPrice: calculatedPrice,
-        pricePerPerson: pricePerPersonPerHour
+        pricePerPerson: pricePerPersonPerHour,
+        hasDiscount
       });
     }
   };
@@ -83,7 +86,7 @@ export const GroupSizeAndDurationFields = ({
     if (groupSize && duration) {
       updatePrices(groupSize, duration);
     }
-  }, [groupSize, duration, settings]);
+  }, [groupSize, duration, settings, date, timeSlot]);
 
   return (
     <Card className="bg-white/50 backdrop-blur-sm border-none">
@@ -110,6 +113,7 @@ export const GroupSizeAndDurationFields = ({
               pricePerPersonPerHour={pricePerPerson}
               promoCode={promoData?.code}
               isPromoValid={isPromoValid}
+              hasTimeDiscount={hasDiscount}
             />
           </>
         )}

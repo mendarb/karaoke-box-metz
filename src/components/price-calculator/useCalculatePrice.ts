@@ -15,8 +15,9 @@ export const useCalculatePrice = ({ settings }: CalculatePriceProps = {}) => {
     return hour < 18;
   };
 
-  const isDiscountedDay = (date: Date) => {
-    const day = date.getDay();
+  const isDiscountedDay = (date: string) => {
+    const bookingDate = new Date(date);
+    const day = bookingDate.getDay();
     // 3 = Mercredi, 4 = Jeudi
     return day === 3 || day === 4;
   };
@@ -52,11 +53,10 @@ export const useCalculatePrice = ({ settings }: CalculatePriceProps = {}) => {
       totalPrice += additionalHoursPrice;
     }
 
-    // Appliquer la réduction de 20% si applicable
+    // Vérifier si la réduction de 20% s'applique
     let shouldApplyDiscount = false;
     if (date && timeSlot) {
-      const bookingDate = new Date(date);
-      if (isDiscountedDay(bookingDate) && isDiscountedTimeSlot(timeSlot)) {
+      if (isDiscountedDay(date) && isDiscountedTimeSlot(timeSlot)) {
         const originalPrice = totalPrice;
         totalPrice = totalPrice * 0.8; // -20%
         shouldApplyDiscount = true;
@@ -65,8 +65,15 @@ export const useCalculatePrice = ({ settings }: CalculatePriceProps = {}) => {
           timeSlot, 
           originalPrice,
           finalPrice: totalPrice,
-          day: bookingDate.getDay(),
+          day: new Date(date).getDay(),
           hour: parseInt(timeSlot)
+        });
+      } else {
+        console.log('❌ Pas de réduction applicable:', {
+          date,
+          timeSlot,
+          isDiscountedDay: date ? isDiscountedDay(date) : false,
+          isDiscountedTimeSlot: timeSlot ? isDiscountedTimeSlot(timeSlot) : false
         });
       }
     }

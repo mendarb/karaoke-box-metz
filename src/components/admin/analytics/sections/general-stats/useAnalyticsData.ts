@@ -10,7 +10,8 @@ import { fetchBookings, calculateBookingMetrics } from "./services/bookingAnalyt
 
 export const useAnalyticsData = (period: PeriodSelection) => {
   const dateRange = getDateRange(period);
-  const previousStartDate = format(subDays(new Date(dateRange.startDate), 30), 'yyyy-MM-dd');
+  const previousStartDate = format(subDays(new Date(dateRange.startDate), period.type === 'today' ? 1 : 30), 'yyyy-MM-dd');
+  const previousEndDate = format(subDays(new Date(dateRange.endDate), period.type === 'today' ? 1 : 30), 'yyyy-MM-dd');
 
   return useQuery({
     queryKey: ['analytics-general', period, dateRange],
@@ -26,9 +27,9 @@ export const useAnalyticsData = (period: PeriodSelection) => {
       ] = await Promise.all([
         fetchAnalyticsData(supabase, dateRange, previousStartDate),
         fetchUserSignups(supabase, dateRange.startDate, dateRange.endDate),
-        fetchUserSignups(supabase, previousStartDate, dateRange.startDate),
+        fetchUserSignups(supabase, previousStartDate, previousEndDate),
         fetchBookings(supabase, dateRange.startDate, dateRange.endDate),
-        fetchBookings(supabase, previousStartDate, dateRange.startDate)
+        fetchBookings(supabase, previousStartDate, previousEndDate)
       ]);
 
       const currentMetrics = calculateBookingMetrics(currentBookings);

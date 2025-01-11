@@ -12,8 +12,8 @@ export const fetchBookings = async (
     .select('id, price, created_at, payment_status, status')
     .eq('payment_status', 'paid')
     .eq('status', 'confirmed')
-    .gte('created_at', startDate)
-    .lt('created_at', endDate)
+    .gte('created_at', `${startDate}T00:00:00`)
+    .lt('created_at', `${endDate}T23:59:59`)
     .is('deleted_at', null);
 
   if (error) {

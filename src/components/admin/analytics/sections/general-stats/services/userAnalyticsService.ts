@@ -10,8 +10,8 @@ export const fetchUserSignups = async (
   const { data, error } = await supabase
     .from('profiles')
     .select('id')
-    .gte('created_at', startDate)
-    .lte('created_at', endDate);
+    .gte('created_at', `${startDate}T00:00:00`)
+    .lt('created_at', `${endDate}T23:59:59`);
 
   if (error) {
     console.error('Error fetching user signups:', error);

@@ -112,6 +112,7 @@ export const useBookingAnalytics = (period: PeriodSelection) => {
   const { data: events, isLoading: isLoadingEvents } = useQuery({
     queryKey: ['analytics-events', period],
     queryFn: async () => {
+      console.log('Fetching form events:', { start: start.toISOString(), end: end.toISOString() });
       const { data, error } = await supabase
         .from('user_events')
         .select('*')
@@ -119,6 +120,7 @@ export const useBookingAnalytics = (period: PeriodSelection) => {
         .lte('created_at', end.toISOString());
       
       if (error) throw error;
+      console.log('Form events fetched:', data);
       return data;
     }
   });

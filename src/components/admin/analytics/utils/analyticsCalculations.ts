@@ -111,18 +111,50 @@ export const calculateDayData = (bookings: any[]): { name: string; value: number
   }));
 };
 
-export const calculateStepData = (stepsTracking: any[]) => {
-  const stepData = stepsTracking.reduce((acc: any, track) => {
-    acc[track.step] = acc[track.step] || { total: 0, completed: 0 };
-    acc[track.step].total++;
-    if (track.completed) {
-      acc[track.step].completed++;
-    }
-    return acc;
-  }, {});
+export const calculateStepData = (events: any[]) => {
+  // Filter events to only include booking steps tracking
+  const stepsEvents = events.filter(event => 
+    event.event_type === 'BOOKING_STARTED' ||
+    event.event_type === 'FORM_START' ||
+    event.event_type === 'PERSONAL_INFO_COMPLETED' ||
+    event.event_type === 'DATE_TIME_COMPLETED' ||
+    event.event_type === 'GROUP_SIZE_COMPLETED' ||
+    event.event_type === 'PAYMENT_COMPLETED'
+  );
 
-  return Object.entries(stepData).map(([step, data]: [string, any]) => ({
-    name: `Étape ${step}`,
+  const stepMapping: { [key: string]: number } = {
+    'BOOKING_STARTED': 1,
+    'FORM_START': 1,
+    'PERSONAL_INFO_COMPLETED': 1,
+    'DATE_TIME_COMPLETED': 2,
+    'GROUP_SIZE_COMPLETED': 3,
+    'PAYMENT_COMPLETED': 4
+  };
+
+  const stepData = {
+    'Étape 1': { total: 0, completed: 0 },
+    'Étape 2': { total: 0, completed: 0 },
+    'Étape 3': { total: 0, completed: 0 },
+    'Étape 4': { total: 0, completed: 0 }
+  };
+
+  // Count total starts and completions for each step
+  stepsEvents.forEach(event => {
+    const step = stepMapping[event.event_type];
+    if (step) {
+      const stepKey = `Étape ${step}`;
+      stepData[stepKey].total++;
+      
+      // Mark step as completed if it's a completion event
+      if (event.event_type.includes('COMPLETED')) {
+        stepData[stepKey].completed++;
+      }
+    }
+  });
+
+  // Convert to array format for the chart
+  return Object.entries(stepData).map(([name, data]) => ({
+    name,
     total: data.total,
     completed: data.completed,
     dropoff: data.total - data.completed

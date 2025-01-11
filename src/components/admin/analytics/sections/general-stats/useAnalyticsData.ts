@@ -15,7 +15,7 @@ export const useAnalyticsData = (period: PeriodSelection) => {
   return useQuery({
     queryKey: ['analytics-general', period, dateRange],
     queryFn: async () => {
-      console.log('Fetching analytics data for period:', period);
+      console.log('Fetching analytics data for period:', period, 'Date range:', dateRange);
 
       const [
         { ga4Stats },

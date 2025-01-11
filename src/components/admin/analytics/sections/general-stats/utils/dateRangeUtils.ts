@@ -6,10 +6,15 @@ export const getDateRange = (period: PeriodSelection) => {
   const today = format(now, 'yyyy-MM-dd');
 
   switch (period.type) {
-    case "24h":
+    case "today":
       return {
         startDate: format(startOfDay(now), 'yyyy-MM-dd'),
         endDate: format(endOfDay(now), 'yyyy-MM-dd')
+      };
+    case "yesterday":
+      return {
+        startDate: format(startOfDay(subDays(now, 1)), 'yyyy-MM-dd'),
+        endDate: format(endOfDay(subDays(now, 1)), 'yyyy-MM-dd')
       };
     case "7d":
       return {

@@ -9,54 +9,71 @@ export const useBookingAnalytics = (period: PeriodSelection) => {
     switch (period.type) {
       case "24h":
         return {
-          start: subDays(startOfDay(now), 1),
-          end: endOfDay(now)
+          start: startOfDay(now), // Aujourd'hui début
+          end: endOfDay(now), // Aujourd'hui fin
+          previousStart: startOfDay(subDays(now, 1)), // Hier début
+          previousEnd: endOfDay(subDays(now, 1)) // Hier fin
         };
       case "7d":
         return {
           start: subDays(startOfDay(now), 7),
-          end: endOfDay(now)
+          end: endOfDay(now),
+          previousStart: subDays(startOfDay(now), 14),
+          previousEnd: subDays(endOfDay(now), 7)
         };
       case "30d":
         return {
           start: subDays(startOfDay(now), 30),
-          end: endOfDay(now)
+          end: endOfDay(now),
+          previousStart: subDays(startOfDay(now), 60),
+          previousEnd: subDays(endOfDay(now), 30)
         };
       case "90d":
         return {
           start: subDays(startOfDay(now), 90),
-          end: endOfDay(now)
+          end: endOfDay(now),
+          previousStart: subDays(startOfDay(now), 180),
+          previousEnd: subDays(endOfDay(now), 90)
         };
       case "1y":
         return {
           start: startOfYear(now),
-          end: endOfDay(now)
+          end: endOfDay(now),
+          previousStart: startOfYear(subDays(now, 365)),
+          previousEnd: endOfDay(subDays(startOfYear(now), 1))
         };
       case "custom":
         if (period.dateRange?.from && period.dateRange?.to) {
+          const duration = period.dateRange.to.getTime() - period.dateRange.from.getTime();
           return {
             start: startOfDay(period.dateRange.from),
-            end: endOfDay(period.dateRange.to)
+            end: endOfDay(period.dateRange.to),
+            previousStart: startOfDay(new Date(period.dateRange.from.getTime() - duration)),
+            previousEnd: endOfDay(new Date(period.dateRange.from.getTime() - 1))
           };
         }
         return {
           start: subDays(startOfDay(now), 7),
-          end: endOfDay(now)
+          end: endOfDay(now),
+          previousStart: subDays(startOfDay(now), 14),
+          previousEnd: subDays(endOfDay(now), 7)
         };
       default:
         return {
           start: subDays(startOfDay(now), 7),
-          end: endOfDay(now)
+          end: endOfDay(now),
+          previousStart: subDays(startOfDay(now), 14),
+          previousEnd: subDays(endOfDay(now), 7)
         };
     }
   };
 
-  const { start, end } = getDateRange();
-  const previousStart = subDays(start, end.getTime() - start.getTime());
+  const { start, end, previousStart, previousEnd } = getDateRange();
 
   const { data: bookings, isLoading: isLoadingBookings } = useQuery({
     queryKey: ['analytics-bookings-details', period],
     queryFn: async () => {
+      console.log('Fetching current period bookings:', { start: start.toISOString(), end: end.toISOString() });
       const { data, error } = await supabase
         .from('bookings')
         .select('*')
@@ -72,12 +89,13 @@ export const useBookingAnalytics = (period: PeriodSelection) => {
   const { data: previousBookings } = useQuery({
     queryKey: ['analytics-previous-bookings', period],
     queryFn: async () => {
+      console.log('Fetching previous period bookings:', { start: previousStart.toISOString(), end: previousEnd.toISOString() });
       const { data, error } = await supabase
         .from('bookings')
         .select('*')
         .is('deleted_at', null)
         .gte('created_at', previousStart.toISOString())
-        .lt('created_at', start.toISOString());
+        .lte('created_at', previousEnd.toISOString());
       
       if (error) throw error;
       return data;
@@ -105,7 +123,7 @@ export const useBookingAnalytics = (period: PeriodSelection) => {
         .from('user_events')
         .select('*')
         .gte('created_at', previousStart.toISOString())
-        .lt('created_at', start.toISOString());
+        .lte('created_at', previousEnd.toISOString());
       
       if (error) throw error;
       return data;
@@ -118,6 +136,6 @@ export const useBookingAnalytics = (period: PeriodSelection) => {
     events,
     previousEvents,
     isLoading: isLoadingBookings || isLoadingEvents,
-    period: { start, end, previousStart }
+    period: { start, end, previousStart, previousEnd }
   };
 };

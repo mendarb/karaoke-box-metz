@@ -22,6 +22,7 @@ export const useBookingPrice = (
         hasSettings: !!settings
       });
 
+      // S'assurer que la date et le créneau sont bien passés au calcul
       const calculatedPrice = calculatePrice(size, dur, date, timeSlot);
       const pricePerPersonPerHour = Math.round((calculatedPrice / (parseInt(size) * parseInt(dur))) * 100) / 100;
       
@@ -43,6 +44,18 @@ export const useBookingPrice = (
       form.setValue("finalPrice", calculatedPrice);
     }
   };
+
+  // Ajouter un effet pour recalculer le prix quand la date ou le créneau change
+  useEffect(() => {
+    const size = form.watch("groupSize");
+    const dur = form.watch("duration");
+    const date = form.watch("date");
+    const timeSlot = form.watch("timeSlot");
+
+    if (size && dur && date && timeSlot) {
+      updatePrices(size, dur, date, timeSlot);
+    }
+  }, [form.watch("date"), form.watch("timeSlot")]);
 
   return {
     currentPrice,

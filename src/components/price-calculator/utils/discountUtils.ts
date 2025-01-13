@@ -1,57 +1,36 @@
-export const isDiscountedTimeSlot = (timeSlot: string) => {
-  const hour = parseInt(timeSlot);
-  const isBeforeSixPM = hour < 18;
-  console.log('⏰ Vérification créneau horaire:', {
-    timeSlot,
-    hour,
-    isBeforeSixPM
-  });
-  return isBeforeSixPM;
-};
+import { format, parseISO } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
-export const isDiscountedDay = (dateStr: string) => {
-  const date = new Date(dateStr);
-  const day = date.getDay();
-  // 3 = Mercredi, 4 = Jeudi
-  const isWednesdayOrThursday = day === 3 || day === 4;
-  console.log('📅 Vérification jour:', {
-    date: dateStr,
-    day,
-    isWednesdayOrThursday
-  });
-  return isWednesdayOrThursday;
-};
-
-export const calculateDiscount = (
-  totalPrice: number,
-  date?: string,
-  timeSlot?: string
-): { finalPrice: number; hasDiscount: boolean } => {
+export const calculateDiscount = (price: number, date?: string, timeSlot?: string) => {
   if (!date || !timeSlot) {
     console.log('⚠️ Date ou créneau manquant:', { date, timeSlot });
-    return { finalPrice: totalPrice, hasDiscount: false };
+    return { finalPrice: price, hasDiscount: false };
   }
 
-  const isDiscounted = isDiscountedDay(date) && isDiscountedTimeSlot(timeSlot);
-  
-  if (isDiscounted) {
-    const discountedPrice = Math.round(totalPrice * 0.8 * 100) / 100; // -20% arrondi à 2 décimales
-    console.log('💰 Réduction de 20% appliquée:', { 
-      date, 
-      timeSlot, 
-      originalPrice: totalPrice,
-      finalPrice: discountedPrice,
-      day: new Date(date).getDay(),
-      hour: parseInt(timeSlot)
+  const parsedDate = typeof date === 'string' ? parseISO(date) : date;
+  const dayOfWeek = format(parsedDate, 'EEEE', { locale: fr });
+  const hour = parseInt(timeSlot.split(':')[0]);
+
+  const isDiscountDay = dayOfWeek === 'mercredi' || dayOfWeek === 'jeudi';
+  const isBeforeSixPM = hour < 18;
+
+  console.log('🕒 Vérification réduction:', {
+    dayOfWeek,
+    hour,
+    isDiscountDay,
+    isBeforeSixPM,
+    originalPrice: price
+  });
+
+  if (isDiscountDay && isBeforeSixPM) {
+    const discountedPrice = Math.round(price * 0.8);
+    console.log('💰 Prix réduit appliqué:', {
+      originalPrice: price,
+      discountedPrice,
+      reduction: '20%'
     });
     return { finalPrice: discountedPrice, hasDiscount: true };
   }
 
-  console.log('❌ Pas de réduction applicable:', {
-    date,
-    timeSlot,
-    isDiscountedDay: date ? isDiscountedDay(date) : false,
-    isDiscountedTimeSlot: timeSlot ? isDiscountedTimeSlot(timeSlot) : false
-  });
-  return { finalPrice: totalPrice, hasDiscount: false };
+  return { finalPrice: price, hasDiscount: false };
 };

@@ -40,6 +40,7 @@ export const useCalculatePrice = ({ settings }: CalculatePriceProps = {}) => {
     // Application de la réduction selon le jour et l'heure
     const { finalPrice: discountedPrice, hasDiscount: timeDiscount } = calculateDiscount(totalPrice, date, timeSlot);
     totalPrice = discountedPrice;
+    setHasDiscount(timeDiscount);
 
     // Formatage des prix finaux
     const { finalPrice, pricePerPerson } = formatPrices(totalPrice, size, hours);
@@ -57,7 +58,6 @@ export const useCalculatePrice = ({ settings }: CalculatePriceProps = {}) => {
 
     setPrice(finalPrice);
     setPricePerPersonPerHour(pricePerPerson);
-    setHasDiscount(timeDiscount);
 
     return finalPrice;
   }, [settings]);

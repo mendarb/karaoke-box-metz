@@ -33,47 +33,10 @@ export const GroupSizeAndDurationFields = ({
     updatePrices
   } = useBookingPrice(form, onPriceCalculated);
 
-  const handleGroupSizeChange = (value: string) => {
-    form.setValue("groupSize", value);
-    onGroupSizeChange(value);
-    
-    const currentDuration = form.getValues("duration");
-    const currentDate = form.getValues("date");
-    const currentTimeSlot = form.getValues("timeSlot");
-    
-    if (currentDuration && currentDate && currentTimeSlot) {
-      console.log('🔄 Mise à jour du prix (changement taille groupe):', {
-        size: value,
-        duration: currentDuration,
-        date: currentDate,
-        timeSlot: currentTimeSlot
-      });
-      updatePrices(value, currentDuration, currentDate, currentTimeSlot);
-    }
-  };
-
-  const handleDurationChange = (value: string) => {
-    form.setValue("duration", value);
-    onDurationChange(value);
-    
-    const currentGroupSize = form.getValues("groupSize");
-    const currentDate = form.getValues("date");
-    const currentTimeSlot = form.getValues("timeSlot");
-    
-    if (currentGroupSize && currentDate && currentTimeSlot) {
-      console.log('🔄 Mise à jour du prix (changement durée):', {
-        size: currentGroupSize,
-        duration: value,
-        date: currentDate,
-        timeSlot: currentTimeSlot
-      });
-      updatePrices(currentGroupSize, value, currentDate, currentTimeSlot);
-    }
-  };
-
+  // Mise à jour du prix quand n'importe quel paramètre change
   useEffect(() => {
     if (groupSize && duration && date && timeSlot) {
-      console.log('🔄 Mise à jour du prix (changement date/créneau):', {
+      console.log('🔄 Mise à jour du prix (changement paramètres):', {
         groupSize,
         duration,
         date,
@@ -81,7 +44,17 @@ export const GroupSizeAndDurationFields = ({
       });
       updatePrices(groupSize, duration, date, timeSlot);
     }
-  }, [groupSize, duration, date, timeSlot]);
+  }, [groupSize, duration, date, timeSlot, updatePrices]);
+
+  const handleGroupSizeChange = (value: string) => {
+    form.setValue("groupSize", value);
+    onGroupSizeChange(value);
+  };
+
+  const handleDurationChange = (value: string) => {
+    form.setValue("duration", value);
+    onDurationChange(value);
+  };
 
   return (
     <Card className="bg-white/50 backdrop-blur-sm border-none">

@@ -23,6 +23,7 @@ export const PriceDisplay = ({
   hasTimeDiscount
 }: PriceDisplayProps) => {
   const hasDiscount = (isPromoValid && finalPrice < price) || hasTimeDiscount;
+  const displayPrice = hasTimeDiscount ? finalPrice : price;
 
   return (
     <div className="space-y-4">
@@ -46,11 +47,11 @@ export const PriceDisplay = ({
           <div className="text-right">
             {hasDiscount ? (
               <>
-                <p className="text-lg font-bold text-green-600">{finalPrice}€</p>
+                <p className="text-lg font-bold text-green-600">{displayPrice}€</p>
                 <p className="text-sm text-gray-500 line-through">{price}€</p>
               </>
             ) : (
-              <p className="text-lg font-bold">{price}€</p>
+              <p className="text-lg font-bold">{displayPrice}€</p>
             )}
             <p className="text-xs text-gray-500">
               {pricePerPersonPerHour.toFixed(2)}€/personne/heure

@@ -1,7 +1,6 @@
-import { DateTimeSection } from "./summary/DateTimeSection";
-import { GroupSection } from "./summary/GroupSection";
-import { PriceSection } from "./summary/PriceSection";
-import { MessageSection } from "./summary/MessageSection";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import { Calendar, Clock, Users, Euro, MessageSquare } from "lucide-react";
 
 interface BookingSummaryProps {
   groupSize: string;
@@ -26,29 +25,67 @@ export const BookingSummary = ({
   timeSlot,
   message
 }: BookingSummaryProps) => {
+  const showDiscount = isPromoValid && finalPrice !== undefined && finalPrice !== calculatedPrice;
+  const endHour = timeSlot ? parseInt(timeSlot) + parseInt(duration) : undefined;
+  
   return (
-    <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm border border-gray-100 space-y-4">
+    <div className="bg-violet-50 p-4 rounded-lg space-y-4">
       <h3 className="font-semibold text-violet-900">Récapitulatif de votre réservation</h3>
       
       <div className="space-y-4">
         {date && timeSlot && (
-          <DateTimeSection 
-            date={date} 
-            timeSlot={timeSlot} 
-            duration={duration} 
-          />
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <Calendar className="h-4 w-4 text-violet-500" />
+              <p className="font-medium">
+                {format(new Date(date), 'EEEE d MMMM yyyy', { locale: fr })}
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Clock className="h-4 w-4 text-violet-500" />
+              <p>
+                {timeSlot}:00 - {endHour}:00 ({duration}h)
+              </p>
+            </div>
+          </div>
         )}
 
-        <GroupSection groupSize={groupSize} />
+        <div className="space-y-2">
+          <div className="flex items-center space-x-2">
+            <Users className="h-4 w-4 text-violet-500" />
+            <p>{groupSize} personnes</p>
+          </div>
+        </div>
 
-        <PriceSection 
-          calculatedPrice={calculatedPrice}
-          finalPrice={finalPrice}
-          isPromoValid={isPromoValid}
-          promoCode={promoCode}
-        />
+        <div className="space-y-2">
+          {showDiscount ? (
+            <>
+              <p className="line-through text-gray-500">Prix initial : {calculatedPrice}€</p>
+              <div className="flex items-center space-x-2">
+                <Euro className="h-4 w-4 text-green-500" />
+                <p className="font-semibold text-green-600">Prix final : {finalPrice}€</p>
+              </div>
+              <p className="text-green-600 font-medium">Code promo {promoCode} appliqué</p>
+            </>
+          ) : (
+            <div className="flex items-center space-x-2">
+              <Euro className="h-4 w-4 text-violet-500" />
+              <p className="font-semibold">Prix total : {calculatedPrice}€</p>
+            </div>
+          )}
+        </div>
 
-        {message && <MessageSection message={message} />}
+        {message && (
+          <div className="space-y-2">
+            <div className="flex items-start space-x-2">
+              <MessageSquare className="h-4 w-4 text-violet-500 mt-1" />
+              <div>
+                <p className="font-medium text-sm text-gray-700">Message</p>
+                <p className="text-gray-600">{message}</p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

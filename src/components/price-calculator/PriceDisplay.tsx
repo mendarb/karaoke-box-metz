@@ -26,10 +26,10 @@ export const PriceDisplay = ({
   const discountText = hasTimeDiscount ? "Réduction -20% (avant 18h)" : "Code promo appliqué";
 
   return (
-    <div className="space-y-4 bg-white rounded-lg p-4 shadow-sm border border-gray-100">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-gray-100">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
         <div className="space-y-2">
-          <div className="flex items-center gap-2 text-gray-600">
+          <div className="flex flex-wrap items-center gap-2 text-gray-600">
             <span className="inline-flex items-center justify-center bg-gray-50 rounded-full px-3 py-1 text-sm">
               {groupSize} {parseInt(groupSize) > 1 ? "personnes" : "personne"}
             </span>
@@ -44,7 +44,7 @@ export const PriceDisplay = ({
             </p>
           </div>
         </div>
-        <div className="text-right">
+        <div className="text-right border-t sm:border-t-0 pt-3 sm:pt-0">
           {showDiscount && (
             <>
               <p className="text-sm line-through text-gray-400">{price}€</p>

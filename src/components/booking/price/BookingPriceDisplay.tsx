@@ -27,15 +27,14 @@ export const BookingPriceDisplay = ({
     promoData
   } = usePromoCode(currentPrice, form);
 
+  const originalPrice = hasTimeDiscount ? Math.round(currentPrice / 0.8) : currentPrice;
+
   return (
     <>
-      <PromoCodeField
-        onPromoValidated={handlePromoValidated}
-      />
       <PriceDisplay
         groupSize={groupSize}
         duration={duration}
-        price={currentPrice}
+        price={originalPrice}
         finalPrice={finalPrice}
         pricePerPersonPerHour={pricePerPerson}
         promoCode={promoData?.code}

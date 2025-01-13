@@ -44,7 +44,6 @@ export const GroupSizeAndDurationFields = ({
         dateValue: date ? date.toISOString() : 'undefined'
       });
 
-      // S'assurer que la date est au bon format pour le calcul de la réduction
       const formattedDate = date ? date.toISOString().split('T')[0] : undefined;
       
       if (!formattedDate || !timeSlot) {

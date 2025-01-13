@@ -1,4 +1,4 @@
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 export const calculateDiscount = (price: number, date: string, timeSlot: string) => {
@@ -8,7 +8,8 @@ export const calculateDiscount = (price: number, date: string, timeSlot: string)
   }
 
   try {
-    const parsedDate = parseISO(date);
+    // Utiliser directement la date fournie sans ajustement
+    const parsedDate = new Date(date);
     const dayOfWeek = format(parsedDate, 'EEEE', { locale: fr });
     const hour = parseInt(timeSlot);
 

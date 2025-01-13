@@ -44,6 +44,7 @@ export const GroupSizeAndDurationFields = ({
         dateValue: date ? date.toISOString() : 'undefined'
       });
 
+      // S'assurer que la date est au bon format YYYY-MM-DD
       const formattedDate = date ? date.toISOString().split('T')[0] : undefined;
       
       if (!formattedDate || !timeSlot) {

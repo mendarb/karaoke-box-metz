@@ -47,7 +47,7 @@
   .logo {
     height: 4em;
     padding: 1em;
-    padding-left: 2em; /* Ajout de padding supplémentaire à gauche */
+    margin-left: 2em; /* Utilisation de margin au lieu de padding */
   }
 
   .card {

@@ -23,7 +23,7 @@ export const useBookingPrice = (
       });
 
       const calculatedPrice = calculatePrice(size, dur, date, timeSlot);
-      const pricePerPersonPerHour = calculatedPrice / (parseInt(size) * parseInt(dur));
+      const pricePerPersonPerHour = Math.round((calculatedPrice / (parseInt(size) * parseInt(dur))) * 100) / 100;
       
       console.log('💰 Prix calculé:', {
         calculatedPrice,

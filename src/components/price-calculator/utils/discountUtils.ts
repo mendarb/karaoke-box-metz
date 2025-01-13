@@ -33,6 +33,7 @@ export const calculateDiscount = (
   }
 
   const isDiscounted = isDiscountedDay(date) && isDiscountedTimeSlot(timeSlot);
+  
   if (isDiscounted) {
     const discountedPrice = Math.round(totalPrice * 0.8 * 100) / 100; // -20% arrondi à 2 décimales
     console.log('💰 Réduction de 20% appliquée:', { 

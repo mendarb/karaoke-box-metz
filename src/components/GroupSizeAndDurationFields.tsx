@@ -35,14 +35,19 @@ export const GroupSizeAndDurationFields = ({
 
   useEffect(() => {
     if (groupSize && duration) {
-      const dateString = date ? date.toISOString().split('T')[0] : undefined;
-      console.log('🔄 Mise à jour du prix avec paramètres:', {
+      console.log('🔄 Paramètres de prix actuels:', {
         groupSize,
         duration,
-        date: dateString,
-        timeSlot
+        date: date?.toISOString(),
+        timeSlot,
+        hasDate: !!date,
+        hasTimeSlot: !!timeSlot
       });
-      updatePrices(groupSize, duration, dateString, timeSlot);
+
+      // S'assurer que la date est au bon format pour le calcul de la réduction
+      const formattedDate = date ? date.toISOString().split('T')[0] : undefined;
+      
+      updatePrices(groupSize, duration, formattedDate, timeSlot);
     }
   }, [groupSize, duration, date, timeSlot, updatePrices]);
 

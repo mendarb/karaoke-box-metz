@@ -22,17 +22,13 @@ export const useBookingPrice = (
         hasSettings: !!settings
       });
 
-      if (!date || !timeSlot) {
-        console.log('⚠️ Date ou créneau manquant, pas de réduction possible');
-      }
-
       const calculatedPrice = calculatePrice(size, dur, date, timeSlot);
       const pricePerPersonPerHour = calculatedPrice / (parseInt(size) * parseInt(dur));
       
       console.log('💰 Prix calculé:', {
         calculatedPrice,
         pricePerPersonPerHour,
-        hasDiscount,
+        hasDiscount: hasDiscount,
         date,
         timeSlot,
         isDiscountApplied: hasDiscount
@@ -42,7 +38,9 @@ export const useBookingPrice = (
       setPricePerPerson(pricePerPersonPerHour);
       onPriceCalculated(calculatedPrice);
       
+      // Important: Mettre à jour le prix dans le formulaire
       form.setValue("calculatedPrice", calculatedPrice);
+      form.setValue("finalPrice", calculatedPrice);
     }
   };
 

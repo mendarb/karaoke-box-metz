@@ -52,12 +52,35 @@
   .card {
     padding: 1em;
   }
+
+  /* Amélioration du touch sur mobile */
+  button, 
+  [role="button"],
+  input,
+  select {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+
+  /* Éviter le zoom sur les inputs */
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"] {
+    font-size: 16px;
+  }
 }
 
 /* Optimisations de performance */
 * {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Amélioration du scroll sur iOS */
+.scroll-container {
+  -webkit-overflow-scrolling: touch;
 }
 
 img {

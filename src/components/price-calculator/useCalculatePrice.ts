@@ -29,7 +29,14 @@ export const useCalculatePrice = ({ settings }: CalculatePriceProps = {}) => {
     const baseHourRate = settings.basePrice.perHour || 30;
     const basePersonRate = settings.basePrice.perPerson || 5;
 
-    console.log('💰 Tarifs de base:', { baseHourRate, basePersonRate });
+    console.log('💰 Calcul du prix:', {
+      baseHourRate,
+      basePersonRate,
+      date,
+      timeSlot,
+      groupSize,
+      duration
+    });
 
     // Calcul du prix de base
     const basePrice = calculateBasePrice(size, baseHourRate, basePersonRate);
@@ -38,22 +45,34 @@ export const useCalculatePrice = ({ settings }: CalculatePriceProps = {}) => {
     let totalPrice = calculateTotalPrice(basePrice, hours);
 
     // Application de la réduction selon le jour et l'heure
-    const { finalPrice: discountedPrice, hasDiscount: timeDiscount } = calculateDiscount(totalPrice, date, timeSlot);
-    totalPrice = discountedPrice;
-    setHasDiscount(timeDiscount);
+    if (date && timeSlot) {
+      const { finalPrice: discountedPrice, hasDiscount: timeDiscount } = calculateDiscount(totalPrice, date, timeSlot);
+      totalPrice = discountedPrice;
+      setHasDiscount(timeDiscount);
+      
+      console.log('💰 Réduction appliquée:', {
+        prixInitial: totalPrice,
+        prixReduit: discountedPrice,
+        reduction: timeDiscount ? '20%' : 'aucune',
+        date,
+        timeSlot
+      });
+    } else {
+      setHasDiscount(false);
+      console.log('⚠️ Pas de réduction possible:', {
+        date,
+        timeSlot
+      });
+    }
 
     // Formatage des prix finaux
     const { finalPrice, pricePerPerson } = formatPrices(totalPrice, size, hours);
 
-    console.log('💰 Calcul final du prix:', {
-      groupSize,
-      duration,
-      basePrice,
-      totalPrice: finalPrice,
-      pricePerPerson,
-      hasDiscount: timeDiscount,
-      date,
-      timeSlot
+    console.log('💰 Prix final:', {
+      prixBase: basePrice,
+      prixTotal: finalPrice,
+      prixParPersonne: pricePerPerson,
+      reduction: hasDiscount
     });
 
     setPrice(finalPrice);

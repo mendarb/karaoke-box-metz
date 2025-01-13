@@ -1,5 +1,5 @@
-import { Check, Clock, Percent } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Euro } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface PriceDisplayProps {
   groupSize: string;
@@ -22,56 +22,37 @@ export const PriceDisplay = ({
   isPromoValid,
   hasTimeDiscount
 }: PriceDisplayProps) => {
-  const hasDiscount = (isPromoValid && finalPrice < price) || hasTimeDiscount;
-  const displayPrice = hasTimeDiscount ? finalPrice : price;
+  const showDiscount = (isPromoValid && finalPrice !== price) || hasTimeDiscount;
+  const discountText = hasTimeDiscount ? "Réduction -20% (avant 18h)" : "Code promo appliqué";
 
   return (
     <div className="space-y-4">
-      {hasTimeDiscount && (
-        <Alert className="bg-green-50 text-green-700 border-green-200">
-          <Clock className="h-4 w-4" />
-          <AlertDescription>
-            Une réduction de 20% est appliquée les mercredis et jeudis avant 18h
-          </AlertDescription>
-        </Alert>
-      )}
-      
-      <div className="rounded-lg border p-4 space-y-2">
-        <div className="flex justify-between items-center">
-          <div>
-            <h3 className="font-semibold">Résumé</h3>
+      <div className="flex items-center justify-between">
+        <div className="space-y-1">
+          <p className="text-sm text-gray-500">
+            {groupSize} {parseInt(groupSize) > 1 ? "personnes" : "personne"} • {duration}h
+          </p>
+          <div className="flex items-center gap-1">
+            <Euro className="h-4 w-4" />
             <p className="text-sm text-gray-500">
-              {groupSize} {parseInt(groupSize) > 1 ? "personnes" : "personne"} - {duration}h
-            </p>
-          </div>
-          <div className="text-right">
-            {hasDiscount ? (
-              <>
-                <p className="text-lg font-bold text-green-600">{displayPrice}€</p>
-                <p className="text-sm text-gray-500 line-through">{price}€</p>
-              </>
-            ) : (
-              <p className="text-lg font-bold">{displayPrice}€</p>
-            )}
-            <p className="text-xs text-gray-500">
-              {pricePerPersonPerHour.toFixed(2)}€/personne/heure
+              {pricePerPersonPerHour}€ / personne / heure
             </p>
           </div>
         </div>
-
-        {promoCode && (
-          <div className="flex items-center justify-between pt-2 border-t">
-            <span className="text-sm">
-              Code promo : <span className="font-mono uppercase">{promoCode}</span>
-            </span>
-            {isPromoValid && (
-              <span className="text-green-600 flex items-center text-sm">
-                <Check className="w-4 h-4 mr-1" />
-                Appliqué
-              </span>
-            )}
-          </div>
-        )}
+        <div className="text-right">
+          {showDiscount && (
+            <>
+              <p className="text-sm line-through text-gray-500">{price}€</p>
+              <p className="text-sm font-medium text-green-600">{discountText}</p>
+            </>
+          )}
+          <p className={cn(
+            "text-2xl font-bold",
+            showDiscount ? "text-green-600" : "text-gray-900"
+          )}>
+            {finalPrice}€
+          </p>
+        </div>
       </div>
     </div>
   );

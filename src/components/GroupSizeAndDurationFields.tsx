@@ -33,16 +33,15 @@ export const GroupSizeAndDurationFields = ({
     updatePrices
   } = useBookingPrice(form, onPriceCalculated);
 
-  // Mise à jour du prix quand n'importe quel paramètre change
   useEffect(() => {
-    if (groupSize && duration && date && timeSlot) {
-      console.log('🔄 Mise à jour du prix (changement paramètres):', {
+    if (groupSize && duration) {
+      console.log('🔄 Mise à jour du prix avec paramètres:', {
         groupSize,
         duration,
-        date,
+        date: date?.toISOString(),
         timeSlot
       });
-      updatePrices(groupSize, duration, date, timeSlot);
+      updatePrices(groupSize, duration, date?.toISOString(), timeSlot);
     }
   }, [groupSize, duration, date, timeSlot, updatePrices]);
 

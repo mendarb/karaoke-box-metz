@@ -27,6 +27,9 @@ export const BookingSummary = ({
 }: BookingSummaryProps) => {
   const showDiscount = isPromoValid && finalPrice !== undefined && finalPrice !== calculatedPrice;
   const endHour = timeSlot ? parseInt(timeSlot) + parseInt(duration) : undefined;
+  const discountPercentage = showDiscount && finalPrice 
+    ? Math.round(((calculatedPrice - finalPrice) / calculatedPrice) * 100)
+    : 0;
   
   return (
     <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm border border-gray-100 space-y-4">
@@ -44,7 +47,7 @@ export const BookingSummary = ({
             <div className="flex items-center space-x-2">
               <Clock className="h-4 w-4 text-violet-500" />
               <p>
-                {timeSlot.padStart(2, '0')}:00 - {endHour?.toString().padStart(2, '0')}:00 ({duration}h)
+                {timeSlot.padStart(2, '0')}h00 - {endHour?.toString().padStart(2, '0')}h00 ({duration}h)
               </p>
             </div>
           </div>
@@ -72,9 +75,14 @@ export const BookingSummary = ({
                     <p className="font-semibold text-green-600">{finalPrice}€</p>
                   </div>
                 </div>
-                <span className="text-green-600 text-sm font-medium">
-                  Code promo {promoCode} appliqué
-                </span>
+                <div className="flex flex-col items-end">
+                  <span className="text-green-600 text-sm font-medium">
+                    Code promo {promoCode}
+                  </span>
+                  <span className="text-green-600 text-xs">
+                    -{discountPercentage}% de réduction
+                  </span>
+                </div>
               </div>
             </>
           ) : (

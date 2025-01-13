@@ -1,7 +1,7 @@
 import { UseFormReturn } from "react-hook-form";
 import { PersonalInfoFields } from "./PersonalInfoFields";
 import { DateTimeFields } from "./DateTimeFields";
-import { GroupSizeAndDurationFields } from "./GroupSizeAndDurationFields";
+import { GroupSizeAndDurationFields } from "@/components/GroupSizeAndDurationFields";
 import { AdditionalFields } from "./AdditionalFields";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -30,6 +30,12 @@ export const BookingFormContent = ({
   onAvailabilityChange,
   availableHours,
 }: BookingFormContentProps) => {
+  console.log('📅 BookingFormContent - Valeurs actuelles:', {
+    date: form.watch('date'),
+    timeSlot: form.watch('timeSlot'),
+    step: currentStep
+  });
+
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:

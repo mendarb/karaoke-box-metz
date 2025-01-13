@@ -38,14 +38,22 @@ export const GroupSizeAndDurationFields = ({
       console.log('🔄 Paramètres de prix actuels:', {
         groupSize,
         duration,
-        date: date?.toISOString(),
+        date,
         timeSlot,
-        hasDate: !!date,
-        hasTimeSlot: !!timeSlot
+        dateType: date ? date.constructor.name : 'undefined',
+        dateValue: date ? date.toISOString() : 'undefined'
       });
 
       // S'assurer que la date est au bon format pour le calcul de la réduction
       const formattedDate = date ? date.toISOString().split('T')[0] : undefined;
+      
+      if (!formattedDate || !timeSlot) {
+        console.warn('⚠️ Date ou créneau manquant pour le calcul du prix:', {
+          formattedDate,
+          timeSlot,
+          date
+        });
+      }
       
       updatePrices(groupSize, duration, formattedDate, timeSlot);
     }

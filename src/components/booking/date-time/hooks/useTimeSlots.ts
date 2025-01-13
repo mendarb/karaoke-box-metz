@@ -39,7 +39,8 @@ export const useTimeSlots = () => {
         .select('*')
         .eq('date', format(date, 'yyyy-MM-dd'))
         .neq('status', 'cancelled')
-        .is('deleted_at', null);
+        .is('deleted_at', null)
+        .eq('payment_status', 'paid'); // Changed from is.paid to eq('payment_status', 'paid')
 
       if (error) {
         console.error('❌ Erreur lors de la vérification des réservations:', error);
@@ -136,7 +137,8 @@ export const useTimeSlots = () => {
         .select('*')
         .eq('date', format(date, 'yyyy-MM-dd'))
         .neq('status', 'cancelled')
-        .is('deleted_at', null);
+        .is('deleted_at', null)
+        .eq('payment_status', 'paid'); // Changed from is.paid to eq('payment_status', 'paid')
 
       if (error) {
         console.error('❌ Erreur lors de la vérification des réservations:', error);

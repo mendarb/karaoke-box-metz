@@ -44,8 +44,8 @@ export const GroupSizeAndDurationFields = ({
         dateValue: date ? date.toISOString() : 'undefined'
       });
 
-      // S'assurer que la date est au bon format YYYY-MM-DD
-      const formattedDate = date ? date.toISOString().split('T')[0] : undefined;
+      // Correction : Utiliser la date sélectionnée sans ajustement
+      const formattedDate = date ? new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().split('T')[0] : undefined;
       
       if (!formattedDate || !timeSlot) {
         console.warn('⚠️ Date ou créneau manquant pour le calcul du prix:', {

@@ -5,7 +5,6 @@ import { Settings } from "@/pages/Settings";
 import { Accounts } from "@/pages/Accounts";
 import { EditAccountPage } from "@/components/admin/accounts/EditAccountPage";
 import { DocumentationPage } from "@/components/admin/documentation/DocumentationPage";
-import { Analytics } from "@/pages/Analytics";
 import { ProtectedRoute } from "../ProtectedRoute";
 
 export const AdminRoutes = () => {
@@ -56,14 +55,6 @@ export const AdminRoutes = () => {
         element={
           <ProtectedRoute adminOnly>
             <DocumentationPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/analytics"
-        element={
-          <ProtectedRoute adminOnly>
-            <Analytics />
           </ProtectedRoute>
         }
       />

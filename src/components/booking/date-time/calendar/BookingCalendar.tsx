@@ -2,9 +2,9 @@ import { Calendar } from "@/components/ui/calendar";
 import { fr } from "date-fns/locale";
 import { useToast } from "@/components/ui/use-toast";
 import { useEffect } from "react";
-import { CalendarHeader } from "./CalendarHeader";
-import { CalendarNavButton } from "./CalendarNavButton";
-import { DayPickerRootProps } from "react-day-picker";
+import { Badge } from "@/components/ui/badge";
+import { Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface BookingCalendarProps {
   selectedDate?: Date;
@@ -27,7 +27,8 @@ export const BookingCalendar = ({
 
   const isDiscountedDay = (date: Date) => {
     const day = date.getDay();
-    return day === 3 || day === 4; // Mercredi ou Jeudi
+    // 3 = Mercredi, 4 = Jeudi
+    return day === 3 || day === 4;
   };
 
   useEffect(() => {
@@ -40,7 +41,28 @@ export const BookingCalendar = ({
 
   return (
     <div className="w-full max-w-lg mx-auto bg-white rounded-xl p-2 sm:p-4">
-      <CalendarHeader />
+      <div className="mb-4 text-center space-y-2">
+        <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
+          Choisissez votre date
+        </h2>
+        <p className="text-sm text-gray-600">
+          Les dates disponibles sont affichées en noir
+        </p>
+        
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center justify-center gap-2 text-sm text-green-600">
+                <Info className="h-4 w-4" />
+                <span>-20% les mercredis et jeudis avant 18h</span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Profitez d'une réduction de 20% en réservant le mercredi ou jeudi avant 18h</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
       
       <Calendar
         mode="single"
@@ -63,27 +85,13 @@ export const BookingCalendar = ({
         locale={fr}
         defaultMonth={defaultMonth}
         className="border-none shadow-none"
-        components={{
-          IconLeft: ({ onClick }: { onClick?: () => void }) => (
-            <CalendarNavButton 
-              direction="left" 
-              onClick={onClick} 
-            />
-          ),
-          IconRight: ({ onClick }: { onClick?: () => void }) => (
-            <CalendarNavButton 
-              direction="right" 
-              onClick={onClick}
-            />
-          ),
-        }}
         classNames={{
           months: "space-y-4",
           month: "space-y-4",
           caption: "flex justify-center pt-1 relative items-center",
           caption_label: "text-lg font-semibold",
           nav: "space-x-1 flex items-center",
-          nav_button: "h-8 w-8",
+          nav_button: "h-9 w-9 bg-transparent p-0 opacity-50 hover:opacity-100",
           nav_button_previous: "absolute left-1",
           nav_button_next: "absolute right-1",
           table: "w-full border-collapse space-y-1",

@@ -26,7 +26,6 @@ export const CalendarSection = ({
   const modifiersStyles = {
     booked: {
       backgroundColor: "#f3f4f6",
-      borderRadius: "0.375rem",
       color: "#111827",
       fontWeight: "bold",
     },
@@ -48,6 +47,7 @@ export const CalendarSection = ({
             className="rounded-md"
             modifiers={modifiers}
             modifiersStyles={modifiersStyles}
+            defaultMonth={selectedDate}
             classNames={{
               months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
               month: "space-y-4",
@@ -61,7 +61,7 @@ export const CalendarSection = ({
               head_row: "flex",
               head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem] uppercase",
               row: "flex w-full mt-2",
-              cell: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent",
+              cell: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20",
               day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-gray-100 rounded-md transition-colors",
               day_range_end: "day-range-end",
               day_selected: "bg-violet-500 text-white hover:bg-violet-500 hover:text-white focus:bg-violet-500 focus:text-white",

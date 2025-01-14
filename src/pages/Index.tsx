@@ -3,7 +3,7 @@ import { AuthModal } from "@/components/auth/AuthModal";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useUserState } from "@/hooks/useUserState";
-import { CookieConsent } from "@/components/legal/CookieConsent";
+import { CookieConsent } from "@/components/legal/cookie-consent/CookieConsent";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { HeroSection } from "@/components/home/HeroSection";

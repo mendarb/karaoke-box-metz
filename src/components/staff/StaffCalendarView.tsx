@@ -61,7 +61,6 @@ export const StaffCalendarView = ({ onLogout }: StaffCalendarViewProps) => {
   const modifiersStyles = {
     booked: {
       backgroundColor: '#f3f4f6',
-      borderRadius: '0.5rem',
       color: '#111827',
       fontWeight: 'bold'
     }
@@ -69,11 +68,11 @@ export const StaffCalendarView = ({ onLogout }: StaffCalendarViewProps) => {
 
   return (
     <>
-      <CardHeader className="space-y-4 border-b pb-4">
+      <CardHeader className="space-y-4 border-b">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <div className="bg-primary/10 p-2 rounded-full">
-              <CalendarIcon className="h-5 w-5 text-primary" />
+            <div className="bg-violet-500/10 p-2 rounded-full">
+              <CalendarIcon className="h-5 w-5 text-violet-500" />
             </div>
             <CardTitle>Calendrier des réservations</CardTitle>
           </div>
@@ -89,7 +88,7 @@ export const StaffCalendarView = ({ onLogout }: StaffCalendarViewProps) => {
       <CardContent className="p-6">
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-4">
-            <div className="bg-muted/50 p-4 rounded-lg">
+            <div className="bg-white rounded-lg shadow-sm p-4">
               {isLoading ? (
                 <div className="flex items-center justify-center h-[400px]">
                   <LoadingSpinner className="h-8 w-8" />
@@ -100,7 +99,7 @@ export const StaffCalendarView = ({ onLogout }: StaffCalendarViewProps) => {
                   selected={selectedDate}
                   onSelect={setSelectedDate}
                   locale={fr}
-                  className="rounded-md border bg-white shadow-sm"
+                  className="rounded-md border-0"
                   modifiers={modifiers}
                   modifiersStyles={modifiersStyles}
                   classNames={{
@@ -116,11 +115,11 @@ export const StaffCalendarView = ({ onLogout }: StaffCalendarViewProps) => {
                     head_row: "flex",
                     head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem] uppercase",
                     row: "flex w-full mt-2",
-                    cell: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md",
-                    day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-accent rounded-md transition-colors",
+                    cell: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent",
+                    day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-gray-100 rounded-md transition-colors",
                     day_range_end: "day-range-end",
-                    day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-                    day_today: "bg-accent text-accent-foreground",
+                    day_selected: "bg-violet-500 text-white hover:bg-violet-500 hover:text-white focus:bg-violet-500 focus:text-white",
+                    day_today: "bg-violet-50 text-violet-500",
                     day_outside: "text-muted-foreground opacity-50",
                     day_disabled: "text-muted-foreground opacity-50",
                     day_hidden: "invisible",
@@ -129,15 +128,15 @@ export const StaffCalendarView = ({ onLogout }: StaffCalendarViewProps) => {
               )}
             </div>
             {!selectedDate && !isLoading && (
-              <Alert className="bg-primary/5 border-primary/20">
-                <Info className="h-4 w-4 text-primary" />
-                <AlertDescription className="text-primary/80">
+              <Alert className="bg-violet-500/5 border-violet-500/20">
+                <Info className="h-4 w-4 text-violet-500" />
+                <AlertDescription className="text-violet-500/80">
                   Sélectionnez une date pour voir les réservations
                 </AlertDescription>
               </Alert>
             )}
           </div>
-          <div className="bg-muted/50 rounded-lg">
+          <div>
             <StaffBookingsList
               bookings={bookings}
               selectedDate={selectedDate}

@@ -1,7 +1,9 @@
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Phone, User } from "lucide-react";
+import { Mail, Phone, User, Info } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface Booking {
   date: string;
@@ -19,13 +21,41 @@ interface StaffBookingsListProps {
   isLoading: boolean;
 }
 
+const BookingDetails = ({ booking, startHour, endHour }: { booking: Booking; startHour: number; endHour: number }) => (
+  <div className="space-y-4">
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <User className="h-4 w-4 text-violet-500" />
+        <p className="font-medium">{booking.user_name}</p>
+      </div>
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <Mail className="h-4 w-4" />
+        <a href={`mailto:${booking.user_email}`} className="hover:text-violet-500">
+          {booking.user_email}
+        </a>
+      </div>
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <Phone className="h-4 w-4" />
+        <a href={`tel:${booking.user_phone}`} className="hover:text-violet-500">
+          {booking.user_phone}
+        </a>
+      </div>
+    </div>
+    <div className="flex flex-wrap gap-2">
+      <Badge variant="outline">{`${startHour}h00 - ${endHour}h00`}</Badge>
+      <Badge variant="outline">{booking.group_size} pers.</Badge>
+      <Badge variant="outline">{booking.duration}h</Badge>
+    </div>
+  </div>
+);
+
 export const StaffBookingsList = ({
   bookings,
   selectedDate,
   isLoading,
 }: StaffBookingsListProps) => {
   return (
-    <div className="bg-white rounded-lg">
+    <div className="bg-white rounded-lg shadow-sm">
       <div className="p-4 bg-white sticky top-0 z-10 border-b">
         <h2 className="text-base font-medium">
           {selectedDate ? (
@@ -55,42 +85,37 @@ export const StaffBookingsList = ({
                 key={index}
                 className="p-4 hover:bg-gray-50 transition-colors border-b last:border-b-0"
               >
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="flex items-center gap-2 min-w-0">
+                    <div className="flex items-center gap-2">
                       <User className="h-4 w-4 text-violet-500 shrink-0" />
                       <p className="font-medium truncate">{booking.user_name}</p>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Mail className="h-4 w-4 shrink-0" />
-                      <a
-                        href={`mailto:${booking.user_email}`}
-                        className="hover:text-violet-500 truncate"
-                      >
-                        {booking.user_email}
-                      </a>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Phone className="h-4 w-4 shrink-0" />
-                      <a
-                        href={`tel:${booking.user_phone}`}
-                        className="hover:text-violet-500"
-                      >
-                        {booking.user_phone}
-                      </a>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
                     <Badge variant="outline" className="text-xs">
                       {`${startHour}h00 - ${endHour}h00`}
                     </Badge>
                     <Badge variant="outline" className="text-xs">
                       {booking.group_size} pers.
                     </Badge>
-                    <Badge variant="outline" className="text-xs">
-                      {booking.duration}h
-                    </Badge>
                   </div>
+                  
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <Info className="h-4 w-4" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Détails de la réservation</DialogTitle>
+                      </DialogHeader>
+                      <BookingDetails 
+                        booking={booking}
+                        startHour={startHour}
+                        endHour={endHour}
+                      />
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </div>
             );

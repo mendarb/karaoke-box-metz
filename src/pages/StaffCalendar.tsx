@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { StaffAuth } from "@/components/staff/StaffAuth";
 import { StaffCalendarView } from "@/components/staff/StaffCalendarView";
 import { supabase } from "@/lib/supabase";
+import { useState, useEffect } from "react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export const StaffCalendar = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -52,22 +53,20 @@ export const StaffCalendar = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
 
   return (
-    <div className="container py-8">
-      <Card className="max-w-5xl mx-auto">
-        {!isAuthenticated ? (
-          <StaffAuth onLogin={handleLogin} />
-        ) : (
+    <div className="container max-w-5xl py-8 px-4 min-h-screen">
+      <Card className="w-full">
+        {isAuthenticated ? (
           <StaffCalendarView onLogout={handleLogout} />
+        ) : (
+          <StaffAuth onLogin={handleLogin} />
         )}
       </Card>
     </div>
   );
 };
-
-export default StaffCalendar;

@@ -1,49 +1,29 @@
 @tailwind components;
 
-@layer components {
-  .mobile-card {
-    @apply w-full bg-white p-4 mb-4 
-           transition-all duration-200 ease-in-out
-           active:scale-[0.99]
-           sm:p-6;
-  }
+/* Logo styles */
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
 
-  .bottom-sheet {
-    @apply fixed bottom-0 left-0 right-0 
-           bg-white shadow-lg 
-           transform transition-transform duration-300 ease-out
-           p-4 pb-safe z-50;
-  }
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
 
-  .bottom-sheet-overlay {
-    @apply fixed inset-0 bg-black/40 
-           backdrop-blur-sm transition-opacity 
-           duration-300 z-40;
-  }
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
 
-  .mobile-nav {
-    @apply fixed bottom-0 left-0 right-0 
-           bg-white border-t border-gray-200
-           py-2 px-4 flex justify-around items-center
-           z-50;
-  }
+/* Card styles */
+.card {
+  padding: 2em;
+  contain: content;
+}
 
-  .mobile-nav-item {
-    @apply flex flex-col items-center justify-center
-           p-2 transition-colors
-           text-gray-600 hover:text-kbox-coral;
-  }
-
-  .mobile-input {
-    @apply w-full px-4 py-3 border border-gray-200
-           focus:ring-2 focus:ring-kbox-coral focus:border-transparent
-           text-base;
-  }
-
-  .mobile-button {
-    @apply w-full py-3 px-4 font-medium
-           transition-all duration-200 
-           active:scale-[0.98] disabled:opacity-50
-           focus:outline-none focus:ring-2 focus:ring-offset-2;
-  }
+.read-the-docs {
+  color: #888;
 }

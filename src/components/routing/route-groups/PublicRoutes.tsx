@@ -1,26 +1,16 @@
 import { Routes, Route } from "react-router-dom";
-import Index from "@/pages/Index";
-import Box3D from "@/pages/Box3D";
-import Success from "@/pages/Success";
-import { ResetPassword } from "@/components/auth/ResetPassword";
-import { Error } from "@/pages/Error";
-import Terms from "@/pages/legal/Terms";
-import Privacy from "@/pages/legal/Privacy";
-import Cancellation from "@/pages/legal/Cancellation";
-import { AuthCallback } from "@/components/auth/AuthCallback";
+import { Index } from "@/pages/Index";
+import { Box3D } from "@/pages/Box3D";
+import { Success } from "@/pages/Success";
+import { StaffCalendar } from "@/pages/StaffCalendar";
 
 export const PublicRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<Index />} />
-      <Route path="/box-3d" element={<Box3D />} />
+      <Route path="/box3d" element={<Box3D />} />
       <Route path="/success" element={<Success />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/error" element={<Error />} />
-      <Route path="/auth/callback" element={<AuthCallback />} />
-      <Route path="/legal/terms" element={<Terms />} />
-      <Route path="/legal/privacy" element={<Privacy />} />
-      <Route path="/legal/cancellation" element={<Cancellation />} />
+      <Route path="/staff" element={<StaffCalendar />} />
     </Routes>
   );
 };

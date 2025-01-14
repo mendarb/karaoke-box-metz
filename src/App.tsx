@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { AppRoutes } from "./components/routing/AppRoutes";
 import { Navbar } from "./components/navigation/Navbar";
 import { LoadingSpinner } from "./components/ui/loading-spinner";
-import "./App.css";
+import "./styles/index.css";
 
 const AuthModal = lazy(() => 
   import("./components/auth/AuthModal").then(module => ({

@@ -18,7 +18,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[400px] p-6">
+      <DialogContent className="sm:max-w-[400px] p-6 bg-white shadow-lg">
         <DialogHeader className="space-y-3">
           <DialogTitle className="text-xl">
             {isLogin ? "Connexion" : "Créer un compte"}

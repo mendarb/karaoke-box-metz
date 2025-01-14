@@ -3,6 +3,7 @@ import { fr } from "date-fns/locale";
 import { Info } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { isSameDay } from "date-fns";
 
 interface CalendarSectionProps {
   selectedDate?: Date;
@@ -19,11 +20,7 @@ export const CalendarSection = ({
 }: CalendarSectionProps) => {
   const modifiers = {
     booked: (date: Date) =>
-      bookedDays.some(
-        (bookedDate) =>
-          bookedDate.toISOString().split("T")[0] ===
-          date.toISOString().split("T")[0]
-      ),
+      bookedDays.some((bookedDate) => isSameDay(bookedDate, date)),
   };
 
   const modifiersStyles = {

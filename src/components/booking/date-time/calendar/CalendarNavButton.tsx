@@ -17,6 +17,9 @@ export const CalendarNavButton = ({ direction, ...props }: CalendarNavButtonProp
       {...props}
     >
       <Icon className="h-4 w-4" />
+      <span className="sr-only">
+        {direction === "left" ? "Mois précédent" : "Mois suivant"}
+      </span>
     </Button>
   );
 };

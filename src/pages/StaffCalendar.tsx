@@ -2,15 +2,14 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { StaffAuth } from "@/components/staff/StaffAuth";
 import { StaffCalendarView } from "@/components/staff/StaffCalendarView";
-
-const STAFF_PASSWORD_KEY = "staff_password";
+import { supabase } from "@/lib/supabase";
 
 export const StaffCalendar = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const savedPassword = localStorage.getItem(STAFF_PASSWORD_KEY);
+    const savedPassword = localStorage.getItem("staff_password");
     if (savedPassword) {
       validatePassword(savedPassword);
     } else {
@@ -19,24 +18,35 @@ export const StaffCalendar = () => {
   }, []);
 
   const validatePassword = async (password: string) => {
-    // Dans un environnement de production, cette validation devrait être faite côté serveur
-    const isValid = password === import.meta.env.VITE_STAFF_PASSWORD;
-    setIsAuthenticated(isValid);
-    setIsLoading(false);
-    return isValid;
+    try {
+      const { data, error } = await supabase.functions.invoke('validate-staff-password', {
+        body: { password }
+      });
+
+      if (error) throw error;
+      
+      const isValid = data?.isValid || false;
+      setIsAuthenticated(isValid);
+      setIsLoading(false);
+      return isValid;
+    } catch (error) {
+      console.error('Error validating password:', error);
+      setIsLoading(false);
+      return false;
+    }
   };
 
   const handleLogin = async (password: string, rememberMe: boolean) => {
     const isValid = await validatePassword(password);
     if (isValid && rememberMe) {
-      localStorage.setItem(STAFF_PASSWORD_KEY, password);
+      localStorage.setItem("staff_password", password);
     }
     return isValid;
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
-    localStorage.removeItem(STAFF_PASSWORD_KEY);
+    localStorage.removeItem("staff_password");
   };
 
   if (isLoading) {

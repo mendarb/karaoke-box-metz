@@ -63,8 +63,18 @@ export const BookingCalendar = ({
         defaultMonth={defaultMonth}
         className="border-none shadow-none"
         components={{
-          IconLeft: (props) => <CalendarNavButton direction="left" {...props} />,
-          IconRight: (props) => <CalendarNavButton direction="right" {...props} />,
+          IconLeft: ({ ...props }) => (
+            <CalendarNavButton 
+              direction="left" 
+              onClick={props.onClick} 
+            />
+          ),
+          IconRight: ({ ...props }) => (
+            <CalendarNavButton 
+              direction="right" 
+              onClick={props.onClick}
+            />
+          ),
         }}
         classNames={{
           months: "space-y-4",

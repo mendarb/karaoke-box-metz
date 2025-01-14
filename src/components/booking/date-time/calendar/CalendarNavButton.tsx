@@ -1,12 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { ComponentProps } from "react";
 
-interface CalendarNavButtonProps extends ComponentProps<"button"> {
+interface CalendarNavButtonProps {
   direction: "left" | "right";
+  onClick?: () => void;
 }
 
-export const CalendarNavButton = ({ direction, ...props }: CalendarNavButtonProps) => {
+export const CalendarNavButton = ({ direction, onClick }: CalendarNavButtonProps) => {
   const Icon = direction === "left" ? ChevronLeft : ChevronRight;
   
   return (
@@ -14,7 +14,7 @@ export const CalendarNavButton = ({ direction, ...props }: CalendarNavButtonProp
       variant="outline" 
       size="icon"
       className="h-8 w-8 p-0 border border-gray-200 hover:bg-gray-100 hover:text-gray-900"
-      {...props}
+      onClick={onClick}
     >
       <Icon className="h-4 w-4" />
       <span className="sr-only">

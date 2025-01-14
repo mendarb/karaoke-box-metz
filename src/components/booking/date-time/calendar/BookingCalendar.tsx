@@ -2,10 +2,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { fr } from "date-fns/locale";
 import { useToast } from "@/components/ui/use-toast";
 import { useEffect } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Info, ChevronLeft, ChevronRight } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Button } from "@/components/ui/button";
+import { CalendarHeader } from "./CalendarHeader";
+import { CalendarNavButton } from "./CalendarNavButton";
 
 interface BookingCalendarProps {
   selectedDate?: Date;
@@ -42,28 +40,7 @@ export const BookingCalendar = ({
 
   return (
     <div className="w-full max-w-lg mx-auto bg-white rounded-xl p-2 sm:p-4">
-      <div className="mb-4 text-center space-y-2">
-        <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
-          Choisissez votre date
-        </h2>
-        <p className="text-sm text-gray-600">
-          Les dates disponibles sont affichées en noir
-        </p>
-        
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center justify-center gap-2 text-sm text-green-600">
-                <Info className="h-4 w-4" />
-                <span>-20% les mercredis et jeudis avant 18h</span>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Profitez d'une réduction de 20% en réservant le mercredi ou jeudi avant 18h</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </div>
+      <CalendarHeader />
       
       <Calendar
         mode="single"
@@ -87,26 +64,8 @@ export const BookingCalendar = ({
         defaultMonth={defaultMonth}
         className="border-none shadow-none"
         components={{
-          IconLeft: ({ ...props }) => (
-            <Button 
-              variant="outline" 
-              size="icon"
-              className="h-8 w-8 p-0 border border-gray-200 hover:bg-gray-100 hover:text-gray-900"
-              {...props}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-          ),
-          IconRight: ({ ...props }) => (
-            <Button 
-              variant="outline" 
-              size="icon"
-              className="h-8 w-8 p-0 border border-gray-200 hover:bg-gray-100 hover:text-gray-900"
-              {...props}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          ),
+          IconLeft: ({ ...props }) => <CalendarNavButton direction="left" {...props} />,
+          IconRight: ({ ...props }) => <CalendarNavButton direction="right" {...props} />,
         }}
         classNames={{
           months: "space-y-4",

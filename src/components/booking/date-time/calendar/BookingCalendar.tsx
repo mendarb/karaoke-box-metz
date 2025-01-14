@@ -63,16 +63,16 @@ export const BookingCalendar = ({
         defaultMonth={defaultMonth}
         className="border-none shadow-none"
         components={{
-          IconLeft: ({ ...props }) => (
+          IconLeft: ({ onClick }) => (
             <CalendarNavButton 
               direction="left" 
-              onClick={props.onClick} 
+              onClick={onClick} 
             />
           ),
-          IconRight: ({ ...props }) => (
+          IconRight: ({ onClick }) => (
             <CalendarNavButton 
               direction="right" 
-              onClick={props.onClick}
+              onClick={onClick}
             />
           ),
         }}

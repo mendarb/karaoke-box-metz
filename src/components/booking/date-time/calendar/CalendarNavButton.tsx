@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ComponentProps } from "react";
 
 interface CalendarNavButtonProps {
   direction: "left" | "right";
-  onClick?: () => void;
+  onClick?: ComponentProps<"button">["onClick"];
 }
 
 export const CalendarNavButton = ({ direction, onClick }: CalendarNavButtonProps) => {

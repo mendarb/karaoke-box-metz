@@ -22,10 +22,20 @@ interface StaffBookingsListProps {
 }
 
 const formatName = (name: string) => {
+  if (!name) return "Client sans nom";
   return name
     .split(' ')
     .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
     .join(' ');
+};
+
+const formatPhone = (phone: string) => {
+  if (!phone) return "Pas de téléphone";
+  // Si le numéro commence par '0', le remplacer par '+33'
+  if (phone.startsWith('0')) {
+    return '+33' + phone.slice(1);
+  }
+  return phone;
 };
 
 const BookingDetails = ({ booking, startHour, endHour }: { booking: Booking; startHour: number; endHour: number }) => (
@@ -44,7 +54,7 @@ const BookingDetails = ({ booking, startHour, endHour }: { booking: Booking; sta
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Phone className="h-4 w-4" />
         <a href={`tel:${booking.user_phone}`} className="hover:text-violet-500">
-          {booking.user_phone}
+          {formatPhone(booking.user_phone)}
         </a>
       </div>
     </div>

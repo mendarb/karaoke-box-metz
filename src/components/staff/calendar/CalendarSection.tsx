@@ -30,7 +30,6 @@ export const CalendarSection = ({
     booked: {
       backgroundColor: "#f3f4f6",
       borderRadius: "0.375rem",
-      border: "2px solid #7E3AED",
       color: "#111827",
       fontWeight: "bold",
     },
@@ -52,7 +51,6 @@ export const CalendarSection = ({
             className="rounded-md"
             modifiers={modifiers}
             modifiersStyles={modifiersStyles}
-            weekStartsOn={1}
             classNames={{
               months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
               month: "space-y-4",

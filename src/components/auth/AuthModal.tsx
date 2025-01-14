@@ -8,17 +8,11 @@ import {
 } from "@/components/ui/dialog"
 import { AuthForm } from "./AuthForm"
 
-export function AuthModal({
-  isOpen,
-  onClose,
-}: {
-  isOpen: boolean
-  onClose: () => void
-}) {
+const AuthModal = () => {
   const [isLogin, setIsLogin] = useState(true)
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog>
       <DialogContent className="sm:max-w-[400px] p-6">
         <DialogHeader className="space-y-3">
           <DialogTitle className="text-xl">
@@ -32,7 +26,6 @@ export function AuthModal({
           </DialogDescription>
         </DialogHeader>
         <AuthForm 
-          onClose={onClose}
           isLogin={isLogin}
           onToggleMode={() => setIsLogin(!isLogin)}
         />
@@ -40,3 +33,5 @@ export function AuthModal({
     </Dialog>
   )
 }
+
+export default AuthModal

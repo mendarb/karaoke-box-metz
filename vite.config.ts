@@ -18,19 +18,29 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks: {
-          'vendor': ['react', 'react-dom', 'react-router-dom'],
+          'vendor': ['react', 'react-dom'],
+          'router': ['react-router-dom'],
           'ui': ['@radix-ui/react-dialog', '@radix-ui/react-popover'],
+          'forms': ['react-hook-form', '@hookform/resolvers'],
+          'utils': ['date-fns', 'clsx', 'tailwind-merge'],
         }
       },
     },
     target: 'esnext',
     minify: 'esbuild',
     cssMinify: true,
-    sourcemap: false,
+    cssCodeSplit: true,
+    reportCompressedSize: false,
     chunkSizeWarningLimit: 1000,
+    assetsInlineLimit: 4096,
+    sourcemap: mode === 'development',
   },
   plugins: [
-    react(),
+    react({
+      plugins: [
+        mode === 'production' ? ['swc-plugin-optimize-images', {}] : null,
+      ].filter(Boolean),
+    }),
     mode === 'development' && componentTagger(),
   ].filter(Boolean),
 }));

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { BookingForm } from "@/components/BookingForm";
+import { useToast } from "@/hooks/use-toast";
 
 interface BookingSectionProps {
   user: any;
@@ -11,6 +12,7 @@ interface BookingSectionProps {
 
 const BookingSection = ({ user, onShowAuth }: BookingSectionProps) => {
   const isMobile = useIsMobile();
+  const { toast } = useToast();
   
   const handleGoogleLogin = async () => {
     try {
@@ -27,10 +29,20 @@ const BookingSection = ({ user, onShowAuth }: BookingSectionProps) => {
       
       if (error) {
         console.error("Erreur de connexion Google:", error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de se connecter avec Google",
+          variant: "destructive",
+        });
         throw error;
       }
     } catch (error) {
       console.error("Erreur lors de la connexion:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la connexion",
+        variant: "destructive",
+      });
     }
   };
 
@@ -45,10 +57,14 @@ const BookingSection = ({ user, onShowAuth }: BookingSectionProps) => {
               <LogIn className="h-6 w-6 text-violet-600" />
             </div>
             <div className="text-center">
-              <h2 className="text-2xl font-semibold text-gray-900">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-2">
                 Connectez-vous pour réserver
               </h2>
-              <p className="text-gray-600 text-sm max-w-sm mb-3">
+              {/* Optimized text loading with font-display: swap */}
+              <p 
+                className="text-gray-600 text-sm max-w-sm mb-3"
+                style={{ fontDisplay: 'swap' }}
+              >
                 Pour effectuer une réservation et profiter de notre box karaoké, vous devez être connecté à votre compte.
               </p>
             </div>
@@ -56,7 +72,7 @@ const BookingSection = ({ user, onShowAuth }: BookingSectionProps) => {
               <Button 
                 onClick={handleGoogleLogin}
                 variant="outline"
-                className="w-full flex items-center justify-center gap-2"
+                className="w-full flex items-center justify-center gap-2 rounded-lg"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path
@@ -88,7 +104,7 @@ const BookingSection = ({ user, onShowAuth }: BookingSectionProps) => {
               </div>
               <Button 
                 onClick={onShowAuth}
-                className="bg-violet-600 hover:bg-violet-700"
+                className="bg-violet-600 hover:bg-violet-700 rounded-lg"
               >
                 <LogIn className="h-4 w-4 mr-2" />
                 Se connecter / S'inscrire

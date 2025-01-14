@@ -60,10 +60,7 @@ const BookingSection = ({ user, onShowAuth }: BookingSectionProps) => {
               <h2 className="text-2xl font-semibold text-gray-900 mb-2">
                 Connectez-vous pour réserver
               </h2>
-              <p 
-                className="text-gray-600 text-sm max-w-sm mb-3"
-                style={{ fontDisplay: "swap" }}
-              >
+              <p className="text-gray-600 text-sm max-w-sm mb-3 subpixel-antialiased">
                 Pour effectuer une réservation et profiter de notre box karaoké, vous devez être connecté à votre compte.
               </p>
             </div>

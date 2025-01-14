@@ -27,7 +27,7 @@ export const StaffCalendarView = ({ onLogout }: StaffCalendarViewProps) => {
         .from("bookings")
         .select(`
           *,
-          profiles:user_id (
+          profiles (
             first_name,
             last_name,
             email,
@@ -39,7 +39,12 @@ export const StaffCalendarView = ({ onLogout }: StaffCalendarViewProps) => {
         .neq("status", "cancelled")
         .order("time_slot");
 
-      if (error) throw error;
+      if (error) {
+        console.error("Erreur lors de la récupération des réservations:", error);
+        throw error;
+      }
+
+      console.log("Données brutes des réservations:", data);
 
       // Enrichir les données avec les informations du profil
       return data.map(booking => ({

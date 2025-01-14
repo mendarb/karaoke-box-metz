@@ -1,13 +1,13 @@
-import { Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { AccountPage } from "@/components/account/AccountPage";
 import MyBookings from "@/pages/MyBookings";
 import { ProtectedRoute } from "../ProtectedRoute";
 
 export const UserRoutes = () => {
   return (
-    <>
+    <Routes>
       <Route
-        path="/account"
+        path="/"
         element={
           <ProtectedRoute>
             <AccountPage />
@@ -22,6 +22,6 @@ export const UserRoutes = () => {
           </ProtectedRoute>
         }
       />
-    </>
+    </Routes>
   );
 };

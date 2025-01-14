@@ -1,4 +1,4 @@
-import { Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Index from "@/pages/Index";
 import Box3D from "@/pages/Box3D";
 import Success from "@/pages/Success";
@@ -11,7 +11,7 @@ import { AuthCallback } from "@/components/auth/AuthCallback";
 
 export const PublicRoutes = () => {
   return (
-    <>
+    <Routes>
       <Route path="/" element={<Index />} />
       <Route path="/box-3d" element={<Box3D />} />
       <Route path="/success" element={<Success />} />
@@ -21,6 +21,6 @@ export const PublicRoutes = () => {
       <Route path="/legal/terms" element={<Terms />} />
       <Route path="/legal/privacy" element={<Privacy />} />
       <Route path="/legal/cancellation" element={<Cancellation />} />
-    </>
+    </Routes>
   );
 };

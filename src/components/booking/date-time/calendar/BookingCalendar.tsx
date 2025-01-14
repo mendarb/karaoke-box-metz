@@ -3,8 +3,9 @@ import { fr } from "date-fns/locale";
 import { useToast } from "@/components/ui/use-toast";
 import { useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Info } from "lucide-react";
+import { Info, ChevronLeft, ChevronRight } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
 
 interface BookingCalendarProps {
   selectedDate?: Date;
@@ -85,13 +86,35 @@ export const BookingCalendar = ({
         locale={fr}
         defaultMonth={defaultMonth}
         className="border-none shadow-none"
+        components={{
+          IconLeft: ({ ...props }) => (
+            <Button 
+              variant="outline" 
+              size="icon"
+              className="h-8 w-8 p-0 border border-gray-200 hover:bg-gray-100 hover:text-gray-900"
+              {...props}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+          ),
+          IconRight: ({ ...props }) => (
+            <Button 
+              variant="outline" 
+              size="icon"
+              className="h-8 w-8 p-0 border border-gray-200 hover:bg-gray-100 hover:text-gray-900"
+              {...props}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          ),
+        }}
         classNames={{
           months: "space-y-4",
           month: "space-y-4",
           caption: "flex justify-center pt-1 relative items-center",
           caption_label: "text-lg font-semibold",
           nav: "space-x-1 flex items-center",
-          nav_button: "h-9 w-9 bg-transparent p-0 opacity-50 hover:opacity-100",
+          nav_button: "h-8 w-8",
           nav_button_previous: "absolute left-1",
           nav_button_next: "absolute right-1",
           table: "w-full border-collapse space-y-1",

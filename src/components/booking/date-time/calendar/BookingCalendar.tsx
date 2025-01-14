@@ -26,8 +26,7 @@ export const BookingCalendar = ({
 
   const isDiscountedDay = (date: Date) => {
     const day = date.getDay();
-    // 3 = Mercredi, 4 = Jeudi
-    return day === 3 || day === 4;
+    return day === 3 || day === 4; // Mercredi ou Jeudi
   };
 
   useEffect(() => {
@@ -64,8 +63,8 @@ export const BookingCalendar = ({
         defaultMonth={defaultMonth}
         className="border-none shadow-none"
         components={{
-          IconLeft: ({ ...props }) => <CalendarNavButton direction="left" {...props} />,
-          IconRight: ({ ...props }) => <CalendarNavButton direction="right" {...props} />,
+          IconLeft: (props) => <CalendarNavButton direction="left" {...props} />,
+          IconRight: (props) => <CalendarNavButton direction="right" {...props} />,
         }}
         classNames={{
           months: "space-y-4",

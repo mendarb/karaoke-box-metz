@@ -7,7 +7,11 @@ import { Navbar } from "./components/navigation/Navbar";
 import { LoadingSpinner } from "./components/ui/loading-spinner";
 import "./App.css";
 
-const AuthModal = lazy(() => import("./components/auth/AuthModal"));
+const AuthModal = lazy(() => 
+  import("./components/auth/AuthModal").then(module => ({
+    default: module.AuthModal
+  }))
+);
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,23 +26,27 @@ const queryClient = new QueryClient({
 
 function App() {
   useEffect(() => {
-    // Préchargement du composant AuthModal
-    const preloadAuthModal = () => {
-      const modulePromise = import("./components/auth/AuthModal");
-      return modulePromise;
+    // Préchargement des composants critiques
+    const preloadCriticalComponents = () => {
+      if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(() => {
+          import("./components/auth/AuthModal");
+          import("./components/ui/dialog");
+        });
+      }
     };
 
-    // Précharger après le chargement initial
-    window.requestIdleCallback(() => {
-      preloadAuthModal();
-    });
-
-    // Analytics
+    // Analytics avec délai pour ne pas bloquer le rendu initial
     const initAnalytics = async () => {
-      const { initGA4 } = await import("./lib/analytics/ga4");
-      initGA4();
+      if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(async () => {
+          const { initGA4 } = await import("./lib/analytics/ga4");
+          initGA4();
+        });
+      }
     };
 
+    preloadCriticalComponents();
     initAnalytics();
   }, []);
 

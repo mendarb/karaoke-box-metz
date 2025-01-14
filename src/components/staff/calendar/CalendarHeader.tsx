@@ -26,9 +26,6 @@ export const CalendarHeader = ({ onLogout }: CalendarHeaderProps) => {
           Déconnexion
         </Button>
       </div>
-      <CardDescription className="text-sm text-muted-foreground">
-        Consultez et gérez les réservations par date
-      </CardDescription>
     </div>
   );
 };

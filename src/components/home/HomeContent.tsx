@@ -11,19 +11,25 @@ export const HomeContent = () => {
   const { user } = useUserState();
 
   return (
-    <>
-      <HeroSection />
-      <FeatureGrid />
-      <BookingSection 
-        user={user} 
-        onShowAuth={() => setShowAuthModal(true)} 
-      />
+    <div className="flex flex-col min-h-screen">
+      <main className="flex-grow">
+        <HeroSection />
+        <div className="container mx-auto">
+          <FeatureGrid />
+        </div>
+        <div className="flex-grow">
+          <BookingSection 
+            user={user} 
+            onShowAuth={() => setShowAuthModal(true)} 
+          />
+        </div>
+      </main>
       <Footer />
       
       <AuthModal 
         isOpen={showAuthModal} 
         onClose={() => setShowAuthModal(false)} 
       />
-    </>
+    </div>
   );
 };

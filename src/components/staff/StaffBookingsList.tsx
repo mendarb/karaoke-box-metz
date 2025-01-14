@@ -5,13 +5,6 @@ import { Mail, Phone, User, Info } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-interface Profile {
-  first_name: string | null;
-  last_name: string | null;
-  email: string | null;
-  phone: string | null;
-}
-
 interface Booking {
   date: string;
   time_slot: string;
@@ -20,7 +13,6 @@ interface Booking {
   user_name: string;
   user_email: string;
   user_phone: string;
-  profiles?: Profile;
 }
 
 interface StaffBookingsListProps {
@@ -79,8 +71,6 @@ export const StaffBookingsList = ({
   selectedDate,
   isLoading,
 }: StaffBookingsListProps) => {
-  console.log('Bookings received:', bookings); // Ajout d'un log pour déboguer
-
   return (
     <div className="bg-white rounded-lg">
       <div className="p-4 bg-white sticky top-0 z-10">

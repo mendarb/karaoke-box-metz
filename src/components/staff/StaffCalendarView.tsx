@@ -25,37 +25,14 @@ export const StaffCalendarView = ({ onLogout }: StaffCalendarViewProps) => {
 
       const { data, error } = await supabase
         .from("bookings")
-        .select(`
-          *,
-          profiles!bookings_user_id_fkey (
-            first_name,
-            last_name,
-            email,
-            phone
-          )
-        `)
+        .select("date, time_slot, duration, group_size, user_name, user_email, user_phone")
         .eq("date", format(selectedDate, "yyyy-MM-dd"))
         .is("deleted_at", null)
         .neq("status", "cancelled")
         .order("time_slot");
 
-      if (error) {
-        console.error("Erreur lors de la récupération des réservations:", error);
-        throw error;
-      }
-
-      console.log("Données brutes des réservations:", data);
-
-      // Enrichir les données avec les informations du profil
-      return data.map(booking => ({
-        ...booking,
-        user_name: booking.user_name || 
-          (booking.profiles ? 
-            `${booking.profiles.first_name || ''} ${booking.profiles.last_name || ''}`.trim() : 
-            booking.user_email?.split('@')[0] || 'Client sans nom'),
-        user_email: booking.user_email || booking.profiles?.email,
-        user_phone: booking.user_phone || booking.profiles?.phone
-      }));
+      if (error) throw error;
+      return data;
     },
   });
 

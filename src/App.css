@@ -1,6 +1,8 @@
+/* Optimisations de base */
 #root {
   margin: 0 auto;
   text-align: center;
+  contain: content;
 }
 
 .logo {
@@ -9,6 +11,7 @@
   will-change: filter;
   transition: filter 300ms;
   transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .logo:hover {
@@ -36,6 +39,7 @@
 
 .card {
   padding: 2em;
+  contain: content;
 }
 
 .read-the-docs {
@@ -47,14 +51,13 @@
   .logo {
     height: 4em;
     padding: 1em;
-    margin-left: 2em; /* Utilisation de margin au lieu de padding */
+    margin-left: 2em;
   }
 
   .card {
     padding: 1em;
   }
 
-  /* Amélioration du touch sur mobile */
   button, 
   [role="button"],
   input,
@@ -63,7 +66,6 @@
     touch-action: manipulation;
   }
 
-  /* Éviter le zoom sur les inputs */
   input[type="text"],
   input[type="email"],
   input[type="tel"],
@@ -77,13 +79,29 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-tap-highlight-color: transparent;
+  text-rendering: optimizeLegibility;
 }
 
 /* Amélioration du scroll sur iOS */
 .scroll-container {
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
 }
 
+/* Optimisations des images */
 img {
   content-visibility: auto;
+  contain: content;
+  decoding: async;
+  loading: lazy;
+}
+
+/* Optimisations des animations */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

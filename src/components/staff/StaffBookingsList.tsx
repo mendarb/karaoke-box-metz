@@ -21,12 +21,19 @@ interface StaffBookingsListProps {
   isLoading: boolean;
 }
 
+const formatName = (name: string) => {
+  return name
+    .split(' ')
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(' ');
+};
+
 const BookingDetails = ({ booking, startHour, endHour }: { booking: Booking; startHour: number; endHour: number }) => (
   <div className="space-y-4">
     <div className="space-y-2">
       <div className="flex items-center gap-2">
         <User className="h-4 w-4 text-violet-500" />
-        <p className="font-medium">{booking.user_name}</p>
+        <p className="font-medium">{formatName(booking.user_name)}</p>
       </div>
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Mail className="h-4 w-4" />
@@ -55,8 +62,8 @@ export const StaffBookingsList = ({
   isLoading,
 }: StaffBookingsListProps) => {
   return (
-    <div className="bg-white rounded-lg shadow-sm">
-      <div className="p-4 bg-white sticky top-0 z-10 border-b">
+    <div className="bg-white rounded-lg">
+      <div className="p-4 bg-white sticky top-0 z-10">
         <h2 className="text-base font-medium">
           {selectedDate ? (
             format(selectedDate, "d MMMM yyyy", { locale: fr })
@@ -83,13 +90,13 @@ export const StaffBookingsList = ({
             return (
               <div
                 key={index}
-                className="p-4 hover:bg-gray-50 transition-colors border-b last:border-b-0"
+                className="p-4 hover:bg-gray-50 transition-colors border-t first:border-t-0"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4 text-violet-500 shrink-0" />
-                      <p className="font-medium truncate">{booking.user_name}</p>
+                      <p className="font-medium truncate">{formatName(booking.user_name)}</p>
                     </div>
                     <Badge variant="outline" className="text-xs">
                       {`${startHour}h00 - ${endHour}h00`}

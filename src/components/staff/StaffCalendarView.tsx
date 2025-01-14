@@ -27,7 +27,7 @@ export const StaffCalendarView = ({ onLogout }: StaffCalendarViewProps) => {
         .from("bookings")
         .select(`
           *,
-          profiles (
+          profiles!bookings_user_id_fkey (
             first_name,
             last_name,
             email,

@@ -18,6 +18,7 @@ import { EditAccountPage } from "@/components/admin/accounts/EditAccountPage";
 import { DocumentationPage } from "@/components/admin/documentation/DocumentationPage";
 import { AuthCallback } from "@/components/auth/AuthCallback";
 import { Analytics } from "@/pages/Analytics";
+import { StaffCalendar } from "@/pages/StaffCalendar";
 
 export const AppRoutes = () => {
   return (
@@ -33,6 +34,7 @@ export const AppRoutes = () => {
       <Route path="/legal/privacy" element={<Privacy />} />
       <Route path="/legal/cancellation" element={<Cancellation />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
+      <Route path="/staff" element={<StaffCalendar />} />
 
       {/* Protected Routes */}
       <Route

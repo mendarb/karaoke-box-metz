@@ -23,7 +23,7 @@ export const BookingHistory = () => {
 
   if (!user) {
     return (
-      <div className="text-center p-8 text-gray-500 bg-white/50 backdrop-blur-sm rounded-lg border border-gray-100">
+      <div className="text-center p-8 text-gray-500 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
         Connectez-vous pour voir vos réservations
       </div>
     );
@@ -31,7 +31,7 @@ export const BookingHistory = () => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center p-8 bg-white/50 backdrop-blur-sm rounded-lg border border-gray-100">
+      <div className="flex justify-center items-center p-8 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
         <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
       </div>
     );
@@ -39,7 +39,7 @@ export const BookingHistory = () => {
 
   if (!bookings?.length) {
     return (
-      <div className="text-center p-8 text-gray-500 bg-white/50 backdrop-blur-sm rounded-lg border border-gray-100">
+      <div className="text-center p-8 text-gray-500 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
         Vous n'avez pas encore de réservations
       </div>
     );
@@ -58,10 +58,10 @@ export const BookingHistory = () => {
   return (
     <div className="space-y-8">
       <div className="space-y-2">
-        <h2 className="text-3xl font-semibold tracking-tight bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+        <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900 dark:text-gray-100">
           Mes réservations
         </h2>
-        <p className="text-muted-foreground text-lg">
+        <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400">
           Retrouvez l'historique de toutes vos réservations
         </p>
       </div>

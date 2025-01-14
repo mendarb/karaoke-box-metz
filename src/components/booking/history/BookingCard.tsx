@@ -19,8 +19,8 @@ export const BookingCard = ({ booking }: BookingCardProps) => {
   bookingDate.setMinutes(bookingDate.getMinutes() + bookingDate.getTimezoneOffset());
 
   return (
-    <Card className="overflow-hidden">
-      <div className="border-b border-gray-100 bg-gray-50/50 p-4">
+    <Card className="overflow-hidden bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+      <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 p-4">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-violet-500" />
@@ -34,7 +34,7 @@ export const BookingCard = ({ booking }: BookingCardProps) => {
             isTestBooking={booking.is_test_booking}
           />
         </div>
-        <div className="flex items-center gap-2 text-gray-600">
+        <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
           <Clock className="h-4 w-4 text-violet-500" />
           <span>{startHour}:00 - {endHour}:00</span>
         </div>
@@ -44,17 +44,17 @@ export const BookingCard = ({ booking }: BookingCardProps) => {
         <div className="flex items-center justify-between text-sm">
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4 text-violet-500" />
-            <span>Personnes {booking.group_size}</span>
+            <span className="text-gray-600 dark:text-gray-400">Personnes {booking.group_size}</span>
           </div>
           <div className="flex items-center gap-2">
             <Euro className="h-4 w-4 text-violet-500" />
-            <span>Prix {booking.price}€</span>
+            <span className="text-gray-600 dark:text-gray-400">Prix {booking.price}€</span>
           </div>
         </div>
 
         {booking.is_test_booking && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
-            <p className="text-sm text-yellow-800">
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-900 rounded-md p-3">
+            <p className="text-sm text-yellow-800 dark:text-yellow-200">
               Ceci est une réservation de test. Aucun paiement réel n'a été effectué.
             </p>
           </div>

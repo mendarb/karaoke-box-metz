@@ -42,7 +42,7 @@ export const CookieConsent = () => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] bg-white dark:bg-gray-900 border-0">
         <DialogHeader>
           <DialogTitle className="text-xl">Paramètres de confidentialité</DialogTitle>
           <DialogDescription className="text-base">
@@ -50,32 +50,32 @@ export const CookieConsent = () => {
           </DialogDescription>
         </DialogHeader>
         
-        <ScrollArea className="max-h-[60vh] pr-4">
-          <div className="space-y-6">
-            <section className="space-y-3">
-              <h3 className="font-semibold text-lg">Cookies essentiels</h3>
-              <p className="text-sm text-gray-600">
+        <ScrollArea className="max-h-[50vh] sm:max-h-[60vh] pr-4">
+          <div className="space-y-4 sm:space-y-6">
+            <section className="space-y-2 sm:space-y-3">
+              <h3 className="font-semibold text-base sm:text-lg">Cookies essentiels</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 Ces cookies sont nécessaires au fonctionnement du site et ne peuvent pas être désactivés.
                 Ils permettent notamment de :
               </p>
-              <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
+              <ul className="list-disc pl-5 text-sm text-gray-600 dark:text-gray-400 space-y-1">
                 <li>Mémoriser vos préférences de confidentialité</li>
                 <li>Maintenir votre session sécurisée</li>
                 <li>Sauvegarder le contenu de votre panier</li>
               </ul>
             </section>
 
-            <section className="space-y-3">
-              <h3 className="font-semibold text-lg">Cookies analytiques</h3>
-              <p className="text-sm text-gray-600">
+            <section className="space-y-2 sm:space-y-3">
+              <h3 className="font-semibold text-base sm:text-lg">Cookies analytiques</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 Ces cookies nous permettent d'analyser l'utilisation du site pour l'améliorer.
                 Les données collectées sont anonymisées.
               </p>
             </section>
 
-            <section className="space-y-3">
-              <h3 className="font-semibold text-lg">Protection de vos données</h3>
-              <p className="text-sm text-gray-600">
+            <section className="space-y-2 sm:space-y-3">
+              <h3 className="font-semibold text-base sm:text-lg">Protection de vos données</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 Conformément au RGPD, vous pouvez exercer vos droits (accès, rectification, effacement...)
                 en nous contactant. Pour plus d'informations, consultez notre politique de confidentialité.
               </p>
@@ -83,17 +83,17 @@ export const CookieConsent = () => {
           </div>
         </ScrollArea>
 
-        <DialogFooter className="flex gap-2 sm:gap-0">
+        <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0 mt-4">
           <Button
             variant="outline"
             onClick={handleReject}
-            className="flex-1 sm:flex-none"
+            className="w-full sm:w-auto order-1 sm:order-none"
           >
             Refuser
           </Button>
           <Button
             onClick={handleAccept}
-            className="flex-1 sm:flex-none"
+            className="w-full sm:w-auto order-0 sm:order-none"
           >
             Tout accepter
           </Button>

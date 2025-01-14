@@ -37,9 +37,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react({
-      plugins: [
-        mode === 'production' ? ['swc-plugin-optimize-images', {}] : null,
-      ].filter(Boolean),
+      plugins: mode === 'production' ? [['swc-plugin-optimize-images', {}]] : [],
     }),
     mode === 'development' && componentTagger(),
   ].filter(Boolean),

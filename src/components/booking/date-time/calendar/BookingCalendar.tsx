@@ -4,6 +4,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useEffect } from "react";
 import { CalendarHeader } from "./CalendarHeader";
 import { CalendarNavButton } from "./CalendarNavButton";
+import { DayPickerRootProps } from "react-day-picker";
 
 interface BookingCalendarProps {
   selectedDate?: Date;
@@ -63,13 +64,13 @@ export const BookingCalendar = ({
         defaultMonth={defaultMonth}
         className="border-none shadow-none"
         components={{
-          IconLeft: ({ onClick }) => (
+          IconLeft: ({ onClick }: { onClick?: () => void }) => (
             <CalendarNavButton 
               direction="left" 
               onClick={onClick} 
             />
           ),
-          IconRight: ({ onClick }) => (
+          IconRight: ({ onClick }: { onClick?: () => void }) => (
             <CalendarNavButton 
               direction="right" 
               onClick={onClick}

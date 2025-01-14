@@ -29,6 +29,8 @@ export const CalendarSection = ({
   const modifiersStyles = {
     booked: {
       backgroundColor: "#f3f4f6",
+      borderRadius: "0.375rem",
+      border: "2px solid #7E3AED",
       color: "#111827",
       fontWeight: "bold",
     },

@@ -20,15 +20,7 @@ export const useBookingHistory = () => {
 
         const { data, error } = await supabase
           .from('bookings')
-          .select(`
-            *,
-            profiles:user_id (
-              first_name,
-              last_name,
-              email,
-              phone
-            )
-          `)
+          .select('*')
           .eq('user_id', session.user.id)
           .is('deleted_at', null)
           .order('date', { ascending: false });
@@ -38,21 +30,8 @@ export const useBookingHistory = () => {
           throw error;
         }
 
-        // Enrichir les données avec les informations du profil si disponibles
-        const enrichedData = data.map(booking => {
-          if (booking.profiles) {
-            return {
-              ...booking,
-              user_name: booking.user_name || `${booking.profiles.first_name || ''} ${booking.profiles.last_name || ''}`.trim(),
-              user_email: booking.user_email || booking.profiles.email,
-              user_phone: booking.user_phone || booking.profiles.phone
-            };
-          }
-          return booking;
-        });
-
-        console.log('Final enriched bookings:', enrichedData);
-        return enrichedData;
+        console.log('Bookings fetched:', data);
+        return data || [];
       } catch (error: any) {
         console.error('Error in useBookingHistory:', error);
         toast({

@@ -1,6 +1,9 @@
 import { Booking } from "@/hooks/useBookings";
 import { BookingsTable } from "../BookingsTable";
 import { DashboardStats } from "../DashboardStats";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { Plus } from "lucide-react";
 
 interface DashboardContentProps {
   bookings: Booking[];
@@ -13,11 +16,22 @@ export const DashboardContent = ({
   isLoading, 
   onViewDetails 
 }: DashboardContentProps) => {
+  const navigate = useNavigate();
+
   return (
     <div className="p-4 md:p-8 space-y-8 bg-white">
-      <div className="mb-8">
-        <h1 className="text-3xl font-semibold text-gray-900 mb-2">Tableau de bord</h1>
-        <p className="text-gray-600">Gérez vos réservations et consultez les statistiques</p>
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-semibold text-gray-900 mb-2">Tableau de bord</h1>
+          <p className="text-gray-600">Gérez vos réservations et consultez les statistiques</p>
+        </div>
+        <Button 
+          onClick={() => navigate("/admin/booking")} 
+          className="bg-kbox-coral hover:bg-kbox-orange-dark"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Nouvelle réservation
+        </Button>
       </div>
 
       <DashboardStats bookings={bookings} />

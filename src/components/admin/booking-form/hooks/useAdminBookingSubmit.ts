@@ -16,7 +16,8 @@ export const useAdminBookingSubmit = (form: UseFormReturn<any>) => {
       date: data.date,
       finalPrice: data.finalPrice,
       calculatedPrice: data.calculatedPrice,
-      promoCode: data.promoCode
+      promoCode: data.promoCode,
+      paymentMethod: data.paymentMethod
     });
 
     try {
@@ -26,20 +27,32 @@ export const useAdminBookingSubmit = (form: UseFormReturn<any>) => {
       const userId = await findOrCreateUser(data.email, data.fullName, data.phone);
       console.log('✅ Utilisateur trouvé:', userId);
 
-      // Générer le lien de paiement
-      const checkoutUrl = await generatePaymentLink({
-        ...data,
-        userId: userId,
-        sendEmail: true // On veut toujours envoyer l'email de paiement en mode admin
-      });
-      
-      setPaymentLink(checkoutUrl);
+      if (data.paymentMethod === 'stripe') {
+        // Générer le lien de paiement uniquement pour Stripe
+        const checkoutUrl = await generatePaymentLink({
+          ...data,
+          userId: userId,
+          sendEmail: true
+        });
+        setPaymentLink(checkoutUrl);
+      } else {
+        // Pour SumUp et espèces, créer directement la réservation
+        const response = await generatePaymentLink({
+          ...data,
+          userId: userId,
+          sendEmail: false,
+          paymentMethod: data.paymentMethod
+        });
+        
+        if (response) {
+          toast({
+            title: "Réservation créée",
+            description: `La réservation a été créée avec succès (paiement par ${data.paymentMethod === 'sumup' ? 'carte' : 'espèces'})`,
+          });
+        }
+      }
 
       console.log('✅ Processus de réservation admin terminé avec succès');
-      toast({
-        title: "Lien de paiement généré",
-        description: "Le lien de paiement a été généré avec succès.",
-      });
     } catch (error: any) {
       console.error('❌ Erreur dans le processus de réservation admin:', error);
       toast({

@@ -2,6 +2,7 @@ import { UseFormReturn } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { UserDetails } from "../user-selection/UserDetails";
 import { PaymentLinkDisplay } from "../PaymentLinkDisplay";
+import { BookingSummary } from "@/components/booking/additional/BookingSummary";
 
 interface ConfirmationProps {
   form: UseFormReturn<any>;
@@ -20,10 +21,25 @@ export const Confirmation = ({
   onSubmit,
   paymentMethod 
 }: ConfirmationProps) => {
+  const formValues = form.getValues();
+  
   return (
     <div className="space-y-6">
       <div className="space-y-4">
         <h2 className="text-lg font-semibold">Confirmation de la réservation</h2>
+        
+        <BookingSummary
+          groupSize={formValues.groupSize}
+          duration={formValues.duration}
+          calculatedPrice={formValues.calculatedPrice}
+          isPromoValid={!!formValues.promoCode}
+          promoCode={formValues.promoCode}
+          finalPrice={formValues.finalPrice}
+          date={formValues.date}
+          timeSlot={formValues.timeSlot}
+          message={formValues.message}
+        />
+        
         <UserDetails form={form} />
         
         {paymentMethod === 'stripe' && paymentLink && (

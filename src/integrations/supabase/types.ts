@@ -90,6 +90,7 @@ export type Database = {
           is_test_booking: boolean | null
           message: string | null
           payment_intent_id: string | null
+          payment_method: string | null
           payment_status: string
           price: number
           promo_code_id: string | null
@@ -113,6 +114,7 @@ export type Database = {
           is_test_booking?: boolean | null
           message?: string | null
           payment_intent_id?: string | null
+          payment_method?: string | null
           payment_status?: string
           price: number
           promo_code_id?: string | null
@@ -136,6 +138,7 @@ export type Database = {
           is_test_booking?: boolean | null
           message?: string | null
           payment_intent_id?: string | null
+          payment_method?: string | null
           payment_status?: string
           price?: number
           promo_code_id?: string | null

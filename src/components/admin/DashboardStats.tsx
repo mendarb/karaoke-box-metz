@@ -12,7 +12,7 @@ export const DashboardStats = ({ bookings }: DashboardStatsProps) => {
     pendingBookings: bookings.filter(b => b.status === 'pending').length,
     confirmedBookings: bookings.filter(b => b.status === 'confirmed').length,
     totalRevenue: bookings
-      .filter(b => b.status === 'confirmed')
+      .filter(b => b.payment_status === 'paid')
       .reduce((sum, booking) => sum + Number(booking.price), 0),
   };
 

@@ -4,6 +4,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { findOrCreateUser } from "./services/userService";
 import { generatePaymentLink } from "./services/bookingService";
 import { supabase } from "@/lib/supabase";
+import type { PaymentMethod } from "../../BookingForm";
 
 export const useAdminBookingSubmit = (form: UseFormReturn<any>) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -49,13 +50,15 @@ export const useAdminBookingSubmit = (form: UseFormReturn<any>) => {
           group_size: data.groupSize,
           price: data.calculatedPrice,
           message: data.message || '',
-          payment_status: 'pending',
-          status: 'pending',
+          payment_status: data.paymentMethod === 'cash' ? 'pending' : 'paid',
+          status: data.paymentMethod === 'cash' ? 'pending' : 'confirmed',
           is_test_booking: false,
           promo_code_id: data.promoCodeId || null,
           payment_method: data.paymentMethod,
           cabin: 'metz'
         };
+
+        console.log('📝 Création de la réservation avec les données:', bookingData);
 
         const { error } = await supabase
           .from('bookings')

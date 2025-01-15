@@ -38,29 +38,31 @@ export const useAdminBookingSubmit = (form: UseFormReturn<any>) => {
         setPaymentLink(checkoutUrl);
       } else {
         // Pour SumUp et espèces, créer directement la réservation
+        const bookingData = {
+          user_id: userId,
+          user_email: data.email,
+          user_name: data.fullName,
+          user_phone: data.phone,
+          date: data.date,
+          time_slot: data.timeSlot,
+          duration: data.duration,
+          group_size: data.groupSize,
+          price: data.calculatedPrice,
+          message: data.message || '',
+          payment_status: 'pending',
+          status: 'pending',
+          is_test_booking: false,
+          promo_code_id: data.promoCodeId || null,
+          payment_method: data.paymentMethod,
+          cabin: 'metz'
+        };
+
         const { error } = await supabase
           .from('bookings')
-          .insert([
-            {
-              user_id: userId,
-              user_email: data.email,
-              user_name: data.fullName,
-              user_phone: data.phone,
-              date: data.date,
-              time_slot: data.timeSlot,
-              duration: data.duration,
-              group_size: data.groupSize,
-              price: data.calculatedPrice,
-              message: data.message,
-              payment_status: 'pending',
-              status: 'pending',
-              is_test_booking: data.isTestMode,
-              promo_code_id: data.promoCodeId,
-              payment_method: data.paymentMethod
-            }
-          ]);
+          .insert([bookingData]);
 
         if (error) {
+          console.error('Erreur détaillée:', error);
           throw error;
         }
 

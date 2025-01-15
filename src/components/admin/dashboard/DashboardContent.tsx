@@ -26,7 +26,7 @@ export const DashboardContent = ({
           <p className="text-gray-600">Gérez vos réservations et consultez les statistiques</p>
         </div>
         <Button 
-          onClick={() => navigate("/admin/booking")} 
+          onClick={() => navigate("/admin/bookings/new")} 
           className="bg-kbox-coral hover:bg-kbox-orange-dark"
         >
           <Plus className="w-4 h-4 mr-2" />

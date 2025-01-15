@@ -12,7 +12,7 @@ export const BookingHistory = () => {
 
   useEffect(() => {
     if (error) {
-      console.error('Error fetching bookings:', error);
+      console.error('Error in BookingHistory:', error);
       toast({
         title: "Erreur",
         description: "Impossible de charger vos réservations",

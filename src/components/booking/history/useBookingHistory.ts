@@ -12,7 +12,7 @@ export const useBookingHistory = () => {
         const { data: { session } } = await supabase.auth.getSession();
         
         if (!session?.user) {
-          console.log('No session found');
+          console.log('No session found, returning empty array');
           return [];
         }
 
@@ -30,7 +30,7 @@ export const useBookingHistory = () => {
           throw error;
         }
 
-        console.log('Bookings fetched:', data);
+        console.log('Bookings fetched successfully:', data);
         return data || [];
       } catch (error: any) {
         console.error('Error in useBookingHistory:', error);
@@ -39,10 +39,10 @@ export const useBookingHistory = () => {
           description: "Impossible de charger vos réservations",
           variant: "destructive",
         });
-        return [];
+        throw error;
       }
     },
-    retry: false,
+    retry: 1,
     refetchOnWindowFocus: false,
   });
 };

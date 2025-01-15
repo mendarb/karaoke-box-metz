@@ -7,17 +7,20 @@ interface DashboardStatsProps {
 }
 
 export const DashboardStats = ({ bookings }: DashboardStatsProps) => {
+  // Calculate stats from bookings
   const stats = {
     totalBookings: bookings.length,
-    pendingBookings: bookings.filter(b => b.status === 'pending').length,
-    confirmedBookings: bookings.filter(b => b.status === 'confirmed').length,
+    pendingBookings: bookings.filter(b => b.status === 'pending' || b.payment_status === 'pending').length,
+    confirmedBookings: bookings.filter(b => b.status === 'confirmed' && b.payment_status === 'paid').length,
     totalRevenue: bookings
       .filter(b => b.payment_status === 'paid')
       .reduce((sum, booking) => sum + Number(booking.price), 0),
   };
 
+  console.log("📊 Stats calculées:", stats);
+
   return (
-    <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
+    <div className="grid gap-3 grid-cols-2 md:grid-cols-4 mb-6">
       <Card className="bg-white shadow-sm hover:shadow-md transition-shadow p-4">
         <div className="flex items-center gap-3">
           <div className="rounded-lg bg-violet-100 p-2">

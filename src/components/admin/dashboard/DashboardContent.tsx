@@ -6,6 +6,7 @@ import { useState } from "react";
 import { AdminBookingForm } from "../BookingForm";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import type { Booking } from "@/hooks/useBookings";
+import { DashboardStats } from "../DashboardStats";
 
 interface DashboardContentProps {
   bookings: any[];
@@ -32,6 +33,8 @@ export const DashboardContent = ({ bookings, isLoading, onViewDetails }: Dashboa
           Nouvelle réservation
         </Button>
       </div>
+
+      <DashboardStats bookings={bookings} />
 
       <BookingsTable 
         data={bookings}

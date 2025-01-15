@@ -68,7 +68,7 @@ export const CleanupBookingsDialog = ({
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent>
+      <AlertDialogContent className="bg-white">
         <AlertDialogHeader>
           <AlertDialogTitle>Nettoyer toutes les réservations</AlertDialogTitle>
           <AlertDialogDescription>

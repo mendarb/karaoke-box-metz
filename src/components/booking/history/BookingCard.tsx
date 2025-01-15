@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { BookingStatusBadge } from "../../admin/BookingStatusBadge";
 import { Calendar, Clock, Users, Euro, Download, CreditCard } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface BookingCardProps {
   booking: any;
@@ -28,6 +29,29 @@ export const BookingCard = ({ booking }: BookingCardProps) => {
         return 'Virement';
       default:
         return method;
+    }
+  };
+
+  const getPaymentMethodIcon = (method: string) => {
+    switch (method) {
+      case 'stripe':
+        return (
+          <img 
+            src="/lovable-uploads/Mastercard.svg" 
+            alt="Carte bancaire" 
+            className="h-4 w-auto"
+            onError={(e) => {
+              // Fallback to text if image fails to load
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        );
+      case 'cash':
+        return <Euro className="h-4 w-4 text-violet-500" />;
+      case 'transfer':
+        return <CreditCard className="h-4 w-4 text-violet-500" />;
+      default:
+        return <CreditCard className="h-4 w-4 text-violet-500" />;
     }
   };
 
@@ -69,8 +93,10 @@ export const BookingCard = ({ booking }: BookingCardProps) => {
 
         {booking.payment_method && (
           <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-            <CreditCard className="h-4 w-4 text-violet-500" />
-            <span>{getPaymentMethodLabel(booking.payment_method)}</span>
+            <div className="flex items-center gap-2">
+              {getPaymentMethodIcon(booking.payment_method)}
+              <span>{getPaymentMethodLabel(booking.payment_method)}</span>
+            </div>
           </div>
         )}
 

@@ -13,7 +13,7 @@ export const useBookingHistory = () => {
         
         if (!session?.user) {
           console.log('No session found');
-          throw new Error('No session found');
+          return [];
         }
 
         console.log('Fetching bookings for user:', session.user.id);
@@ -39,9 +39,10 @@ export const useBookingHistory = () => {
           description: "Impossible de charger vos réservations",
           variant: "destructive",
         });
-        throw error;
+        return [];
       }
     },
     retry: false,
+    refetchOnWindowFocus: false,
   });
 };

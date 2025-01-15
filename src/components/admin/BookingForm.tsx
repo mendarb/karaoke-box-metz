@@ -10,10 +10,10 @@ import { BookingSteps } from "@/components/BookingSteps";
 import { useState } from "react";
 import { User2, Calendar, Users } from "lucide-react";
 import type { Step } from "@/components/BookingSteps";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
+import { ClientTypeSelector } from "./booking-form/ClientTypeSelector";
+import { PaymentMethodSelector } from "./booking-form/PaymentMethodSelector";
 
-type PaymentMethod = 'stripe' | 'sumup' | 'cash';
+export type PaymentMethod = 'stripe' | 'sumup' | 'cash';
 
 export const AdminBookingForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -39,17 +39,12 @@ export const AdminBookingForm = () => {
   const { checkOverlap } = useBookingOverlap();
   const { isLoading, paymentLink, handleSubmit } = useAdminBookingSubmit(form);
 
-  const durations = ["1", "2", "3", "4"];
-  const groupSizes = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"];
-
   const handlePriceCalculated = (price: number) => {
     form.setValue("calculatedPrice", price);
   };
 
   const onSubmit = async () => {
     const data = form.getValues();
-    
-    // Convert string date to Date object
     const bookingDate = data.date ? new Date(data.date) : null;
     
     if (!bookingDate) {
@@ -57,7 +52,6 @@ export const AdminBookingForm = () => {
       return;
     }
     
-    // Vérifier les chevauchements
     const hasOverlap = await checkOverlap(bookingDate, data.timeSlot, data.duration);
     if (hasOverlap) return;
 
@@ -98,34 +92,10 @@ export const AdminBookingForm = () => {
 
         {currentStep === 1 && (
           <div className="space-y-6">
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Type de client</h3>
-              <RadioGroup
-                defaultValue="existing"
-                onValueChange={(value) => setClientType(value as 'existing' | 'new')}
-                className="grid grid-cols-2 gap-4"
-              >
-                <div>
-                  <RadioGroupItem value="existing" id="existing" className="peer sr-only" />
-                  <Label
-                    htmlFor="existing"
-                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-white p-4 hover:bg-gray-50 peer-data-[state=checked]:border-violet-600 [&:has([data-state=checked])]:border-violet-600"
-                  >
-                    <span>Client existant</span>
-                  </Label>
-                </div>
-                <div>
-                  <RadioGroupItem value="new" id="new" className="peer sr-only" />
-                  <Label
-                    htmlFor="new"
-                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-white p-4 hover:bg-gray-50 peer-data-[state=checked]:border-violet-600 [&:has([data-state=checked])]:border-violet-600"
-                  >
-                    <span>Nouveau client</span>
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
-
+            <ClientTypeSelector 
+              value={clientType}
+              onChange={setClientType}
+            />
             <ClientSelection
               form={form}
               onNext={() => setCurrentStep(2)}
@@ -137,8 +107,8 @@ export const AdminBookingForm = () => {
         {currentStep === 2 && (
           <BookingDetails
             form={form}
-            durations={durations}
-            groupSizes={groupSizes}
+            durations={["1", "2", "3", "4"]}
+            groupSizes={["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"]}
             isLoading={isLoading}
             onPriceCalculated={handlePriceCalculated}
             onBack={() => setCurrentStep(1)}
@@ -148,43 +118,10 @@ export const AdminBookingForm = () => {
 
         {currentStep === 3 && (
           <div className="space-y-6">
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Méthode de paiement</h3>
-              <RadioGroup
-                defaultValue="stripe"
-                onValueChange={(value) => setPaymentMethod(value as PaymentMethod)}
-                className="grid grid-cols-3 gap-4"
-              >
-                <div>
-                  <RadioGroupItem value="stripe" id="stripe" className="peer sr-only" />
-                  <Label
-                    htmlFor="stripe"
-                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-white p-4 hover:bg-gray-50 peer-data-[state=checked]:border-violet-600 [&:has([data-state=checked])]:border-violet-600"
-                  >
-                    <span>Stripe (en ligne)</span>
-                  </Label>
-                </div>
-                <div>
-                  <RadioGroupItem value="sumup" id="sumup" className="peer sr-only" />
-                  <Label
-                    htmlFor="sumup"
-                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-white p-4 hover:bg-gray-50 peer-data-[state=checked]:border-violet-600 [&:has([data-state=checked])]:border-violet-600"
-                  >
-                    <span>SumUp (carte)</span>
-                  </Label>
-                </div>
-                <div>
-                  <RadioGroupItem value="cash" id="cash" className="peer sr-only" />
-                  <Label
-                    htmlFor="cash"
-                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-white p-4 hover:bg-gray-50 peer-data-[state=checked]:border-violet-600 [&:has([data-state=checked])]:border-violet-600"
-                  >
-                    <span>Espèces</span>
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
-
+            <PaymentMethodSelector
+              value={paymentMethod}
+              onChange={setPaymentMethod}
+            />
             <Confirmation
               form={form}
               isLoading={isLoading}

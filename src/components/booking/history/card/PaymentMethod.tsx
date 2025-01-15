@@ -21,16 +21,7 @@ export const PaymentMethod = ({ method }: PaymentMethodProps) => {
   const getPaymentMethodIcon = (method: string) => {
     switch (method) {
       case 'stripe':
-        return (
-          <img 
-            src="/lovable-uploads/Mastercard.svg" 
-            alt="Carte bancaire" 
-            className="h-4 w-auto"
-            onError={(e) => {
-              e.currentTarget.style.display = 'none';
-            }}
-          />
-        );
+        return <CreditCard className="h-4 w-4 text-violet-500" />;
       case 'cash':
         return <Euro className="h-4 w-4 text-violet-500" />;
       case 'transfer':

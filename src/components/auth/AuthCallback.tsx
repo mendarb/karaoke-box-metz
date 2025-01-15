@@ -11,16 +11,18 @@ export function AuthCallback() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        // Récupérer la session depuis l'URL
+        // Get the current session
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error("Erreur de session:", error);
+          console.error("Session error:", error);
           throw error;
         }
         
         if (session) {
-          // Vérifier si l'utilisateur a un numéro de téléphone
+          console.log("Session found:", session.user.id);
+          
+          // Check if user has a phone number
           const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('phone')
@@ -28,17 +30,18 @@ export function AuthCallback() {
             .single();
 
           if (profileError) {
-            console.error("Erreur de profil:", profileError);
+            console.error("Profile error:", profileError);
           }
 
           if (!profile?.phone) {
-            // Rediriger vers la page de profil si pas de numéro
+            console.log("No phone number found, redirecting to account");
             toast({
               title: "Complétez votre profil",
               description: "Veuillez ajouter votre numéro de téléphone pour finaliser votre inscription.",
             });
             navigate("/account", { replace: true });
           } else {
+            console.log("Profile complete, redirecting to home");
             toast({
               title: "Connexion réussie",
               description: "Bienvenue sur K.Box !",
@@ -46,11 +49,11 @@ export function AuthCallback() {
             navigate("/", { replace: true });
           }
         } else {
-          // Si pas de session, rediriger vers la page d'accueil
+          console.log("No session found, redirecting to home");
           navigate("/", { replace: true });
         }
       } catch (error) {
-        console.error("Erreur lors de la connexion:", error);
+        console.error("Auth callback error:", error);
         toast({
           title: "Erreur de connexion",
           description: "Une erreur est survenue lors de la connexion. Veuillez réessayer.",
@@ -60,7 +63,6 @@ export function AuthCallback() {
       }
     };
 
-    // Exécuter immédiatement
     handleAuthCallback();
   }, [navigate, toast]);
 

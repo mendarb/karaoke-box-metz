@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Calendar, Clock, Users, Euro, Mail, Phone, MessageSquare, Download } from "lucide-react";
+import { Calendar, Clock, Users, Euro, Mail, Phone, MessageSquare, Download, CreditCard } from "lucide-react";
 import { BookingStatusBadge } from "./BookingStatusBadge";
 import { Button } from "@/components/ui/button";
 
@@ -25,12 +25,26 @@ interface BookingDetailsDialogProps {
     message: string | null;
     status: string;
     payment_status: string;
+    payment_method: string;
     isTestBooking?: boolean;
     invoice_url?: string;
   };
 }
 
 export const BookingDetailsDialog = ({ isOpen, onClose, booking }: BookingDetailsDialogProps) => {
+  const getPaymentMethodLabel = (method: string) => {
+    switch (method) {
+      case 'stripe':
+        return 'Carte bancaire (Stripe)';
+      case 'sumup':
+        return 'Carte bancaire (SumUp)';
+      case 'cash':
+        return 'Espèces';
+      default:
+        return method;
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md bg-white">
@@ -80,6 +94,10 @@ export const BookingDetailsDialog = ({ isOpen, onClose, booking }: BookingDetail
               <p className="flex items-center">
                 <Euro className="mr-2 h-4 w-4" />
                 {booking.price}€
+              </p>
+              <p className="flex items-center">
+                <CreditCard className="mr-2 h-4 w-4" />
+                {getPaymentMethodLabel(booking.payment_method)}
               </p>
             </div>
           </div>

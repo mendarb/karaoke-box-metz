@@ -1,7 +1,7 @@
 import { Routes, Route } from "react-router-dom";
-import { Index } from "@/pages/Index";
-import { Box3D } from "@/pages/Box3D";
-import { Success } from "@/pages/Success";
+import Index from "@/pages/Index";
+import Box3D from "@/pages/Box3D";
+import Success from "@/pages/Success";
 import { StaffCalendar } from "@/pages/StaffCalendar";
 
 export const PublicRoutes = () => {

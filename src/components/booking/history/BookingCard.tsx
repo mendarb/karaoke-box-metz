@@ -3,7 +3,7 @@ import { fr } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { BookingStatusBadge } from "../../admin/BookingStatusBadge";
-import { Calendar, Clock, Users, Euro, Download } from "lucide-react";
+import { Calendar, Clock, Users, Euro, Download, CreditCard } from "lucide-react";
 
 interface BookingCardProps {
   booking: any;
@@ -17,6 +17,19 @@ export const BookingCard = ({ booking }: BookingCardProps) => {
   const bookingDate = new Date(booking.date);
   // Add timezone offset to compensate for UTC conversion
   bookingDate.setMinutes(bookingDate.getMinutes() + bookingDate.getTimezoneOffset());
+
+  const getPaymentMethodLabel = (method: string) => {
+    switch (method) {
+      case 'stripe':
+        return 'Carte bancaire';
+      case 'cash':
+        return 'Espèces';
+      case 'transfer':
+        return 'Virement';
+      default:
+        return method;
+    }
+  };
 
   return (
     <Card className="overflow-hidden bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
@@ -44,13 +57,22 @@ export const BookingCard = ({ booking }: BookingCardProps) => {
         <div className="flex items-center justify-between text-sm">
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4 text-violet-500" />
-            <span className="text-gray-600 dark:text-gray-400">Personnes {booking.group_size}</span>
+            <span className="text-gray-600 dark:text-gray-400">
+              {booking.group_size} {parseInt(booking.group_size) > 1 ? 'personnes' : 'personne'}
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <Euro className="h-4 w-4 text-violet-500" />
-            <span className="text-gray-600 dark:text-gray-400">Prix {booking.price}€</span>
+            <span className="text-gray-600 dark:text-gray-400">{booking.price}€</span>
           </div>
         </div>
+
+        {booking.payment_method && (
+          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+            <CreditCard className="h-4 w-4 text-violet-500" />
+            <span>{getPaymentMethodLabel(booking.payment_method)}</span>
+          </div>
+        )}
 
         {booking.is_test_booking && (
           <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-900 rounded-md p-3">

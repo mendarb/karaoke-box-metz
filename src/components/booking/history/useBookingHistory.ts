@@ -18,23 +18,6 @@ export const useBookingHistory = () => {
 
         console.log('Fetching bookings for user:', session.user.id);
 
-        // Vérifions d'abord si l'utilisateur a des réservations sans filtres
-        const { data: allBookings, error: allBookingsError } = await supabase
-          .from('bookings')
-          .select(`
-            *,
-            profiles:user_id (
-              first_name,
-              last_name,
-              email,
-              phone
-            )
-          `)
-          .eq('user_id', session.user.id);
-
-        console.log('All bookings with profiles:', allBookings);
-
-        // Maintenant la requête finale avec tous les filtres
         const { data, error } = await supabase
           .from('bookings')
           .select(`

@@ -45,16 +45,6 @@ export const BookingHistory = () => {
     );
   }
 
-  // Group bookings by date
-  const groupedBookings = bookings.reduce((groups: any, booking: any) => {
-    const date = booking.date;
-    if (!groups[date]) {
-      groups[date] = [];
-    }
-    groups[date].push(booking);
-    return groups;
-  }, {});
-
   return (
     <div className="space-y-8">
       <div className="space-y-2">
@@ -66,15 +56,11 @@ export const BookingHistory = () => {
         </p>
       </div>
       
-      {Object.entries(groupedBookings).map(([date, dateBookings]: [string, any]) => (
-        <div key={date} className="space-y-4">
-          <div className="grid gap-4">
-            {dateBookings.map((booking: any) => (
-              <BookingCard key={booking.id} booking={booking} />
-            ))}
-          </div>
-        </div>
-      ))}
+      <div className="space-y-4">
+        {bookings.map((booking: any) => (
+          <BookingCard key={booking.id} booking={booking} />
+        ))}
+      </div>
     </div>
   );
 };

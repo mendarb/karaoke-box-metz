@@ -5,7 +5,7 @@ import { BookingsTable } from "../BookingsTable";
 import { useState } from "react";
 import { AdminBookingForm } from "../BookingForm";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import type { Booking } from "@/types/booking";
+import type { Booking } from "@/hooks/useBookings";
 
 interface DashboardContentProps {
   bookings: any[];
@@ -34,9 +34,10 @@ export const DashboardContent = ({ bookings, isLoading, onViewDetails }: Dashboa
       </div>
 
       <BookingsTable 
-        bookings={bookings}
+        data={bookings}
         isLoading={isLoading}
         onViewDetails={onViewDetails}
+        onStatusChange={async () => {}}
       />
 
       <Dialog open={isBookingModalOpen} onOpenChange={setIsBookingModalOpen}>

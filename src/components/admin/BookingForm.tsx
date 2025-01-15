@@ -10,9 +10,15 @@ import { BookingSteps } from "@/components/BookingSteps";
 import { useState } from "react";
 import { User2, Calendar, Users } from "lucide-react";
 import type { Step } from "@/components/BookingSteps";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+
+type PaymentMethod = 'stripe' | 'sumup' | 'cash';
 
 export const AdminBookingForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [clientType, setClientType] = useState<'existing' | 'new'>('existing');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('stripe');
   
   const form = useForm({
     defaultValues: {
@@ -26,6 +32,7 @@ export const AdminBookingForm = () => {
       message: "",
       calculatedPrice: 0,
       userId: null,
+      paymentMethod: "stripe" as PaymentMethod,
     },
   });
 
@@ -54,7 +61,7 @@ export const AdminBookingForm = () => {
     const hasOverlap = await checkOverlap(bookingDate, data.timeSlot, data.duration);
     if (hasOverlap) return;
 
-    await handleSubmit(data);
+    await handleSubmit({ ...data, paymentMethod });
   };
 
   const steps: Step[] = [
@@ -86,14 +93,45 @@ export const AdminBookingForm = () => {
 
   return (
     <Form {...form}>
-      <div className="space-y-6">
+      <div className="space-y-6 bg-white p-6 rounded-lg shadow-sm">
         <BookingSteps steps={steps} currentStep={currentStep} />
 
         {currentStep === 1 && (
-          <ClientSelection
-            form={form}
-            onNext={() => setCurrentStep(2)}
-          />
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Type de client</h3>
+              <RadioGroup
+                defaultValue="existing"
+                onValueChange={(value) => setClientType(value as 'existing' | 'new')}
+                className="grid grid-cols-2 gap-4"
+              >
+                <div>
+                  <RadioGroupItem value="existing" id="existing" className="peer sr-only" />
+                  <Label
+                    htmlFor="existing"
+                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-white p-4 hover:bg-gray-50 peer-data-[state=checked]:border-violet-600 [&:has([data-state=checked])]:border-violet-600"
+                  >
+                    <span>Client existant</span>
+                  </Label>
+                </div>
+                <div>
+                  <RadioGroupItem value="new" id="new" className="peer sr-only" />
+                  <Label
+                    htmlFor="new"
+                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-white p-4 hover:bg-gray-50 peer-data-[state=checked]:border-violet-600 [&:has([data-state=checked])]:border-violet-600"
+                  >
+                    <span>Nouveau client</span>
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <ClientSelection
+              form={form}
+              onNext={() => setCurrentStep(2)}
+              clientType={clientType}
+            />
+          </div>
         )}
 
         {currentStep === 2 && (
@@ -109,13 +147,53 @@ export const AdminBookingForm = () => {
         )}
 
         {currentStep === 3 && (
-          <Confirmation
-            form={form}
-            isLoading={isLoading}
-            paymentLink={paymentLink}
-            onBack={() => setCurrentStep(2)}
-            onSubmit={onSubmit}
-          />
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Méthode de paiement</h3>
+              <RadioGroup
+                defaultValue="stripe"
+                onValueChange={(value) => setPaymentMethod(value as PaymentMethod)}
+                className="grid grid-cols-3 gap-4"
+              >
+                <div>
+                  <RadioGroupItem value="stripe" id="stripe" className="peer sr-only" />
+                  <Label
+                    htmlFor="stripe"
+                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-white p-4 hover:bg-gray-50 peer-data-[state=checked]:border-violet-600 [&:has([data-state=checked])]:border-violet-600"
+                  >
+                    <span>Stripe (en ligne)</span>
+                  </Label>
+                </div>
+                <div>
+                  <RadioGroupItem value="sumup" id="sumup" className="peer sr-only" />
+                  <Label
+                    htmlFor="sumup"
+                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-white p-4 hover:bg-gray-50 peer-data-[state=checked]:border-violet-600 [&:has([data-state=checked])]:border-violet-600"
+                  >
+                    <span>SumUp (carte)</span>
+                  </Label>
+                </div>
+                <div>
+                  <RadioGroupItem value="cash" id="cash" className="peer sr-only" />
+                  <Label
+                    htmlFor="cash"
+                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-white p-4 hover:bg-gray-50 peer-data-[state=checked]:border-violet-600 [&:has([data-state=checked])]:border-violet-600"
+                  >
+                    <span>Espèces</span>
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <Confirmation
+              form={form}
+              isLoading={isLoading}
+              paymentLink={paymentLink}
+              onBack={() => setCurrentStep(2)}
+              onSubmit={onSubmit}
+              paymentMethod={paymentMethod}
+            />
+          </div>
         )}
       </div>
     </Form>

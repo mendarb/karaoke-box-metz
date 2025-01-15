@@ -1,44 +1,27 @@
 import { UseFormReturn } from "react-hook-form";
 import { UserSelection } from "../UserSelection";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { CreateClientForm } from "../client-selection/CreateClientForm";
 
 interface ClientSelectionProps {
   form: UseFormReturn<any>;
   onNext: () => void;
+  clientType: 'existing' | 'new';
 }
 
-export const ClientSelection = ({ form, onNext }: ClientSelectionProps) => {
-  const [isSelecting, setIsSelecting] = useState(false);
-
-  const handleUserSelected = () => {
-    setIsSelecting(false);
-  };
-
-  const handleNext = () => {
-    if (form.getValues("email")) {
-      onNext();
-    }
-  };
-
+export const ClientSelection = ({ form, onNext, clientType }: ClientSelectionProps) => {
   return (
     <div className="space-y-6">
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Sélection du client</h2>
+      {clientType === 'existing' ? (
         <UserSelection 
           form={form} 
-          onUserSelected={handleUserSelected}
-          onSearchStart={() => setIsSelecting(true)}
+          onUserSelected={onNext}
         />
-      </div>
-
-      <Button 
-        onClick={handleNext}
-        disabled={!form.getValues("email") || isSelecting}
-        className="w-full"
-      >
-        Suivant
-      </Button>
+      ) : (
+        <CreateClientForm 
+          form={form}
+          onSubmit={onNext}
+        />
+      )}
     </div>
   );
 };

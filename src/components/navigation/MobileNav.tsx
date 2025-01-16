@@ -18,7 +18,7 @@ export const MobileNav = ({ user, isAdmin, onSignOut, onShowAuth }: MobileNavPro
         </Link>
         {user ? (
           <>
-            <Link to="/my-bookings" className="flex flex-col items-center flex-1 px-2">
+            <Link to="/account/my-bookings" className="flex flex-col items-center flex-1 px-2">
               <Calendar className="h-5 w-5 text-kbox-coral" />
               <span className="text-xs mt-1 text-gray-600">Réservations</span>
             </Link>

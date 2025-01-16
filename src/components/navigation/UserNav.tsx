@@ -1,12 +1,13 @@
-import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import { User } from "lucide-react";
 
 interface UserNavProps {
@@ -15,39 +16,40 @@ interface UserNavProps {
 }
 
 export const UserNav = ({ onSignOut, isAdmin }: UserNavProps) => {
-  const navigate = useNavigate();
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button 
-          variant="outline" 
-          className="relative w-8 h-8 rounded-full border-gray-300 hover:bg-gray-100 p-0"
-        >
-          <User className="h-4 w-4 text-gray-700" />
+        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+          <User className="h-5 w-5" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
-        <DropdownMenuItem onClick={() => navigate('/my-bookings')}>
-          Mes réservations
+        <DropdownMenuLabel className="font-normal">
+          <div className="flex flex-col space-y-1">
+            <p className="text-sm font-medium leading-none">Mon compte</p>
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link to="/account/my-bookings">Mes réservations</Link>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate('/account')}>
-          Mon compte
+        <DropdownMenuItem asChild>
+          <Link to="/account">Paramètres</Link>
         </DropdownMenuItem>
         {isAdmin && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => navigate('/admin')}>
-              Administration
-            </DropdownMenuItem>
-          </>
+          <DropdownMenuItem asChild>
+            <Link to="/admin">Administration</Link>
+          </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
-        <DropdownMenuItem 
-          onClick={onSignOut} 
-          className="text-red-600 focus:bg-red-50 focus:text-red-600"
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onSelect={(e) => {
+            e.preventDefault();
+            onSignOut();
+          }}
         >
-          Déconnexion
+          Se déconnecter
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

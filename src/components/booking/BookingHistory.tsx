@@ -23,7 +23,7 @@ export const BookingHistory = () => {
 
   console.log('BookingHistory render:', {
     user,
-    bookings,
+    bookingsCount: bookings?.length,
     isLoading,
     error
   });

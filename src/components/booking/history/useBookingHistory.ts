@@ -20,7 +20,19 @@ export const useBookingHistory = () => {
 
         const { data, error } = await supabase
           .from('bookings')
-          .select('*')
+          .select(`
+            id,
+            date,
+            time_slot,
+            duration,
+            group_size,
+            price,
+            status,
+            payment_status,
+            payment_method,
+            is_test_booking,
+            invoice_url
+          `)
           .eq('user_id', user.id)
           .is('deleted_at', null)
           .order('date', { ascending: false });

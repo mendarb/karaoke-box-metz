@@ -2,8 +2,8 @@ import { Loader2 } from "lucide-react";
 import { BookingCard } from "./history/BookingCard";
 import { useBookingHistory } from "./history/useBookingHistory";
 import { useToast } from "@/hooks/use-toast";
-import { useEffect } from "react";
 import { useUserState } from "@/hooks/useUserState";
+import { useEffect } from "react";
 
 export const BookingHistory = () => {
   const { data: bookings, isLoading, error } = useBookingHistory();

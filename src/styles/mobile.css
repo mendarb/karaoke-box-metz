@@ -32,6 +32,8 @@
 .scroll-container {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
+  height: 100%;
+  overflow-y: auto;
 }
 
 /* Add safe area padding for iOS devices */
@@ -43,5 +45,11 @@
 @media (max-width: 768px) {
   main {
     padding-bottom: calc(4rem + env(safe-area-inset-bottom, 1rem));
+  }
+  
+  /* Fix toast positioning on mobile */
+  [role="toast"] {
+    position: fixed !important;
+    bottom: calc(4rem + env(safe-area-inset-bottom, 1rem)) !important;
   }
 }

@@ -40,12 +40,12 @@ const Index = () => {
     <div className="min-h-screen flex flex-col bg-kbox-coral">
       <AnnouncementBanner />
       <main className="flex-grow container mx-auto pb-20 md:pb-0">
-        <div className={`grid grid-cols-1 md:grid-cols-3 gap-0 ${isMobile ? 'min-h-screen' : 'min-h-[500px]'}`}>
+        <div className={`grid grid-cols-1 md:grid-cols-3 gap-0 ${isMobile ? 'h-[calc(100vh-4rem)]' : 'min-h-[500px]'}`}>
           {isMobile ? (
             <>
-              <div className="md:col-span-2 bg-white min-h-screen">
+              <div className="md:col-span-2 bg-white h-full overflow-hidden">
                 <Suspense fallback={
-                  <div className="flex items-center justify-center h-full min-h-screen">
+                  <div className="flex items-center justify-center h-full">
                     <LoadingSpinner />
                   </div>
                 }>

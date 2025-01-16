@@ -97,8 +97,10 @@ export const BookingForm = () => {
   );
 
   return isMobile ? (
-    <ScrollArea className="h-[calc(100vh-4rem)] w-full">
-      {content}
-    </ScrollArea>
+    <div className="h-[calc(100vh-4rem)] overflow-hidden">
+      <ScrollArea className="h-full pb-20">
+        {content}
+      </ScrollArea>
+    </div>
   ) : content;
 };

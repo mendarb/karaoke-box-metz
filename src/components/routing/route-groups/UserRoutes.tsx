@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import { AccountPage } from "@/components/account/AccountPage";
-import MyBookings from "@/pages/MyBookings";
+import { BookingHistory } from "@/components/booking/BookingHistory";
 import { ProtectedRoute } from "../ProtectedRoute";
 
 export const UserRoutes = () => {
@@ -18,7 +18,9 @@ export const UserRoutes = () => {
         path="/my-bookings"
         element={
           <ProtectedRoute>
-            <MyBookings />
+            <div className="container mx-auto py-8 px-4">
+              <BookingHistory />
+            </div>
           </ProtectedRoute>
         }
       />

@@ -1,7 +1,7 @@
 import { Loader2 } from "lucide-react";
 import { BookingCard } from "./history/BookingCard";
 import { useBookingHistory } from "./history/useBookingHistory";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
 import { useUserState } from "@/hooks/useUserState";
 
@@ -21,13 +21,6 @@ export const BookingHistory = () => {
     }
   }, [error, toast]);
 
-  console.log('BookingHistory render:', {
-    user,
-    bookingsCount: bookings?.length,
-    isLoading,
-    error
-  });
-
   if (!user) {
     return (
       <div className="text-center p-8 bg-white rounded-lg shadow">
@@ -39,7 +32,7 @@ export const BookingHistory = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center p-8 bg-white rounded-lg shadow">
-        <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-kbox-violet" />
       </div>
     );
   }

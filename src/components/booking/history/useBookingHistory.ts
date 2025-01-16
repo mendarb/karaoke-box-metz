@@ -1,10 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { useToast } from "@/components/ui/use-toast";
 import { useUserState } from "@/hooks/useUserState";
 
 export const useBookingHistory = () => {
-  const { toast } = useToast();
   const { user } = useUserState();
 
   return useQuery({
@@ -44,13 +42,8 @@ export const useBookingHistory = () => {
 
         console.log('Bookings fetched successfully:', data);
         return data || [];
-      } catch (error: any) {
+      } catch (error) {
         console.error('Error in useBookingHistory:', error);
-        toast({
-          title: "Erreur",
-          description: "Impossible de charger vos réservations",
-          variant: "destructive",
-        });
         throw error;
       }
     },

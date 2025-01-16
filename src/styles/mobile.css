@@ -34,9 +34,14 @@
   overscroll-behavior-y: contain;
 }
 
-/* Add padding to the bottom of the main content to account for the mobile nav */
+/* Add safe area padding for iOS devices */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 1rem);
+}
+
+/* Add padding to the main content to account for the mobile nav */
 @media (max-width: 768px) {
   main {
-    padding-bottom: 4rem;
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom, 1rem));
   }
 }

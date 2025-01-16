@@ -5,11 +5,13 @@ import { useUserState } from "@/hooks/useUserState";
 export const useBookingHistory = () => {
   const { user } = useUserState();
 
+  console.log("useBookingHistory hook initialized", { userId: user?.id });
+
   return useQuery({
     queryKey: ['user-bookings', user?.id],
     queryFn: async () => {
       if (!user) {
-        console.log('No user found, returning empty array');
+        console.log('No user found in useBookingHistory, returning empty array');
         return [];
       }
 
@@ -17,19 +19,7 @@ export const useBookingHistory = () => {
 
       const { data, error } = await supabase
         .from('bookings')
-        .select(`
-          id,
-          date,
-          time_slot,
-          duration,
-          group_size,
-          price,
-          status,
-          payment_status,
-          payment_method,
-          is_test_booking,
-          invoice_url
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .is('deleted_at', null)
         .order('date', { ascending: false });

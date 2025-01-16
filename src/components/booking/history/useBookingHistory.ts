@@ -1,27 +1,27 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/components/ui/use-toast";
+import { useUserState } from "@/hooks/useUserState";
 
 export const useBookingHistory = () => {
   const { toast } = useToast();
+  const { user } = useUserState();
 
   return useQuery({
-    queryKey: ['user-bookings'],
+    queryKey: ['user-bookings', user?.id],
     queryFn: async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session?.user) {
-          console.log('No session found, returning empty array');
+        if (!user) {
+          console.log('No user found, returning empty array');
           return [];
         }
 
-        console.log('Fetching bookings for user:', session.user.id);
+        console.log('Fetching bookings for user:', user.id);
 
         const { data, error } = await supabase
           .from('bookings')
           .select('*')
-          .eq('user_id', session.user.id)
+          .eq('user_id', user.id)
           .is('deleted_at', null)
           .order('date', { ascending: false });
 
@@ -42,7 +42,6 @@ export const useBookingHistory = () => {
         throw error;
       }
     },
-    retry: 1,
-    refetchOnWindowFocus: false,
+    enabled: !!user,
   });
 };

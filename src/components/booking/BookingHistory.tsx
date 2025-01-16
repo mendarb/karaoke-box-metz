@@ -21,6 +21,13 @@ export const BookingHistory = () => {
     }
   }, [error, toast]);
 
+  console.log('BookingHistory render:', {
+    user,
+    bookings,
+    isLoading,
+    error
+  });
+
   if (!user) {
     return (
       <div className="text-center p-8 text-gray-500 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
@@ -57,7 +64,7 @@ export const BookingHistory = () => {
       </div>
       
       <div className="space-y-4">
-        {bookings.map((booking: any) => (
+        {bookings.map((booking) => (
           <BookingCard key={booking.id} booking={booking} />
         ))}
       </div>

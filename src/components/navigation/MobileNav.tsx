@@ -10,7 +10,7 @@ interface MobileNavProps {
 
 export const MobileNav = ({ user, isAdmin, onSignOut, onShowAuth }: MobileNavProps) => {
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-2 px-4 md:hidden z-[100] pb-safe">
+    <div className="fixed inset-x-0 bottom-0 bg-white border-t border-gray-200 py-2 px-4 md:hidden z-[100] pb-safe">
       <div className="flex justify-around items-center max-w-lg mx-auto">
         <Link to="/" className="flex flex-col items-center gap-1">
           <Home className="h-5 w-5 text-kbox-coral" />

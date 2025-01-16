@@ -39,3 +39,10 @@
 .skeleton {
   @apply animate-pulse bg-gray-200;
 }
+
+/* Fix double scrollbar issue */
+.scroll-container {
+  @apply overflow-y-auto;
+  height: calc(100vh - 4rem);
+  -webkit-overflow-scrolling: touch;
+}

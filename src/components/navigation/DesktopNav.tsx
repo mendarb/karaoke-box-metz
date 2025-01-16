@@ -15,7 +15,7 @@ export const DesktopNav = ({ user, isAdmin, onSignOut, onShowAuth }: DesktopNavP
     <div className="hidden md:flex items-center gap-4">
       {user ? (
         <div className="flex items-center gap-4">
-          <Link to="/">
+          <Link to="/account/my-bookings">
             <Button 
               variant="default"
               className="bg-kbox-coral hover:bg-kbox-orange-dark transition-all duration-200 flex items-center gap-2 px-6 py-2 rounded-full shadow-md hover:shadow-lg"
@@ -24,7 +24,9 @@ export const DesktopNav = ({ user, isAdmin, onSignOut, onShowAuth }: DesktopNavP
               Réserver maintenant
             </Button>
           </Link>
-          <UserNav onSignOut={onSignOut} isAdmin={isAdmin} />
+          <div className="border rounded-full p-1 hover:bg-gray-50">
+            <UserNav onSignOut={onSignOut} isAdmin={isAdmin} />
+          </div>
         </div>
       ) : (
         <Button

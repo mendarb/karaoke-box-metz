@@ -30,15 +30,15 @@ export const BookingHistory = () => {
 
   if (!user) {
     return (
-      <div className="text-center p-8 text-gray-500 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-        Connectez-vous pour voir vos réservations
+      <div className="text-center p-8 bg-white rounded-lg shadow">
+        <p className="text-gray-500">Connectez-vous pour voir vos réservations</p>
       </div>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center p-8 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+      <div className="flex justify-center items-center p-8 bg-white rounded-lg shadow">
         <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
       </div>
     );
@@ -46,8 +46,8 @@ export const BookingHistory = () => {
 
   if (!bookings?.length) {
     return (
-      <div className="text-center p-8 text-gray-500 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-        Vous n'avez pas encore de réservations
+      <div className="text-center p-8 bg-white rounded-lg shadow">
+        <p className="text-gray-500">Vous n'avez pas encore de réservations</p>
       </div>
     );
   }
@@ -55,10 +55,10 @@ export const BookingHistory = () => {
   return (
     <div className="space-y-8">
       <div className="space-y-2">
-        <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900 dark:text-gray-100">
+        <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900">
           Mes réservations
         </h2>
-        <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400">
+        <p className="text-base sm:text-lg text-gray-600">
           Retrouvez l'historique de toutes vos réservations
         </p>
       </div>

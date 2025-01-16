@@ -8,13 +8,19 @@ import { useEffect } from "react";
 export const BookingHistory = () => {
   const { data: bookings, isLoading, error } = useBookingHistory();
   const { toast } = useToast();
-  const { user } = useUserState();
+  const { user, isLoading: userLoading } = useUserState();
 
-  console.log("BookingHistory component mounted", { user, bookings, isLoading, error });
+  console.log("🎯 BookingHistory - Component rendering", {
+    user,
+    userLoading,
+    bookings,
+    isLoading,
+    error
+  });
 
   useEffect(() => {
     if (error) {
-      console.error('Error in BookingHistory:', error);
+      console.error('❌ BookingHistory - Error:', error);
       toast({
         title: "Erreur",
         description: "Impossible de charger vos réservations",
@@ -23,8 +29,17 @@ export const BookingHistory = () => {
     }
   }, [error, toast]);
 
+  if (userLoading) {
+    console.log("⏳ BookingHistory - User loading...");
+    return (
+      <div className="flex justify-center items-center p-8 bg-white rounded-lg shadow">
+        <Loader2 className="h-8 w-8 animate-spin text-kbox-violet" />
+      </div>
+    );
+  }
+
   if (!user) {
-    console.log("No user found in BookingHistory");
+    console.log("❌ BookingHistory - No user found");
     return (
       <div className="text-center p-8 bg-white rounded-lg shadow">
         <p className="text-gray-500">Connectez-vous pour voir vos réservations</p>
@@ -33,7 +48,7 @@ export const BookingHistory = () => {
   }
 
   if (isLoading) {
-    console.log("Loading bookings...");
+    console.log("⏳ BookingHistory - Bookings loading...");
     return (
       <div className="flex justify-center items-center p-8 bg-white rounded-lg shadow">
         <Loader2 className="h-8 w-8 animate-spin text-kbox-violet" />
@@ -42,7 +57,7 @@ export const BookingHistory = () => {
   }
 
   if (!bookings?.length) {
-    console.log("No bookings found");
+    console.log("ℹ️ BookingHistory - No bookings found");
     return (
       <div className="text-center p-8 bg-white rounded-lg shadow">
         <p className="text-gray-500">Vous n'avez pas encore de réservations</p>
@@ -50,7 +65,7 @@ export const BookingHistory = () => {
     );
   }
 
-  console.log("Rendering bookings:", bookings);
+  console.log("✅ BookingHistory - Rendering bookings:", bookings);
   return (
     <div className="space-y-8">
       <div className="space-y-2">

@@ -5,17 +5,20 @@ import { useUserState } from "@/hooks/useUserState";
 export const useBookingHistory = () => {
   const { user } = useUserState();
 
-  console.log("useBookingHistory hook initialized", { userId: user?.id });
+  console.log("🔍 useBookingHistory - Starting hook execution");
+  console.log("🔍 useBookingHistory - Current user:", user);
 
   return useQuery({
     queryKey: ['user-bookings', user?.id],
     queryFn: async () => {
+      console.log("🔍 useBookingHistory - QueryFn starting");
+      
       if (!user) {
-        console.log('No user found in useBookingHistory, returning empty array');
+        console.log("❌ useBookingHistory - No user found, returning empty array");
         return [];
       }
 
-      console.log('Fetching bookings for user:', user.id);
+      console.log("🔍 useBookingHistory - Fetching bookings for user:", user.id);
 
       const { data, error } = await supabase
         .from('bookings')
@@ -25,11 +28,11 @@ export const useBookingHistory = () => {
         .order('date', { ascending: false });
 
       if (error) {
-        console.error('Error fetching bookings:', error);
+        console.error("❌ useBookingHistory - Error fetching bookings:", error);
         throw error;
       }
 
-      console.log('Bookings fetched successfully:', data);
+      console.log("✅ useBookingHistory - Bookings fetched successfully:", data);
       return data || [];
     },
     enabled: !!user,

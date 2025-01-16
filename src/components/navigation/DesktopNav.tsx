@@ -24,9 +24,7 @@ export const DesktopNav = ({ user, isAdmin, onSignOut, onShowAuth }: DesktopNavP
               Réserver maintenant
             </Button>
           </Link>
-          <div className="border rounded-full p-1 hover:bg-gray-50">
-            <UserNav onSignOut={onSignOut} isAdmin={isAdmin} />
-          </div>
+          <UserNav onSignOut={onSignOut} isAdmin={isAdmin} />
         </div>
       ) : (
         <Button

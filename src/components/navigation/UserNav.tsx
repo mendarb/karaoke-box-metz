@@ -8,7 +8,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { User } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useUserState } from "@/hooks/useUserState";
 
 interface UserNavProps {
   onSignOut: () => Promise<void>;
@@ -16,11 +17,24 @@ interface UserNavProps {
 }
 
 export const UserNav = ({ onSignOut, isAdmin }: UserNavProps) => {
+  const { profile } = useUserState();
+  
+  const getInitials = () => {
+    if (profile?.first_name && profile?.last_name) {
+      return `${profile.first_name[0]}${profile.last_name[0]}`.toUpperCase();
+    }
+    return profile?.email?.[0].toUpperCase() || 'U';
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-          <User className="h-5 w-5" />
+          <Avatar className="h-8 w-8">
+            <AvatarFallback className="bg-kbox-coral text-white">
+              {getInitials()}
+            </AvatarFallback>
+          </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>

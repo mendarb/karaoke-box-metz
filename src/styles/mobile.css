@@ -44,12 +44,24 @@
 /* Add padding to the main content to account for the mobile nav */
 @media (max-width: 768px) {
   main {
-    padding-bottom: calc(4rem + env(safe-area-inset-bottom, 1rem));
+    padding-bottom: 0;
   }
   
   /* Fix toast positioning on mobile */
   [role="toast"] {
     position: fixed !important;
     bottom: calc(4rem + env(safe-area-inset-bottom, 1rem)) !important;
+    z-index: 100 !important;
+  }
+
+  /* Fix mobile navigation positioning */
+  .mobile-nav {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 50 !important;
+    background: white !important;
+    padding-bottom: env(safe-area-inset-bottom, 1rem) !important;
   }
 }

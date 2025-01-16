@@ -43,7 +43,7 @@ const Index = () => {
         <div className={`grid grid-cols-1 md:grid-cols-3 gap-0 ${isMobile ? 'h-[calc(100vh-4rem)]' : 'min-h-[500px]'}`}>
           {isMobile ? (
             <>
-              <div className="md:col-span-2 bg-white h-full overflow-hidden">
+              <div className="md:col-span-2 bg-white h-full">
                 <Suspense fallback={
                   <div className="flex items-center justify-center h-full">
                     <LoadingSpinner />

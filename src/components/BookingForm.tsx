@@ -98,7 +98,7 @@ export const BookingForm = () => {
 
   return isMobile ? (
     <div className="h-[calc(100vh-4rem)] overflow-hidden">
-      <ScrollArea className="h-full pb-20">
+      <ScrollArea className="h-full pb-[calc(4rem+env(safe-area-inset-bottom,1rem))]">
         {content}
       </ScrollArea>
     </div>

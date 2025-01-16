@@ -4,15 +4,16 @@ import App from './App';
 import './index.css';
 import { supabase } from '@/lib/supabase';
 
-// Set up Supabase auth persistence
+// Amélioration de la gestion de session
 supabase.auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_IN') {
-    // Store the session in localStorage
     localStorage.setItem('supabase.auth.token', session?.access_token || '');
   }
   if (event === 'SIGNED_OUT') {
-    // Clear the session from localStorage
     localStorage.removeItem('supabase.auth.token');
+  }
+  if (event === 'TOKEN_REFRESHED') {
+    localStorage.setItem('supabase.auth.token', session?.access_token || '');
   }
 });
 

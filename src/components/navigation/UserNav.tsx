@@ -23,7 +23,8 @@ export const UserNav = ({ onSignOut, isAdmin }: UserNavProps) => {
     if (profile?.first_name && profile?.last_name) {
       return `${profile.first_name[0]}${profile.last_name[0]}`.toUpperCase();
     }
-    return profile?.email?.[0].toUpperCase() || 'U';
+    // Use first letter of first name if available, otherwise use 'U'
+    return profile?.first_name?.[0]?.toUpperCase() || 'U';
   };
 
   return (

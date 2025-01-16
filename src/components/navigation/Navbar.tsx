@@ -48,14 +48,14 @@ export const Navbar = ({ onShowAuth }: NavbarProps) => {
             onSignOut={handleSignOut}
             onShowAuth={onShowAuth}
           />
-          <MobileNav
-            user={user}
-            isAdmin={isAdmin}
-            onSignOut={handleSignOut}
-            onShowAuth={onShowAuth}
-          />
         </div>
       </div>
+      <MobileNav
+        user={user}
+        isAdmin={isAdmin}
+        onSignOut={handleSignOut}
+        onShowAuth={onShowAuth}
+      />
     </nav>
   );
 };

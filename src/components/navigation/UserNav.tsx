@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useProfileData } from "@/hooks/useProfileData";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useUserState } from "@/hooks/useUserState";
 
 interface UserNavProps {
   onSignOut: () => Promise<void>;
@@ -11,14 +12,14 @@ interface UserNavProps {
 
 export const UserNav = ({ onSignOut, isAdmin }: UserNavProps) => {
   const navigate = useNavigate();
-  const { profile } = useProfileData();
+  const { user } = useUserState();
+  const { initialData } = useProfileData(user);
 
   const getInitials = () => {
-    if (profile?.first_name && profile?.last_name) {
-      return `${profile.first_name[0]}${profile.last_name[0]}`.toUpperCase();
+    if (initialData?.first_name && initialData?.last_name) {
+      return `${initialData.first_name[0]}${initialData.last_name[0]}`.toUpperCase();
     }
-    // Use first letter of first name if available, otherwise use 'U'
-    return profile?.first_name?.[0]?.toUpperCase() || 'U';
+    return initialData?.first_name?.[0]?.toUpperCase() || 'U';
   };
 
   return (

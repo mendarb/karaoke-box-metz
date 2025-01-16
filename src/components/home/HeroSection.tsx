@@ -1,38 +1,25 @@
 import { Button } from "@/components/ui/button";
+import { Box3DIcon } from "@/components/icons/Box3DIcon";
 import { Link } from "react-router-dom";
 
 export const HeroSection = () => {
   return (
-    <div className="bg-gradient-to-b from-violet-50 to-white">
-      <div className="container px-6 py-12 mx-auto">
-        <div className="flex flex-col gap-6 text-center">
-          <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">
-            METZ
-            <span className="block text-violet-600 mt-2">Karaoké BOX</span>
-          </h1>
-          
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            La première box karaoké privative de Metz
-          </p>
-          
-          <p className="text-gray-600 max-w-xl mx-auto">
-            Profitez d'une expérience unique pour chanter en toute intimité
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-4">
-            <Button asChild size="lg" className="w-full sm:w-auto">
-              <Link to="/booking">Réserver maintenant</Link>
-            </Button>
-            <Button 
-              variant="outline" 
-              size="lg"
-              asChild
-              className="w-full sm:w-auto"
-            >
-              <Link to="/box">Voir un visuel 3D de notre box</Link>
-            </Button>
-          </div>
-        </div>
+    <div className="flex flex-col justify-center h-full px-6 py-8 md:py-12 bg-kbox-coral text-white">
+      <div className="space-y-4">
+        <h1 className="text-2xl md:text-3xl font-bold">METZ</h1>
+        <h2 className="text-xl md:text-2xl font-semibold">Karaoké BOX</h2>
+        <p className="text-lg md:text-xl">
+          La première box karaoké privative de Metz
+        </p>
+        <p className="text-base md:text-lg">
+          Profitez d'une expérience unique pour chanter en toute intimité
+        </p>
+        <Link to="/box3d">
+          <Button variant="secondary" className="mt-4 w-full md:w-auto">
+            <Box3DIcon className="mr-2 h-4 w-4" />
+            Voir un visuel 3D de notre box
+          </Button>
+        </Link>
       </div>
     </div>
   );

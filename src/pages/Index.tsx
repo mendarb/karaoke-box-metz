@@ -9,6 +9,7 @@ import { supabase } from "@/lib/supabase";
 import { HeroSection } from "@/components/home/HeroSection";
 import { FeatureGrid } from "@/components/home/FeatureGrid";
 import { AnnouncementBanner } from "@/components/announcements/AnnouncementBanner";
+import { PaymentMethods } from "@/components/home/PaymentMethods";
 
 const BookingSection = lazy(() => import("@/components/home/BookingSection"));
 const Footer = lazy(() => import("@/components/home/Footer"));
@@ -37,18 +38,14 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-kbox-coral">
+    <div className="min-h-screen flex flex-col bg-white">
       <AnnouncementBanner />
-      <main className="flex-grow container mx-auto pb-20 md:pb-0">
-        <div className={`grid grid-cols-1 md:grid-cols-3 gap-0 ${isMobile ? 'h-[calc(100vh-4rem)]' : 'min-h-[500px]'}`}>
+      <main className="flex-grow">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
           {isMobile ? (
             <>
-              <div className="md:col-span-2 bg-white h-full">
-                <Suspense fallback={
-                  <div className="flex items-center justify-center h-full">
-                    <LoadingSpinner />
-                  </div>
-                }>
+              <div className="md:col-span-2">
+                <Suspense fallback={<LoadingSpinner />}>
                   <BookingSection 
                     user={user} 
                     onShowAuth={() => setShowAuthModal(true)} 
@@ -64,12 +61,8 @@ const Index = () => {
               <div className="md:col-span-1">
                 <HeroSection />
               </div>
-              <div className="md:col-span-2 bg-white">
-                <Suspense fallback={
-                  <div className="flex items-center justify-center h-full min-h-[500px]">
-                    <LoadingSpinner />
-                  </div>
-                }>
+              <div className="md:col-span-2">
+                <Suspense fallback={<LoadingSpinner />}>
                   <BookingSection 
                     user={user} 
                     onShowAuth={() => setShowAuthModal(true)} 
@@ -80,9 +73,8 @@ const Index = () => {
           )}
         </div>
 
-        <div>
-          <FeatureGrid />
-        </div>
+        <FeatureGrid />
+        <PaymentMethods />
       </main>
 
       <Suspense fallback={null}>

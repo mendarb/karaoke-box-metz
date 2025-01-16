@@ -1,15 +1,8 @@
-import { Link } from "react-router-dom";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useProfileData } from "@/hooks/useProfileData";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useUserState } from "@/hooks/useUserState";
 
 interface UserNavProps {
   onSignOut: () => Promise<void>;
@@ -17,8 +10,9 @@ interface UserNavProps {
 }
 
 export const UserNav = ({ onSignOut, isAdmin }: UserNavProps) => {
-  const { profile } = useUserState();
-  
+  const navigate = useNavigate();
+  const { profile } = useProfileData();
+
   const getInitials = () => {
     if (profile?.first_name && profile?.last_name) {
       return `${profile.first_name[0]}${profile.last_name[0]}`.toUpperCase();
@@ -30,40 +24,25 @@ export const UserNav = ({ onSignOut, isAdmin }: UserNavProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-          <Avatar className="h-8 w-8">
-            <AvatarFallback className="bg-kbox-coral text-white">
-              {getInitials()}
-            </AvatarFallback>
+        <Button variant="outline" className="relative h-10 w-10 rounded-full">
+          <Avatar className="h-10 w-10">
+            <AvatarFallback>{getInitials()}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">Mon compte</p>
-          </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link to="/account/my-bookings">Mes réservations</Link>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => navigate("/account/my-bookings")}>
+          Mes réservations
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link to="/account">Paramètres</Link>
+        <DropdownMenuItem onClick={() => navigate("/account")}>
+          Mon compte
         </DropdownMenuItem>
         {isAdmin && (
-          <DropdownMenuItem asChild>
-            <Link to="/admin">Administration</Link>
+          <DropdownMenuItem onClick={() => navigate("/admin")}>
+            Administration
           </DropdownMenuItem>
         )}
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          className="cursor-pointer"
-          onSelect={(e) => {
-            e.preventDefault();
-            onSignOut();
-          }}
-        >
+        <DropdownMenuItem onClick={onSignOut}>
           Se déconnecter
         </DropdownMenuItem>
       </DropdownMenuContent>

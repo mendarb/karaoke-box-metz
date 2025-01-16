@@ -14,6 +14,14 @@ export const UserRoutes = () => {
           </main>
         </ProtectedRoute>
       } />
+      {/* Route alternative pour la compatibilité */}
+      <Route path="/my-bookings" element={
+        <ProtectedRoute>
+          <main className="container max-w-4xl mx-auto py-8 px-4">
+            <BookingHistory />
+          </main>
+        </ProtectedRoute>
+      } />
     </Routes>
   );
 };

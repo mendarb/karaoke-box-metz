@@ -27,10 +27,7 @@ export const BookingForm = () => {
         }
       });
       
-      if (error) {
-        console.error("Erreur de connexion Google:", error);
-        throw error;
-      }
+      if (error) throw error;
     } catch (error) {
       console.error("Erreur lors de la connexion:", error);
     }
@@ -97,8 +94,8 @@ export const BookingForm = () => {
   );
 
   return isMobile ? (
-    <div className="h-[calc(100vh-4rem)] overflow-hidden">
-      <ScrollArea className="h-full pb-[calc(4rem+env(safe-area-inset-bottom,1rem))]">
+    <div className="mobile-scroll-area">
+      <ScrollArea className="h-full pb-safe">
         {content}
       </ScrollArea>
     </div>

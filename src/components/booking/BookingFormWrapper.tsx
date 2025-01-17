@@ -127,13 +127,11 @@ export const BookingFormWrapper = () => {
           />
         </div>
 
-        <div className={isMobile ? "booking-actions-mobile" : ""}>
-          <BookingFormActions
-            currentStep={currentStep}
-            isSubmitting={isSubmitting}
-            onPrevious={handlePrevious}
-          />
-        </div>
+        <BookingFormActions
+          currentStep={currentStep}
+          isSubmitting={isSubmitting}
+          onPrevious={handlePrevious}
+        />
       </form>
     </Form>
   );

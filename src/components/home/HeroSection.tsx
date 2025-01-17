@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 export const HeroSection = () => {
   return (
-    <div className="container mx-auto">
+    <div className="bg-kbox-orange">
       <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-0">
         <div className="flex flex-col justify-center p-8 pl-8 pb-8 pt-8 md:p-12 md:pl-12 md:pb-12 md:pt-12 lg:p-16 lg:pl-16 lg:pb-16 lg:pt-16 bg-[#ec6342] pr-0">
           <div className="space-y-6">

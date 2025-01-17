@@ -91,8 +91,8 @@ export const DashboardSidebar = () => {
         <SheetTrigger asChild>
           <Button 
             variant="ghost" 
-            size="sm" 
-            className="fixed top-3 right-3 z-50 bg-white shadow-sm h-8 w-8 p-0"
+            size="icon"
+            className="fixed top-3 right-3 z-50 bg-white shadow-sm h-8 w-8"
           >
             <Menu className="h-4 w-4" />
           </Button>

@@ -92,7 +92,7 @@ export const DashboardSidebar = () => {
           <Button 
             variant="ghost" 
             size="sm" 
-            className="fixed top-3 left-3 z-50 bg-white shadow-sm h-8 w-8 p-0"
+            className="fixed top-3 right-3 z-50 bg-white shadow-sm h-8 w-8 p-0"
           >
             <Menu className="h-4 w-4" />
           </Button>

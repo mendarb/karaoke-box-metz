@@ -3,9 +3,9 @@ import { Link } from "react-router-dom";
 
 export const HeroSection = () => {
   return (
-    <div className="bg-kbox-orange">
+    <div className="bg-[#ec6342]">
       <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-0">
-        <div className="flex flex-col justify-center p-8 pl-8 pb-8 pt-8 md:p-12 md:pl-12 md:pb-12 md:pt-12 lg:p-16 lg:pl-16 lg:pb-16 lg:pt-16 bg-[#ec6342] pr-0 order-2 md:order-1">
+        <div className="flex flex-col justify-center bg-[#ec6342] order-2 md:order-1 p-8 md:p-12 lg:p-16">
           <div className="space-y-6">
             <div className="inline-block p-3 bg-white/10 rounded-2xl backdrop-blur-sm">
               <Box3DIcon className="w-8 h-8" />
@@ -20,16 +20,16 @@ export const HeroSection = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
-                to="/"
+                to="/booking"
                 className="inline-flex h-11 items-center justify-center rounded-md bg-white px-8 text-sm font-medium text-gray-900 shadow transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50"
               >
                 Réserver maintenant
               </Link>
               <Link
-                to="/about"
+                to="/box3d"
                 className="inline-flex h-11 items-center justify-center rounded-md border border-white px-8 text-sm font-medium shadow-sm transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50"
               >
-                En savoir plus
+                Voir la salle en 3D
               </Link>
             </div>
           </div>

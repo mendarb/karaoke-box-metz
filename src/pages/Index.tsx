@@ -40,36 +40,40 @@ const Index = () => {
     <div className="min-h-screen flex flex-col bg-white">
       <AnnouncementBanner />
       <main className="flex-grow">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
-          {isMobile ? (
-            <>
-              <div className="bg-white min-h-[600px] flex items-center justify-center p-8 order-1">
-                <Suspense fallback={<LoadingSpinner />}>
-                  <BookingSection 
-                    user={user} 
-                    onShowAuth={() => setShowAuthModal(true)} 
-                  />
-                </Suspense>
-              </div>
-              <div className="relative min-h-[600px] bg-[#ec6342] text-white order-2">
-                <HeroSection />
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="relative min-h-[600px] bg-[#ec6342] text-white">
-                <HeroSection />
-              </div>
-              <div className="bg-white min-h-[600px] flex items-center justify-center p-8">
-                <Suspense fallback={<LoadingSpinner />}>
-                  <BookingSection 
-                    user={user} 
-                    onShowAuth={() => setShowAuthModal(true)} 
-                  />
-                </Suspense>
-              </div>
-            </>
-          )}
+        <div className="bg-[#ec6342]">
+          <div className="max-w-[1280px] mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
+              {isMobile ? (
+                <>
+                  <div className="bg-white min-h-[600px] flex items-center justify-center p-8 order-1">
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <BookingSection 
+                        user={user} 
+                        onShowAuth={() => setShowAuthModal(true)} 
+                      />
+                    </Suspense>
+                  </div>
+                  <div className="relative min-h-[600px] text-white order-2">
+                    <HeroSection />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="relative min-h-[600px] text-white">
+                    <HeroSection />
+                  </div>
+                  <div className="bg-white min-h-[600px] flex items-center justify-center p-8">
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <BookingSection 
+                        user={user} 
+                        onShowAuth={() => setShowAuthModal(true)} 
+                      />
+                    </Suspense>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
         </div>
         <FeatureGrid />
       </main>

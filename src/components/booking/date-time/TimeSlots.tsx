@@ -20,6 +20,27 @@ export const TimeSlots = ({
   const selectedTimeSlot = form.watch("timeSlot");
   const { data: bookedSlots = [], isLoading: isLoadingSlots } = useBookedSlots(selectedDate);
 
+  // Créer un Set des créneaux indisponibles
+  const unavailableSlots = useMemo(() => {
+    const slots = new Set<string>();
+    
+    // Ajouter les créneaux bloqués
+    availableSlots.blockedSlots.forEach(slot => slots.add(slot));
+    
+    // Ajouter les créneaux réservés
+    bookedSlots.forEach(booking => {
+      const startHour = parseInt(booking.time_slot);
+      const duration = parseInt(booking.duration);
+      
+      // Marquer tous les créneaux couverts par la réservation comme indisponibles
+      for (let hour = startHour; hour < startHour + duration; hour++) {
+        slots.add(`${hour.toString().padStart(2, '0')}:00`);
+      }
+    });
+    
+    return slots;
+  }, [availableSlots.blockedSlots, bookedSlots]);
+
   const sortedSlots = useMemo(() => {
     return [...availableSlots.slots].sort((a, b) => {
       const hourA = parseInt(a.split(':')[0]);
@@ -35,7 +56,7 @@ export const TimeSlots = ({
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 px-4 sm:px-0">
       {sortedSlots.map((slot) => {
-        const isDisabled = bookedSlots.includes(slot) || availableSlots.blockedSlots.has(slot);
+        const isDisabled = unavailableSlots.has(slot);
         
         return (
           <TimeSlot

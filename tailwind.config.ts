@@ -24,15 +24,10 @@ export default {
       },
     },
     extend: {
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-        DEFAULT: "8px",
-        "2xl": "16px",
-        "3xl": "24px",
-      },
       colors: {
+        gray: {
+          50: '#212121',
+        },
         kbox: {
           coral: "#FF5733",
           pink: "#FFE5E5",
@@ -76,6 +71,14 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+      },
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
+        DEFAULT: "8px",
+        "2xl": "16px",
+        "3xl": "24px",
       },
       keyframes: {
         "accordion-down": {

@@ -106,7 +106,7 @@ export const BookingFormWrapper = () => {
     <Form {...form}>
       <form 
         onSubmit={form.handleSubmit(onSubmit)} 
-        className={isMobile ? "booking-form-mobile" : "space-y-6"}
+        className={isMobile ? "booking-form-mobile pb-32" : "space-y-6"}
       >
         <div className={isMobile ? "booking-steps-mobile" : ""}>
           <BookingSteps steps={steps} currentStep={currentStep} />

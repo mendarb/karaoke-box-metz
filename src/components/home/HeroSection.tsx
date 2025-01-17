@@ -2,8 +2,13 @@ import { Button } from "@/components/ui/button";
 import { Box3DIcon } from "@/components/icons/Box3DIcon";
 import { Link } from "react-router-dom";
 import BookingSection from "./BookingSection";
+import { useState } from "react";
+import { useUserState } from "@/hooks/useUserState";
 
 export const HeroSection = () => {
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const { user } = useUserState();
+
   return (
     <div className="container mx-auto">
       <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-0">
@@ -54,7 +59,10 @@ export const HeroSection = () => {
           </div>
         </div>
         <div className="bg-white min-h-[600px] flex items-center justify-center p-8">
-          <BookingSection />
+          <BookingSection 
+            user={user} 
+            onShowAuth={() => setShowAuthModal(true)} 
+          />
         </div>
       </div>
     </div>

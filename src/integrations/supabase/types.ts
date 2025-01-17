@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      blocked_time_slots: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          date: string
+          id: string
+          reason: string | null
+          recurring_days: number[] | null
+          time_slot: string
+          type: Database["public"]["Enums"]["blocked_slot_type"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          date: string
+          id?: string
+          reason?: string | null
+          recurring_days?: number[] | null
+          time_slot: string
+          type?: Database["public"]["Enums"]["blocked_slot_type"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          date?: string
+          id?: string
+          reason?: string | null
+          recurring_days?: number[] | null
+          time_slot?: string
+          type?: Database["public"]["Enums"]["blocked_slot_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       booking_settings: {
         Row: {
           created_at: string
@@ -476,6 +512,7 @@ export type Database = {
       }
     }
     Enums: {
+      blocked_slot_type: "one_time" | "recurring"
       booking_status: "pending" | "confirmed" | "cancelled" | "archived"
       promo_code_type: "percentage" | "fixed_amount" | "free"
       weekday:

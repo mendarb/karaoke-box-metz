@@ -43,10 +43,9 @@ export const BookingFormWrapper = () => {
 
   const validateStep = (step: number) => {
     const requiredFields: { [key: number]: Array<keyof BookingFormValues> } = {
-      1: ['email', 'fullName', 'phone'],
-      2: ['date', 'timeSlot'],
-      3: ['groupSize', 'duration'],
-      4: []
+      1: ['date', 'timeSlot'],
+      2: ['groupSize', 'duration'],
+      3: []
     };
 
     const fields = requiredFields[step];
@@ -87,7 +86,7 @@ export const BookingFormWrapper = () => {
       return;
     }
 
-    if (currentStep < 4) {
+    if (currentStep < 3) {
       console.log('Moving to next step:', currentStep + 1);
       setCurrentStep(currentStep + 1);
       return;

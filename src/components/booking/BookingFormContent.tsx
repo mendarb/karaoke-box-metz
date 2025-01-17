@@ -1,5 +1,4 @@
 import { UseFormReturn } from "react-hook-form";
-import { PersonalInfoFields } from "./PersonalInfoFields";
 import { DateTimeFields } from "./DateTimeFields";
 import { GroupSizeAndDurationFields } from "@/components/GroupSizeAndDurationFields";
 import { AdditionalFields } from "./AdditionalFields";
@@ -39,15 +38,13 @@ export const BookingFormContent = ({
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
-        return <PersonalInfoFields form={form} />;
-      case 2:
         return (
           <DateTimeFields 
             form={form} 
             onAvailabilityChange={onAvailabilityChange}
           />
         );
-      case 3:
+      case 2:
         return (
           <GroupSizeAndDurationFields
             form={form}
@@ -57,7 +54,7 @@ export const BookingFormContent = ({
             availableHours={availableHours}
           />
         );
-      case 4:
+      case 3:
         return (
           <AdditionalFields 
             form={form} 

@@ -3,6 +3,8 @@ import { RadioGroup } from "@/components/ui/radio-group";
 import { UseFormReturn } from "react-hook-form";
 import { TimeSlot } from "./time-slots/TimeSlot";
 import { LoadingSkeleton } from "./time-slots/LoadingSkeleton";
+import { useBookedSlots } from "./time-slots/useBookedSlots";
+import { format } from "date-fns";
 
 interface TimeSlotsSectionProps {
   form: UseFormReturn<any>;
@@ -11,7 +13,10 @@ interface TimeSlotsSectionProps {
 }
 
 export const TimeSlotsSection = ({ form, availableSlots, isLoading }: TimeSlotsSectionProps) => {
-  if (isLoading) {
+  const selectedDate = form.watch("date");
+  const { data: bookings = [], isLoading: isLoadingBookings } = useBookedSlots(selectedDate);
+
+  if (isLoading || isLoadingBookings) {
     return <LoadingSkeleton />;
   }
 
@@ -24,6 +29,28 @@ export const TimeSlotsSection = ({ form, availableSlots, isLoading }: TimeSlotsS
       </div>
     );
   }
+
+  // Créer un Set des créneaux indisponibles
+  const unavailableSlots = new Set<string>();
+
+  // Ajouter les créneaux bloqués
+  blockedSlots.forEach(slot => unavailableSlots.add(slot));
+
+  // Ajouter les créneaux réservés
+  bookings.forEach(booking => {
+    const startHour = parseInt(booking.time_slot);
+    const duration = parseInt(booking.duration);
+    
+    // Marquer tous les créneaux couverts par la réservation comme indisponibles
+    for (let hour = startHour; hour < startHour + duration; hour++) {
+      unavailableSlots.add(`${hour.toString().padStart(2, '0')}:00`);
+    }
+  });
+
+  console.log('🔍 Créneaux indisponibles:', {
+    date: format(selectedDate, 'yyyy-MM-dd'),
+    unavailableSlots: Array.from(unavailableSlots)
+  });
 
   return (
     <FormField
@@ -39,7 +66,7 @@ export const TimeSlotsSection = ({ form, availableSlots, isLoading }: TimeSlotsS
               className="grid grid-cols-2 sm:grid-cols-3 gap-3"
             >
               {slots.map((slot) => {
-                const isBlocked = blockedSlots.has(slot);
+                const isBlocked = unavailableSlots.has(slot);
                 return (
                   <TimeSlot
                     key={slot}
@@ -51,7 +78,7 @@ export const TimeSlotsSection = ({ form, availableSlots, isLoading }: TimeSlotsS
                         field.onChange(slot);
                       }
                     }}
-                    date={form.getValues("date")}
+                    date={selectedDate}
                   />
                 );
               })}

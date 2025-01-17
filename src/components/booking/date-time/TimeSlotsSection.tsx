@@ -1,31 +1,61 @@
-import { useFormContext } from "react-hook-form";
-import { TimeSlots } from "./TimeSlots";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { RadioGroup } from "@/components/ui/radio-group";
+import { UseFormReturn } from "react-hook-form";
+import { TimeSlot } from "./time-slots/TimeSlot";
+import { LoadingSkeleton } from "./time-slots/LoadingSkeleton";
 
 interface TimeSlotsSectionProps {
-  form: any;
-  availableSlots: string[];
+  form: UseFormReturn<any>;
+  availableSlots: { slots: string[], blockedSlots: Set<string> };
   isLoading: boolean;
 }
 
-export const TimeSlotsSection = ({
-  form,
-  availableSlots,
-  isLoading,
-}: TimeSlotsSectionProps) => {
-  const { watch } = useFormContext();
-  const selectedDate = watch("date");
+export const TimeSlotsSection = ({ form, availableSlots, isLoading }: TimeSlotsSectionProps) => {
+  if (isLoading) {
+    return <LoadingSkeleton />;
+  }
+
+  const { slots, blockedSlots } = availableSlots;
+
+  if (!slots || slots.length === 0) {
+    return (
+      <div className="text-center text-gray-500">
+        Aucun créneau disponible pour cette date
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      <h3 className="text-lg font-semibold text-center px-4 sm:px-0">
-        Choisissez votre horaire
-      </h3>
-      <TimeSlots
-        form={form}
-        availableSlots={availableSlots}
-        isLoading={isLoading}
-        selectedDate={selectedDate}
-      />
-    </div>
+    <FormField
+      control={form.control}
+      name="timeSlot"
+      render={({ field }) => (
+        <FormItem className="space-y-3">
+          <FormLabel>Heure d'arrivée</FormLabel>
+          <FormControl>
+            <RadioGroup
+              onValueChange={field.onChange}
+              defaultValue={field.value}
+              className="grid grid-cols-2 sm:grid-cols-3 gap-3"
+            >
+              {slots.map((slot) => {
+                const isBlocked = blockedSlots.has(slot);
+                return (
+                  <TimeSlot
+                    key={slot}
+                    slot={slot.split(':')[0]}
+                    isSelected={field.value === slot}
+                    isDisabled={isBlocked}
+                    onSelect={() => field.onChange(slot)}
+                    date={form.getValues("date")}
+                  />
+                );
+              })}
+            </RadioGroup>
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
   );
 };

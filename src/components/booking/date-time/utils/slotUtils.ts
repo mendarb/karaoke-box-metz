@@ -8,14 +8,14 @@ export const getTestModeSlots = () => {
 export const getAvailableSlots = async (
   date: Date,
   settings: BookingSettings | null | undefined
-): Promise<string[]> => {
+): Promise<{ slots: string[], blockedSlots: Set<string> }> => {
   if (!settings?.openingHours) {
     console.log('❌ Pas de paramètres d\'horaires');
-    return [];
+    return { slots: [], blockedSlots: new Set() };
   }
 
   if (settings.isTestMode) {
-    return getTestModeSlots();
+    return { slots: getTestModeSlots(), blockedSlots: new Set() };
   }
 
   // Ajuster la date pour la timezone locale
@@ -30,7 +30,7 @@ export const getAvailableSlots = async (
       dayOfWeek,
       isOpen: daySettings?.isOpen
     });
-    return [];
+    return { slots: [], blockedSlots: new Set() };
   }
 
   const slots = daySettings.slots || [];
@@ -67,44 +67,13 @@ export const getAvailableSlots = async (
 
     console.log('✅ Réservations trouvées:', bookings);
 
-    // Filtrer les créneaux disponibles
-    return slots.filter(slot => {
-      // Vérifier si le créneau est bloqué
-      if (blockedTimeSlots.has(slot)) {
-        console.log(`🚫 Créneau ${slot} bloqué manuellement`);
-        return false;
-      }
-
-      const slotTime = parseInt(slot.split(':')[0]);
-      const isSlotAvailable = !bookings?.some(booking => {
-        const bookingStartTime = parseInt(booking.time_slot);
-        const bookingDuration = parseInt(booking.duration);
-        const bookingEndTime = bookingStartTime + bookingDuration;
-
-        // Un créneau est indisponible si :
-        // - il commence pendant une réservation existante
-        // - il se termine pendant une réservation existante
-        // - il englobe complètement une réservation existante
-        const overlap = (
-          (slotTime >= bookingStartTime && slotTime < bookingEndTime) ||
-          (slotTime + 1 > bookingStartTime && slotTime + 1 <= bookingEndTime)
-        );
-
-        if (overlap) {
-          console.log(`❌ Créneau ${slot} indisponible - chevauche la réservation ${bookingStartTime}:00-${bookingEndTime}:00`);
-        }
-
-        return overlap;
-      });
-
-      if (isSlotAvailable) {
-        console.log(`✅ Créneau ${slot} disponible`);
-      }
-
-      return isSlotAvailable;
-    });
+    // Retourner tous les créneaux et les créneaux bloqués séparément
+    return {
+      slots: slots,
+      blockedSlots: blockedTimeSlots
+    };
   } catch (error) {
     console.error('❌ Erreur récupération créneaux:', error);
-    return slots;
+    return { slots: slots, blockedSlots: new Set() };
   }
 };

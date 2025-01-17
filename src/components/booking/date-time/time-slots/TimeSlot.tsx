@@ -34,7 +34,7 @@ export const TimeSlot = ({ slot, isSelected, isDisabled, onSelect, date }: TimeS
       disabled={isDisabled}
       onClick={() => onSelect(slot)}
     >
-      <span className="text-base sm:text-lg font-semibold">{slot}</span>
+      <span className="text-base sm:text-lg font-semibold">{slot}h</span>
       {hasDiscount && (
         <Badge 
           variant="secondary" 
@@ -59,7 +59,7 @@ export const TimeSlot = ({ slot, isSelected, isDisabled, onSelect, date }: TimeS
             {slotButton}
           </TooltipTrigger>
           <TooltipContent>
-            <p>Créneau déjà réservé</p>
+            <p>Créneau indisponible</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

@@ -23,7 +23,7 @@ export const MobileNav = ({ user, isAdmin, onSignOut, onShowAuth }: MobileNavPro
       <div className="flex justify-around items-center py-2">
         <Link 
           to="/" 
-          className="flex flex-col items-center gap-1 py-2 px-6 text-kbox-coral hover:text-kbox-orange-dark scale-110"
+          className="flex flex-col items-center gap-1 py-2 px-6 bg-kbox-coral text-white hover:bg-kbox-orange-dark -mt-6 rounded-xl shadow-lg transition-all duration-200"
         >
           <CalendarPlus className="w-7 h-7" />
           <span className="text-sm font-semibold">Réserver</span>

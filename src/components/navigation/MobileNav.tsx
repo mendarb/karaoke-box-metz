@@ -19,7 +19,7 @@ export const MobileNav = ({ user, isAdmin, onSignOut, onShowAuth }: MobileNavPro
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 pb-safe z-50">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 pb-safe z-50">
       <div className="flex justify-around items-center py-2">
         <Link to="/" className={getItemStyle("/")}>
           <Home className="w-6 h-6" />
@@ -28,7 +28,7 @@ export const MobileNav = ({ user, isAdmin, onSignOut, onShowAuth }: MobileNavPro
 
         <Link to="/booking" className={getItemStyle("/booking")}>
           <Calendar className="w-6 h-6" />
-          <span className="text-xs font-medium">Réserver</span>
+          <span className="text-xs font-medium">{user ? "Mes résa." : "Réserver"}</span>
         </Link>
 
         {user ? (

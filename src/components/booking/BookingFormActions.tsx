@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface BookingFormActionsProps {
   currentStep: number;
@@ -12,8 +13,10 @@ export const BookingFormActions = ({
   isSubmitting,
   onPrevious,
 }: BookingFormActionsProps) => {
+  const isMobile = useIsMobile();
+  
   return (
-    <div className="flex justify-between gap-4 mt-6">
+    <div className={`flex justify-between gap-4 ${isMobile ? 'fixed bottom-0 left-0 right-0 p-4 bg-white border-t z-50 pb-safe' : 'mt-6'}`}>
       {currentStep > 1 && (
         <Button
           type="button"

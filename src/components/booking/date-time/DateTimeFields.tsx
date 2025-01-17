@@ -2,7 +2,7 @@ import { UseFormReturn } from "react-hook-form";
 import { useDisabledDates } from "./hooks/useDisabledDates";
 import { useDateTimeSelection } from "./hooks/useDateTimeSelection";
 import { CalendarSection } from "./calendar/CalendarSection";
-import { TimeSlotsSection } from "./date-time/TimeSlotsSection";
+import { TimeSlotsSection } from "../date-time/TimeSlotsSection";
 import { useBookingSettings } from "./hooks/useBookingSettings";
 
 interface DateTimeFieldsProps {

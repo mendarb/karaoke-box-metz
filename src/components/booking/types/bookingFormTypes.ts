@@ -11,4 +11,5 @@ export interface BookingFormValues {
   promoCode?: string;
   promoCodeId?: string;
   finalPrice?: number;
+  acceptTerms?: boolean;
 }

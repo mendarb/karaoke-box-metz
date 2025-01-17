@@ -6,7 +6,7 @@ export const Logo = () => {
       <img 
         src="/lovable-uploads/4d1e4187-ec0c-4317-9793-55d355adc400.png" 
         alt="K.Box - Karaoké Privatif" 
-        className="h-12 px-2"
+        className="h-12 w-auto max-w-[180px] px-2"
       />
     </Link>
   );

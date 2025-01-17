@@ -41,17 +41,35 @@ const Index = () => {
       <AnnouncementBanner />
       <main className="flex-grow">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
-          <div className="relative min-h-[600px] bg-[#FF6B6B] text-white">
-            <HeroSection />
-          </div>
-          <div className="bg-white min-h-[600px] flex items-center justify-center p-8">
-            <Suspense fallback={<LoadingSpinner />}>
-              <BookingSection 
-                user={user} 
-                onShowAuth={() => setShowAuthModal(true)} 
-              />
-            </Suspense>
-          </div>
+          {isMobile ? (
+            <>
+              <div className="bg-white min-h-[600px] flex items-center justify-center p-8 order-1">
+                <Suspense fallback={<LoadingSpinner />}>
+                  <BookingSection 
+                    user={user} 
+                    onShowAuth={() => setShowAuthModal(true)} 
+                  />
+                </Suspense>
+              </div>
+              <div className="relative min-h-[600px] bg-[#ec6342] text-white order-2">
+                <HeroSection />
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="relative min-h-[600px] bg-[#ec6342] text-white">
+                <HeroSection />
+              </div>
+              <div className="bg-white min-h-[600px] flex items-center justify-center p-8">
+                <Suspense fallback={<LoadingSpinner />}>
+                  <BookingSection 
+                    user={user} 
+                    onShowAuth={() => setShowAuthModal(true)} 
+                  />
+                </Suspense>
+              </div>
+            </>
+          )}
         </div>
         <FeatureGrid />
       </main>

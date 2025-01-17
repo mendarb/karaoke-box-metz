@@ -87,7 +87,7 @@ export const ProfileSection = () => {
           onSubmit={onSubmit}
           isLoading={isLoading}
         />
-        <div className="mt-8 pt-6 border-t">
+        <div className="mt-8 pt-6 border-t mb-8">
           <Button 
             variant="destructive" 
             onClick={handleLogout}

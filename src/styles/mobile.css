@@ -66,18 +66,47 @@
     border-top: 1px solid #f1f1f1;
   }
 
-  /* Improve mobile form styling */
-  .mobile-card {
-    background: white;
-    border-radius: 1rem;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    box-shadow: 0px 3px 30px rgba(0, 0, 0, 0.06);
+  /* Mobile booking form styles */
+  .booking-form-mobile {
+    @apply min-h-screen bg-white;
   }
 
-  /* Remove double scrollbar */
-  .mobile-scroll-area {
-    height: calc(100vh - 4rem - env(safe-area-inset-bottom, 1rem)) !important;
-    overflow: hidden !important;
+  .booking-steps-mobile {
+    @apply sticky top-0 bg-white border-b border-gray-100 z-10;
+  }
+
+  .booking-content-mobile {
+    @apply px-4 py-6 space-y-6;
+  }
+
+  .booking-actions-mobile {
+    @apply fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-4 pb-safe z-40;
+  }
+
+  /* Mobile time slots grid */
+  .time-slots-grid {
+    @apply grid grid-cols-2 sm:grid-cols-3 gap-3;
+  }
+
+  .time-slot {
+    @apply flex flex-col items-center justify-center p-4 rounded-xl border border-gray-100 
+    transition-all duration-200;
+  }
+
+  .time-slot.selected {
+    @apply bg-violet-600 text-white border-violet-600;
+  }
+
+  /* Mobile calendar styles */
+  .calendar-container {
+    @apply p-4 bg-white rounded-xl;
+  }
+
+  .suggested-dates {
+    @apply flex gap-4 p-4 overflow-x-auto;
+  }
+
+  .date-suggestion {
+    @apply flex flex-col items-center p-4 rounded-xl border border-gray-100 min-w-[100px];
   }
 }

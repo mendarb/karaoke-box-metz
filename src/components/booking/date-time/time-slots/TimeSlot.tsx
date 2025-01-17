@@ -21,11 +21,11 @@ export const TimeSlot = ({ slot, isSelected, isDisabled, onSelect, date }: TimeS
   const slotButton = (
     <Button
       type="button"
-      variant={isSelected ? "default" : "outline"}
+      variant="outline"
       className={cn(
-        "w-full h-14 sm:h-12 flex items-center justify-center gap-2 rounded-xl transition-all duration-200 text-base relative",
-        isDisabled && "opacity-50 bg-gray-100 hover:bg-gray-100 cursor-not-allowed",
-        isSelected && "bg-violet-600 hover:bg-violet-700 scale-105 text-white",
+        "w-full h-auto py-6 flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-200",
+        isDisabled && "opacity-50 bg-gray-50 hover:bg-gray-50 cursor-not-allowed",
+        isSelected && "bg-violet-600 hover:bg-violet-700 text-white border-violet-600",
         !isSelected && !isDisabled && "hover:border-violet-600 hover:text-violet-600",
         hasDiscount && !isSelected && "border-green-500 text-green-700",
         hasDiscount && isSelected && "bg-green-600 hover:bg-green-700"
@@ -33,8 +33,8 @@ export const TimeSlot = ({ slot, isSelected, isDisabled, onSelect, date }: TimeS
       disabled={isDisabled}
       onClick={() => onSelect(slot)}
     >
-      <Clock className="h-4 w-4" />
-      {slot}
+      <span className="text-lg font-semibold">{slot}</span>
+      <span className="text-sm opacity-70">1 heure</span>
       {hasDiscount && (
         <Badge 
           variant="secondary" 

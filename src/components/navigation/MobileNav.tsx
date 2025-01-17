@@ -1,40 +1,54 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Home, Calendar, User2, Settings } from "lucide-react";
 import { MobileNavProps } from "@/types/navigation";
 
 export const MobileNav = ({ user, isAdmin, onSignOut, onShowAuth }: MobileNavProps) => {
+  const location = useLocation();
+
+  const getItemStyle = (path: string) => {
+    const isActive = location.pathname === path;
+    return `flex flex-col items-center gap-1 ${
+      isActive ? "text-violet-600" : "text-gray-400"
+    }`;
+  };
+
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 py-3 md:hidden z-[100] pb-safe">
-      <div className="flex justify-around items-center max-w-lg mx-auto px-4">
-        <Link to="/" className="flex flex-col items-center gap-1">
-          <Home className="h-5 w-5 text-gray-400" />
-          <span className="text-xs text-gray-400">Accueil</span>
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 pb-safe z-50">
+      <div className="flex justify-around items-center py-2 px-6">
+        <Link to="/" className={getItemStyle("/")}>
+          <Home className="w-6 h-6" />
+          <span className="text-xs">Accueil</span>
         </Link>
-        
-        <Link to="/bookings" className="flex flex-col items-center gap-1">
-          <Calendar className="h-5 w-5 text-violet-600" />
-          <span className="text-xs text-violet-600">Réserver</span>
+
+        <Link to="/" className={getItemStyle("/booking")}>
+          <Calendar className="w-6 h-6" />
+          <span className="text-xs">Réserver</span>
         </Link>
 
         {user ? (
-          <Link to="/account" className="flex flex-col items-center gap-1">
-            <User2 className="h-5 w-5 text-gray-400" />
-            <span className="text-xs text-gray-400">Profil</span>
+          <Link to="/account" className={getItemStyle("/account")}>
+            <User2 className="w-6 h-6" />
+            <span className="text-xs">Profil</span>
           </Link>
         ) : (
-          <button onClick={onShowAuth} className="flex flex-col items-center gap-1">
-            <User2 className="h-5 w-5 text-gray-400" />
-            <span className="text-xs text-gray-400">Profil</span>
+          <button onClick={onShowAuth} className={getItemStyle("/account")}>
+            <User2 className="w-6 h-6" />
+            <span className="text-xs">Profil</span>
           </button>
         )}
 
-        {isAdmin && (
-          <Link to="/admin" className="flex flex-col items-center gap-1">
-            <Settings className="h-5 w-5 text-gray-400" />
-            <span className="text-xs text-gray-400">Réglages</span>
+        {isAdmin ? (
+          <Link to="/admin" className={getItemStyle("/admin")}>
+            <Settings className="w-6 h-6" />
+            <span className="text-xs">Réglages</span>
+          </Link>
+        ) : (
+          <Link to="/settings" className={getItemStyle("/settings")}>
+            <Settings className="w-6 h-6" />
+            <span className="text-xs">Réglages</span>
           </Link>
         )}
       </div>
-    </div>
+    </nav>
   );
 };

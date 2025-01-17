@@ -24,7 +24,7 @@ export const TimeSlot = ({ slot, isSelected, isDisabled, onSelect, date }: TimeS
       variant="outline"
       className={cn(
         "w-full flex flex-col items-center justify-center gap-0.5 rounded-xl transition-all duration-200",
-        "sm:py-6 py-3", // Reduced padding on mobile
+        "sm:py-6 py-3",
         isDisabled && "opacity-50 bg-gray-100 hover:bg-gray-100 cursor-not-allowed text-gray-500",
         isSelected && !isDisabled && "bg-violet-600 hover:bg-violet-700 text-white border-violet-600",
         !isSelected && !isDisabled && "hover:border-violet-600 hover:text-violet-600",
@@ -45,7 +45,7 @@ export const TimeSlot = ({ slot, isSelected, isDisabled, onSelect, date }: TimeS
           variant="secondary" 
           className={cn(
             "absolute -top-2 -right-2 bg-green-100 text-green-700 border border-green-200",
-            "text-xs py-0.5", // Smaller badge on mobile
+            "text-xs py-0.5",
             isSelected && "bg-white text-green-700"
           )}
         >

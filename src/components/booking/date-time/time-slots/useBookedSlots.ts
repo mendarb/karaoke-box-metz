@@ -9,7 +9,7 @@ export const useBookedSlots = (selectedDate: Date | null) => {
       if (!selectedDate) return [];
 
       const formattedDate = format(selectedDate, 'yyyy-MM-dd');
-      console.log('🔍 Vérification des créneaux pour:', formattedDate);
+      console.log('🔍 Vérification des créneaux réservés pour:', formattedDate);
       
       const { data: bookings, error } = await supabase
         .from('bookings')
@@ -17,7 +17,7 @@ export const useBookedSlots = (selectedDate: Date | null) => {
         .eq('date', formattedDate)
         .neq('status', 'cancelled')
         .is('deleted_at', null)
-        .eq('payment_status', 'paid'); // Correction du filtre payment_status
+        .eq('payment_status', 'paid');
 
       if (error) {
         console.error('❌ Erreur lors du chargement des créneaux réservés:', error);
@@ -29,15 +29,15 @@ export const useBookedSlots = (selectedDate: Date | null) => {
         const startHour = parseInt(booking.time_slot);
         const duration = parseInt(booking.duration);
         
+        // Ajouter tous les créneaux couverts par cette réservation
         for (let hour = startHour; hour < startHour + duration; hour++) {
           bookedSlots.add(`${hour.toString().padStart(2, '0')}:00`);
         }
       });
 
+      console.log('✅ Créneaux réservés:', Array.from(bookedSlots));
       return Array.from(bookedSlots);
     },
     enabled: !!selectedDate,
-    staleTime: 30000,
-    gcTime: 300000,
   });
 };

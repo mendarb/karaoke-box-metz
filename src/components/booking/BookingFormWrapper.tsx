@@ -68,6 +68,7 @@ export const BookingFormWrapper = () => {
     });
 
     if (!isValid) {
+      console.log('Validation errors:', errors);
       toast({
         title: "Erreur de validation",
         description: "Veuillez remplir tous les champs obligatoires",

@@ -23,7 +23,8 @@ export const TimeSlot = ({ slot, isSelected, isDisabled, onSelect, date }: TimeS
       type="button"
       variant="outline"
       className={cn(
-        "w-full h-auto py-6 flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-200",
+        "w-full flex flex-col items-center justify-center gap-0.5 rounded-xl transition-all duration-200",
+        "sm:py-6 py-3", // Reduced padding on mobile
         isDisabled && "opacity-50 bg-gray-50 hover:bg-gray-50 cursor-not-allowed",
         isSelected && "bg-violet-600 hover:bg-violet-700 text-white border-violet-600",
         !isSelected && !isDisabled && "hover:border-violet-600 hover:text-violet-600",
@@ -33,13 +34,14 @@ export const TimeSlot = ({ slot, isSelected, isDisabled, onSelect, date }: TimeS
       disabled={isDisabled}
       onClick={() => onSelect(slot)}
     >
-      <span className="text-lg font-semibold">{slot}</span>
-      <span className="text-sm opacity-70">1 heure</span>
+      <span className="text-base sm:text-lg font-semibold">{slot}</span>
+      <span className="text-xs sm:text-sm opacity-70">1 heure</span>
       {hasDiscount && (
         <Badge 
           variant="secondary" 
           className={cn(
             "absolute -top-2 -right-2 bg-green-100 text-green-700 border border-green-200",
+            "text-xs py-0.5", // Smaller badge on mobile
             isSelected && "bg-white text-green-700"
           )}
         >

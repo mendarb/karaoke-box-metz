@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
 import { useUserState } from "@/hooks/useUserState";
@@ -46,11 +46,6 @@ export const useBookingForm = () => {
         form.setValue('fullName', lastBooking.user_name);
         form.setValue('phone', lastBooking.user_phone);
       }
-
-      // Si l'utilisateur est connecté, on passe directement à l'étape 2
-      if (user) {
-        setCurrentStep(2);
-      }
     } catch (error) {
       console.error('Error loading user data:', error);
       toast({
@@ -60,10 +55,6 @@ export const useBookingForm = () => {
       });
     }
   };
-
-  useEffect(() => {
-    loadUserData();
-  }, [user, form]);
 
   const handlePriceCalculated = (price: number) => {
     console.log('Price calculated:', price);
@@ -77,7 +68,7 @@ export const useBookingForm = () => {
   };
 
   const handlePrevious = () => {
-    if (currentStep > (user ? 2 : 1)) {
+    if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
   };

@@ -5,7 +5,7 @@ export const HeroSection = () => {
   return (
     <div className="bg-[#F1F1F1]">
       <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-0">
-        <div className="flex flex-col justify-center bg-[#F1F1F1] order-2 md:order-1 p-8 md:p-12 lg:p-16">
+        <div className="flex flex-col justify-center bg-[#ec6342] order-2 md:order-1 p-8 md:p-12 lg:p-16">
           <div className="space-y-6">
             <div className="inline-block p-3 bg-[#ec6342]/10 rounded-2xl backdrop-blur-sm">
               <Box3DIcon className="w-8 h-8" />

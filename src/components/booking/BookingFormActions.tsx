@@ -13,36 +13,38 @@ export const BookingFormActions = ({
   onPrevious,
 }: BookingFormActionsProps) => {
   return (
-    <div className="flex justify-between items-center pt-6 pb-4 px-6 border-t border-gray-100">
-      {currentStep > 1 ? (
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onPrevious}
-          className="flex items-center gap-2 hover:bg-gray-100"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Précédent
-        </Button>
-      ) : (
-        <div></div>
-      )}
-      <Button
-        type="submit"
-        disabled={isSubmitting}
-        className="bg-violet-600 hover:bg-violet-700 text-white flex items-center gap-2 px-6 py-2 rounded-lg transition-colors duration-200"
-      >
-        {isSubmitting ? (
-          "Chargement..."
-        ) : currentStep < 4 ? (
-          <>
-            Suivant
-            <ArrowRight className="w-4 h-4" />
-          </>
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-4 pb-safe z-40">
+      <div className="flex justify-between items-center gap-4 max-w-md mx-auto">
+        {currentStep > 1 ? (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onPrevious}
+            className="flex items-center gap-2 w-full"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Précédent
+          </Button>
         ) : (
-          "Confirmer et payer"
+          <div className="w-full"></div>
         )}
-      </Button>
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="bg-violet-600 hover:bg-violet-700 text-white flex items-center gap-2 w-full"
+        >
+          {isSubmitting ? (
+            "Chargement..."
+          ) : currentStep < 4 ? (
+            <>
+              Suivant
+              <ArrowRight className="w-4 h-4" />
+            </>
+          ) : (
+            "Confirmer et payer"
+          )}
+        </Button>
+      </div>
     </div>
   );
 };

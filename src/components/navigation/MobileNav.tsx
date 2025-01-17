@@ -4,16 +4,22 @@ import { MobileNavProps } from "@/types/navigation";
 
 export const MobileNav = ({ user, isAdmin, onSignOut, onShowAuth }: MobileNavProps) => {
   const location = useLocation();
+  const isBookingFlow = location.pathname === "/booking";
+
+  // Ne pas afficher la navigation pendant le flux de réservation
+  if (isBookingFlow) {
+    return null;
+  }
 
   const getItemStyle = (path: string) => {
     const isActive = location.pathname === path;
     return `flex flex-col items-center gap-1 py-2 px-4 ${
-      isActive ? "text-kbox-coral" : "text-gray-500"
+      isActive ? "text-violet-600" : "text-gray-500"
     } transition-colors duration-200`;
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 pb-safe z-50 shadow-lg">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 pb-safe z-50">
       <div className="flex justify-around items-center py-2">
         <Link to="/" className={getItemStyle("/")}>
           <Home className="w-6 h-6" />
@@ -37,15 +43,10 @@ export const MobileNav = ({ user, isAdmin, onSignOut, onShowAuth }: MobileNavPro
           </button>
         )}
 
-        {isAdmin ? (
+        {isAdmin && (
           <Link to="/admin" className={getItemStyle("/admin")}>
             <Settings className="w-6 h-6" />
             <span className="text-xs font-medium">Admin</span>
-          </Link>
-        ) : (
-          <Link to="/settings" className={getItemStyle("/settings")}>
-            <Settings className="w-6 h-6" />
-            <span className="text-xs font-medium">Réglages</span>
           </Link>
         )}
       </div>

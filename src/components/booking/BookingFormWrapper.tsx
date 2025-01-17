@@ -5,10 +5,10 @@ import { useBookingSubmit } from "./hooks/useBookingSubmit";
 import { BookingSteps } from "@/components/BookingSteps";
 import { BookingFormContent } from "./BookingFormContent";
 import { BookingFormActions } from "./BookingFormActions";
+import { BookingFormValues } from "./types/bookingFormTypes";
 import { useBookingMode } from "./hooks/useBookingMode";
 import { useBookingOverlap } from "@/hooks/useBookingOverlap";
 import { toast } from "@/hooks/use-toast";
-import { BookingFormValues } from "./types/bookingFormTypes";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export const BookingFormWrapper = () => {

@@ -15,7 +15,7 @@ export const BookingFormActions = ({
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-4 pb-safe z-40">
       <div className="flex justify-between items-center gap-4 max-w-md mx-auto">
-        {currentStep > 1 ? (
+        {currentStep > 1 && (
           <Button
             type="button"
             variant="outline"
@@ -25,8 +25,6 @@ export const BookingFormActions = ({
             <ArrowLeft className="w-4 h-4" />
             Précédent
           </Button>
-        ) : (
-          <div className="w-full"></div>
         )}
         <Button
           type="submit"

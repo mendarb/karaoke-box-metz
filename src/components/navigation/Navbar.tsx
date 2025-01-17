@@ -38,7 +38,7 @@ export const Navbar = ({ onShowAuth }: NavbarProps) => {
   return (
     <>
       <nav className="sticky top-0 z-50 w-full border-b bg-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
             <Link to="/" className="flex items-center">
               <Logo />

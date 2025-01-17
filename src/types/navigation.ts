@@ -1,6 +1,8 @@
+import { User } from "@supabase/supabase-js";
+
 export interface MobileNavProps {
-  user: any;
+  user: User | null;
   isAdmin: boolean;
-  onSignOut: () => Promise<void>;
+  onSignOut: () => void;
   onShowAuth: () => void;
 }

@@ -35,7 +35,6 @@ export const TimeSlot = ({ slot, isSelected, isDisabled, onSelect, date }: TimeS
       onClick={() => onSelect(slot)}
     >
       <span className="text-base sm:text-lg font-semibold">{slot}</span>
-      <span className="text-xs sm:text-sm opacity-70">1 heure</span>
       {hasDiscount && (
         <Badge 
           variant="secondary" 

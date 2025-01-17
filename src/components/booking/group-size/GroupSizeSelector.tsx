@@ -2,6 +2,8 @@ import { UseFormReturn } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Users } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 
 interface GroupSizeSelectorProps {
   form: UseFormReturn<any>;
@@ -13,34 +15,36 @@ export const GroupSizeSelector = ({
   onGroupSizeChange,
 }: GroupSizeSelectorProps) => {
   const groupSizes = [
-    { label: "3 et moins", value: "3" },
+    { label: "2", value: "2" },
+    { label: "3", value: "3" },
     { label: "4", value: "4" },
     { label: "5", value: "5" },
-    { label: "6 et plus", value: "6" }
+    { label: "6+", value: "6" },
   ];
-  
+
   const selectedSize = form.watch("groupSize");
 
   return (
     <div className="w-full space-y-4">
       <div className="flex items-center gap-2">
         <Users className="h-5 w-5 text-violet-600" />
-        <h2 className="text-lg font-medium text-gray-900">
+        <h2 className="text-lg md:text-xl text-gray-900">
           Combien serez-vous ?
         </h2>
       </div>
       <p className="text-sm text-gray-600">
-        Sélectionnez le nombre de personnes
+        Choisissez le nombre de personnes
       </p>
-      <div className="grid grid-cols-2 gap-3">
+
+      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
         {groupSizes.map(({ label, value }) => (
           <Button
             key={value}
             type="button"
             variant={selectedSize === value ? "default" : "outline"}
             className={cn(
-              "relative h-16 font-medium transition-all",
-              selectedSize === value ? "bg-violet-600 hover:bg-violet-700 scale-105" : "hover:bg-violet-50",
+              "relative h-14 md:h-16 font-medium transition-all w-full",
+              selectedSize === value ? "bg-violet-600 hover:bg-violet-700" : "hover:bg-violet-50",
               "flex flex-col items-center justify-center text-center",
               "transform active:scale-[0.98] transition-transform duration-200"
             )}
@@ -50,12 +54,18 @@ export const GroupSizeSelector = ({
             }}
           >
             <div className="text-base">{label}</div>
-            <div className="text-xs opacity-75">
-              personnes
-            </div>
           </Button>
         ))}
       </div>
+
+      {selectedSize === "6" && (
+        <Alert variant="warning" className="py-2 border-none bg-amber-50">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription className="text-xs">
+            Pour les groupes de 6 personnes et plus, le maximum est de 10 personnes
+          </AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 };

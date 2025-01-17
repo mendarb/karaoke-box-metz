@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Calendar, User2, Settings } from "lucide-react";
+import { CalendarPlus, Calendar, User2, Settings } from "lucide-react";
 import { MobileNavProps } from "@/types/navigation";
 
 export const MobileNav = ({ user, isAdmin, onSignOut, onShowAuth }: MobileNavProps) => {
@@ -22,11 +22,11 @@ export const MobileNav = ({ user, isAdmin, onSignOut, onShowAuth }: MobileNavPro
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 pb-safe z-50">
       <div className="flex justify-around items-center py-2">
         <Link 
-          to="/booking" 
-          className={`${getItemStyle("/booking")} text-kbox-coral hover:text-kbox-orange-dark`}
+          to="/" 
+          className="flex flex-col items-center gap-1 py-2 px-6 text-kbox-coral hover:text-kbox-orange-dark scale-110"
         >
-          <Home className="w-6 h-6" />
-          <span className="text-xs font-medium">Réserver</span>
+          <CalendarPlus className="w-7 h-7" />
+          <span className="text-sm font-semibold">Réserver</span>
         </Link>
 
         <Link 

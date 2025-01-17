@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Clock, Percent } from "lucide-react";
+import { Percent } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
@@ -32,7 +32,12 @@ export const TimeSlot = ({ slot, isSelected, isDisabled, onSelect, date }: TimeS
         hasDiscount && isSelected && !isDisabled && "bg-green-600 hover:bg-green-700"
       )}
       disabled={isDisabled}
-      onClick={() => onSelect(slot)}
+      onClick={(e) => {
+        e.preventDefault();
+        if (!isDisabled) {
+          onSelect(slot);
+        }
+      }}
     >
       <span className="text-base sm:text-lg font-semibold">{slot}h</span>
       {hasDiscount && !isDisabled && (
@@ -60,21 +65,6 @@ export const TimeSlot = ({ slot, isSelected, isDisabled, onSelect, date }: TimeS
           </TooltipTrigger>
           <TooltipContent>
             <p>Créneau indisponible</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
-  }
-
-  if (hasDiscount) {
-    return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            {slotButton}
-          </TooltipTrigger>
-          <TooltipContent>
-            <p className="text-green-700">-20% les mercredis et jeudis avant 18h</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

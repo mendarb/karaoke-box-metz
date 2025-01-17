@@ -46,7 +46,11 @@ export const TimeSlotsSection = ({ form, availableSlots, isLoading }: TimeSlotsS
                     slot={slot}
                     isSelected={field.value === slot}
                     isDisabled={isBlocked}
-                    onSelect={() => field.onChange(slot)}
+                    onSelect={(slot) => {
+                      if (!isBlocked) {
+                        field.onChange(slot);
+                      }
+                    }}
                     date={form.getValues("date")}
                   />
                 );

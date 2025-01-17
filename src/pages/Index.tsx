@@ -41,40 +41,23 @@ const Index = () => {
     <div className="min-h-screen flex flex-col bg-white">
       <AnnouncementBanner />
       <main className="flex-grow">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
-          {isMobile ? (
-            <>
-              <div className="md:col-span-2">
-                <Suspense fallback={<LoadingSpinner />}>
-                  <BookingSection 
-                    user={user} 
-                    onShowAuth={() => setShowAuthModal(true)} 
-                  />
-                </Suspense>
-              </div>
-              <div className="md:col-span-1">
-                <HeroSection />
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="md:col-span-1">
-                <HeroSection />
-              </div>
-              <div className="md:col-span-2">
-                <Suspense fallback={<LoadingSpinner />}>
-                  <BookingSection 
-                    user={user} 
-                    onShowAuth={() => setShowAuthModal(true)} 
-                  />
-                </Suspense>
-              </div>
-            </>
-          )}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
+          <div className="relative min-h-[600px] bg-[#FF6B6B] text-white">
+            <HeroSection />
+            <div className="absolute bottom-8 left-0 right-0 px-6">
+              <PaymentMethods />
+            </div>
+          </div>
+          <div className="bg-white min-h-[600px] flex items-center justify-center p-8">
+            <Suspense fallback={<LoadingSpinner />}>
+              <BookingSection 
+                user={user} 
+                onShowAuth={() => setShowAuthModal(true)} 
+              />
+            </Suspense>
+          </div>
         </div>
-
         <FeatureGrid />
-        <PaymentMethods />
       </main>
 
       <Suspense fallback={null}>

@@ -6,7 +6,7 @@ import { PaymentMethods } from "./PaymentMethods";
 export const HeroSection = () => {
   return (
     <div className="container mx-auto">
-      <div className="grid grid-cols-1 md:grid-cols-2 bg-[#1A1F2C] text-white">
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] bg-[#FF5733] text-white">
         <div className="relative flex flex-col justify-between p-12 h-[600px]">
           <div className="space-y-6">
             <div className="inline-block px-4 py-1.5 bg-white/10">

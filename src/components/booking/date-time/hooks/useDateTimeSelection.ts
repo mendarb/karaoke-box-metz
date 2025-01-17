@@ -5,12 +5,17 @@ import { useBookingSettings } from "./useBookingSettings";
 import { getAvailableSlots } from "../utils/slotUtils";
 import { getAvailableHoursForSlot } from "../utils/availabilityUtils";
 
+interface TimeSlots {
+  slots: string[];
+  blockedSlots: Set<string>;
+}
+
 export const useDateTimeSelection = (
   form: UseFormReturn<any>,
   onAvailabilityChange: (date: Date | undefined, availableHours: number) => void
 ) => {
   const [selectedDate, setSelectedDate] = useState<Date>();
-  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [availableSlots, setAvailableSlots] = useState<TimeSlots>({ slots: [], blockedSlots: new Set() });
   const { settings } = useBookingSettings();
 
   const handleDateSelect = useCallback(async (date: Date) => {

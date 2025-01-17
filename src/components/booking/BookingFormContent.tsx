@@ -1,12 +1,13 @@
+import { DateTimeFields } from "./date-time/DateTimeFields";
+import { GroupSizeAndDurationFields } from "./GroupSizeAndDurationFields";
+import { AdditionalFields } from "./additional/AdditionalFields";
+import { BookingFormLegal } from "./BookingFormLegal";
 import { UseFormReturn } from "react-hook-form";
-import { DateTimeFields } from "./DateTimeFields";
-import { GroupSizeAndDurationFields } from "@/components/GroupSizeAndDurationFields";
-import { AdditionalFields } from "./AdditionalFields";
-import { Card, CardContent } from "@/components/ui/card";
+import { BookingFormValues } from "./types/bookingFormTypes";
 
 interface BookingFormContentProps {
   currentStep: number;
-  form: UseFormReturn<any>;
+  form: UseFormReturn<BookingFormValues>;
   groupSize: string;
   duration: string;
   calculatedPrice: number;
@@ -29,52 +30,38 @@ export const BookingFormContent = ({
   onAvailabilityChange,
   availableHours,
 }: BookingFormContentProps) => {
-  console.log('📅 BookingFormContent - Valeurs actuelles:', {
-    date: form.watch('date'),
-    timeSlot: form.watch('timeSlot'),
-    step: currentStep
-  });
+  return (
+    <div className="space-y-6">
+      {currentStep === 1 && (
+        <DateTimeFields
+          form={form}
+          onAvailabilityChange={onAvailabilityChange}
+          availableHours={availableHours}
+        />
+      )}
 
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <DateTimeFields 
-            form={form} 
-            onAvailabilityChange={onAvailabilityChange}
-          />
-        );
-      case 2:
-        return (
-          <GroupSizeAndDurationFields
+      {currentStep === 2 && (
+        <GroupSizeAndDurationFields
+          form={form}
+          groupSize={groupSize}
+          duration={duration}
+          onGroupSizeChange={onGroupSizeChange}
+          onDurationChange={onDurationChange}
+          onPriceCalculated={onPriceCalculated}
+        />
+      )}
+
+      {currentStep === 3 && (
+        <>
+          <AdditionalFields
             form={form}
-            onGroupSizeChange={onGroupSizeChange}
-            onDurationChange={onDurationChange}
-            onPriceCalculated={onPriceCalculated}
-            availableHours={availableHours}
-          />
-        );
-      case 3:
-        return (
-          <AdditionalFields 
-            form={form} 
             calculatedPrice={calculatedPrice}
             groupSize={groupSize}
             duration={duration}
           />
-        );
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <Card className="bg-white/50 backdrop-blur-sm border-none shadow-none">
-      <CardContent className="pt-6">
-        <div className="min-h-[300px] animate-fadeIn">
-          {renderStepContent()}
-        </div>
-      </CardContent>
-    </Card>
+          <BookingFormLegal form={form} />
+        </>
+      )}
+    </div>
   );
 };

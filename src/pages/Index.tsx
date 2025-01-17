@@ -9,7 +9,6 @@ import { supabase } from "@/lib/supabase";
 import { HeroSection } from "@/components/home/HeroSection";
 import { FeatureGrid } from "@/components/home/FeatureGrid";
 import { AnnouncementBanner } from "@/components/announcements/AnnouncementBanner";
-import { PaymentMethods } from "@/components/home/PaymentMethods";
 
 const BookingSection = lazy(() => import("@/components/home/BookingSection"));
 const Footer = lazy(() => import("@/components/home/Footer"));
@@ -44,9 +43,6 @@ const Index = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
           <div className="relative min-h-[600px] bg-[#FF6B6B] text-white">
             <HeroSection />
-            <div className="absolute bottom-8 left-0 right-0 px-6">
-              <PaymentMethods />
-            </div>
           </div>
           <div className="bg-white min-h-[600px] flex items-center justify-center p-8">
             <Suspense fallback={<LoadingSpinner />}>

@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Box3DIcon } from "@/components/icons/Box3DIcon";
 import { Link } from "react-router-dom";
-import { PaymentMethods } from "./PaymentMethods";
+import BookingSection from "./BookingSection";
 
 export const HeroSection = () => {
   return (

@@ -20,17 +20,17 @@ export const BookingStatusBadge = ({
   switch (status) {
     case 'confirmed':
       variant = paymentStatus === 'paid' ? "default" : "secondary";
-      label = paymentStatus === 'paid' ? "Confirmée et payée" : "Confirmée";
+      label = paymentStatus === 'paid' ? "Payée" : "Confirmée";
       break;
     case 'cancelled':
       variant = "destructive";
-      label = paymentStatus === 'failed' ? "Paiement échoué" : 
+      label = paymentStatus === 'failed' ? "Échec paiement" : 
               paymentStatus === 'expired' ? "Expirée" : "Annulée";
       break;
     case 'pending':
       variant = paymentStatus === 'paid' ? "default" : "secondary";
       label = paymentStatus === 'paid' ? "Payée" : 
-              paymentStatus === 'awaiting_payment' ? "En attente de paiement" : "En attente";
+              paymentStatus === 'awaiting_payment' ? "En attente" : "En attente";
       break;
     default:
       variant = "outline";

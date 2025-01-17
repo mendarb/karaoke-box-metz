@@ -37,14 +37,28 @@ export const getAvailableSlots = async (
   console.log('🔍 Vérification des créneaux pour la date:', localDate.toISOString().split('T')[0]);
 
   try {
-    // Modification importante ici : on récupère toutes les réservations non annulées pour cette date
+    // Récupérer les créneaux bloqués pour cette date
+    const { data: blockedSlots, error: blockedError } = await supabase
+      .from('blocked_time_slots')
+      .select('time_slot')
+      .eq('date', localDate.toISOString().split('T')[0]);
+
+    if (blockedError) {
+      console.error('❌ Erreur lors de la récupération des créneaux bloqués:', blockedError);
+      throw blockedError;
+    }
+
+    const blockedTimeSlots = new Set(blockedSlots?.map(slot => slot.time_slot) || []);
+    console.log('🚫 Créneaux bloqués:', Array.from(blockedTimeSlots));
+
+    // Récupérer les réservations existantes
     const { data: bookings, error } = await supabase
       .from('bookings')
       .select('time_slot, duration')
       .eq('date', localDate.toISOString().split('T')[0])
       .neq('status', 'cancelled')
       .is('deleted_at', null)
-      .is('payment_status', 'paid');
+      .eq('payment_status', 'paid');
 
     if (error) {
       console.error('❌ Erreur lors de la récupération des réservations:', error);
@@ -55,6 +69,12 @@ export const getAvailableSlots = async (
 
     // Filtrer les créneaux disponibles
     return slots.filter(slot => {
+      // Vérifier si le créneau est bloqué
+      if (blockedTimeSlots.has(slot)) {
+        console.log(`🚫 Créneau ${slot} bloqué manuellement`);
+        return false;
+      }
+
       const slotTime = parseInt(slot.split(':')[0]);
       const isSlotAvailable = !bookings?.some(booking => {
         const bookingStartTime = parseInt(booking.time_slot);

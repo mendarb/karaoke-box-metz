@@ -40,7 +40,7 @@ const Index = () => {
     <div className="min-h-screen flex flex-col bg-[#F1F1F1]">
       <AnnouncementBanner />
       <main className="flex-grow">
-        <div className="bg-[#1A1F2C]">
+        <div className="bg-gray-50">
           <div className="max-w-[1280px] mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
               {isMobile ? (

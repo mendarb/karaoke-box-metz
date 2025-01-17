@@ -37,7 +37,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-[#F1F1F1]">
       <AnnouncementBanner />
       <main className="flex-grow">
         <div className="bg-[#1A1F2C]">

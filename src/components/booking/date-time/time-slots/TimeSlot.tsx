@@ -25,17 +25,17 @@ export const TimeSlot = ({ slot, isSelected, isDisabled, onSelect, date }: TimeS
       className={cn(
         "w-full flex flex-col items-center justify-center gap-0.5 rounded-xl transition-all duration-200",
         "sm:py-6 py-3", // Reduced padding on mobile
-        isDisabled && "opacity-50 bg-gray-50 hover:bg-gray-50 cursor-not-allowed",
-        isSelected && "bg-violet-600 hover:bg-violet-700 text-white border-violet-600",
+        isDisabled && "opacity-50 bg-gray-100 hover:bg-gray-100 cursor-not-allowed text-gray-500",
+        isSelected && !isDisabled && "bg-violet-600 hover:bg-violet-700 text-white border-violet-600",
         !isSelected && !isDisabled && "hover:border-violet-600 hover:text-violet-600",
-        hasDiscount && !isSelected && "border-green-500 text-green-700",
-        hasDiscount && isSelected && "bg-green-600 hover:bg-green-700"
+        hasDiscount && !isSelected && !isDisabled && "border-green-500 text-green-700",
+        hasDiscount && isSelected && !isDisabled && "bg-green-600 hover:bg-green-700"
       )}
       disabled={isDisabled}
       onClick={() => onSelect(slot)}
     >
       <span className="text-base sm:text-lg font-semibold">{slot}h</span>
-      {hasDiscount && (
+      {hasDiscount && !isDisabled && (
         <Badge 
           variant="secondary" 
           className={cn(

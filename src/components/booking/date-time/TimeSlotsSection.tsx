@@ -43,7 +43,7 @@ export const TimeSlotsSection = ({ form, availableSlots, isLoading }: TimeSlotsS
                 return (
                   <TimeSlot
                     key={slot}
-                    slot={slot.split(':')[0]}
+                    slot={slot}
                     isSelected={field.value === slot}
                     isDisabled={isBlocked}
                     onSelect={() => field.onChange(slot)}

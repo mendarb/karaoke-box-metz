@@ -13,7 +13,7 @@ export const BookingFormActions = ({
   onPrevious,
 }: BookingFormActionsProps) => {
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-4 pb-safe z-40">
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-4 pb-safe z-50 shadow-lg">
       <div className="flex justify-between items-center gap-4 max-w-md mx-auto">
         {currentStep > 1 && (
           <Button

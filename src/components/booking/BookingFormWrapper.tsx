@@ -79,11 +79,15 @@ export const BookingFormWrapper = () => {
   };
 
   const onSubmit = async (data: BookingFormValues) => {
+    console.log('Form submission attempt:', { currentStep, data });
+    
     if (!validateStep(currentStep)) {
+      console.log('Validation failed for step:', currentStep);
       return;
     }
 
     if (currentStep < 4) {
+      console.log('Moving to next step:', currentStep + 1);
       setCurrentStep(currentStep + 1);
       return;
     }
@@ -106,7 +110,7 @@ export const BookingFormWrapper = () => {
     <Form {...form}>
       <form 
         onSubmit={form.handleSubmit(onSubmit)} 
-        className={isMobile ? "booking-form-mobile pb-32" : "space-y-6"}
+        className={isMobile ? "pb-32" : "space-y-6"}
       >
         <div className={isMobile ? "booking-steps-mobile" : ""}>
           <BookingSteps steps={steps} currentStep={currentStep} />

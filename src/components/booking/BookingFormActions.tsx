@@ -13,32 +13,30 @@ export const BookingFormActions = ({
   onPrevious,
 }: BookingFormActionsProps) => {
   return (
-    <div className="flex justify-between items-center gap-4 mt-8">
+    <div className="flex justify-between gap-4 mt-6">
       {currentStep > 1 && (
         <Button
           type="button"
           variant="outline"
           onClick={onPrevious}
-          className="flex-1 flex items-center justify-center gap-2 text-base font-medium hover:bg-gray-100"
+          className="w-full flex items-center justify-center gap-2 hover:bg-violet-50"
         >
-          <ArrowLeft className="w-5 h-5" />
-          Précédent
+          <ArrowLeft className="h-4 w-4" />
+          Retour
         </Button>
       )}
-      <Button
+      <Button 
         type="submit"
         disabled={isSubmitting}
-        className={`flex-1 flex items-center justify-center gap-2 text-base font-medium bg-violet-600 hover:bg-violet-700 text-white ${currentStep === 1 ? 'w-full' : ''}`}
+        className="w-full flex items-center justify-center gap-2 bg-violet-600 hover:bg-violet-700"
       >
-        {isSubmitting ? (
-          "Chargement..."
-        ) : currentStep < 3 ? (
+        {currentStep === 3 ? (
+          isSubmitting ? "Traitement..." : "Réserver"
+        ) : (
           <>
             Suivant
-            <ArrowRight className="w-5 h-5" />
+            <ArrowRight className="h-4 w-4" />
           </>
-        ) : (
-          "Confirmer et payer"
         )}
       </Button>
     </div>

@@ -19,16 +19,14 @@ export const MobileNav = ({ user, isAdmin, onSignOut, onShowAuth }: MobileNavPro
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 pb-safe z-50">
-      <div className="flex justify-around items-center py-2 relative">
-        <div className="absolute left-1/2 -translate-x-1/2 -top-5">
-          <Link 
-            to="/" 
-            className="flex flex-col items-center justify-center w-[70px] h-[70px] bg-kbox-coral text-white hover:bg-kbox-orange-dark rounded-full shadow-lg transition-all duration-200"
-          >
-            <CalendarPlus className="w-6 h-6" />
-            <span className="text-xs font-semibold mt-1">Réserver</span>
-          </Link>
-        </div>
+      <div className="flex justify-around items-center py-2">
+        <Link 
+          to="/" 
+          className="flex flex-col items-center gap-1 py-2 px-4 bg-kbox-coral text-white hover:bg-kbox-orange-dark rounded-xl shadow-lg transition-all duration-200"
+        >
+          <CalendarPlus className="w-6 h-6" />
+          <span className="text-xs font-semibold">Réserver</span>
+        </Link>
 
         <Link 
           to="/account/my-bookings" 

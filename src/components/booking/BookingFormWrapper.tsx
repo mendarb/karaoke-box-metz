@@ -9,8 +9,10 @@ import { useBookingMode } from "./hooks/useBookingMode";
 import { useBookingOverlap } from "@/hooks/useBookingOverlap";
 import { toast } from "@/hooks/use-toast";
 import { BookingFormValues } from "./types/bookingFormTypes";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const BookingFormWrapper = () => {
+  const isMobile = useIsMobile();
   const {
     form,
     groupSize,
@@ -102,10 +104,15 @@ export const BookingFormWrapper = () => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <BookingSteps steps={steps} currentStep={currentStep} />
+      <form 
+        onSubmit={form.handleSubmit(onSubmit)} 
+        className={isMobile ? "booking-form-mobile" : "space-y-6"}
+      >
+        <div className={isMobile ? "booking-steps-mobile" : ""}>
+          <BookingSteps steps={steps} currentStep={currentStep} />
+        </div>
         
-        <div className="min-h-[300px]">
+        <div className={isMobile ? "booking-content-mobile" : "min-h-[300px]"}>
           <BookingFormContent
             currentStep={currentStep}
             form={form}
@@ -120,11 +127,13 @@ export const BookingFormWrapper = () => {
           />
         </div>
 
-        <BookingFormActions
-          currentStep={currentStep}
-          isSubmitting={isSubmitting}
-          onPrevious={handlePrevious}
-        />
+        <div className={isMobile ? "booking-actions-mobile" : ""}>
+          <BookingFormActions
+            currentStep={currentStep}
+            isSubmitting={isSubmitting}
+            onPrevious={handlePrevious}
+          />
+        </div>
       </form>
     </Form>
   );

@@ -26,7 +26,7 @@ export default {
     extend: {
       colors: {
         gray: {
-          50: '#212121',
+          50: '#F9F9FA',
         },
         kbox: {
           coral: "#FF5733",

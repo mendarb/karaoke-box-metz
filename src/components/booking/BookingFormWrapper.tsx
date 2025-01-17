@@ -109,15 +109,12 @@ export const BookingFormWrapper = () => {
 
   return (
     <Form {...form}>
-      <form 
-        onSubmit={form.handleSubmit(onSubmit)} 
-        className={isMobile ? "pb-32" : "space-y-6"}
-      >
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className={isMobile ? "booking-steps-mobile" : ""}>
           <BookingSteps steps={steps} currentStep={currentStep} />
         </div>
         
-        <div className={isMobile ? "booking-content-mobile" : "min-h-[300px]"}>
+        <div className="min-h-[300px]">
           <BookingFormContent
             currentStep={currentStep}
             form={form}

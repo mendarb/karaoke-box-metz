@@ -41,6 +41,50 @@ export const KaraokeBoxForm = ({ form }: KaraokeBoxFormProps) => {
 
       <FormField
         control={form.control}
+        name="address"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Adresse</FormLabel>
+            <FormControl>
+              <Input {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <div className="grid grid-cols-2 gap-4">
+        <FormField
+          control={form.control}
+          name="city"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Ville</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="postal_code"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Code postal</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+
+      <FormField
+        control={form.control}
         name="capacity"
         render={({ field }) => (
           <FormItem>

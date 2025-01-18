@@ -8,6 +8,9 @@ import { toast } from "sonner";
 const formSchema = z.object({
   name: z.string().min(1, "Le nom est requis"),
   description: z.string().optional(),
+  address: z.string().min(1, "L'adresse est requise"),
+  city: z.string().min(1, "La ville est requise"),
+  postal_code: z.string().min(1, "Le code postal est requis"),
   capacity: z.string().min(1, "La capacité est requise"),
   base_price_per_hour: z.string().min(1, "Le prix de base est requis"),
   status: z.enum(["active", "maintenance", "inactive"]),
@@ -21,6 +24,9 @@ export const useKaraokeBoxForm = (box: any, onSuccess: () => void) => {
     defaultValues: {
       name: box?.name || "",
       description: box?.description || "",
+      address: box?.address || "",
+      city: box?.city || "",
+      postal_code: box?.postal_code || "",
       capacity: box?.capacity?.toString() || "",
       base_price_per_hour: box?.base_price_per_hour?.toString() || "",
       status: box?.status || "active",

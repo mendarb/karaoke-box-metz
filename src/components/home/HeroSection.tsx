@@ -80,6 +80,13 @@ export const HeroSection = () => {
                 </div>
               </div>
             </div>
+            <div className="mt-8">
+              <img 
+                src="/lovable-uploads/f0321335-189d-4fe7-b21f-199edaf22a37.png"
+                alt="K-Box Ambiance"
+                className="w-full h-auto rounded-lg object-cover"
+              />
+            </div>
           </div>
         </div>
         <div className="order-1 md:order-2">

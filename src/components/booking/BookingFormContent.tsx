@@ -86,7 +86,7 @@ export const BookingFormContent = ({
   };
 
   return (
-    <Card className="bg-white/50 backdrop-blur-sm border-none shadow-none w-full">
+    <Card className="bg-white/50 backdrop-blur-sm border-none shadow-none w-full flex-1">
       <CardContent className="pt-6 w-full">
         <div className="min-h-[300px] animate-fadeIn w-full">
           {renderStepContent()}

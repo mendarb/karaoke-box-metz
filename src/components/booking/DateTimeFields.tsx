@@ -1,10 +1,10 @@
 import { useEffect } from "react";
 import { UseFormReturn } from "react-hook-form";
-import { useDisabledDates } from "./hooks/useDisabledDates";
-import { useDateTimeSelection } from "./hooks/useDateTimeSelection";
+import { useDisabledDates } from "./date-time/hooks/useDisabledDates";
+import { useDateTimeSelection } from "./date-time/hooks/useDateTimeSelection";
 import { CalendarSection } from "./date-time/calendar/CalendarSection";
 import { TimeSlotsSection } from "./date-time/TimeSlotsSection";
-import { useBookingSettings } from "./hooks/useBookingSettings";
+import { useBookingSettings } from "./date-time/hooks/useBookingSettings";
 import { addDays, startOfDay, startOfToday, isBefore } from "date-fns";
 
 interface DateTimeFieldsProps {

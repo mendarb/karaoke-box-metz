@@ -17,7 +17,7 @@ export const BookingSuccessDetails = ({ bookingDetails }: BookingSuccessDetailsP
   bookingDate.setMinutes(bookingDate.getMinutes() + bookingDate.getTimezoneOffset());
 
   return (
-    <Card className="p-6 bg-gray-50">
+    <Card className="p-6 bg-gray-50 w-full">
       <div className="space-y-4">
         <div>
           <h3 className="text-lg font-semibold">

@@ -82,19 +82,11 @@ export const HeroSection = () => {
             </div>
           </div>
         </div>
-        <div className="aspect-square w-full">
+        <div className="w-full md:w-[600px]">
           <img 
             src="/lovable-uploads/f0321335-189d-4fe7-b21f-199edaf22a37.png"
             alt="K-Box Ambiance"
             className="w-full h-full object-cover"
-          />
-        </div>
-        <div className="order-1 md:order-2">
-          <div 
-            className="w-full h-[400px] bg-cover bg-center bg-no-repeat"
-            style={{
-              backgroundImage: 'url("/lovable-uploads/4358a191-e1a1-4fea-bdca-01f0adbcd973.png")',
-            }}
           />
         </div>
       </div>

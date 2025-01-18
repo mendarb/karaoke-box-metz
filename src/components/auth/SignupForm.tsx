@@ -4,6 +4,7 @@ import { useSignupHandler } from "@/hooks/auth/useSignupHandler"
 import { SignupFormFields } from "./signup/SignupFormFields"
 import { GoogleSignupButton } from "./signup/GoogleSignupButton"
 import { SignupDivider } from "./signup/SignupDivider"
+import { Loader2 } from "lucide-react"
 
 interface SignupFormProps {
   onToggleMode: () => void;
@@ -54,7 +55,14 @@ export function SignupForm({ onToggleMode, onSuccess }: SignupFormProps) {
           isLoading={isLoading}
         />
         <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? "Chargement..." : "S'inscrire"}
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Inscription en cours...
+            </>
+          ) : (
+            "S'inscrire"
+          )}
         </Button>
         <Button
           type="button"

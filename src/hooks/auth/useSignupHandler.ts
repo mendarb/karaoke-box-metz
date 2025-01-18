@@ -17,6 +17,11 @@ export const useSignupHandler = () => {
     setIsLoading(true);
     
     try {
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error("La requête a pris trop de temps. Veuillez réessayer.")), 10000);
+      });
+
       // Check if user exists first
       const { data: existingUser } = await supabase
         .from('profiles')
@@ -36,8 +41,8 @@ export const useSignupHandler = () => {
         };
       }
 
-      // Proceed with signup
-      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+      // Race between signup and timeout
+      const signupPromise = supabase.auth.signUp({
         email,
         password,
         options: {
@@ -50,11 +55,18 @@ export const useSignupHandler = () => {
         }
       });
 
+      const { data: authData, error: signUpError } = await Promise.race([
+        signupPromise,
+        timeoutPromise
+      ]) as any;
+
       if (signUpError) {
         console.error("Erreur lors de l'inscription:", signUpError);
         toast({
           title: "Erreur",
-          description: "Une erreur est survenue lors de l'inscription. Veuillez réessayer.",
+          description: signUpError.message === "Error sending confirmation email" 
+            ? "Impossible d'envoyer l'email de confirmation. Veuillez réessayer."
+            : "Une erreur est survenue lors de l'inscription. Veuillez réessayer.",
           variant: "destructive"
         });
         return { 
@@ -78,14 +90,19 @@ export const useSignupHandler = () => {
 
     } catch (error) {
       console.error("Erreur lors de l'inscription:", error);
+      const errorMessage = error instanceof Error ? error.message : "Erreur inconnue";
+      
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de l'inscription. Veuillez réessayer.",
+        description: errorMessage === "La requête a pris trop de temps. Veuillez réessayer." 
+          ? errorMessage 
+          : "Une erreur est survenue lors de l'inscription. Veuillez réessayer.",
         variant: "destructive"
       });
+      
       return { 
         success: false, 
-        message: error instanceof Error ? error.message : "Erreur inconnue",
+        message: errorMessage,
         shouldSwitchToLogin: false
       };
     } finally {

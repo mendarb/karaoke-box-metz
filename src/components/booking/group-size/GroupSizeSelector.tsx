@@ -15,7 +15,6 @@ export const GroupSizeSelector = ({
   onGroupSizeChange,
 }: GroupSizeSelectorProps) => {
   const groupSizes = [
-    { label: "2", value: "2" },
     { label: "3", value: "3" },
     { label: "4", value: "4" },
     { label: "5", value: "5" },
@@ -36,7 +35,7 @@ export const GroupSizeSelector = ({
         Choisissez le nombre de personnes
       </p>
 
-      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {groupSizes.map(({ label, value }) => (
           <Button
             key={value}

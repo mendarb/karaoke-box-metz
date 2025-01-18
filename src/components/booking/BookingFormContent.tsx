@@ -48,29 +48,35 @@ export const BookingFormContent = ({
         );
       case 2:
         return (
-          <DateTimeFields 
-            form={form} 
-            onAvailabilityChange={onAvailabilityChange}
-          />
+          <div className="w-full max-w-[800px] mx-auto">
+            <DateTimeFields 
+              form={form} 
+              onAvailabilityChange={onAvailabilityChange}
+            />
+          </div>
         );
       case 3:
         return (
-          <GroupSizeAndDurationFields
-            form={form}
-            onGroupSizeChange={onGroupSizeChange}
-            onDurationChange={onDurationChange}
-            onPriceCalculated={onPriceCalculated}
-            availableHours={availableHours}
-          />
+          <div className="w-full max-w-[800px] mx-auto">
+            <GroupSizeAndDurationFields
+              form={form}
+              onGroupSizeChange={onGroupSizeChange}
+              onDurationChange={onDurationChange}
+              onPriceCalculated={onPriceCalculated}
+              availableHours={availableHours}
+            />
+          </div>
         );
       case 4:
         return (
-          <AdditionalFields 
-            form={form} 
-            calculatedPrice={calculatedPrice}
-            groupSize={groupSize}
-            duration={duration}
-          />
+          <div className="w-full max-w-[800px] mx-auto">
+            <AdditionalFields 
+              form={form} 
+              calculatedPrice={calculatedPrice}
+              groupSize={groupSize}
+              duration={duration}
+            />
+          </div>
         );
       default:
         return null;

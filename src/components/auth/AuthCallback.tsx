@@ -29,6 +29,9 @@ export function AuthCallback() {
             console.error("Erreur lors de la récupération du profil:", profileError);
           }
 
+          // Stocker la session dans le localStorage pour éviter la boucle
+          localStorage.setItem('auth_callback_processed', 'true');
+
           if (!profile?.phone) {
             toast({
               title: "Complétez votre profil",
@@ -56,7 +59,16 @@ export function AuthCallback() {
       }
     };
 
-    handleAuthCallback();
+    // Vérifier si le callback a déjà été traité
+    const isCallbackProcessed = localStorage.getItem('auth_callback_processed');
+    
+    if (!isCallbackProcessed) {
+      handleAuthCallback();
+    } else {
+      // Nettoyer le flag et rediriger
+      localStorage.removeItem('auth_callback_processed');
+      navigate("/", { replace: true });
+    }
   }, [navigate, toast]);
 
   return (

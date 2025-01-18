@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase';
 supabase.auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_IN') {
     localStorage.setItem('supabase.auth.token', session?.access_token || '');
+    window.location.href = '/'; // Redirection explicite vers la page d'accueil
   }
   if (event === 'SIGNED_OUT') {
     localStorage.removeItem('supabase.auth.token');

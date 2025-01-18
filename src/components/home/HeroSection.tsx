@@ -80,15 +80,13 @@ export const HeroSection = () => {
                 </div>
               </div>
             </div>
-            <div className="mt-16">
-              <div className="aspect-square w-full">
-                <img 
-                  src="/lovable-uploads/f0321335-189d-4fe7-b21f-199edaf22a37.png"
-                  alt="K-Box Ambiance"
-                  className="w-full h-full rounded-lg object-cover"
-                />
-              </div>
-            </div>
+          </div>
+          <div className="aspect-square w-full">
+            <img 
+              src="/lovable-uploads/f0321335-189d-4fe7-b21f-199edaf22a37.png"
+              alt="K-Box Ambiance"
+              className="w-full h-full object-cover"
+            />
           </div>
         </div>
         <div className="order-1 md:order-2">

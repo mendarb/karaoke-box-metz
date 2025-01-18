@@ -31,7 +31,7 @@ export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsPro
     while (currentDate <= endDate) {
       if (!disabledDates.some(disabledDate => 
         disabledDate.toDateString() === currentDate.toDateString()
-      ) && !isBefore(currentDate, startOfToday())) { // Vérifier que la date n'est pas passée
+      )) {
         return currentDate;
       }
       currentDate = addDays(currentDate, 1);

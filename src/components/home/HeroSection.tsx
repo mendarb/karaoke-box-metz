@@ -35,37 +35,49 @@ export const HeroSection = () => {
             </div>
             <div className="mt-8">
               <p className="text-sm text-white/80 mb-3">Moyens de paiement acceptés</p>
-              <div className="flex gap-6 items-center">
-                <img 
-                  src="/lovable-uploads/apple pay.svg" 
-                  alt="Apple Pay" 
-                  className="h-6 w-auto brightness-0 invert opacity-80 hover:opacity-100 transition-opacity"
-                />
-                <img 
-                  src="/lovable-uploads/paypal.svg" 
-                  alt="PayPal" 
-                  className="h-6 w-auto brightness-0 invert opacity-80 hover:opacity-100 transition-opacity" 
-                />
-                <img 
-                  src="/lovable-uploads/stripe.svg" 
-                  alt="Stripe" 
-                  className="h-6 w-auto brightness-0 invert opacity-80 hover:opacity-100 transition-opacity" 
-                />
-                <img 
-                  src="/lovable-uploads/klarna.svg" 
-                  alt="Klarna" 
-                  className="h-6 w-auto brightness-0 invert opacity-80 hover:opacity-100 transition-opacity" 
-                />
-                <img 
-                  src="/lovable-uploads/visa.svg" 
-                  alt="Visa" 
-                  className="h-6 w-auto brightness-0 invert opacity-80 hover:opacity-100 transition-opacity" 
-                />
-                <img 
-                  src="/lovable-uploads/Mastercard.svg" 
-                  alt="Mastercard" 
-                  className="h-6 w-auto brightness-0 invert opacity-80 hover:opacity-100 transition-opacity" 
-                />
+              <div className="flex flex-wrap gap-3 items-center">
+                <div className="bg-white/10 backdrop-blur-sm rounded-full p-2 hover:bg-white/20 transition-all">
+                  <img 
+                    src="/lovable-uploads/apple pay.svg" 
+                    alt="Apple Pay" 
+                    className="h-4 w-auto brightness-0 invert"
+                  />
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-full p-2 hover:bg-white/20 transition-all">
+                  <img 
+                    src="/lovable-uploads/paypal.svg" 
+                    alt="PayPal" 
+                    className="h-5 w-auto brightness-0 invert" 
+                  />
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-full p-2 hover:bg-white/20 transition-all">
+                  <img 
+                    src="/lovable-uploads/stripe.svg" 
+                    alt="Stripe" 
+                    className="h-4 w-auto brightness-0 invert" 
+                  />
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-full p-2 hover:bg-white/20 transition-all">
+                  <img 
+                    src="/lovable-uploads/klarna.svg" 
+                    alt="Klarna" 
+                    className="h-3.5 w-auto brightness-0 invert" 
+                  />
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-full p-2 hover:bg-white/20 transition-all">
+                  <img 
+                    src="/lovable-uploads/visa.svg" 
+                    alt="Visa" 
+                    className="h-4 w-auto brightness-0 invert" 
+                  />
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-full p-2 hover:bg-white/20 transition-all">
+                  <img 
+                    src="/lovable-uploads/Mastercard.svg" 
+                    alt="Mastercard" 
+                    className="h-4 w-auto brightness-0 invert" 
+                  />
+                </div>
               </div>
             </div>
           </div>

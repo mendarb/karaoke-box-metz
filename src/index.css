@@ -47,6 +47,10 @@
   }
 }
 
+.bg-white.flex.flex-col.h-full {
+  width: 100%;
+}
+
 /* Mobile optimizations */
 @media (max-width: 640px) {
   .logo {

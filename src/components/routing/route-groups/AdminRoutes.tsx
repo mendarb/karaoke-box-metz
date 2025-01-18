@@ -7,6 +7,7 @@ import { EditAccountPage } from "@/components/admin/accounts/EditAccountPage";
 import { DocumentationPage } from "@/components/admin/documentation/DocumentationPage";
 import { Analytics } from "@/pages/Analytics";
 import { ProtectedRoute } from "../ProtectedRoute";
+import { KaraokeBoxesPage } from "@/components/admin/karaoke-boxes/KaraokeBoxesPage";
 
 export const AdminRoutes = () => {
   return (
@@ -64,6 +65,14 @@ export const AdminRoutes = () => {
         element={
           <ProtectedRoute adminOnly>
             <Analytics />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/karaoke-boxes"
+        element={
+          <ProtectedRoute adminOnly>
+            <KaraokeBoxesPage />
           </ProtectedRoute>
         }
       />

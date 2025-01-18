@@ -196,6 +196,57 @@ export type Database = {
           },
         ]
       }
+      karaoke_boxes: {
+        Row: {
+          address: string
+          base_price_per_hour: number
+          capacity: number
+          city: string
+          created_at: string
+          deleted_at: string | null
+          description: string | null
+          features: Json | null
+          id: string
+          image_url: string | null
+          name: string
+          postal_code: string
+          status: Database["public"]["Enums"]["box_status"] | null
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          base_price_per_hour: number
+          capacity: number
+          city: string
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          features?: Json | null
+          id?: string
+          image_url?: string | null
+          name: string
+          postal_code: string
+          status?: Database["public"]["Enums"]["box_status"] | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          base_price_per_hour?: number
+          capacity?: number
+          city?: string
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          features?: Json | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          postal_code?: string
+          status?: Database["public"]["Enums"]["box_status"] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       landing_pages: {
         Row: {
           content: Json
@@ -514,6 +565,7 @@ export type Database = {
     Enums: {
       blocked_slot_type: "one_time" | "recurring"
       booking_status: "pending" | "confirmed" | "cancelled" | "archived"
+      box_status: "active" | "maintenance" | "inactive"
       promo_code_type: "percentage" | "fixed_amount" | "free"
       weekday:
         | "monday"

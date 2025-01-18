@@ -12,6 +12,8 @@ interface GroupSizeAndDurationFieldsProps {
   onDurationChange: (duration: string) => void;
   onPriceCalculated: (price: number) => void;
   availableHours: number;
+  groupSize: string;  // Ajout de cette prop
+  duration: string;   // Ajout de cette prop
 }
 
 export const GroupSizeAndDurationFields = ({
@@ -20,9 +22,9 @@ export const GroupSizeAndDurationFields = ({
   onDurationChange,
   onPriceCalculated,
   availableHours,
+  groupSize,
+  duration,
 }: GroupSizeAndDurationFieldsProps) => {
-  const groupSize = form.watch("groupSize");
-  const duration = form.watch("duration");
   const date = form.watch("date");
   const timeSlot = form.watch("timeSlot");
 
@@ -44,7 +46,6 @@ export const GroupSizeAndDurationFields = ({
         dateValue: date ? date.toISOString() : 'undefined'
       });
 
-      // Correction : Utiliser la date sélectionnée sans ajustement
       const formattedDate = date ? new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().split('T')[0] : undefined;
       
       if (!formattedDate || !timeSlot) {

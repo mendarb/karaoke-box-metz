@@ -42,13 +42,15 @@ export const BookingFormContent = ({
     switch (currentStep) {
       case 1:
         return (
-          <LocationSelector 
-            onSelect={(location) => onLocationSelect?.(location)} 
-          />
+          <div className="w-full">
+            <LocationSelector 
+              onSelect={(location) => onLocationSelect?.(location)} 
+            />
+          </div>
         );
       case 2:
         return (
-          <div className="w-full max-w-[800px] mx-auto">
+          <div className="w-full">
             <DateTimeFields 
               form={form} 
               onAvailabilityChange={onAvailabilityChange}
@@ -57,7 +59,7 @@ export const BookingFormContent = ({
         );
       case 3:
         return (
-          <div className="w-full max-w-[800px] mx-auto">
+          <div className="w-full">
             <GroupSizeAndDurationFields
               form={form}
               onGroupSizeChange={onGroupSizeChange}
@@ -69,7 +71,7 @@ export const BookingFormContent = ({
         );
       case 4:
         return (
-          <div className="w-full max-w-[800px] mx-auto">
+          <div className="w-full">
             <AdditionalFields 
               form={form} 
               calculatedPrice={calculatedPrice}
@@ -84,9 +86,9 @@ export const BookingFormContent = ({
   };
 
   return (
-    <Card className="bg-white/50 backdrop-blur-sm border-none shadow-none">
-      <CardContent className="pt-6">
-        <div className="min-h-[300px] animate-fadeIn">
+    <Card className="bg-white/50 backdrop-blur-sm border-none shadow-none w-full">
+      <CardContent className="pt-6 w-full">
+        <div className="min-h-[300px] animate-fadeIn w-full">
           {renderStepContent()}
         </div>
       </CardContent>

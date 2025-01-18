@@ -45,6 +45,7 @@ export const KaraokeBoxesTable = () => {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Image</TableHead>
               <TableHead>Nom</TableHead>
               <TableHead>Capacité</TableHead>
               <TableHead>Prix de base/heure</TableHead>
@@ -55,6 +56,15 @@ export const KaraokeBoxesTable = () => {
           <TableBody>
             {boxes?.map((box) => (
               <TableRow key={box.id}>
+                <TableCell>
+                  {box.image_url && (
+                    <img 
+                      src={box.image_url} 
+                      alt={box.name}
+                      className="w-16 h-16 object-cover rounded-md"
+                    />
+                  )}
+                </TableCell>
                 <TableCell className="font-medium">{box.name}</TableCell>
                 <TableCell>{box.capacity} personnes</TableCell>
                 <TableCell>{box.base_price_per_hour}€</TableCell>

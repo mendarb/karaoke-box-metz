@@ -41,6 +41,20 @@ export const KaraokeBoxForm = ({ form }: KaraokeBoxFormProps) => {
 
       <FormField
         control={form.control}
+        name="image_url"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>URL de l'image</FormLabel>
+            <FormControl>
+              <Input {...field} type="url" placeholder="https://..." />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
         name="address"
         render={({ field }) => (
           <FormItem>

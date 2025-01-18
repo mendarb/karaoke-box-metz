@@ -14,6 +14,7 @@ const formSchema = z.object({
   capacity: z.string().min(1, "La capacité est requise"),
   base_price_per_hour: z.string().min(1, "Le prix de base est requis"),
   status: z.enum(["active", "maintenance", "inactive"]),
+  image_url: z.string().optional(),
 });
 
 export const useKaraokeBoxForm = (box: any, onSuccess: () => void) => {
@@ -30,6 +31,7 @@ export const useKaraokeBoxForm = (box: any, onSuccess: () => void) => {
       capacity: box?.capacity?.toString() || "",
       base_price_per_hour: box?.base_price_per_hour?.toString() || "",
       status: box?.status || "active",
+      image_url: box?.image_url || "",
     },
   });
 

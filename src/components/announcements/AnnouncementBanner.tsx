@@ -13,21 +13,21 @@ export const AnnouncementBanner = () => {
         .from('announcements')
         .select('message')
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
       
       if (error) throw error;
       return data;
     },
   });
 
-  if (!isVisible || !announcement) return null;
+  if (!isVisible || !announcement?.message) return null;
 
   return (
     <div className="bg-[#1E1E1E] text-white overflow-hidden py-2.5 relative">
       <div className="flex items-center justify-center">
         <div className="animate-[marquee_20s_linear_infinite] whitespace-nowrap">
           <span className="text-sm font-medium px-4">
-            🎉 Ouverture le 17 janvier ! Utilisez le code OUVERTURE pour bénéficier de -10% sur votre réservation
+            {announcement.message}
           </span>
         </div>
       </div>

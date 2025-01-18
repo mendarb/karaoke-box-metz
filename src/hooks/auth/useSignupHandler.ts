@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { checkExistingUser, handleExistingUser } from "@/services/userVerificationService";
-import { signupUser } from "@/services/signupService";
+import { supabase } from "@/lib/supabase";
 import { SignupResult } from "@/types/auth";
 
 export const useSignupHandler = () => {
@@ -18,45 +17,75 @@ export const useSignupHandler = () => {
     setIsLoading(true);
     
     try {
-      const existingUser = await checkExistingUser(email);
-      
+      // Check if user exists first
+      const { data: existingUser } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', email)
+        .maybeSingle();
+
       if (existingUser) {
-        const result = handleExistingUser(email);
-        return result;
+        toast({
+          title: "Compte existant",
+          description: "Un compte existe déjà avec cet email. Veuillez vous connecter.",
+        });
+        return { 
+          success: false, 
+          message: "Un compte existe déjà avec cet email. Veuillez vous connecter.",
+          shouldSwitchToLogin: true
+        };
       }
 
-      const result = await signupUser({
+      // Proceed with signup
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
-        fullName,
-        phone,
-        phoneCountryCode
+        options: {
+          data: {
+            full_name: fullName,
+            phone_country_code: phoneCountryCode,
+            phone: phone,
+          },
+          emailRedirectTo: `${window.location.origin}/auth/callback`
+        }
       });
 
-      if (result.success) {
-        toast({
-          title: "Inscription réussie",
-          description: result.message,
-        });
-      } else {
+      if (signUpError) {
+        console.error("Erreur lors de l'inscription:", signUpError);
         toast({
           title: "Erreur",
-          description: result.message,
-          variant: "destructive",
+          description: "Une erreur est survenue lors de l'inscription. Veuillez réessayer.",
+          variant: "destructive"
         });
+        return { 
+          success: false, 
+          message: signUpError.message,
+          shouldSwitchToLogin: false
+        };
       }
 
-      return result;
+      toast({
+        title: "Inscription réussie",
+        description: "Vérifiez votre email pour confirmer votre compte.",
+      });
+
+      return {
+        success: true,
+        message: "Inscription réussie ! Vérifiez votre email pour confirmer votre compte.",
+        data: authData,
+        shouldSwitchToLogin: false
+      };
+
     } catch (error) {
       console.error("Erreur lors de l'inscription:", error);
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de l'inscription.",
-        variant: "destructive",
+        description: "Une erreur est survenue lors de l'inscription. Veuillez réessayer.",
+        variant: "destructive"
       });
       return { 
         success: false, 
-        message: "Erreur lors de l'inscription",
+        message: error instanceof Error ? error.message : "Erreur inconnue",
         shouldSwitchToLogin: false
       };
     } finally {

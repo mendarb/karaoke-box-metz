@@ -23,7 +23,7 @@ export const AnnouncementBanner = () => {
   if (!isVisible || !announcement) return null;
 
   return (
-    <div className="bg-[#1E1E1E] text-white overflow-hidden py-2.5 relative">
+    <div className="bg-kbox-orange text-white overflow-hidden py-2.5 relative">
       <div className="flex items-center justify-center">
         <div className="animate-[marquee_20s_linear_infinite] whitespace-nowrap">
           <span className="text-sm font-medium px-4">

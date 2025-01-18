@@ -43,7 +43,7 @@ export const BookingFormWrapper = () => {
 
   const validateStep = (step: number) => {
     const requiredFields: { [key: number]: Array<keyof BookingFormValues> } = {
-      1: [], // Location step doesn't need validation
+      1: ['location'], // Location step now requires validation
       2: ['date', 'timeSlot'],
       3: ['groupSize', 'duration'],
       4: []
@@ -107,6 +107,8 @@ export const BookingFormWrapper = () => {
     await submitBooking({ ...data, isTestMode });
   };
 
+  const canProceed = currentStep === 1 ? !!form.getValues('location') : true;
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -137,6 +139,7 @@ export const BookingFormWrapper = () => {
           currentStep={currentStep}
           isSubmitting={isSubmitting}
           onPrevious={handlePrevious}
+          canProceed={canProceed}
         />
       </form>
     </Form>

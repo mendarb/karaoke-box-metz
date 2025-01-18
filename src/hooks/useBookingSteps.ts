@@ -1,7 +1,7 @@
-import { User2, Calendar, Users, CreditCard, Home } from "lucide-react";
 import React from "react";
 import { Step } from "@/components/BookingSteps";
-import { useUserState } from "./useUserState";
+import { User2, Calendar, Users, CreditCard, Home } from "lucide-react";
+import { useUserState } from "@/hooks/useUserState";
 
 export const useBookingSteps = (currentStep: number): Step[] => {
   const { user } = useUserState();

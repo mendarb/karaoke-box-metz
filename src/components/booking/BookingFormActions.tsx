@@ -6,12 +6,14 @@ interface BookingFormActionsProps {
   currentStep: number;
   isSubmitting: boolean;
   onPrevious: () => void;
+  canProceed?: boolean;
 }
 
 export const BookingFormActions = ({
   currentStep,
   isSubmitting,
   onPrevious,
+  canProceed = true,
 }: BookingFormActionsProps) => {
   const isMobile = useIsMobile();
   
@@ -30,7 +32,7 @@ export const BookingFormActions = ({
       )}
       <Button 
         type="submit"
-        disabled={isSubmitting}
+        disabled={isSubmitting || !canProceed}
         className="w-full flex items-center justify-center gap-2 bg-violet-600 hover:bg-violet-700"
       >
         {currentStep === 3 ? (

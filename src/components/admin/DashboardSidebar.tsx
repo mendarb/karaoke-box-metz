@@ -5,7 +5,8 @@ import {
   Users, 
   BarChart, 
   FileText,
-  Home
+  Home,
+  Music
 } from "lucide-react";
 
 export const DashboardSidebar = () => {
@@ -47,7 +48,7 @@ export const DashboardSidebar = () => {
         to="/admin/karaoke-boxes"
         className="flex items-center gap-3 p-3 rounded-md hover:bg-gray-50 text-gray-700 hover:text-kbox-coral transition-colors"
       >
-        <Home className="w-5 h-5" />
+        <Music className="w-5 h-5" />
         <span className="font-medium">Box Karaoké</span>
       </Link>
 

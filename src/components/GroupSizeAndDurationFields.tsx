@@ -6,14 +6,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useBookingPrice } from "./booking/hooks/useBookingPrice";
 import { BookingPriceDisplay } from "./booking/price/BookingPriceDisplay";
 
-interface GroupSizeAndDurationFieldsProps {
+export interface GroupSizeAndDurationFieldsProps {
   form: UseFormReturn<any>;
   onGroupSizeChange: (size: string) => void;
   onDurationChange: (duration: string) => void;
   onPriceCalculated: (price: number) => void;
   availableHours: number;
-  groupSize: string;  // Ajout de cette prop
-  duration: string;   // Ajout de cette prop
+  groupSize: string;
+  duration: string;
 }
 
 export const GroupSizeAndDurationFields = ({

@@ -1,5 +1,5 @@
 import { DateTimeFields } from "./date-time/DateTimeFields";
-import { GroupSizeAndDurationFields } from "./GroupSizeAndDurationFields";
+import { GroupSizeAndDurationFields } from "../GroupSizeAndDurationFields";
 import { AdditionalFields } from "./additional/AdditionalFields";
 import { BookingFormLegal } from "./BookingFormLegal";
 import { UseFormReturn } from "react-hook-form";
@@ -48,6 +48,7 @@ export const BookingFormContent = ({
           onGroupSizeChange={onGroupSizeChange}
           onDurationChange={onDurationChange}
           onPriceCalculated={onPriceCalculated}
+          availableHours={availableHours}
         />
       )}
 

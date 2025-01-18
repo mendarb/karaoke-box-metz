@@ -10,7 +10,7 @@ import {
 
 export const DashboardSidebar = () => {
   return (
-    <div className="flex flex-col gap-1 p-4 bg-white rounded-lg shadow-sm">
+    <div className="flex flex-col gap-1 p-4 bg-white rounded-lg shadow-sm h-full min-w-[250px]">
       <Link
         to="/admin"
         className="flex items-center gap-3 p-3 rounded-md hover:bg-gray-50 text-gray-700 hover:text-kbox-coral transition-colors"

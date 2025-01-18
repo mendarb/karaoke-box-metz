@@ -35,7 +35,7 @@ export const HeroSection = () => {
             </div>
             <div className="mt-8">
               <p className="text-sm text-white/80 mb-3">Moyens de paiement acceptés</p>
-              <div className="flex flex-wrap items-center gap-4">
+              <div className="flex gap-4">
                 <img src="/lovable-uploads/apple pay.svg" alt="Apple Pay" className="h-8" />
                 <img src="/lovable-uploads/paypal.svg" alt="PayPal" className="h-8" />
                 <img src="/lovable-uploads/stripe.svg" alt="Stripe" className="h-8" />

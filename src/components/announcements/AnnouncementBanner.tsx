@@ -1,17 +1,33 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
 
 export const AnnouncementBanner = () => {
   const [isVisible, setIsVisible] = useState(true);
 
-  if (!isVisible) return null;
+  const { data: announcement } = useQuery({
+    queryKey: ['announcement'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('announcements')
+        .select('message')
+        .eq('is_active', true)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  if (!isVisible || !announcement) return null;
 
   return (
-    <div className="bg-kbox-orange text-white overflow-hidden py-2.5 relative">
+    <div className="bg-[#1E1E1E] text-white overflow-hidden py-2.5 relative">
       <div className="flex items-center justify-center">
         <div className="animate-[marquee_20s_linear_infinite] whitespace-nowrap">
           <span className="text-sm font-medium px-4">
-            🎉 Ouverture le 17 janvier ! Utilisez le code <span className="font-bold">OUVERTURE</span> pour bénéficier de -10% sur votre réservation
+            {announcement.message}
           </span>
         </div>
       </div>

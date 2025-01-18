@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash } from "lucide-react";
+import { Edit, Trash, ImageOff } from "lucide-react";
 import { useState } from "react";
 import { KaraokeBoxDialog } from "./KaraokeBoxDialog";
 import { DeleteKaraokeBoxDialog } from "./DeleteKaraokeBoxDialog";
@@ -57,12 +57,16 @@ export const KaraokeBoxesTable = () => {
             {boxes?.map((box) => (
               <TableRow key={box.id}>
                 <TableCell>
-                  {box.image_url && (
+                  {box.image_url ? (
                     <img 
                       src={box.image_url} 
                       alt={box.name}
-                      className="w-16 h-16 object-cover rounded-md"
+                      className="w-20 h-20 object-cover rounded-md shadow-sm hover:shadow-md transition-shadow"
                     />
+                  ) : (
+                    <div className="w-20 h-20 bg-muted rounded-md flex items-center justify-center">
+                      <ImageOff className="w-8 h-8 text-muted-foreground" />
+                    </div>
                   )}
                 </TableCell>
                 <TableCell className="font-medium">{box.name}</TableCell>

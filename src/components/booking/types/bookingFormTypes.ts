@@ -12,4 +12,5 @@ export interface BookingFormValues {
   promoCodeId?: string;
   finalPrice?: number;
   acceptTerms?: boolean;
+  location?: string; // Ajout du champ location
 }

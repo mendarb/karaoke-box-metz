@@ -56,11 +56,10 @@ export const HeroSection = () => {
         </div>
       </div>
       
-      {/* Image section below the hero */}
       <div 
         className="w-full h-[400px] bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: 'url("/lovable-uploads/70640657-db45-4404-95be-b08b31b5cdc9.png")',
+          backgroundImage: 'url("/lovable-uploads/4358a191-e1a1-4fea-bdca-01f0adbcd973.png")',
         }}
       />
     </div>

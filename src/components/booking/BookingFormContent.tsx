@@ -3,6 +3,7 @@ import { DateTimeFields } from "./DateTimeFields";
 import { GroupSizeAndDurationFields } from "@/components/GroupSizeAndDurationFields";
 import { AdditionalFields } from "./AdditionalFields";
 import { Card, CardContent } from "@/components/ui/card";
+import { LocationSelector } from "./location/LocationSelector";
 
 interface BookingFormContentProps {
   currentStep: number;
@@ -15,6 +16,7 @@ interface BookingFormContentProps {
   onPriceCalculated: (price: number) => void;
   onAvailabilityChange: (date: Date | undefined, hours: number) => void;
   availableHours: number;
+  onLocationSelect?: (location: string) => void;
 }
 
 export const BookingFormContent = ({
@@ -28,6 +30,7 @@ export const BookingFormContent = ({
   onPriceCalculated,
   onAvailabilityChange,
   availableHours,
+  onLocationSelect,
 }: BookingFormContentProps) => {
   console.log('📅 BookingFormContent - Valeurs actuelles:', {
     date: form.watch('date'),
@@ -39,12 +42,18 @@ export const BookingFormContent = ({
     switch (currentStep) {
       case 1:
         return (
+          <LocationSelector 
+            onSelect={(location) => onLocationSelect?.(location)} 
+          />
+        );
+      case 2:
+        return (
           <DateTimeFields 
             form={form} 
             onAvailabilityChange={onAvailabilityChange}
           />
         );
-      case 2:
+      case 3:
         return (
           <GroupSizeAndDurationFields
             form={form}
@@ -54,7 +63,7 @@ export const BookingFormContent = ({
             availableHours={availableHours}
           />
         );
-      case 3:
+      case 4:
         return (
           <AdditionalFields 
             form={form} 

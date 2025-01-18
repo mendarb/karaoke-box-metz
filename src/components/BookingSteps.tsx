@@ -1,4 +1,4 @@
-import { User2, Calendar, Users, CreditCard } from "lucide-react";
+import { User2, Calendar, Users, CreditCard, Home } from "lucide-react";
 import React from "react";
 
 export interface Step {

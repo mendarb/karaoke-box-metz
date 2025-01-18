@@ -22,20 +22,16 @@ export const HeroSection = () => {
     <div className="bg-[#F1F1F1]">
       <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-0">
         <div 
-          className="flex flex-col justify-center bg-[#1E1E1E] order-2 md:order-1 p-4 md:p-6 lg:p-8 relative"
+          className="flex flex-col justify-center bg-kbox-orange order-2 md:order-1 p-4 md:p-6 lg:p-8 relative"
         >
           <div className="space-y-3 relative z-10">
             <div className="inline-block p-2 bg-white/5 rounded-xl backdrop-blur-sm">
               <Box3DIcon className="w-5 h-5" />
             </div>
             <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tighter text-white">
-              {announcement?.message || (
-                <>
-                  Votre Box Karaoké
-                  <br />
-                  à Metz
-                </>
-              )}
+              Votre Box Karaoké
+              <br />
+              à Metz
             </h1>
             <p className="text-sm md:text-base text-white/90 max-w-[500px] leading-relaxed">
               Profitez d'une expérience unique dans notre box karaoké privative.

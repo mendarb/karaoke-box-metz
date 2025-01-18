@@ -23,9 +23,6 @@ export const BookingDetails = ({
   onBack,
   onNext,
 }: BookingDetailsProps) => {
-  const groupSize = form.watch("groupSize");
-  const duration = form.watch("duration");
-
   return (
     <ScrollArea className="h-[calc(100vh-200px)] pr-4">
       <div className="space-y-6">
@@ -39,8 +36,6 @@ export const BookingDetails = ({
 
           <GroupSizeAndDurationFields
             form={form}
-            groupSize={groupSize}
-            duration={duration}
             onGroupSizeChange={(size) => form.setValue("groupSize", size)}
             onDurationChange={(duration) => form.setValue("duration", duration)}
             onPriceCalculated={onPriceCalculated}

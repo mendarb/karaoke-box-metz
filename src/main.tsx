@@ -6,13 +6,8 @@ import { supabase } from '@/lib/supabase';
 
 // Amélioration de la gestion de session
 supabase.auth.onAuthStateChange((event, session) => {
-  console.log("Auth state changed:", event);
-  
   if (event === 'SIGNED_IN') {
-    // Ne pas rediriger si on est déjà sur la page de callback
-    if (!window.location.pathname.includes('/auth/callback')) {
-      window.location.href = '/';
-    }
+    localStorage.setItem('supabase.auth.token', session?.access_token || '');
   }
   if (event === 'SIGNED_OUT') {
     localStorage.removeItem('supabase.auth.token');

@@ -8,10 +8,9 @@ import { useBookingSettings } from "./hooks/useBookingSettings";
 interface DateTimeFieldsProps {
   form: UseFormReturn<any>;
   onAvailabilityChange: (date: Date | undefined, availableHours: number) => void;
-  availableHours: number;  // Ajout de cette prop
 }
 
-export const DateTimeFields = ({ form, onAvailabilityChange, availableHours }: DateTimeFieldsProps) => {
+export const DateTimeFields = ({ form, onAvailabilityChange }: DateTimeFieldsProps) => {
   const {
     selectedDate,
     availableSlots,

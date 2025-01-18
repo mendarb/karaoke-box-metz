@@ -11,13 +11,18 @@ export function AuthCallback() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
+        // Get the current session
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
+          console.error("Session error:", error);
           throw error;
         }
         
         if (session) {
+          console.log("Session found:", session.user.id);
+          
+          // Check if user has a phone number
           const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('phone')
@@ -25,16 +30,18 @@ export function AuthCallback() {
             .single();
 
           if (profileError) {
-            console.error("Erreur lors de la récupération du profil:", profileError);
+            console.error("Profile error:", profileError);
           }
 
           if (!profile?.phone) {
+            console.log("No phone number found, redirecting to account");
             toast({
               title: "Complétez votre profil",
               description: "Veuillez ajouter votre numéro de téléphone pour finaliser votre inscription.",
             });
             navigate("/account", { replace: true });
           } else {
+            console.log("Profile complete, redirecting to home");
             toast({
               title: "Connexion réussie",
               description: "Bienvenue sur K.Box !",
@@ -42,10 +49,11 @@ export function AuthCallback() {
             navigate("/", { replace: true });
           }
         } else {
+          console.log("No session found, redirecting to home");
           navigate("/", { replace: true });
         }
       } catch (error) {
-        console.error("Erreur lors de la redirection:", error);
+        console.error("Auth callback error:", error);
         toast({
           title: "Erreur de connexion",
           description: "Une erreur est survenue lors de la connexion. Veuillez réessayer.",
@@ -55,13 +63,7 @@ export function AuthCallback() {
       }
     };
 
-    // Utiliser un paramètre d'URL pour détecter si nous venons d'une authentification
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('auth') === 'callback') {
-      handleAuthCallback();
-    } else {
-      navigate("/", { replace: true });
-    }
+    handleAuthCallback();
   }, [navigate, toast]);
 
   return (

@@ -34,12 +34,12 @@ export const LocationSelector = ({ onSelect }: LocationSelectorProps) => {
               
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4 text-violet-600" />
-                <span>Jusqu'à 15 personnes</span>
+                <span>Jusqu'à 10 personnes</span>
               </div>
               
               <div className="flex items-center gap-2">
                 <Euro className="h-4 w-4 text-violet-600" />
-                <span>À partir de 29€/heure</span>
+                <span>À partir de 29€ par personne/heure</span>
               </div>
             </div>
 

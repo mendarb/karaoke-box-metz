@@ -1,22 +1,9 @@
 import { Box3DIcon } from "@/components/icons/Box3DIcon";
-import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 export const HeroSection = () => {
-  const { data: announcement } = useQuery({
-    queryKey: ['announcements'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('announcements')
-        .select('*')
-        .eq('is_active', true)
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-  });
+  const navigate = useNavigate();
 
   return (
     <div className="bg-[#F1F1F1]">
@@ -28,57 +15,46 @@ export const HeroSection = () => {
             <div className="inline-block p-2 bg-white/5 rounded-xl backdrop-blur-sm">
               <Box3DIcon className="w-5 h-5" />
             </div>
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tighter text-white">
-              Votre Box Karaoké
-              <br />
-              à Metz
-            </h1>
+            <img 
+              src="/lovable-uploads/00c7f745-4d39-4456-b872-b0111b649a57.png" 
+              alt="K-Box Logo" 
+              className="w-auto h-12 md:h-16"
+            />
             <p className="text-sm md:text-base text-white/90 max-w-[500px] leading-relaxed">
               Profitez d'une expérience unique dans notre box karaoké privative.
               Chantez vos chansons préférées en toute intimité !
             </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Link
-                to="/box3d"
-                className="inline-flex h-9 items-center justify-center rounded-md bg-white/10 px-4 text-sm font-medium text-white hover:bg-white/20 transition-all hover:scale-105"
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <Button
+                onClick={() => navigate("/box-3d")}
+                variant="secondary"
+                className="bg-white hover:bg-white/90 text-black"
               >
                 Voir la salle en 3D
-              </Link>
+              </Button>
             </div>
-          </div>
-
-          <div className="mt-6 space-y-2 relative z-10">
-            <h3 className="text-xs font-medium text-white/90">Moyens de paiement acceptés</h3>
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-              <div className="flex items-center justify-center p-1.5 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
-                <img src="/lovable-uploads/apple pay.svg" alt="Apple Pay" className="h-5" />
-              </div>
-              <div className="flex items-center justify-center p-1.5 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
-                <img src="/lovable-uploads/paypal.svg" alt="PayPal" className="h-5" />
-              </div>
-              <div className="flex items-center justify-center p-1.5 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
-                <img src="/lovable-uploads/stripe.svg" alt="Stripe" className="h-5" />
-              </div>
-              <div className="flex items-center justify-center p-1.5 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
-                <img src="/lovable-uploads/klarna.svg" alt="Klarna" className="h-5" />
-              </div>
-              <div className="flex items-center justify-center p-1.5 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
-                <img src="/lovable-uploads/visa.svg" alt="Visa" className="h-5" />
-              </div>
-              <div className="flex items-center justify-center p-1.5 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
-                <img src="/lovable-uploads/Mastercard.svg" alt="Mastercard" className="h-5" />
+            <div className="mt-8">
+              <p className="text-sm text-white/80 mb-3">Moyens de paiement acceptés</p>
+              <div className="flex flex-wrap gap-4">
+                <img src="/lovable-uploads/apple pay.svg" alt="Apple Pay" className="h-8" />
+                <img src="/lovable-uploads/paypal.svg" alt="PayPal" className="h-8" />
+                <img src="/lovable-uploads/stripe.svg" alt="Stripe" className="h-8" />
+                <img src="/lovable-uploads/klarna.svg" alt="Klarna" className="h-8" />
+                <img src="/lovable-uploads/visa.svg" alt="Visa" className="h-8" />
+                <img src="/lovable-uploads/Mastercard.svg" alt="Mastercard" className="h-8" />
               </div>
             </div>
           </div>
         </div>
-      </div>
-      
+        <div className="order-1 md:order-2">
       <div 
         className="w-full h-[400px] bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: 'url("/lovable-uploads/4358a191-e1a1-4fea-bdca-01f0adbcd973.png")',
         }}
       />
+        </div>
+      </div>
     </div>
   );
 };

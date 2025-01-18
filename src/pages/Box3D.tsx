@@ -5,18 +5,18 @@ import { Package, Music, Users } from "lucide-react";
 
 const Box3D = () => {
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-secondary to-white">
-      <main className="flex-grow">
-        <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen flex flex-col">
+      <main className="flex-grow py-8">
+        <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-6 px-4 md:px-8 py-12">
-              <div className="overflow-hidden">
+            <div className="space-y-6">
+              <div className="overflow-hidden rounded-lg shadow-sm">
                 <ImageLightbox 
                   src="/lovable-uploads/cfa63d4d-3758-45b6-8316-13d7d026d109.png"
                   alt="K.Box Metz - Box Karaoké"
                   className="w-full h-auto"
                 />
-                <div className="p-4 bg-white/90">
+                <div className="p-4 bg-white">
                   <p className="text-sm text-gray-600 text-center">
                     Rendu 3D de notre box karaoké à Metz
                     <br />
@@ -43,7 +43,7 @@ const Box3D = () => {
                     description: "Capacité jusqu'à 10 personnes"
                   }
                 ].map((feature, index) => (
-                  <div key={index} className="p-4 text-center bg-white/90 rounded-lg shadow-sm">
+                  <div key={index} className="p-4 text-center bg-white rounded-lg shadow-sm">
                     <div className="flex flex-col items-center space-y-2">
                       {feature.icon}
                       <h3 className="font-semibold text-kbox-coral">{feature.title}</h3>
@@ -54,8 +54,8 @@ const Box3D = () => {
               </div>
             </div>
 
-            <div className="sticky top-4 px-4 md:px-8 py-12">
-              <div className="bg-white/90 p-8 rounded-lg shadow-sm">
+            <div className="sticky top-4">
+              <div className="bg-white p-8 rounded-lg shadow-sm">
                 <BoxFeatures />
               </div>
             </div>

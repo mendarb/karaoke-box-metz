@@ -5,8 +5,16 @@ export const HeroSection = () => {
   return (
     <div className="bg-[#F1F1F1]">
       <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-0">
-        <div className="flex flex-col justify-center bg-[#ec6342] order-2 md:order-1 p-8 md:p-12 lg:p-16">
-          <div className="space-y-6">
+        <div 
+          className="flex flex-col justify-center bg-[#ec6342] order-2 md:order-1 p-8 md:p-12 lg:p-16 relative"
+          style={{
+            backgroundImage: 'url("/lovable-uploads/70640657-db45-4404-95be-b08b31b5cdc9.png")',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundBlendMode: 'overlay'
+          }}
+        >
+          <div className="space-y-6 relative z-10">
             <div className="inline-block p-3 bg-[#ec6342]/10 rounded-2xl backdrop-blur-sm">
               <Box3DIcon className="w-8 h-8" />
             </div>
@@ -28,7 +36,7 @@ export const HeroSection = () => {
             </div>
           </div>
 
-          <div className="mt-12 space-y-4">
+          <div className="mt-12 space-y-4 relative z-10">
             <h3 className="text-lg font-medium">Moyens de paiement acceptés</h3>
             <div className="grid grid-cols-3 sm:grid-cols-6 gap-4">
               <div className="flex items-center justify-center p-3 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
@@ -51,6 +59,9 @@ export const HeroSection = () => {
               </div>
             </div>
           </div>
+
+          {/* Add a semi-transparent overlay */}
+          <div className="absolute inset-0 bg-[#ec6342]/80 mix-blend-overlay" />
         </div>
       </div>
     </div>

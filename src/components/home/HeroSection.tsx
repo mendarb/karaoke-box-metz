@@ -9,9 +9,9 @@ export const HeroSection = () => {
     <div className="bg-[#F1F1F1]">
       <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-0">
         <div 
-          className="flex flex-col justify-center bg-kbox-orange order-2 md:order-1 p-4 md:p-6 lg:p-8 relative"
+          className="flex flex-col justify-center bg-kbox-orange order-2 md:order-1"
         >
-          <div className="space-y-3 relative z-10">
+          <div className="space-y-3 relative z-10 p-4 md:p-6 lg:p-8">
             <div className="inline-block p-2 bg-white/5 rounded-xl backdrop-blur-sm">
               <Box3DIcon className="w-5 h-5" />
             </div>
@@ -81,13 +81,13 @@ export const HeroSection = () => {
               </div>
             </div>
           </div>
-          <div className="aspect-square w-full">
-            <img 
-              src="/lovable-uploads/f0321335-189d-4fe7-b21f-199edaf22a37.png"
-              alt="K-Box Ambiance"
-              className="w-full h-full object-cover"
-            />
-          </div>
+        </div>
+        <div className="aspect-square w-full">
+          <img 
+            src="/lovable-uploads/f0321335-189d-4fe7-b21f-199edaf22a37.png"
+            alt="K-Box Ambiance"
+            className="w-full h-full object-cover"
+          />
         </div>
         <div className="order-1 md:order-2">
           <div 

@@ -35,7 +35,7 @@ export const HeroSection = () => {
             </div>
             <div className="mt-8">
               <p className="text-sm text-white/80 mb-3">Moyens de paiement acceptés</p>
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-wrap items-center gap-4">
                 <img src="/lovable-uploads/apple pay.svg" alt="Apple Pay" className="h-8" />
                 <img src="/lovable-uploads/paypal.svg" alt="PayPal" className="h-8" />
                 <img src="/lovable-uploads/stripe.svg" alt="Stripe" className="h-8" />
@@ -47,12 +47,12 @@ export const HeroSection = () => {
           </div>
         </div>
         <div className="order-1 md:order-2">
-      <div 
-        className="w-full h-[400px] bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: 'url("/lovable-uploads/4358a191-e1a1-4fea-bdca-01f0adbcd973.png")',
-        }}
-      />
+          <div 
+            className="w-full h-[400px] bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: 'url("/lovable-uploads/4358a191-e1a1-4fea-bdca-01f0adbcd973.png")',
+            }}
+          />
         </div>
       </div>
     </div>

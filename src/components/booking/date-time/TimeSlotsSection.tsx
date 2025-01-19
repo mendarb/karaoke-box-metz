@@ -63,18 +63,17 @@ export const TimeSlotsSection = ({ form, availableSlots, isLoading }: TimeSlotsS
       // Ajouter le nouveau créneau seulement s'il est consécutif et dans la limite de 4h
       const slotHour = parseInt(slot);
       const isConsecutive = newSelectedSlots.length === 0 || 
-        newSelectedSlots.some(existingSlot => {
-          const existingHour = parseInt(existingSlot);
-          return Math.abs(existingHour - slotHour) === 1;
-        });
+        Math.abs(parseInt(newSelectedSlots[newSelectedSlots.length - 1]) - slotHour) === 1;
 
       if (isConsecutive && newSelectedSlots.length < 4) {
         newSelectedSlots.push(slot);
         newSelectedSlots.sort();
       }
     } else {
-      // Retirer le créneau
-      newSelectedSlots.splice(slotIndex, 1);
+      // Ne permettre la désélection que si c'est le dernier créneau
+      if (slotIndex === newSelectedSlots.length - 1) {
+        newSelectedSlots.pop();
+      }
     }
 
     // Mettre à jour les créneaux sélectionnés
@@ -109,20 +108,20 @@ export const TimeSlotsSection = ({ form, availableSlots, isLoading }: TimeSlotsS
                 const isBlocked = unavailableSlots.has(slot);
                 const isSelected = selectedSlots.includes(slot);
                 
-                // Vérifier si le créneau peut être sélectionné (consécutif aux créneaux déjà sélectionnés)
+                // Vérifier si le créneau peut être sélectionné (consécutif au dernier créneau sélectionné)
                 const slotHour = parseInt(slot);
                 const canBeSelected = selectedSlots.length === 0 || 
-                  selectedSlots.some(selectedSlot => {
-                    const selectedHour = parseInt(selectedSlot);
-                    return Math.abs(selectedHour - slotHour) === 1;
-                  });
+                  Math.abs(parseInt(selectedSlots[selectedSlots.length - 1]) - slotHour) === 1;
+
+                // Un créneau ne peut être désélectionné que s'il est le dernier de la sélection
+                const canBeDeselected = isSelected && selectedSlots.indexOf(slot) === selectedSlots.length - 1;
 
                 return (
                   <TimeSlot
                     key={slot}
                     slot={slot}
                     isSelected={isSelected}
-                    isDisabled={isBlocked || (!isSelected && !canBeSelected && selectedSlots.length > 0)}
+                    isDisabled={isBlocked || (!isSelected && !canBeSelected && selectedSlots.length > 0) || (isSelected && !canBeDeselected)}
                     onSelect={() => handleSlotSelection(slot)}
                     date={selectedDate}
                   />

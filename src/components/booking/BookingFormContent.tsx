@@ -45,7 +45,7 @@ export const BookingFormContent = ({
     <div className="space-y-6">
       {currentStep === 1 && (
         <LocationSelector 
-          onLocationSelect={onLocationSelect}
+          onSelect={onLocationSelect}
         />
       )}
 

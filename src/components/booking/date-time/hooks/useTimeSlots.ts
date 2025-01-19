@@ -6,6 +6,12 @@ export const useTimeSlots = () => {
     return ['14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00'];
   };
 
+  const normalizeTimeSlot = (timeSlot: string): string => {
+    // Ensure consistent HH:00 format
+    const hour = parseInt(timeSlot.split(':')[0]);
+    return `${hour.toString().padStart(2, '0')}:00`;
+  };
+
   const getAvailableHoursForSlot = async (
     date: Date,
     timeSlot: string,
@@ -26,14 +32,15 @@ export const useTimeSlots = () => {
     }
 
     const slots = daySettings.slots;
-    const selectedSlotIndex = slots.indexOf(timeSlot);
+    const normalizedTimeSlot = normalizeTimeSlot(timeSlot);
+    const selectedSlotIndex = slots.indexOf(normalizedTimeSlot);
     if (selectedSlotIndex === -1) {
       return 0;
     }
 
     try {
       // Convertir le créneau sélectionné en heure
-      const selectedHour = parseInt(timeSlot.split(':')[0]);
+      const selectedHour = parseInt(normalizedTimeSlot.split(':')[0]);
       
       // Trouver l'heure de fermeture
       const lastSlot = slots[slots.length - 1];
@@ -45,7 +52,8 @@ export const useTimeSlots = () => {
       console.log('🕒 Calcul initial:', {
         selectedHour,
         closingHour,
-        hoursUntilClosing
+        hoursUntilClosing,
+        normalizedTimeSlot
       });
 
       // Récupérer les réservations payées pour cette date
@@ -63,8 +71,17 @@ export const useTimeSlots = () => {
         return Math.min(4, hoursUntilClosing);
       }
 
+      // Normaliser les créneaux des réservations existantes
+      const normalizedBookings = bookings?.map(booking => ({
+        ...booking,
+        time_slot: normalizeTimeSlot(booking.time_slot),
+        duration: parseInt(booking.duration)
+      }));
+
+      console.log('📊 Réservations normalisées:', normalizedBookings);
+
       // Trouver la prochaine réservation après le créneau sélectionné
-      const nextBooking = bookings?.find(booking => {
+      const nextBooking = normalizedBookings?.find(booking => {
         const bookingHour = parseInt(booking.time_slot);
         return bookingHour > selectedHour;
       });
@@ -78,7 +95,8 @@ export const useTimeSlots = () => {
         console.log('📊 Prochaine réservation:', {
           nextBookingHour,
           hoursUntilNextBooking,
-          currentMax: availableHours
+          currentMax: availableHours,
+          nextBookingDetails: nextBooking
         });
 
         availableHours = Math.min(availableHours, hoursUntilNextBooking);
@@ -89,12 +107,9 @@ export const useTimeSlots = () => {
       const finalAvailableHours = Math.min(availableHours, hoursUntilClosing, 4);
 
       console.log('✅ Heures disponibles calculées:', {
-        créneau: timeSlot,
+        créneau: normalizedTimeSlot,
         heuresDisponibles: finalAvailableHours,
-        réservationsExistantes: bookings?.map(b => ({
-          début: b.time_slot,
-          durée: b.duration
-        })),
+        réservationsExistantes: normalizedBookings,
         limiteFermeture: hoursUntilClosing,
         limiteRéservation: availableHours
       });

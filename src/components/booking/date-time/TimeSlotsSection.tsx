@@ -101,7 +101,10 @@ export const TimeSlotsSection = ({ form, availableSlots, isLoading }: TimeSlotsS
       name="timeSlot"
       render={({ field }) => (
         <FormItem className="space-y-3">
-          <FormLabel>Sélectionnez vos créneaux (jusqu'à 4h consécutives)</FormLabel>
+          <FormLabel>Sélectionnez vos créneaux horaires</FormLabel>
+          <div className="text-sm text-gray-500 mb-2">
+            Vous pouvez réserver jusqu'à 4 heures consécutives. Sélectionnez votre heure de début.
+          </div>
           <FormControl>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {slots.map((slot) => {

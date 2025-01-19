@@ -22,6 +22,11 @@ export const TimeSlot = ({
     }
   };
 
+  // Convertir le créneau en plage horaire
+  const startHour = parseInt(slot);
+  const endHour = startHour + 1;
+  const timeRange = `${startHour}h-${endHour}h`;
+
   return (
     <Button
       type="button"
@@ -34,7 +39,7 @@ export const TimeSlot = ({
       onClick={handleClick}
       disabled={isDisabled}
     >
-      {slot}
+      {timeRange}
     </Button>
   );
 };

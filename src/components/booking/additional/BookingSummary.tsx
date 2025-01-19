@@ -1,97 +1,73 @@
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Calendar, Clock, Users, Euro, MessageSquare } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface BookingSummaryProps {
-  groupSize: string;
-  duration: string;
-  calculatedPrice: number;
-  isPromoValid: boolean;
-  promoCode?: string;
-  finalPrice?: number;
-  date?: string;
+  date?: Date;
   timeSlot?: string;
-  message?: string;
+  duration?: string;
+  groupSize?: string;
+  calculatedPrice: number;
+  finalPrice?: number;
+  isPromoValid?: boolean;
 }
 
 export const BookingSummary = ({
-  groupSize,
-  duration,
-  calculatedPrice,
-  isPromoValid,
-  promoCode,
-  finalPrice,
   date,
   timeSlot,
-  message
+  duration,
+  groupSize,
+  calculatedPrice,
+  finalPrice,
+  isPromoValid,
 }: BookingSummaryProps) => {
   const showDiscount = isPromoValid && finalPrice !== undefined && finalPrice !== calculatedPrice;
   const startHour = timeSlot ? parseInt(timeSlot) : undefined;
-  const endHour = startHour !== undefined ? startHour + Number(duration) : undefined;
+  const endHour = startHour !== undefined && duration ? startHour + parseInt(duration) : undefined;
   
   const formatHour = (hour: number) => `${hour.toString().padStart(2, '0')}h00`;
-  
+
   return (
-    <div className="bg-violet-50 p-4 rounded-lg space-y-4">
-      <h3 className="font-semibold text-violet-900">Récapitulatif de votre réservation</h3>
-      
-      <div className="space-y-4">
-        {date && timeSlot && (
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2">
-              <Calendar className="h-4 w-4 text-violet-500" />
-              <p className="font-medium">
-                {format(new Date(date), 'EEEE d MMMM yyyy', { locale: fr })}
-              </p>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Clock className="h-4 w-4 text-violet-500" />
-              <p>
-                {startHour !== undefined && endHour !== undefined && (
-                  `${formatHour(startHour)} - ${formatHour(endHour)} (${duration}h)`
-                )}
-              </p>
-            </div>
-          </div>
+    <Card className="bg-white/50 backdrop-blur-sm border-none">
+      <CardContent className="p-6">
+        <h3 className="font-semibold text-lg mb-4">Récapitulatif de votre réservation</h3>
+        
+        {date && (
+          <p className="text-gray-600 mb-2">
+            {format(date, "EEEE d MMMM yyyy", { locale: fr })}
+          </p>
         )}
 
-        <div className="space-y-2">
-          <div className="flex items-center space-x-2">
-            <Users className="h-4 w-4 text-violet-500" />
-            <p>{groupSize} personnes</p>
-          </div>
-        </div>
+        {startHour !== undefined && endHour !== undefined && duration && (
+          <p className="text-gray-600 mb-2">
+            {formatHour(startHour)} - {formatHour(endHour)} ({duration}h)
+          </p>
+        )}
 
-        <div className="space-y-2">
-          {showDiscount ? (
+        {groupSize && (
+          <p className="text-gray-600 mb-4">
+            {groupSize} personnes
+          </p>
+        )}
+
+        <div className="border-t pt-4">
+          {showDiscount && finalPrice !== undefined && (
             <>
-              <p className="line-through text-gray-500">Prix initial : {calculatedPrice}€</p>
-              <div className="flex items-center space-x-2">
-                <Euro className="h-4 w-4 text-green-500" />
-                <p className="font-semibold text-green-600">Prix final : {finalPrice}€</p>
-              </div>
-              <p className="text-green-600 font-medium">Code promo {promoCode} appliqué</p>
+              <p className="text-gray-500 line-through mb-1">
+                Prix initial : {calculatedPrice}€
+              </p>
+              <p className="font-semibold text-green-600">
+                Prix après réduction : {finalPrice}€
+              </p>
             </>
-          ) : (
-            <div className="flex items-center space-x-2">
-              <Euro className="h-4 w-4 text-violet-500" />
-              <p className="font-semibold">Prix total : {calculatedPrice}€</p>
-            </div>
+          )}
+          {!showDiscount && (
+            <p className="font-semibold">
+              Prix total : {calculatedPrice}€
+            </p>
           )}
         </div>
-
-        {message && (
-          <div className="space-y-2">
-            <div className="flex items-start space-x-2">
-              <MessageSquare className="h-4 w-4 text-violet-500 mt-1" />
-              <div>
-                <p className="font-medium text-sm text-gray-700">Message</p>
-                <p className="text-gray-600">{message}</p>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };

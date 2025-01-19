@@ -3,26 +3,26 @@ import { fr } from "date-fns/locale";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface BookingSummaryProps {
-  date?: Date;
-  timeSlot?: string;
-  duration?: string;
   groupSize?: string;
+  duration?: string;
   calculatedPrice: number;
   finalPrice?: number;
   isPromoValid?: boolean;
   promoCode?: string;
+  date?: Date;
+  timeSlot?: string;
   message?: string;
 }
 
 export const BookingSummary = ({
-  date,
-  timeSlot,
-  duration,
   groupSize,
+  duration,
   calculatedPrice,
   finalPrice,
   isPromoValid,
   promoCode,
+  date,
+  timeSlot,
   message
 }: BookingSummaryProps) => {
   const showDiscount = isPromoValid && finalPrice !== undefined && finalPrice !== calculatedPrice;
@@ -30,6 +30,7 @@ export const BookingSummary = ({
   const endHour = startHour !== undefined && duration ? startHour + parseInt(duration) : undefined;
   
   const formatHour = (hour: number) => `${hour.toString().padStart(2, '0')}h00`;
+  const pricePerPerson = groupSize ? Math.round(calculatedPrice / parseInt(groupSize)) : 0;
 
   return (
     <Card className="bg-white/50 backdrop-blur-sm border-none">
@@ -43,15 +44,25 @@ export const BookingSummary = ({
         )}
 
         {startHour !== undefined && endHour !== undefined && duration && (
-          <p className="text-gray-600 mb-2">
-            {formatHour(startHour)} - {formatHour(endHour)} ({duration}h)
-          </p>
+          <div className="space-y-1 mb-4">
+            <p className="text-gray-600">
+              {formatHour(startHour)} - {formatHour(endHour)}
+            </p>
+            <p className="text-gray-600">
+              Durée : {duration} heure{parseInt(duration) > 1 ? 's' : ''}
+            </p>
+          </div>
         )}
 
         {groupSize && (
-          <p className="text-gray-600 mb-4">
-            {groupSize} personnes
-          </p>
+          <div className="space-y-1 mb-4">
+            <p className="text-gray-600">
+              {groupSize} personne{parseInt(groupSize) > 1 ? 's' : ''}
+            </p>
+            <p className="text-gray-600">
+              {pricePerPerson}€ par personne
+            </p>
+          </div>
         )}
 
         {message && (

@@ -3,7 +3,7 @@ import { UseFormReturn } from "react-hook-form";
 import { TimeSlot } from "./time-slots/TimeSlot";
 import { LoadingSkeleton } from "./time-slots/LoadingSkeleton";
 import { useBookedSlots } from "./time-slots/useBookedSlots";
-import { format } from "date-fns";
+import { format, isToday, isBefore, parse } from "date-fns";
 import { useState, useEffect } from "react";
 
 interface TimeSlotsSectionProps {
@@ -30,7 +30,24 @@ export const TimeSlotsSection = ({ form, availableSlots, isLoading }: TimeSlotsS
 
   const { slots, blockedSlots } = availableSlots;
 
-  if (!slots || slots.length === 0) {
+  // Filtrer les créneaux passés pour aujourd'hui
+  const filterPassedSlots = (slots: string[]) => {
+    if (!isToday(selectedDate)) {
+      return slots;
+    }
+
+    const now = new Date();
+    const currentHour = now.getHours();
+    
+    return slots.filter(slot => {
+      const slotHour = parseInt(slot.split(':')[0]);
+      return slotHour > currentHour;
+    });
+  };
+
+  const availableTimeSlots = filterPassedSlots(slots);
+
+  if (!availableTimeSlots || availableTimeSlots.length === 0) {
     return (
       <div className="text-center text-gray-500">
         Aucun créneau disponible pour cette date
@@ -90,11 +107,6 @@ export const TimeSlotsSection = ({ form, availableSlots, isLoading }: TimeSlotsS
     }
   };
 
-  console.log('🔍 Créneaux indisponibles:', {
-    date: format(selectedDate, 'yyyy-MM-dd'),
-    unavailableSlots: Array.from(unavailableSlots)
-  });
-
   return (
     <FormField
       control={form.control}
@@ -107,7 +119,7 @@ export const TimeSlotsSection = ({ form, availableSlots, isLoading }: TimeSlotsS
           </div>
           <FormControl>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {slots.map((slot) => {
+              {availableTimeSlots.map((slot) => {
                 const isBlocked = unavailableSlots.has(slot);
                 const isSelected = selectedSlots.includes(slot);
                 

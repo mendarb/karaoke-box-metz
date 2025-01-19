@@ -1,6 +1,5 @@
 import { supabase } from "@/lib/supabase";
 import { BookingSettings } from "@/components/admin/settings/types/bookingSettings";
-import { format } from "date-fns";
 
 export const useTimeSlots = () => {
   const getTestModeSlots = () => {
@@ -33,11 +32,27 @@ export const useTimeSlots = () => {
     }
 
     try {
+      // Convertir le créneau sélectionné en heure
+      const selectedHour = parseInt(timeSlot.split(':')[0]);
+      
+      // Trouver l'heure de fermeture
+      const lastSlot = slots[slots.length - 1];
+      const closingHour = parseInt(lastSlot.split(':')[0]);
+      
+      // Calculer les heures jusqu'à la fermeture
+      const hoursUntilClosing = closingHour - selectedHour + 1;
+
+      console.log('🕒 Calcul initial:', {
+        selectedHour,
+        closingHour,
+        hoursUntilClosing
+      });
+
       // Récupérer les réservations payées pour cette date
       const { data: bookings, error } = await supabase
         .from('bookings')
         .select('time_slot, duration')
-        .eq('date', format(date, 'yyyy-MM-dd'))
+        .eq('date', date.toISOString().split('T')[0])
         .eq('payment_status', 'paid')
         .neq('status', 'cancelled')
         .is('deleted_at', null)
@@ -45,65 +60,49 @@ export const useTimeSlots = () => {
 
       if (error) {
         console.error('❌ Erreur lors de la vérification des réservations:', error);
-        return 4; // Valeur par défaut en cas d'erreur
+        return Math.min(4, hoursUntilClosing);
       }
 
-      const selectedHour = parseInt(timeSlot);
-      
-      // 1. Calculer les heures jusqu'à la fermeture
-      const lastSlot = slots[slots.length - 1];
-      const closingHour = parseInt(lastSlot);
-      const hoursUntilClosing = closingHour - selectedHour + 1;
-      let maxAvailableHours = Math.min(4, hoursUntilClosing);
-
-      console.log('🕒 Calcul initial:', {
-        selectedHour,
-        closingHour,
-        hoursUntilClosing,
-        maxAvailableHours
+      // Trouver la prochaine réservation après le créneau sélectionné
+      const nextBooking = bookings?.find(booking => {
+        const bookingHour = parseInt(booking.time_slot);
+        return bookingHour > selectedHour;
       });
 
-      // 2. Vérifier les réservations qui pourraient limiter la durée disponible
-      if (bookings && bookings.length > 0) {
-        // Filtrer les réservations qui commencent après notre créneau sélectionné
-        const futureBookings = bookings.filter(booking => {
-          const bookingHour = parseInt(booking.time_slot);
-          return bookingHour > selectedHour;
+      let availableHours = 4;
+
+      if (nextBooking) {
+        const nextBookingHour = parseInt(nextBooking.time_slot);
+        const hoursUntilNextBooking = nextBookingHour - selectedHour;
+        
+        console.log('📊 Prochaine réservation:', {
+          nextBookingHour,
+          hoursUntilNextBooking,
+          currentMax: availableHours
         });
 
-        // Trier par heure de début croissante
-        futureBookings.sort((a, b) => parseInt(a.time_slot) - parseInt(b.time_slot));
-
-        if (futureBookings.length > 0) {
-          // Prendre la première réservation future
-          const nextBooking = futureBookings[0];
-          const nextBookingHour = parseInt(nextBooking.time_slot);
-          const hoursUntilNextBooking = nextBookingHour - selectedHour;
-          
-          console.log('📊 Prochaine réservation:', {
-            nextBookingHour,
-            hoursUntilNextBooking,
-            currentMax: maxAvailableHours
-          });
-
-          // Mettre à jour le maximum d'heures disponibles
-          maxAvailableHours = Math.min(maxAvailableHours, hoursUntilNextBooking);
-        }
+        availableHours = Math.min(availableHours, hoursUntilNextBooking);
       }
+
+      // Prendre le minimum entre les heures disponibles jusqu'à la prochaine réservation,
+      // les heures jusqu'à la fermeture, et la limite de 4 heures
+      const finalAvailableHours = Math.min(availableHours, hoursUntilClosing, 4);
 
       console.log('✅ Heures disponibles calculées:', {
         créneau: timeSlot,
-        heuresDisponibles: maxAvailableHours,
+        heuresDisponibles: finalAvailableHours,
         réservationsExistantes: bookings?.map(b => ({
           début: b.time_slot,
           durée: b.duration
-        }))
+        })),
+        limiteFermeture: hoursUntilClosing,
+        limiteRéservation: availableHours
       });
 
-      return maxAvailableHours;
+      return finalAvailableHours;
     } catch (error) {
       console.error('❌ Erreur lors du calcul des heures disponibles:', error);
-      return 4; // Valeur par défaut en cas d'erreur
+      return 0;
     }
   };
 

@@ -1,6 +1,4 @@
 import { UseFormReturn } from "react-hook-form";
-import { TimeSlot } from "./time-slots/TimeSlot";
-import { LoadingSkeleton } from "./time-slots/LoadingSkeleton";
 import { isToday, format, parse } from "date-fns";
 
 interface TimeSlotsProps {
@@ -18,6 +16,7 @@ export const TimeSlotsSection = ({
   isLoading,
 }: TimeSlotsProps) => {
   const selectedDate = form.watch("date");
+  const selectedTimeSlot = form.watch("timeSlot");
 
   // Filtrer les créneaux passés pour aujourd'hui
   const filterPassedTimeSlots = (slots: string[]) => {
@@ -29,21 +28,12 @@ export const TimeSlotsSection = ({
     const currentHour = now.getHours();
     
     return slots.filter(slot => {
-      const slotHour = parseInt(slot.split(':')[0]);
+      const slotHour = parseInt(slot);
       return slotHour > currentHour;
     });
   };
 
   const filteredSlots = filterPassedTimeSlots(availableSlots.slots);
-
-  const formatTimeSlot = (slot: string) => {
-    const hour = parseInt(slot);
-    return `${hour}h-${hour + 1}h`;
-  };
-
-  if (isLoading) {
-    return <LoadingSkeleton />;
-  }
 
   if (!selectedDate) {
     return null;
@@ -69,10 +59,11 @@ export const TimeSlotsSection = ({
           {filteredSlots.map((slot) => (
             <TimeSlot
               key={slot}
-              value={slot}
-              label={formatTimeSlot(slot)}
-              isBlocked={availableSlots.blockedSlots.has(slot)}
-              form={form}
+              slot={slot}
+              isSelected={selectedTimeSlot === slot}
+              isDisabled={availableSlots.blockedSlots.has(slot)}
+              onSelect={(slot) => form.setValue("timeSlot", slot)}
+              date={new Date(selectedDate)}
             />
           ))}
         </div>

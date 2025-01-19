@@ -27,7 +27,7 @@ export const BookingSummary = ({
 }: BookingSummaryProps) => {
   const showDiscount = isPromoValid && finalPrice !== undefined && finalPrice !== calculatedPrice;
   const startHour = timeSlot ? parseInt(timeSlot) : undefined;
-  const endHour = startHour !== undefined ? startHour + parseInt(duration) : undefined;
+  const endHour = startHour !== undefined ? startHour + Number(duration) : undefined;
   
   const formatHour = (hour: number) => `${hour.toString().padStart(2, '0')}h00`;
   

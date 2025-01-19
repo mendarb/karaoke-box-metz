@@ -26,7 +26,10 @@ export const BookingSummary = ({
   message
 }: BookingSummaryProps) => {
   const showDiscount = isPromoValid && finalPrice !== undefined && finalPrice !== calculatedPrice;
-  const endHour = timeSlot ? parseInt(timeSlot) + parseInt(duration) : undefined;
+  const startHour = timeSlot ? parseInt(timeSlot) : undefined;
+  const endHour = startHour !== undefined ? startHour + parseInt(duration) : undefined;
+  
+  const formatHour = (hour: number) => `${hour.toString().padStart(2, '0')}h00`;
   
   return (
     <div className="bg-violet-50 p-4 rounded-lg space-y-4">
@@ -44,7 +47,9 @@ export const BookingSummary = ({
             <div className="flex items-center space-x-2">
               <Clock className="h-4 w-4 text-violet-500" />
               <p>
-                {timeSlot}:00 - {endHour}:00 ({duration}h)
+                {startHour !== undefined && endHour !== undefined && (
+                  `${formatHour(startHour)} - ${formatHour(endHour)} (${duration}h)`
+                )}
               </p>
             </div>
           </div>

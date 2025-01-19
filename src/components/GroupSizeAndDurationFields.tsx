@@ -1,6 +1,5 @@
 import { UseFormReturn } from "react-hook-form";
 import { GroupSizeSelector } from "@/components/booking/group-size/GroupSizeSelector";
-import { DurationSelector } from "@/components/booking/duration/DurationSelector";
 import { useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useBookingPrice } from "./booking/hooks/useBookingPrice";
@@ -44,7 +43,6 @@ export const GroupSizeAndDurationFields = ({
         dateValue: date ? date.toISOString() : 'undefined'
       });
 
-      // Correction : Utiliser la date sélectionnée sans ajustement
       const formattedDate = date ? new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().split('T')[0] : undefined;
       
       if (!formattedDate || !timeSlot) {
@@ -64,22 +62,12 @@ export const GroupSizeAndDurationFields = ({
     onGroupSizeChange(value);
   };
 
-  const handleDurationChange = (value: string) => {
-    form.setValue("duration", value);
-    onDurationChange(value);
-  };
-
   return (
     <Card className="bg-white/50 backdrop-blur-sm border-none">
       <CardContent className="space-y-6 p-6">
         <GroupSizeSelector 
           form={form} 
           onGroupSizeChange={handleGroupSizeChange} 
-        />
-        <DurationSelector 
-          form={form} 
-          onDurationChange={handleDurationChange}
-          availableHours={availableHours}
         />
         {groupSize && duration && currentPrice > 0 && (
           <BookingPriceDisplay

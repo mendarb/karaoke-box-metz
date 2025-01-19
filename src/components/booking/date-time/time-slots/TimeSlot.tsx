@@ -27,7 +27,7 @@ export const TimeSlot = ({
       type="button"
       variant={isSelected ? "default" : "outline"}
       className={cn(
-        "w-full",
+        "w-full relative",
         isSelected && "bg-violet-600 hover:bg-violet-700",
         isDisabled && "opacity-50 cursor-not-allowed"
       )}

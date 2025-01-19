@@ -45,7 +45,6 @@ export const BookingFormContent = ({
     <div className="space-y-6">
       {currentStep === 1 && (
         <LocationSelector 
-          form={form}
           onLocationSelect={onLocationSelect}
         />
       )}
@@ -72,6 +71,8 @@ export const BookingFormContent = ({
           <AdditionalFields 
             form={form}
             calculatedPrice={calculatedPrice}
+            groupSize={groupSize}
+            duration={duration}
           />
           <BookingFormLegal form={form} />
         </>

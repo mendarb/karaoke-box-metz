@@ -34,15 +34,14 @@ export const useTimeSlots = () => {
     const slots = daySettings.slots;
     const normalizedTimeSlot = normalizeTimeSlot(timeSlot);
     const selectedSlotIndex = slots.indexOf(normalizedTimeSlot);
+    
     if (selectedSlotIndex === -1) {
+      console.log('❌ Créneau non trouvé dans les slots disponibles');
       return 0;
     }
 
     try {
-      // Convertir le créneau sélectionné en heure
       const selectedHour = parseInt(normalizedTimeSlot.split(':')[0]);
-      
-      // Trouver l'heure de fermeture
       const lastSlot = slots[slots.length - 1];
       const closingHour = parseInt(lastSlot.split(':')[0]);
       
@@ -63,8 +62,7 @@ export const useTimeSlots = () => {
         .eq('date', date.toISOString().split('T')[0])
         .eq('payment_status', 'paid')
         .neq('status', 'cancelled')
-        .is('deleted_at', null)
-        .order('time_slot', { ascending: true });
+        .is('deleted_at', null);
 
       if (error) {
         console.error('❌ Erreur lors de la vérification des réservations:', error);
@@ -73,34 +71,27 @@ export const useTimeSlots = () => {
 
       // Normaliser les créneaux des réservations existantes
       const normalizedBookings = bookings?.map(booking => ({
-        ...booking,
         time_slot: normalizeTimeSlot(booking.time_slot),
         duration: parseInt(booking.duration)
       }));
 
-      console.log('📊 Réservations normalisées:', normalizedBookings);
-
-      // Trouver la prochaine réservation après le créneau sélectionné
-      const nextBooking = normalizedBookings?.find(booking => {
-        const bookingHour = parseInt(booking.time_slot);
-        return bookingHour > selectedHour;
-      });
+      console.log('📊 Réservations existantes:', normalizedBookings);
 
       let availableHours = 4;
 
-      if (nextBooking) {
-        const nextBookingHour = parseInt(nextBooking.time_slot);
-        const hoursUntilNextBooking = nextBookingHour - selectedHour;
-        
-        console.log('📊 Prochaine réservation:', {
-          nextBookingHour,
-          hoursUntilNextBooking,
-          currentMax: availableHours,
-          nextBookingDetails: nextBooking
-        });
-
-        availableHours = Math.min(availableHours, hoursUntilNextBooking);
-      }
+      // Vérifier chaque réservation pour trouver la prochaine qui bloque
+      normalizedBookings?.forEach(booking => {
+        const bookingHour = parseInt(booking.time_slot);
+        if (bookingHour > selectedHour) {
+          const hoursUntilBooking = bookingHour - selectedHour;
+          console.log('📊 Vérification réservation:', {
+            bookingHour,
+            hoursUntilBooking,
+            currentAvailable: availableHours
+          });
+          availableHours = Math.min(availableHours, hoursUntilBooking);
+        }
+      });
 
       // Prendre le minimum entre les heures disponibles jusqu'à la prochaine réservation,
       // les heures jusqu'à la fermeture, et la limite de 4 heures

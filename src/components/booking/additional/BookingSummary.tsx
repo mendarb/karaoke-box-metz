@@ -10,6 +10,8 @@ interface BookingSummaryProps {
   calculatedPrice: number;
   finalPrice?: number;
   isPromoValid?: boolean;
+  promoCode?: string;
+  message?: string;
 }
 
 export const BookingSummary = ({
@@ -20,6 +22,8 @@ export const BookingSummary = ({
   calculatedPrice,
   finalPrice,
   isPromoValid,
+  promoCode,
+  message
 }: BookingSummaryProps) => {
   const showDiscount = isPromoValid && finalPrice !== undefined && finalPrice !== calculatedPrice;
   const startHour = timeSlot ? parseInt(timeSlot) : undefined;
@@ -50,6 +54,12 @@ export const BookingSummary = ({
           </p>
         )}
 
+        {message && (
+          <p className="text-gray-600 mb-4 italic">
+            Message : {message}
+          </p>
+        )}
+
         <div className="border-t pt-4">
           {showDiscount && finalPrice !== undefined && (
             <>
@@ -57,7 +67,7 @@ export const BookingSummary = ({
                 Prix initial : {calculatedPrice}€
               </p>
               <p className="font-semibold text-green-600">
-                Prix après réduction : {finalPrice}€
+                Prix après réduction{promoCode ? ` (${promoCode})` : ''} : {finalPrice}€
               </p>
             </>
           )}

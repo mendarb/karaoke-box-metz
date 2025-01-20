@@ -30,7 +30,9 @@ export const BookingSummary = ({
   const endHour = startHour !== undefined && duration ? startHour + parseInt(duration) : undefined;
   
   const formatHour = (hour: number) => `${hour.toString().padStart(2, '0')}h00`;
-  const pricePerPerson = groupSize ? Math.round(calculatedPrice / parseInt(groupSize)) : 0;
+  const pricePerPersonPerHour = groupSize && duration ? 
+    Math.round((calculatedPrice / (parseInt(groupSize) * parseInt(duration)))) : 
+    0;
 
   return (
     <Card className="bg-white/50 backdrop-blur-sm border-none">
@@ -60,7 +62,7 @@ export const BookingSummary = ({
               {groupSize} personne{parseInt(groupSize) > 1 ? 's' : ''}
             </p>
             <p className="text-gray-600">
-              {pricePerPerson}€ par personne
+              {pricePerPersonPerHour}€ par personne / heure
             </p>
           </div>
         )}

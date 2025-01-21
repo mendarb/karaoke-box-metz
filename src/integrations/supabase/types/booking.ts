@@ -14,10 +14,12 @@ export interface Booking {
   user_name: string;
   user_phone: string;
   payment_status: string;
+  payment_method: string;
   created_at: string;
   updated_at: string | null;
   deleted_at: string | null;
   is_test_booking: boolean;
   payment_intent_id: string | null;
   cabin: string;
+  invoice_url?: string;
 }

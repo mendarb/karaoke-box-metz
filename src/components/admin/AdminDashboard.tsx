@@ -5,7 +5,7 @@ import { DashboardContent } from "./dashboard/DashboardContent";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useToast } from "@/components/ui/use-toast";
 import { useBookings } from "@/hooks/useBookings";
-import type { Booking } from "@/hooks/useBookings";
+import type { Booking } from "@/integrations/supabase/types/booking";
 import { BookingDetailsDialog } from "./BookingDetailsDialog";
 
 export const AdminDashboard = () => {

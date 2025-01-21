@@ -1,11 +1,10 @@
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { BookingsTable } from "../BookingsTable";
-import { useState } from "react";
-import { AdminBookingForm } from "../BookingForm";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import type { Booking } from "@/hooks/useBookings";
+import { AdminBookingForm } from "../BookingForm";
+import type { Booking } from "@/integrations/supabase/types/booking";
 import { DashboardStats } from "../DashboardStats";
 import { useBookingActions } from "@/hooks/useBookingActions";
 import { BookingStatus } from "@/integrations/supabase/types/booking";
@@ -17,7 +16,6 @@ interface DashboardContentProps {
 }
 
 export const DashboardContent = ({ bookings, isLoading, onViewDetails }: DashboardContentProps) => {
-  const navigate = useNavigate();
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const { updateBookingStatus } = useBookingActions();
 

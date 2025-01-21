@@ -54,7 +54,7 @@ export const DashboardContent = ({ bookings, isLoading, onViewDetails }: Dashboa
 
       <Dialog open={isBookingModalOpen} onOpenChange={setIsBookingModalOpen}>
         <DialogContent className="max-w-4xl">
-          <AdminBookingForm onClose={() => setIsBookingModalOpen(false)} />
+          <AdminBookingForm onSubmit={() => setIsBookingModalOpen(false)} />
         </DialogContent>
       </Dialog>
     </div>

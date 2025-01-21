@@ -27,7 +27,7 @@ export const BookingDetailsDialog = ({ isOpen, onClose, booking }: BookingDetail
             <BookingStatusBadge 
               status={booking.status}
               paymentStatus={booking.payment_status}
-              isTestBooking={booking.isTestBooking}
+              isTestBooking={booking.is_test_booking}
             />
           </DialogTitle>
         </DialogHeader>
@@ -52,7 +52,7 @@ export const BookingDetailsDialog = ({ isOpen, onClose, booking }: BookingDetail
           {booking.payment_status === 'paid' && booking.invoice_url && (
             <BookingDocuments
               invoiceUrl={booking.invoice_url}
-              isTestBooking={booking.isTestBooking}
+              isTestBooking={booking.is_test_booking}
             />
           )}
         </div>

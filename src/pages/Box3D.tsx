@@ -52,12 +52,12 @@ const Box3D = () => {
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
                     </div>
                   </DialogTrigger>
-                  <DialogContent className="max-w-4xl w-[95vw] p-2 bg-black/95 relative">
-                    <div className="w-full h-full flex items-center justify-center">
+                  <DialogContent className="max-w-[95vw] max-h-[95vh] p-4 bg-black/95">
+                    <div className="relative w-full h-full flex items-center justify-center">
                       <img
                         src={image}
                         alt={`Box karaoké vue ${index + 1}`}
-                        className="max-w-full max-h-[90vh] object-contain rounded-lg"
+                        className="max-w-full max-h-[85vh] object-contain rounded-lg"
                       />
                     </div>
                   </DialogContent>

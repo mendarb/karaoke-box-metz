@@ -22,8 +22,8 @@ const Box3D = () => {
   ];
 
   return (
-    <>
-      <div className="container mx-auto px-4 py-8 md:py-12 min-h-screen">
+    <div className="min-h-screen flex flex-col">
+      <div className="container mx-auto px-4 py-8 md:py-12 flex-grow">
         <div className="flex items-center gap-4 mb-8">
           <Link 
             to="/" 
@@ -56,7 +56,7 @@ const Box3D = () => {
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
                     </div>
                   </DialogTrigger>
-                  <DialogContent className="max-w-4xl w-[95vw] p-2 bg-black/95">
+                  <DialogContent className="max-w-4xl w-[95vw] p-2 bg-black/95 relative">
                     <img
                       src={image}
                       alt={`Box karaoké vue ${index + 1}`}
@@ -79,7 +79,7 @@ const Box3D = () => {
         </div>
       </div>
       <Footer />
-    </>
+    </div>
   );
 };
 

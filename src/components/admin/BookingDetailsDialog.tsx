@@ -9,26 +9,12 @@ import { CustomerInfo } from "./booking-details/CustomerInfo";
 import { BookingInfo } from "./booking-details/BookingInfo";
 import { BookingMessage } from "./booking-details/BookingMessage";
 import { BookingDocuments } from "./booking-details/BookingDocuments";
+import type { Booking } from "@/hooks/useBookings";
 
 interface BookingDetailsDialogProps {
+  booking: Booking;
   isOpen: boolean;
   onClose: () => void;
-  booking: {
-    date: string;
-    time_slot: string;
-    duration: string;
-    group_size: string;
-    price: number;
-    user_name: string;
-    user_email: string;
-    user_phone: string;
-    message: string | null;
-    status: string;
-    payment_status: string;
-    payment_method: string;
-    isTestBooking?: boolean;
-    invoice_url?: string;
-  };
 }
 
 export const BookingDetailsDialog = ({ isOpen, onClose, booking }: BookingDetailsDialogProps) => {

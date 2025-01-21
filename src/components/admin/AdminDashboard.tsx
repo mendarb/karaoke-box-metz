@@ -52,8 +52,8 @@ export const AdminDashboard = () => {
       {selectedBooking && (
         <BookingDetailsDialog
           booking={selectedBooking}
-          open={!!selectedBooking}
-          onOpenChange={() => setSelectedBooking(null)}
+          isOpen={!!selectedBooking}
+          onClose={() => setSelectedBooking(null)}
         />
       )}
     </>

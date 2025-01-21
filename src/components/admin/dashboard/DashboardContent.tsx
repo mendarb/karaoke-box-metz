@@ -8,6 +8,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import type { Booking } from "@/hooks/useBookings";
 import { DashboardStats } from "../DashboardStats";
 import { useBookingActions } from "@/hooks/useBookingActions";
+import { BookingStatus } from "@/integrations/supabase/types/booking";
 
 interface DashboardContentProps {
   bookings: Booking[];
@@ -20,7 +21,7 @@ export const DashboardContent = ({ bookings, isLoading, onViewDetails }: Dashboa
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const { updateBookingStatus } = useBookingActions();
 
-  const handleStatusChange = async (bookingId: string, newStatus: string) => {
+  const handleStatusChange = async (bookingId: string, newStatus: BookingStatus) => {
     try {
       await updateBookingStatus(bookingId, newStatus);
     } catch (error) {

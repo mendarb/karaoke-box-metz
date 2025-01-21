@@ -7,9 +7,10 @@ import { AdminBookingForm } from "../BookingForm";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import type { Booking } from "@/hooks/useBookings";
 import { DashboardStats } from "../DashboardStats";
+import { useBookingActions } from "@/hooks/useBookingActions";
 
 interface DashboardContentProps {
-  bookings: any[];
+  bookings: Booking[];
   isLoading: boolean;
   onViewDetails: (booking: Booking) => void;
 }
@@ -17,6 +18,15 @@ interface DashboardContentProps {
 export const DashboardContent = ({ bookings, isLoading, onViewDetails }: DashboardContentProps) => {
   const navigate = useNavigate();
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const { updateBookingStatus } = useBookingActions();
+
+  const handleStatusChange = async (bookingId: string, newStatus: string) => {
+    try {
+      await updateBookingStatus(bookingId, newStatus);
+    } catch (error) {
+      console.error('Error updating booking status:', error);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -40,12 +50,12 @@ export const DashboardContent = ({ bookings, isLoading, onViewDetails }: Dashboa
         data={bookings}
         isLoading={isLoading}
         onViewDetails={onViewDetails}
-        onStatusChange={async () => {}}
+        onStatusChange={handleStatusChange}
       />
 
       <Dialog open={isBookingModalOpen} onOpenChange={setIsBookingModalOpen}>
         <DialogContent className="max-w-4xl">
-          <AdminBookingForm />
+          <AdminBookingForm onClose={() => setIsBookingModalOpen(false)} />
         </DialogContent>
       </Dialog>
     </div>

@@ -6,6 +6,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useToast } from "@/components/ui/use-toast";
 import { useBookings } from "@/hooks/useBookings";
 import type { Booking } from "@/hooks/useBookings";
+import { BookingDetailsDialog } from "./BookingDetailsDialog";
 
 export const AdminDashboard = () => {
   const { data: isAdmin, isLoading: isAdminLoading } = useIsAdmin();
@@ -42,10 +43,19 @@ export const AdminDashboard = () => {
   }
 
   return (
-    <DashboardContent 
-      bookings={bookings} 
-      isLoading={isBookingsLoading}
-      onViewDetails={handleViewDetails}
-    />
+    <>
+      <DashboardContent 
+        bookings={bookings} 
+        isLoading={isBookingsLoading}
+        onViewDetails={handleViewDetails}
+      />
+      {selectedBooking && (
+        <BookingDetailsDialog
+          booking={selectedBooking}
+          open={!!selectedBooking}
+          onOpenChange={() => setSelectedBooking(null)}
+        />
+      )}
+    </>
   );
 };

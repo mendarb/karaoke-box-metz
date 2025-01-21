@@ -9,7 +9,8 @@ export const generatePaymentLink = async (data: any) => {
     finalPrice: data.finalPrice,
     promoCode: data.promoCode,
     discountAmount: data.discountAmount,
-    isTestMode: data.isTestMode
+    isTestMode: data.isTestMode,
+    duration: data.duration // Log de la durée
   });
 
   try {
@@ -19,7 +20,7 @@ export const generatePaymentLink = async (data: any) => {
         userEmail: data.email,
         date: data.date,
         timeSlot: data.timeSlot,
-        duration: data.duration,
+        duration: data.duration.toString(), // Conversion explicite en string
         groupSize: data.groupSize,
         price: data.finalPrice || data.calculatedPrice,
         userName: data.fullName,
@@ -66,7 +67,8 @@ export const generatePaymentLink = async (data: any) => {
       finalPrice: data.finalPrice,
       promoCode: data.promoCode,
       discountAmount: data.discountAmount,
-      isTestMode: data.isTestMode
+      isTestMode: data.isTestMode,
+      duration: data.duration // Log de la durée
     });
 
     return url;

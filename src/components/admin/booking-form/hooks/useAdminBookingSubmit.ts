@@ -19,7 +19,8 @@ export const useAdminBookingSubmit = (form: UseFormReturn<any>) => {
       finalPrice: data.finalPrice,
       calculatedPrice: data.calculatedPrice,
       promoCode: data.promoCode,
-      paymentMethod: data.paymentMethod
+      paymentMethod: data.paymentMethod,
+      duration: data.duration // Log de la durée
     });
 
     try {
@@ -46,7 +47,7 @@ export const useAdminBookingSubmit = (form: UseFormReturn<any>) => {
           user_phone: data.phone,
           date: data.date,
           time_slot: data.timeSlot,
-          duration: data.duration,
+          duration: data.duration.toString(), // Conversion explicite en string
           group_size: data.groupSize,
           price: data.calculatedPrice,
           message: data.message || '',

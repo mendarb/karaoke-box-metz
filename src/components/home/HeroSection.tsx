@@ -30,7 +30,7 @@ export const HeroSection = () => {
                 variant="secondary"
                 className="bg-white hover:bg-white/90 text-black"
               >
-                Voir la salle en 3D
+                Découvrir notre première box
               </Button>
             </div>
             <div className="mt-8">

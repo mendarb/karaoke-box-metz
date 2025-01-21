@@ -1,68 +1,67 @@
+import { useState } from "react";
+import { Dialog } from "@/components/ui/dialog";
+import { 
+  DialogContent, 
+  DialogTrigger 
+} from "@/components/ui/dialog";
 import { BoxFeatures } from "@/components/3d/BoxFeatures";
-import Footer from "@/components/home/Footer";
-import { ImageLightbox } from "@/components/ui/image-lightbox";
-import { Package, Music, Users } from "lucide-react";
 
 const Box3D = () => {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  const images = [
+    "/lovable-uploads/1b7097ed-462c-4d52-9925-7bcd936d3b0b.png",
+    "/lovable-uploads/157fd2f1-9efc-4a13-a414-2be1af92de9d.png",
+    "/lovable-uploads/7186434f-c7e0-403f-988a-8a91cb523a66.png",
+    "/lovable-uploads/90237877-fe16-4e2d-87bf-a89afe536a6a.png",
+    "/lovable-uploads/9c0b6639-b52e-465d-be6b-e82b447d21c5.png",
+    "/lovable-uploads/4704aa85-038c-4e47-8a9e-240bae94ec28.png"
+  ];
+
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <main className="flex-grow py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-6">
-              <div className="bg-white overflow-hidden rounded-lg shadow-sm">
-                <ImageLightbox 
-                  src="/lovable-uploads/cfa63d4d-3758-45b6-8316-13d7d026d109.png"
-                  alt="K.Box Metz - Box Karaoké"
-                  className="w-full h-auto"
-                />
-                <div className="p-4">
-                  <p className="text-sm text-gray-600 text-center">
-                    Rendu 3D de notre box karaoké à Metz
-                    <br />
-                    <span className="text-xs italic">(le résultat final peut légèrement différer)</span>
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {[
-                  {
-                    icon: <Package className="h-8 w-8 text-kbox-coral" />,
-                    title: "Box Privative",
-                    description: "Espace intime et confortable"
-                  },
-                  {
-                    icon: <Music className="h-8 w-8 text-kbox-coral" />,
-                    title: "Catalogue Musical",
-                    description: "Plus de 30 000 titres disponibles"
-                  },
-                  {
-                    icon: <Users className="h-8 w-8 text-kbox-coral" />,
-                    title: "Entre Amis",
-                    description: "Capacité jusqu'à 10 personnes"
-                  }
-                ].map((feature, index) => (
-                  <div key={index} className="bg-white p-4 text-center rounded-lg shadow-sm">
-                    <div className="flex flex-col items-center space-y-2">
-                      {feature.icon}
-                      <h3 className="font-semibold text-kbox-coral">{feature.title}</h3>
-                      <p className="text-sm text-gray-600">{feature.description}</p>
-                    </div>
+    <div className="container mx-auto px-4 py-8 md:py-12">
+      <h1 className="text-3xl md:text-4xl font-bold text-center mb-8 text-kbox-coral">
+        Notre Box Karaoké
+      </h1>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            {images.map((image, index) => (
+              <Dialog key={index}>
+                <DialogTrigger asChild>
+                  <div 
+                    className="relative aspect-[4/3] overflow-hidden rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                    onClick={() => setSelectedImage(image)}
+                  >
+                    <img
+                      src={image}
+                      alt={`Box karaoké vue ${index + 1}`}
+                      className="object-cover w-full h-full hover:scale-105 transition-transform duration-300"
+                    />
                   </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="md:sticky md:top-4">
-              <div className="bg-white p-8 rounded-lg shadow-sm">
-                <BoxFeatures />
-              </div>
-            </div>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl w-full p-0">
+                  <img
+                    src={image}
+                    alt={`Box karaoké vue ${index + 1}`}
+                    className="w-full h-full object-contain"
+                  />
+                </DialogContent>
+              </Dialog>
+            ))}
           </div>
+          
+          <p className="text-gray-600 text-lg leading-relaxed">
+            Découvrez notre box karaoké privative, un espace unique et confortable pour chanter vos chansons préférées entre amis. 
+            Profitez d'une ambiance festive avec notre système de son professionnel, nos éclairages d'ambiance et notre boule à facettes.
+          </p>
         </div>
-      </main>
-      <Footer />
+
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <BoxFeatures />
+        </div>
+      </div>
     </div>
   );
 };

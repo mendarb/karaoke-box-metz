@@ -85,17 +85,21 @@ export function LoginForm({ onToggleMode, onSuccess }: LoginFormProps) {
         </div>
       </div>
 
-      <form onSubmit={onSubmit} className="space-y-4">
+      <form onSubmit={onSubmit} className="space-y-4" method="post">
         <div className="space-y-2">
           <Label htmlFor="email">Email *</Label>
           <Input
             id="email"
+            name="email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
             placeholder="votre@email.com"
             disabled={isLoading}
+            autoComplete="username email"
+            spellCheck="false"
+            autoCapitalize="none"
           />
         </div>
         {!showResetPassword && (
@@ -103,6 +107,7 @@ export function LoginForm({ onToggleMode, onSuccess }: LoginFormProps) {
             <Label htmlFor="password">Mot de passe *</Label>
             <Input
               id="password"
+              name="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -110,6 +115,7 @@ export function LoginForm({ onToggleMode, onSuccess }: LoginFormProps) {
               placeholder="••••••••"
               minLength={6}
               disabled={isLoading}
+              autoComplete="current-password"
             />
           </div>
         )}

@@ -1,17 +1,21 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { DashboardContent } from "./dashboard/DashboardContent";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useToast } from "@/components/ui/use-toast";
+import { useBookings } from "@/hooks/useBookings";
+import type { Booking } from "@/hooks/useBookings";
 
 export const AdminDashboard = () => {
-  const { data: isAdmin, isLoading } = useIsAdmin();
+  const { data: isAdmin, isLoading: isAdminLoading } = useIsAdmin();
+  const { data: bookings = [], isLoading: isBookingsLoading } = useBookings();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
   useEffect(() => {
-    if (!isLoading && !isAdmin) {
+    if (!isAdminLoading && !isAdmin) {
       toast({
         title: "Accès refusé",
         description: "Vous n'avez pas les droits d'accès à cette page",
@@ -19,9 +23,13 @@ export const AdminDashboard = () => {
       });
       navigate("/");
     }
-  }, [isAdmin, isLoading, navigate, toast]);
+  }, [isAdmin, isAdminLoading, navigate, toast]);
 
-  if (isLoading) {
+  const handleViewDetails = (booking: Booking) => {
+    setSelectedBooking(booking);
+  };
+
+  if (isAdminLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <LoadingSpinner />
@@ -33,5 +41,11 @@ export const AdminDashboard = () => {
     return null;
   }
 
-  return <DashboardContent />;
+  return (
+    <DashboardContent 
+      bookings={bookings} 
+      isLoading={isBookingsLoading}
+      onViewDetails={handleViewDetails}
+    />
+  );
 };

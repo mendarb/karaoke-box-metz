@@ -1,6 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { useUserState } from "@/hooks/useUserState";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -11,9 +12,10 @@ export const ProtectedRoute = ({
   children,
   adminOnly = false,
 }: ProtectedRouteProps) => {
-  const { isLoading, sessionChecked, user, isAdmin } = useUserState();
+  const { isLoading, sessionChecked, user } = useUserState();
+  const { data: isAdmin, isLoading: isLoadingAdmin } = useIsAdmin(user?.id);
 
-  if (!sessionChecked || isLoading) {
+  if (!sessionChecked || isLoading || (adminOnly && isLoadingAdmin)) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <LoadingSpinner />

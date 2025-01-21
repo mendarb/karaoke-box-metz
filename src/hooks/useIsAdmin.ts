@@ -1,16 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { useUserState } from "./useUserState";
 
-export const useIsAdmin = (userId?: string) => {
+export const useIsAdmin = () => {
+  const { user, isLoading: isUserLoading } = useUserState();
+
   return useQuery({
-    queryKey: ['is-admin', userId],
+    queryKey: ['is-admin', user?.id],
     queryFn: async () => {
-      if (!userId) return false;
+      if (!user?.id) return false;
       
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
-        .eq('user_id', userId)
+        .eq('user_id', user.id)
         .single();
 
       if (error) {
@@ -20,6 +23,7 @@ export const useIsAdmin = (userId?: string) => {
 
       return data?.role === 'admin';
     },
-    enabled: !!userId
+    enabled: !!user?.id,
+    staleTime: 1000 * 60 * 5, // Cache pendant 5 minutes
   });
 };

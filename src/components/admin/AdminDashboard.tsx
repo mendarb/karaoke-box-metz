@@ -1,89 +1,37 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
-import { BookingDetailsDialog } from "./BookingDetailsDialog";
-import { Booking } from "@/hooks/useBookings";
-import { useUserState } from "@/hooks/useUserState";
-import { useAdminCheck } from "@/hooks/useAdminCheck";
-import { AdminLoadingState } from "./AdminLoadingState";
-import { DashboardLayout } from "./dashboard/DashboardLayout";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { DashboardContent } from "./dashboard/DashboardContent";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useToast } from "@/components/ui/use-toast";
 
 export const AdminDashboard = () => {
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const { isAdmin, user } = useUserState();
+  const { data: isAdmin, isLoading } = useIsAdmin();
+  const navigate = useNavigate();
   const { toast } = useToast();
-  
-  useAdminCheck();
 
-  const { data: bookings = [], isLoading, error } = useQuery({
-    queryKey: ['admin-bookings'],
-    queryFn: async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        console.log("Current session:", session);
-        
-        if (!session?.user?.email) {
-          console.log("No session or email found");
-          return [];
-        }
+  useEffect(() => {
+    if (!isLoading && !isAdmin) {
+      toast({
+        title: "Accès refusé",
+        description: "Vous n'avez pas les droits d'accès à cette page",
+        variant: "destructive",
+      });
+      navigate("/");
+    }
+  }, [isAdmin, isLoading, navigate, toast]);
 
-        const { data, error: fetchError } = await supabase
-          .from('bookings')
-          .select('*')
-          .is('deleted_at', null)
-          .order('created_at', { ascending: false });
-
-        if (fetchError) {
-          console.error('Fetch error:', fetchError);
-          throw fetchError;
-        }
-
-        console.log("Fetched bookings:", data);
-        return data || [];
-      } catch (err) {
-        console.error('Query error:', err);
-        throw err;
-      }
-    },
-    enabled: !!user && isAdmin,
-    refetchInterval: 5000,
-  });
-
-  if (error) {
-    toast({
-      title: "Erreur",
-      description: "Une erreur est survenue lors du chargement des réservations",
-      variant: "destructive",
-    });
+  if (isLoading) {
     return (
-      <div className="p-6">
-        <h1>Erreur de chargement</h1>
-        <p>Une erreur est survenue lors du chargement des données.</p>
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpinner />
       </div>
     );
   }
 
-  if (isLoading) {
-    return <AdminLoadingState />;
+  if (!isAdmin) {
+    return null;
   }
 
-  return (
-    <DashboardLayout>
-      <DashboardContent 
-        bookings={bookings}
-        isLoading={isLoading}
-        onViewDetails={setSelectedBooking}
-      />
-      
-      {selectedBooking && (
-        <BookingDetailsDialog
-          isOpen={!!selectedBooking}
-          onClose={() => setSelectedBooking(null)}
-          booking={selectedBooking}
-        />
-      )}
-    </DashboardLayout>
-  );
+  return <DashboardContent />;
 };

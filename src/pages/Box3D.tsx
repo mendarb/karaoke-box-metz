@@ -1,9 +1,5 @@
 import { useState } from "react";
-import { Dialog } from "@/components/ui/dialog";
-import { 
-  DialogContent, 
-  DialogTrigger 
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { BoxFeatures } from "@/components/3d/BoxFeatures";
 import Footer from "@/components/home/Footer";
 import { ArrowLeft } from "lucide-react";
@@ -57,11 +53,13 @@ const Box3D = () => {
                     </div>
                   </DialogTrigger>
                   <DialogContent className="max-w-4xl w-[95vw] p-2 bg-black/95 relative">
-                    <img
-                      src={image}
-                      alt={`Box karaoké vue ${index + 1}`}
-                      className="w-full h-full object-contain rounded-lg"
-                    />
+                    <div className="w-full h-full flex items-center justify-center">
+                      <img
+                        src={image}
+                        alt={`Box karaoké vue ${index + 1}`}
+                        className="max-w-full max-h-[90vh] object-contain rounded-lg"
+                      />
+                    </div>
                   </DialogContent>
                 </Dialog>
               ))}

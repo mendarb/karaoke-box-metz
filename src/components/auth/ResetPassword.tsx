@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
+import { ErrorAlert } from "./reset-password/ErrorAlert";
+import { PasswordResetForm } from "./reset-password/PasswordResetForm";
 
 export const ResetPassword = () => {
   const [searchParams] = useSearchParams();
@@ -54,14 +56,6 @@ export const ResetPassword = () => {
           return;
         }
 
-        // Double check the session is properly established
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-        if (!currentSession) {
-          console.error("Session verification failed");
-          setError("Erreur lors de l'authentification. Veuillez réessayer.");
-          return;
-        }
-
       } catch (err) {
         console.error("Error in setupSession:", err);
         setError("Une erreur est survenue. Veuillez réessayer.");
@@ -102,7 +96,7 @@ export const ResetPassword = () => {
 
       // Sign out and redirect
       await supabase.auth.signOut();
-
+      
       // Wait for toast to be visible
       setTimeout(() => {
         navigate("/");
@@ -116,35 +110,16 @@ export const ResetPassword = () => {
     }
   };
 
+  if (error) {
+    return <ErrorAlert error={error} />;
+  }
+
   return (
-    <div className="container max-w-md mx-auto mt-8 p-4">
-      <h1 className="text-2xl font-bold mb-4">Réinitialisation du mot de passe</h1>
-      
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium mb-1">
-            Nouveau mot de passe
-          </label>
-          <Input
-            id="password"
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            required
-            minLength={6}
-          />
-        </div>
-
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? "Chargement..." : "Mettre à jour le mot de passe"}
-        </Button>
-      </form>
-    </div>
+    <PasswordResetForm
+      newPassword={newPassword}
+      setNewPassword={setNewPassword}
+      onSubmit={handleSubmit}
+      isLoading={isLoading}
+    />
   );
 };

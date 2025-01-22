@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { DashboardContent } from "./dashboard/DashboardContent";
@@ -27,9 +27,13 @@ export const AdminDashboard = () => {
     }
   }, [isAdmin, isAdminLoading, navigate, toast]);
 
-  const handleViewDetails = (booking: Booking) => {
+  const handleViewDetails = useCallback((booking: Booking) => {
     setSelectedBooking(booking);
-  };
+  }, []);
+
+  const handleOpenChange = useCallback((open: boolean) => {
+    setIsBookingModalOpen(open);
+  }, []);
 
   if (isAdminLoading) {
     return (
@@ -50,7 +54,7 @@ export const AdminDashboard = () => {
         isLoading={isBookingsLoading}
         onViewDetails={handleViewDetails}
         isBookingModalOpen={isBookingModalOpen}
-        onOpenChange={setIsBookingModalOpen}
+        onOpenChange={handleOpenChange}
       />
       {selectedBooking && (
         <BookingDetailsDialog

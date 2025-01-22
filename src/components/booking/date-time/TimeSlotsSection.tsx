@@ -134,6 +134,7 @@ export const TimeSlotsSection = ({ form, availableSlots, isLoading }: TimeSlotsS
                     isDisabled={isBlocked || (!isSelected && !canBeSelected && selectedSlots.length > 0) || (isSelected && !canBeDeselected)}
                     onSelect={() => handleSlotSelection(slot)}
                     date={selectedDate}
+                    selectedSlots={selectedSlots}
                   />
                 );
               })}

@@ -8,6 +8,7 @@ interface TimeSlotProps {
   isDisabled: boolean;
   onSelect: (slot: string) => void;
   date: Date;
+  selectedSlots?: string[];
 }
 
 export const TimeSlot = ({
@@ -15,7 +16,8 @@ export const TimeSlot = ({
   isSelected,
   isDisabled,
   onSelect,
-  date
+  date,
+  selectedSlots = []
 }: TimeSlotProps) => {
   const handleClick = () => {
     if (!isDisabled) {
@@ -27,6 +29,18 @@ export const TimeSlot = ({
   const startHour = parseInt(slot);
   const endHour = startHour + 1;
   const timeRange = `${startHour}h-${endHour}h`;
+
+  // Déterminer le label en fonction de la position dans la sélection
+  const getSelectionLabel = () => {
+    if (!isSelected) return null;
+    
+    const index = selectedSlots.indexOf(slot);
+    if (index === 0) return "Début";
+    if (index > 0) return `+${index}h`;
+    return null;
+  };
+
+  const selectionLabel = getSelectionLabel();
 
   return (
     <Button
@@ -52,9 +66,12 @@ export const TimeSlot = ({
       )}>
         {timeRange}
       </span>
-      {isSelected && (
-        <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-violet-600 text-white text-xs px-2 py-1 rounded-full">
-          Début
+      {selectionLabel && (
+        <div className={cn(
+          "absolute -top-2 left-1/2 transform -translate-x-1/2 bg-violet-600 text-white text-xs px-2 py-1 rounded-full",
+          "animate-fadeIn"
+        )}>
+          {selectionLabel}
         </div>
       )}
     </Button>

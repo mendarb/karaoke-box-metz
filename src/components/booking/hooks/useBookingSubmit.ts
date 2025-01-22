@@ -24,20 +24,25 @@ export const useBookingSubmit = (
       return;
     }
 
+    // Calculer la durée basée sur les créneaux sélectionnés
+    const selectedSlots = form.getValues("selectedSlots") || [];
+    const calculatedDuration = selectedSlots.length.toString();
+
     console.log('🔍 Checking form data:', {
       date: data.date,
       timeSlot: data.timeSlot,
-      duration,
+      calculatedDuration,
+      selectedSlots,
       groupSize,
       calculatedPrice
     });
 
     // Validate required fields
-    if (!data.date || !data.timeSlot || !duration || !groupSize || !calculatedPrice) {
+    if (!data.date || !data.timeSlot || !calculatedDuration || !groupSize || !calculatedPrice) {
       console.error('❌ Missing required fields:', { 
         date: data.date,
         timeSlot: data.timeSlot,
-        duration,
+        duration: calculatedDuration,
         groupSize,
         calculatedPrice
       });
@@ -54,7 +59,7 @@ export const useBookingSubmit = (
         email: user.email,
         date: data.date,
         timeSlot: data.timeSlot,
-        duration,
+        duration: calculatedDuration,
         groupSize,
         calculatedPrice,
         finalPrice: data.finalPrice,
@@ -79,7 +84,7 @@ export const useBookingSubmit = (
       }
 
       const startHour = parseInt(data.timeSlot);
-      const endHour = startHour + parseInt(duration);
+      const endHour = startHour + parseInt(calculatedDuration);
 
       const hasOverlap = existingBookings?.some(booking => {
         const bookingStart = parseInt(booking.time_slot);
@@ -109,7 +114,7 @@ export const useBookingSubmit = (
       }
       console.log('💰 Prix final:', finalPrice);
 
-      // Appeler la nouvelle fonction Edge pour créer la réservation
+      // Appeler la fonction Edge pour créer la réservation
       const { data: response, error } = await supabase.functions.invoke(
         'create-booking',
         {
@@ -119,7 +124,7 @@ export const useBookingSubmit = (
             phone: data.phone || user.user_metadata?.phone,
             date: formattedDate,
             timeSlot: data.timeSlot,
-            duration: duration.toString(),
+            duration: calculatedDuration,
             groupSize,
             price: finalPrice,
             message: data.message,

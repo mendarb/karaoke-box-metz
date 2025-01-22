@@ -5,6 +5,8 @@ import { LoadingSkeleton } from "./time-slots/LoadingSkeleton";
 import { useBookedSlots } from "./time-slots/useBookedSlots";
 import { format, isToday, isBefore, parse } from "date-fns";
 import { useState, useEffect } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Info } from "lucide-react";
 
 interface TimeSlotsSectionProps {
   form: UseFormReturn<any>;
@@ -18,7 +20,6 @@ export const TimeSlotsSection = ({ form, availableSlots, isLoading }: TimeSlotsS
   const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
 
   useEffect(() => {
-    // Reset selected slots when date changes
     setSelectedSlots([]);
     form.setValue("timeSlot", "");
     form.setValue("duration", "");
@@ -30,7 +31,6 @@ export const TimeSlotsSection = ({ form, availableSlots, isLoading }: TimeSlotsS
 
   const { slots, blockedSlots } = availableSlots;
 
-  // Filtrer les créneaux passés pour aujourd'hui
   const filterPassedSlots = (slots: string[]) => {
     if (!isToday(selectedDate)) {
       return slots;
@@ -55,18 +55,11 @@ export const TimeSlotsSection = ({ form, availableSlots, isLoading }: TimeSlotsS
     );
   }
 
-  // Créer un Set des créneaux indisponibles
   const unavailableSlots = new Set<string>();
-
-  // Ajouter les créneaux bloqués
   blockedSlots.forEach(slot => unavailableSlots.add(slot));
-
-  // Ajouter les créneaux réservés
   bookings.forEach(booking => {
     const startHour = parseInt(booking.time_slot);
     const duration = parseInt(booking.duration);
-    
-    // Marquer tous les créneaux couverts par la réservation comme indisponibles
     for (let hour = startHour; hour < startHour + duration; hour++) {
       unavailableSlots.add(`${hour.toString().padStart(2, '0')}:00`);
     }
@@ -77,7 +70,6 @@ export const TimeSlotsSection = ({ form, availableSlots, isLoading }: TimeSlotsS
     const slotIndex = newSelectedSlots.indexOf(slot);
     
     if (slotIndex === -1) {
-      // Ajouter le nouveau créneau seulement s'il est consécutif et dans la limite de 4h
       const slotHour = parseInt(slot);
       const isConsecutive = newSelectedSlots.length === 0 || 
         Math.abs(parseInt(newSelectedSlots[newSelectedSlots.length - 1]) - slotHour) === 1;
@@ -87,16 +79,13 @@ export const TimeSlotsSection = ({ form, availableSlots, isLoading }: TimeSlotsS
         newSelectedSlots.sort();
       }
     } else {
-      // Ne permettre la désélection que si c'est le dernier créneau
       if (slotIndex === newSelectedSlots.length - 1) {
         newSelectedSlots.pop();
       }
     }
 
-    // Mettre à jour les créneaux sélectionnés
     setSelectedSlots(newSelectedSlots);
 
-    // Mettre à jour le formulaire
     if (newSelectedSlots.length > 0) {
       const firstSlot = newSelectedSlots.sort()[0];
       form.setValue("timeSlot", firstSlot);
@@ -112,23 +101,29 @@ export const TimeSlotsSection = ({ form, availableSlots, isLoading }: TimeSlotsS
       control={form.control}
       name="timeSlot"
       render={({ field }) => (
-        <FormItem className="space-y-3">
-          <FormLabel>Sélectionnez vos créneaux horaires</FormLabel>
-          <div className="text-sm text-gray-500 mb-2">
-            Vous pouvez réserver jusqu'à 4 heures consécutives. Sélectionnez votre heure de début.
-          </div>
+        <FormItem className="space-y-4">
+          <FormLabel className="text-lg font-semibold">Sélectionnez vos créneaux horaires</FormLabel>
+          
+          <Alert className="bg-violet-50 border-violet-200 mb-4">
+            <Info className="h-4 w-4 text-violet-600" />
+            <AlertDescription className="text-sm text-violet-800">
+              Sélectionnez votre heure de début. Vous pouvez réserver jusqu'à 4 heures consécutives en cliquant sur les créneaux qui suivent.
+              {selectedSlots.length > 0 && (
+                <div className="mt-2 font-medium">
+                  Durée sélectionnée : {selectedSlots.length} heure{selectedSlots.length > 1 ? 's' : ''}
+                </div>
+              )}
+            </AlertDescription>
+          </Alert>
+
           <FormControl>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {availableTimeSlots.map((slot) => {
                 const isBlocked = unavailableSlots.has(slot);
                 const isSelected = selectedSlots.includes(slot);
-                
-                // Vérifier si le créneau peut être sélectionné (consécutif au dernier créneau sélectionné)
                 const slotHour = parseInt(slot);
                 const canBeSelected = selectedSlots.length === 0 || 
                   Math.abs(parseInt(selectedSlots[selectedSlots.length - 1]) - slotHour) === 1;
-
-                // Un créneau ne peut être désélectionné que s'il est le dernier de la sélection
                 const canBeDeselected = isSelected && selectedSlots.indexOf(slot) === selectedSlots.length - 1;
 
                 return (

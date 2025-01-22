@@ -1,72 +1,97 @@
-import { TableCell, TableRow } from "@/components/ui/table";
+import { User } from '@supabase/supabase-js';
+import { Mail, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Edit2 } from "lucide-react";
-import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
-import { RoleSelector } from "./RoleSelector";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { useNavigate } from "react-router-dom";
+
+interface UserProfile {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  phone: string | null;
+  email: string | null;
+  created_at: string;
+}
 
 interface AccountTableRowProps {
-  profile: {
-    id: string;
-    first_name: string | null;
-    last_name: string | null;
-    phone: string | null;
-    created_at: string;
-    email: string | null;
-  };
+  profile: UserProfile;
 }
 
 export const AccountTableRow = ({ profile }: AccountTableRowProps) => {
-  const { data: userRole } = useQuery({
-    queryKey: ['user-role', profile.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', profile.id)
-        .single();
+  const navigate = useNavigate();
 
-      if (error && error.code !== 'PGRST116') throw error;
-      return data?.role || 'user';
+  const formatPhoneNumber = (phone: string | null) => {
+    if (!phone) return null;
+    
+    let cleaned = phone.replace(/[^\d+]/g, '');
+    
+    if (cleaned.startsWith('0')) {
+      cleaned = '+33' + cleaned.substring(1);
     }
-  });
+    
+    if (!cleaned.startsWith('+')) {
+      cleaned = '+' + cleaned;
+    }
+    
+    return cleaned;
+  };
+
+  const handleEdit = () => {
+    navigate(`/admin/accounts/${profile.id}`);
+  };
+
+  const displayName = () => {
+    if (profile.first_name || profile.last_name) {
+      return `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+    }
+    return profile.email ? profile.email.split('@')[0] : 'Utilisateur';
+  };
 
   return (
-    <TableRow>
-      <TableCell>
-        <div>
-          <p className="font-medium">
-            {profile.first_name} {profile.last_name}
-          </p>
-          <p className="text-sm text-gray-500">
-            Inscrit le {new Date(profile.created_at).toLocaleDateString()}
-          </p>
+    <TableRow key={profile.id}>
+      <TableCell className="py-2">
+        <div className="truncate max-w-[140px]">
+          {displayName()}
         </div>
       </TableCell>
-      <TableCell>
-        <div>
-          <p>{profile.email}</p>
+      <TableCell className="py-2">
+        <div className="space-y-0.5">
+          {profile.email && (
+            <div className="flex items-center gap-1.5 text-sm">
+              <Mail className="h-3.5 w-3.5 text-gray-500 shrink-0" />
+              <a 
+                href={`mailto:${profile.email}`} 
+                className="hover:text-violet-500 truncate max-w-[200px]"
+              >
+                {profile.email}
+              </a>
+            </div>
+          )}
           {profile.phone && (
-            <p className="text-sm text-gray-500">{profile.phone}</p>
+            <div className="flex items-center gap-1.5 text-sm">
+              <Phone className="h-3.5 w-3.5 text-gray-500 shrink-0" />
+              <a 
+                href={`tel:${formatPhoneNumber(profile.phone)}`} 
+                className="hover:text-violet-500"
+              >
+                {formatPhoneNumber(profile.phone)}
+              </a>
+            </div>
           )}
         </div>
       </TableCell>
-      <TableCell>
-        {new Date(profile.created_at).toLocaleDateString()}
+      <TableCell className="text-sm text-gray-600 py-2">
+        {new Date(profile.created_at).toLocaleDateString('fr-FR')}
       </TableCell>
-      <TableCell>
-        <div className="flex items-center gap-2">
-          <RoleSelector 
-            userId={profile.id} 
-            initialRole={userRole}
-          />
-          <Link to={`/admin/accounts/${profile.id}`}>
-            <Button variant="ghost" size="icon">
-              <Edit2 className="h-4 w-4" />
-            </Button>
-          </Link>
-        </div>
+      <TableCell className="py-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleEdit}
+          className="text-sm h-8 px-2"
+        >
+          Modifier
+        </Button>
       </TableCell>
     </TableRow>
   );

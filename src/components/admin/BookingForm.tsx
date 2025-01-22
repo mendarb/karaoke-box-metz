@@ -15,11 +15,7 @@ import { PaymentMethodSelector } from "./booking-form/PaymentMethodSelector";
 
 export type PaymentMethod = 'stripe' | 'sumup' | 'cash';
 
-interface AdminBookingFormProps {
-  onSubmit?: () => void;
-}
-
-export const AdminBookingForm = ({ onSubmit }: AdminBookingFormProps) => {
+export const AdminBookingForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [clientType, setClientType] = useState<'existing' | 'new'>('existing');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('stripe');
@@ -47,7 +43,7 @@ export const AdminBookingForm = ({ onSubmit }: AdminBookingFormProps) => {
     form.setValue("calculatedPrice", price);
   };
 
-  const onFormSubmit = async () => {
+  const onSubmit = async () => {
     const data = form.getValues();
     const bookingDate = data.date ? new Date(data.date) : null;
     
@@ -60,7 +56,6 @@ export const AdminBookingForm = ({ onSubmit }: AdminBookingFormProps) => {
     if (hasOverlap) return;
 
     await handleSubmit({ ...data, paymentMethod });
-    onSubmit?.();
   };
 
   const steps: Step[] = [
@@ -132,7 +127,7 @@ export const AdminBookingForm = ({ onSubmit }: AdminBookingFormProps) => {
               isLoading={isLoading}
               paymentLink={paymentLink}
               onBack={() => setCurrentStep(2)}
-              onSubmit={onFormSubmit}
+              onSubmit={onSubmit}
               paymentMethod={paymentMethod}
             />
           </div>

@@ -574,30 +574,6 @@ export type Database = {
         }
         Relationships: []
       }
-      user_roles: {
-        Row: {
-          created_at: string
-          id: string
-          role: Database["public"]["Enums"]["app_role"] | null
-          updated_at: string
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"] | null
-          updated_at?: string
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"] | null
-          updated_at?: string
-          user_id?: string | null
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
@@ -611,7 +587,6 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "user"
       blocked_slot_type: "one_time" | "recurring"
       booking_status: "pending" | "confirmed" | "cancelled" | "archived"
       box_status: "active" | "maintenance" | "inactive"

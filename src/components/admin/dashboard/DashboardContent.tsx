@@ -1,37 +1,22 @@
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { BookingsTable } from "../BookingsTable";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { useState } from "react";
 import { AdminBookingForm } from "../BookingForm";
-import type { Booking } from "@/integrations/supabase/types/booking";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import type { Booking } from "@/hooks/useBookings";
 import { DashboardStats } from "../DashboardStats";
-import { useBookingActions } from "@/hooks/useBookingActions";
-import { BookingStatus } from "@/integrations/supabase/types/booking";
 
 interface DashboardContentProps {
-  bookings: Booking[];
+  bookings: any[];
   isLoading: boolean;
   onViewDetails: (booking: Booking) => void;
-  isBookingModalOpen: boolean;
-  onOpenChange: (open: boolean) => void;
 }
 
-export const DashboardContent = ({ 
-  bookings, 
-  isLoading, 
-  onViewDetails,
-  isBookingModalOpen,
-  onOpenChange
-}: DashboardContentProps) => {
-  const { updateBookingStatus } = useBookingActions();
-
-  const handleStatusChange = async (bookingId: string, newStatus: BookingStatus) => {
-    try {
-      await updateBookingStatus(bookingId, newStatus);
-    } catch (error) {
-      console.error('Error updating booking status:', error);
-    }
-  };
+export const DashboardContent = ({ bookings, isLoading, onViewDetails }: DashboardContentProps) => {
+  const navigate = useNavigate();
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -41,7 +26,7 @@ export const DashboardContent = ({
           <p className="text-gray-600">Gérez vos réservations et consultez les statistiques</p>
         </div>
         <Button 
-          onClick={() => onOpenChange(true)}
+          onClick={() => setIsBookingModalOpen(true)} 
           className="bg-kbox-coral hover:bg-kbox-orange-dark"
         >
           <Plus className="w-4 h-4 mr-2" />
@@ -55,15 +40,12 @@ export const DashboardContent = ({
         data={bookings}
         isLoading={isLoading}
         onViewDetails={onViewDetails}
-        onStatusChange={handleStatusChange}
+        onStatusChange={async () => {}}
       />
 
-      <Dialog 
-        open={isBookingModalOpen} 
-        onOpenChange={onOpenChange}
-      >
+      <Dialog open={isBookingModalOpen} onOpenChange={setIsBookingModalOpen}>
         <DialogContent className="max-w-4xl">
-          <AdminBookingForm onSubmit={() => onOpenChange(false)} />
+          <AdminBookingForm />
         </DialogContent>
       </Dialog>
     </div>

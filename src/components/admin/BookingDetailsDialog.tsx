@@ -9,12 +9,26 @@ import { CustomerInfo } from "./booking-details/CustomerInfo";
 import { BookingInfo } from "./booking-details/BookingInfo";
 import { BookingMessage } from "./booking-details/BookingMessage";
 import { BookingDocuments } from "./booking-details/BookingDocuments";
-import type { Booking } from "@/hooks/useBookings";
 
 interface BookingDetailsDialogProps {
-  booking: Booking;
   isOpen: boolean;
   onClose: () => void;
+  booking: {
+    date: string;
+    time_slot: string;
+    duration: string;
+    group_size: string;
+    price: number;
+    user_name: string;
+    user_email: string;
+    user_phone: string;
+    message: string | null;
+    status: string;
+    payment_status: string;
+    payment_method: string;
+    isTestBooking?: boolean;
+    invoice_url?: string;
+  };
 }
 
 export const BookingDetailsDialog = ({ isOpen, onClose, booking }: BookingDetailsDialogProps) => {
@@ -27,7 +41,7 @@ export const BookingDetailsDialog = ({ isOpen, onClose, booking }: BookingDetail
             <BookingStatusBadge 
               status={booking.status}
               paymentStatus={booking.payment_status}
-              isTestBooking={booking.is_test_booking}
+              isTestBooking={booking.isTestBooking}
             />
           </DialogTitle>
         </DialogHeader>
@@ -52,7 +66,7 @@ export const BookingDetailsDialog = ({ isOpen, onClose, booking }: BookingDetail
           {booking.payment_status === 'paid' && booking.invoice_url && (
             <BookingDocuments
               invoiceUrl={booking.invoice_url}
-              isTestBooking={booking.is_test_booking}
+              isTestBooking={booking.isTestBooking}
             />
           )}
         </div>

@@ -1,10 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@14.21.0";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, stripe-signature',
-};
+import Stripe from 'https://esm.sh/stripe@14.21.0';
+import { corsHeaders } from "../_shared/cors.ts";
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -13,62 +9,46 @@ serve(async (req) => {
 
   try {
     const requestBody = await req.json();
-    console.log('📦 Données de réservation reçues:', {
-      email: requestBody.userEmail,
-      fullName: requestBody.userName,
-      date: requestBody.date,
-      timeSlot: requestBody.timeSlot,
-      duration: requestBody.duration,
-      groupSize: requestBody.groupSize,
-      originalPrice: requestBody.price,
-      finalPrice: requestBody.finalPrice,
-      promoCode: requestBody.promoCode,
-      discountAmount: requestBody.discountAmount,
-      isTestMode: requestBody.isTestMode,
-      userId: requestBody.userId,
-    });
+    console.log('📝 Données de réservation reçues:', requestBody);
 
-    const price = parseFloat(requestBody.finalPrice || requestBody.price);
-    if (isNaN(price) || price < 0) {
-      console.error('❌ Prix invalide:', price);
-      throw new Error('Prix invalide');
+    // Validation des données requises
+    if (!requestBody.date || !requestBody.timeSlot || !requestBody.duration || !requestBody.groupSize) {
+      throw new Error('Données de réservation manquantes');
     }
 
-    const stripeKey = requestBody.isTestMode ? 
-      Deno.env.get('STRIPE_TEST_SECRET_KEY')! : 
-      Deno.env.get('STRIPE_SECRET_KEY')!;
-
-    if (!stripeKey) {
-      throw new Error(`Clé Stripe ${requestBody.isTestMode ? 'test' : 'live'} non configurée`);
-    }
-
-    const stripe = new Stripe(stripeKey, {
+    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
       apiVersion: '2023-10-16',
-      httpClient: Stripe.createFetchHttpClient(),
     });
 
-    console.log('💳 Création de la session Stripe...');
+    // Calcul du prix
+    let price = requestBody.price;
+    if (requestBody.discountAmount) {
+      price = Math.max(0, price - requestBody.discountAmount);
+    }
 
     const origin = req.headers.get('origin') || 'https://k-box.fr';
     console.log('🌐 URL d\'origine pour la redirection:', origin);
 
     // Formatage de la date pour l'affichage
     const bookingDate = new Date(requestBody.date);
-    const formattedDate = bookingDate.toLocaleDateString('fr-FR', {
+    const formattedDate = new Intl.DateTimeFormat('fr-FR', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric'
-    });
+    }).format(bookingDate);
 
-    // Créer un objet pour la description du produit
+    // Formatage des heures
     const startHour = parseInt(requestBody.timeSlot);
-    const endHour = startHour + parseInt(requestBody.duration);
+    const duration = parseInt(requestBody.duration);
+    const endHour = startHour + duration;
     const formatHour = (hour: number) => `${hour.toString().padStart(2, '0')}:00`;
     
+    // Construction de la description
     let description = `${formattedDate}\n`;
     description += `${formatHour(startHour)} - ${formatHour(endHour)}\n`;
-    description += `${requestBody.groupSize} personnes - ${requestBody.duration}h\n`;
+    description += `${requestBody.groupSize} personne${parseInt(requestBody.groupSize) > 1 ? 's' : ''} - ${duration}h\n`;
+    
     if (requestBody.message) {
       description += `Message: ${requestBody.message}\n`;
     }
@@ -76,8 +56,9 @@ serve(async (req) => {
       description += `Code promo: ${requestBody.promoCode}`;
     }
 
+    console.log('📝 Description formatée:', description);
+
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card', 'paypal', 'klarna'],
       line_items: [{
         price_data: {
           currency: 'eur',
@@ -107,9 +88,10 @@ serve(async (req) => {
           user_email: requestBody.userEmail,
           user_phone: requestBody.userPhone,
           booking_date: requestBody.date,
-          time_slot: requestBody.timeSlot,
-          duration: requestBody.duration,
-          group_size: requestBody.groupSize,
+          time_slot: formatHour(startHour),
+          end_time: formatHour(endHour),
+          duration: `${duration}h`,
+          group_size: `${requestBody.groupSize} personne${parseInt(requestBody.groupSize) > 1 ? 's' : ''}`,
           price: String(price),
           promo_code: requestBody.promoCode || '',
           discount_amount: String(requestBody.discountAmount || 0),
@@ -125,8 +107,9 @@ serve(async (req) => {
         userName: requestBody.userName,
         userPhone: requestBody.userPhone,
         date: requestBody.date,
-        timeSlot: requestBody.timeSlot,
-        duration: requestBody.duration,
+        timeSlot: formatHour(startHour),
+        endTime: formatHour(endHour),
+        duration: `${duration}h`,
         groupSize: requestBody.groupSize,
         price: String(price),
         promoCode: requestBody.promoCode || '',
@@ -146,66 +129,17 @@ serve(async (req) => {
 
     console.log('✅ Session Stripe créée:', {
       sessionId: session.id,
-      paymentIntentId: session.payment_intent,
-      userId: requestBody.userId,
-      price: price,
-      metadata: session.metadata,
-      successUrl: session.success_url,
-      cancelUrl: session.cancel_url
+      amount: price,
+      description: description
     });
 
-    if (!session.url) {
-      console.error('❌ Pas d\'URL de paiement retournée par Stripe');
-      throw new Error('Pas d\'URL de paiement retournée par Stripe');
-    }
-
-    // Envoyer l'email de demande de paiement seulement si demandé
-    if (requestBody.sendEmail) {
-      try {
-        await fetch(
-          `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-payment-request`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
-            },
-            body: JSON.stringify({
-              booking: {
-                userEmail: requestBody.userEmail,
-                userName: requestBody.userName,
-                date: requestBody.date,
-                timeSlot: requestBody.timeSlot,
-                duration: requestBody.duration,
-                groupSize: requestBody.groupSize,
-                price: price,
-                promoCode: requestBody.promoCode,
-                message: requestBody.message,
-                paymentUrl: session.url
-              }
-            }),
-          }
-        );
-        console.log('📧 Email de demande de paiement envoyé avec succès');
-      } catch (emailError) {
-        console.error('❌ Erreur lors de l\'envoi de l\'email:', emailError);
-        // On ne relance pas l'erreur pour ne pas bloquer la création de la session
-      }
-    }
-
     return new Response(
-      JSON.stringify({ 
-        success: true,
-        url: session.url 
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
+      JSON.stringify({ url: session.url }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error('❌ Erreur dans le processus de réservation:', error);
+    console.error('❌ Erreur lors de la création de la session:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 

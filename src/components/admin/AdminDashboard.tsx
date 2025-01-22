@@ -54,7 +54,7 @@ export const AdminDashboard = () => {
         isLoading={isBookingsLoading}
         onViewDetails={handleViewDetails}
         isBookingModalOpen={isBookingModalOpen}
-        setIsBookingModalOpen={setIsBookingModalOpen}
+        onOpenChange={setIsBookingModalOpen}
       />
       {selectedBooking && (
         <BookingDetailsDialog

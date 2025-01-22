@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { BookingsTable } from "../BookingsTable";
@@ -14,7 +13,7 @@ interface DashboardContentProps {
   isLoading: boolean;
   onViewDetails: (booking: Booking) => void;
   isBookingModalOpen: boolean;
-  setIsBookingModalOpen: (open: boolean) => void;
+  onOpenChange: (open: boolean) => void;
 }
 
 export const DashboardContent = ({ 
@@ -22,7 +21,7 @@ export const DashboardContent = ({
   isLoading, 
   onViewDetails,
   isBookingModalOpen,
-  setIsBookingModalOpen
+  onOpenChange
 }: DashboardContentProps) => {
   const { updateBookingStatus } = useBookingActions();
 
@@ -42,7 +41,7 @@ export const DashboardContent = ({
           <p className="text-gray-600">Gérez vos réservations et consultez les statistiques</p>
         </div>
         <Button 
-          onClick={() => setIsBookingModalOpen(true)} 
+          onClick={() => onOpenChange(true)} 
           className="bg-kbox-coral hover:bg-kbox-orange-dark"
         >
           <Plus className="w-4 h-4 mr-2" />
@@ -61,10 +60,10 @@ export const DashboardContent = ({
 
       <Dialog 
         open={isBookingModalOpen} 
-        onOpenChange={setIsBookingModalOpen}
+        onOpenChange={onOpenChange}
       >
         <DialogContent className="max-w-4xl">
-          <AdminBookingForm onSubmit={() => setIsBookingModalOpen(false)} />
+          <AdminBookingForm onSubmit={() => onOpenChange(false)} />
         </DialogContent>
       </Dialog>
     </div>

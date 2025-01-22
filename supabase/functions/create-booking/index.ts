@@ -52,10 +52,28 @@ serve(async (req) => {
     const origin = req.headers.get('origin') || 'https://k-box.fr';
     console.log('🌐 URL d\'origine pour la redirection:', origin);
 
+    // Formatage de la date pour l'affichage
+    const bookingDate = new Date(requestBody.date);
+    const formattedDate = bookingDate.toLocaleDateString('fr-FR', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
     // Créer un objet pour la description du produit
-    let description = `${requestBody.groupSize} personnes - ${requestBody.duration}h`;
+    const startHour = parseInt(requestBody.timeSlot);
+    const endHour = startHour + parseInt(requestBody.duration);
+    const formatHour = (hour: number) => `${hour.toString().padStart(2, '0')}:00`;
+    
+    let description = `${formattedDate}\n`;
+    description += `${formatHour(startHour)} - ${formatHour(endHour)}\n`;
+    description += `${requestBody.groupSize} personnes - ${requestBody.duration}h\n`;
+    if (requestBody.message) {
+      description += `Message: ${requestBody.message}\n`;
+    }
     if (requestBody.promoCode) {
-      description += ` (Code promo: ${requestBody.promoCode})`;
+      description += `Code promo: ${requestBody.promoCode}`;
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -67,6 +85,12 @@ serve(async (req) => {
           product_data: {
             name: requestBody.isTestMode ? '[TEST MODE] Karaoké BOX - MB EI' : 'Karaoké BOX - MB EI',
             description: description,
+            metadata: {
+              booking_date: requestBody.date,
+              time_slot: requestBody.timeSlot,
+              duration: requestBody.duration,
+              group_size: requestBody.groupSize,
+            },
           },
         },
         quantity: 1,
@@ -75,6 +99,26 @@ serve(async (req) => {
       success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}`,
       customer_email: requestBody.userEmail,
+      client_reference_id: requestBody.userId,
+      payment_intent_data: {
+        metadata: {
+          user_id: requestBody.userId,
+          user_name: requestBody.userName,
+          user_email: requestBody.userEmail,
+          user_phone: requestBody.userPhone,
+          booking_date: requestBody.date,
+          time_slot: requestBody.timeSlot,
+          duration: requestBody.duration,
+          group_size: requestBody.groupSize,
+          price: String(price),
+          promo_code: requestBody.promoCode || '',
+          discount_amount: String(requestBody.discountAmount || 0),
+          is_test_mode: String(requestBody.isTestMode),
+        },
+        description: `Réservation Karaoké Box - ${formattedDate}`,
+        statement_descriptor: 'KARAOKE BOX METZ',
+        statement_descriptor_suffix: 'RESERVATION',
+      },
       metadata: {
         userId: requestBody.userId,
         userEmail: requestBody.userEmail,
@@ -90,6 +134,14 @@ serve(async (req) => {
         message: requestBody.message || '',
         isTestMode: String(requestBody.isTestMode),
       },
+      custom_fields: [
+        {
+          key: 'phone',
+          label: { type: 'custom', custom: 'Téléphone' },
+          type: 'text',
+          optional: true,
+        },
+      ],
     });
 
     console.log('✅ Session Stripe créée:', {

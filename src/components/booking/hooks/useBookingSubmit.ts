@@ -24,9 +24,26 @@ export const useBookingSubmit = (
       return;
     }
 
+    // Validate required fields
+    if (!data.date || !data.timeSlot || !duration || !groupSize || !calculatedPrice) {
+      console.error('❌ Missing required fields:', { 
+        date: data.date,
+        timeSlot: data.timeSlot,
+        duration,
+        groupSize,
+        calculatedPrice
+      });
+      toast({
+        title: "Erreur",
+        description: "Veuillez remplir tous les champs requis",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       console.log('🎯 Starting booking process:', {
-        email: data.email,
+        email: user.email,
         date: data.date,
         timeSlot: data.timeSlot,
         duration,
@@ -89,12 +106,12 @@ export const useBookingSubmit = (
         'create-booking',
         {
           body: {
-            email: data.email,
-            fullName: data.fullName,
-            phone: data.phone,
+            email: user.email,
+            fullName: data.fullName || user.user_metadata?.full_name,
+            phone: data.phone || user.user_metadata?.phone,
             date: formattedDate,
             timeSlot: data.timeSlot,
-            duration,
+            duration: duration.toString(),
             groupSize,
             price: finalPrice,
             message: data.message,

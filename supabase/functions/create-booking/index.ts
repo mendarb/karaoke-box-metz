@@ -17,8 +17,8 @@ serve(async (req) => {
     console.log('📝 Données de réservation reçues:', requestBody);
 
     // Validation des données requises
-    const { date, timeSlot, duration, groupSize, price } = requestBody;
-    if (!date || !timeSlot || !duration || !groupSize || !price) {
+    const { date, timeSlot, duration, groupSize, price, email, fullName } = requestBody;
+    if (!date || !timeSlot || !duration || !groupSize || !price || !email || !fullName) {
       throw new Error('Données de réservation incomplètes');
     }
 
@@ -70,14 +70,14 @@ serve(async (req) => {
       mode: 'payment',
       success_url: `${req.headers.get('origin') || 'https://k-box.fr'}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get('origin') || 'https://k-box.fr'}`,
-      customer_email: requestBody.userEmail,
+      customer_email: email,
       client_reference_id: requestBody.userId,
       payment_intent_data: {
         metadata: {
           user_id: requestBody.userId,
-          user_name: requestBody.userName,
-          user_email: requestBody.userEmail,
-          user_phone: requestBody.userPhone,
+          user_name: fullName,
+          user_email: email,
+          user_phone: requestBody.phone || '',
           booking_date: date,
           time_slot: startHour,
           end_time: endHour,
@@ -94,9 +94,9 @@ serve(async (req) => {
       },
       metadata: {
         userId: requestBody.userId,
-        userEmail: requestBody.userEmail,
-        userName: requestBody.userName,
-        userPhone: requestBody.userPhone,
+        userEmail: email,
+        userName: fullName,
+        userPhone: requestBody.phone || '',
         date: date,
         timeSlot: startHour,
         endTime: endHour,

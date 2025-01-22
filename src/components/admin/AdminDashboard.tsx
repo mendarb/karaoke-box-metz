@@ -14,6 +14,7 @@ export const AdminDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
   useEffect(() => {
     if (!isAdminLoading && !isAdmin) {
@@ -28,6 +29,10 @@ export const AdminDashboard = () => {
 
   const handleViewDetails = (booking: Booking) => {
     setSelectedBooking(booking);
+  };
+
+  const handleCloseBookingModal = () => {
+    setIsBookingModalOpen(false);
   };
 
   if (isAdminLoading) {
@@ -48,6 +53,8 @@ export const AdminDashboard = () => {
         bookings={bookings} 
         isLoading={isBookingsLoading}
         onViewDetails={handleViewDetails}
+        isBookingModalOpen={isBookingModalOpen}
+        setIsBookingModalOpen={setIsBookingModalOpen}
       />
       {selectedBooking && (
         <BookingDetailsDialog

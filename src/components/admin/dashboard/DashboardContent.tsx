@@ -13,10 +13,17 @@ interface DashboardContentProps {
   bookings: Booking[];
   isLoading: boolean;
   onViewDetails: (booking: Booking) => void;
+  isBookingModalOpen: boolean;
+  setIsBookingModalOpen: (open: boolean) => void;
 }
 
-export const DashboardContent = ({ bookings, isLoading, onViewDetails }: DashboardContentProps) => {
-  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+export const DashboardContent = ({ 
+  bookings, 
+  isLoading, 
+  onViewDetails,
+  isBookingModalOpen,
+  setIsBookingModalOpen
+}: DashboardContentProps) => {
   const { updateBookingStatus } = useBookingActions();
 
   const handleStatusChange = async (bookingId: string, newStatus: BookingStatus) => {
@@ -52,7 +59,10 @@ export const DashboardContent = ({ bookings, isLoading, onViewDetails }: Dashboa
         onStatusChange={handleStatusChange}
       />
 
-      <Dialog open={isBookingModalOpen} onOpenChange={setIsBookingModalOpen}>
+      <Dialog 
+        open={isBookingModalOpen} 
+        onOpenChange={setIsBookingModalOpen}
+      >
         <DialogContent className="max-w-4xl">
           <AdminBookingForm onSubmit={() => setIsBookingModalOpen(false)} />
         </DialogContent>

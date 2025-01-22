@@ -31,10 +31,6 @@ export const AdminDashboard = () => {
     setSelectedBooking(booking);
   };
 
-  const handleCloseBookingModal = () => {
-    setIsBookingModalOpen(false);
-  };
-
   if (isAdminLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">

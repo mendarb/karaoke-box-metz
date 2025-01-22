@@ -30,9 +30,19 @@ export const BookingSummary = ({
   const endHour = startHour !== undefined && duration ? startHour + parseInt(duration) : undefined;
   
   const formatHour = (hour: number) => `${hour.toString().padStart(2, '0')}h00`;
+
+  // Calculate price per person per hour, ensuring duration is properly parsed
   const pricePerPersonPerHour = groupSize && duration ? 
     Math.round((calculatedPrice / (parseInt(groupSize) * parseInt(duration))) * 100) / 100 : 
     0;
+
+  console.log('💰 Prix par personne/heure:', {
+    calculatedPrice,
+    groupSize,
+    duration,
+    pricePerPersonPerHour,
+    rawCalculation: calculatedPrice / (parseInt(groupSize || '1') * parseInt(duration || '1'))
+  });
 
   return (
     <Card className="bg-white/50 backdrop-blur-sm border-none">

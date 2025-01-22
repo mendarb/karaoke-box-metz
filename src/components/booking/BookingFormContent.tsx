@@ -38,7 +38,8 @@ export const BookingFormContent = ({
   console.log('📅 BookingFormContent - Valeurs actuelles:', {
     date,
     timeSlot,
-    step: currentStep
+    step: currentStep,
+    duration // Log duration to debug
   });
 
   return (
@@ -72,7 +73,7 @@ export const BookingFormContent = ({
             form={form}
             calculatedPrice={calculatedPrice}
             groupSize={groupSize}
-            duration={duration}
+            duration={duration} // Make sure duration is passed here
           />
           <BookingFormLegal form={form} />
         </>

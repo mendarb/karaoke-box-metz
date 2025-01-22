@@ -49,6 +49,7 @@ export const AdditionalFields = ({
         finalPrice={finalPrice}
         date={form.getValues("date")}
         timeSlot={form.getValues("timeSlot")}
+        message={form.getValues("message")}
       />
 
       <FormField

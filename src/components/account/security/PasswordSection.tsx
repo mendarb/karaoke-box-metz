@@ -38,7 +38,7 @@ export const PasswordSection = () => {
       // Remove any trailing colons and ensure proper URL format
       const baseUrl = window.location.origin.replace(/:\/*$/, '');
       const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-        redirectTo: `${baseUrl}/reset-password`,
+        redirectTo: `${baseUrl}/account/reset-password`,
       });
 
       if (error) {

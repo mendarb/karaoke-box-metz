@@ -34,12 +34,13 @@ export const BookingFormContent = ({
 }: BookingFormContentProps) => {
   const date = form.watch("date");
   const timeSlot = form.watch("timeSlot");
+  const formDuration = form.watch("duration");
 
   console.log('📅 BookingFormContent - Valeurs actuelles:', {
     date,
     timeSlot,
     step: currentStep,
-    duration // Log duration to debug
+    duration: formDuration || duration // Utiliser la valeur du form en priorité
   });
 
   return (
@@ -73,7 +74,7 @@ export const BookingFormContent = ({
             form={form}
             calculatedPrice={calculatedPrice}
             groupSize={groupSize}
-            duration={duration} // Make sure duration is passed here
+            duration={formDuration || duration} // Utiliser la valeur du form en priorité
           />
           <BookingFormLegal form={form} />
         </>

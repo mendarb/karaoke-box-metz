@@ -31,7 +31,7 @@ export const BookingSummary = ({
   
   const formatHour = (hour: number) => `${hour.toString().padStart(2, '0')}h00`;
   const pricePerPersonPerHour = groupSize && duration ? 
-    Math.round((calculatedPrice / (parseInt(groupSize) * parseInt(duration)))) : 
+    Math.round((calculatedPrice / (parseInt(groupSize) * parseInt(duration))) * 100) / 100 : 
     0;
 
   return (

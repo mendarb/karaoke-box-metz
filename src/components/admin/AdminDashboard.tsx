@@ -35,6 +35,10 @@ export const AdminDashboard = () => {
     setIsBookingModalOpen(open);
   }, []);
 
+  const handleCloseBookingDetails = useCallback(() => {
+    setSelectedBooking(null);
+  }, []);
+
   if (isAdminLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -60,7 +64,7 @@ export const AdminDashboard = () => {
         <BookingDetailsDialog
           booking={selectedBooking}
           isOpen={!!selectedBooking}
-          onClose={() => setSelectedBooking(null)}
+          onClose={handleCloseBookingDetails}
         />
       )}
     </>

@@ -10,20 +10,25 @@ export const useIsAdmin = () => {
     queryFn: async () => {
       if (!user?.id) return false;
       
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .single();
+      try {
+        const { data, error } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .maybeSingle();
 
-      if (error) {
-        console.error('Error checking admin status:', error);
+        if (error) {
+          console.error('Error checking admin status:', error);
+          return false;
+        }
+
+        return data?.role === 'admin';
+      } catch (error) {
+        console.error('Error in admin check:', error);
         return false;
       }
-
-      return data?.role === 'admin';
     },
     enabled: !!user?.id,
-    staleTime: 1000 * 60 * 5, // Cache pendant 5 minutes
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 };

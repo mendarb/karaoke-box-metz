@@ -33,6 +33,14 @@ export const DashboardContent = ({
     }
   };
 
+  const handleNewBooking = () => {
+    onOpenChange(true);
+  };
+
+  const handleModalClose = () => {
+    onOpenChange(false);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -41,7 +49,7 @@ export const DashboardContent = ({
           <p className="text-gray-600">Gérez vos réservations et consultez les statistiques</p>
         </div>
         <Button 
-          onClick={() => onOpenChange(true)} 
+          onClick={handleNewBooking}
           className="bg-kbox-coral hover:bg-kbox-orange-dark"
         >
           <Plus className="w-4 h-4 mr-2" />
@@ -60,10 +68,10 @@ export const DashboardContent = ({
 
       <Dialog 
         open={isBookingModalOpen} 
-        onOpenChange={onOpenChange}
+        onOpenChange={handleModalClose}
       >
         <DialogContent className="max-w-4xl">
-          <AdminBookingForm onSubmit={() => onOpenChange(false)} />
+          <AdminBookingForm onSubmit={handleModalClose} />
         </DialogContent>
       </Dialog>
     </div>

@@ -24,6 +24,14 @@ export const useBookingSubmit = (
       return;
     }
 
+    console.log('🔍 Checking form data:', {
+      date: data.date,
+      timeSlot: data.timeSlot,
+      duration,
+      groupSize,
+      calculatedPrice
+    });
+
     // Validate required fields
     if (!data.date || !data.timeSlot || !duration || !groupSize || !calculatedPrice) {
       console.error('❌ Missing required fields:', { 
@@ -132,7 +140,6 @@ export const useBookingSubmit = (
       }
 
       console.log('✅ Booking created and payment link generated:', {
-        bookingId: response.bookingId,
         checkoutUrl: response.url,
         userId: user.id,
         price: finalPrice,

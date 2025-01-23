@@ -81,7 +81,6 @@ export const BookingFormWrapper = () => {
         
         <div className="min-h-[300px]">
           <BookingFormContent
-            currentStep={currentStep}
             form={form}
             groupSize={groupSize}
             duration={duration}
@@ -98,14 +97,12 @@ export const BookingFormWrapper = () => {
           />
         </div>
 
-        {currentStep !== 1 && (
-          <BookingFormActions
-            currentStep={currentStep}
-            isSubmitting={isSubmitting}
-            onPrevious={handlePrevious}
-            canProceed={true}
-          />
-        )}
+        <BookingFormActions
+          currentStep={currentStep}
+          isSubmitting={isSubmitting}
+          onPrevious={handlePrevious}
+          canProceed={true}
+        />
       </form>
     </Form>
   );

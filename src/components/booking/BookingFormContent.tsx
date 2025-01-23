@@ -4,6 +4,7 @@ import { GroupSizeAndDurationFields } from "./GroupSizeAndDurationFields";
 import { AdditionalFields } from "./additional/AdditionalFields";
 import { useEffect, useState } from "react";
 import { useBookingPrice } from "./hooks/useBookingPrice";
+import { LocationSelector } from "./location/LocationSelector";
 
 export interface BookingFormContentProps {
   form: UseFormReturn<any>;
@@ -56,13 +57,19 @@ export const BookingFormContent = ({
   return (
     <div className="space-y-8">
       {currentStep === 1 && (
+        <LocationSelector
+          onSelect={onLocationSelect}
+        />
+      )}
+
+      {currentStep === 2 && (
         <DateTimeFields
           form={form}
           onAvailabilityChange={handleDateTimeAvailability}
         />
       )}
 
-      {currentStep === 2 && (
+      {currentStep === 3 && (
         <GroupSizeAndDurationFields
           form={form}
           onGroupSizeChange={onGroupSizeChange}
@@ -72,7 +79,7 @@ export const BookingFormContent = ({
         />
       )}
 
-      {currentStep === 3 && calculatedPrice > 0 && (
+      {currentStep === 4 && calculatedPrice > 0 && (
         <AdditionalFields
           form={form}
           calculatedPrice={calculatedPrice}

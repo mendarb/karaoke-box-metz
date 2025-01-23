@@ -37,7 +37,7 @@ export const BookingFormContent = ({
   const {
     currentPrice,
     updatePrices
-  } = useBookingPrice(form, setCalculatedPrice);
+  } = useBookingPrice(form, onPriceCalculated);
 
   const handleDateTimeAvailability = (date: Date | undefined, hours: number) => {
     setSelectedDate(date);

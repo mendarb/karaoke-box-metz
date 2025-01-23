@@ -14,12 +14,20 @@ interface EmailRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  console.log('📧 Traitement d\'une nouvelle demande d\'email de bienvenue');
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    if (!RESEND_API_KEY) {
+      console.error('❌ Clé API Resend manquante');
+      throw new Error('RESEND_API_KEY is not configured');
+    }
+
     const { to, fullName } = await req.json() as EmailRequest;
+    console.log('📧 Envoi d\'email à:', { to, fullName });
 
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -32,28 +40,32 @@ const handler = async (req: Request): Promise<Response> => {
         to: [to],
         subject: "Bienvenue sur K-Box !",
         html: `
-          <h1>Bienvenue ${fullName} !</h1>
-          <p>Nous sommes ravis de vous accueillir sur K-Box.</p>
-          <p>Votre compte a été créé avec succès. Vous pouvez dès maintenant réserver votre session de karaoké !</p>
-          <p>À très bientôt,</p>
-          <p>L'équipe K-Box</p>
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #7C3AED;">Bienvenue ${fullName} !</h1>
+            <p>Nous sommes ravis de vous accueillir sur K-Box.</p>
+            <p>Votre compte a été créé avec succès. Vous pouvez dès maintenant réserver votre session de karaoké !</p>
+            <p style="margin-top: 24px;">À très bientôt,</p>
+            <p>L'équipe K-Box</p>
+          </div>
         `,
       }),
     });
 
     if (!res.ok) {
       const error = await res.text();
-      console.error("Erreur lors de l'envoi de l'email:", error);
-      throw new Error(error);
+      console.error('❌ Erreur Resend:', error);
+      throw new Error(`Resend API error: ${error}`);
     }
 
     const data = await res.json();
+    console.log('✅ Email envoyé avec succès:', data);
+
     return new Response(JSON.stringify(data), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("Erreur dans la fonction send-welcome-email:", error);
+    console.error("❌ Erreur dans la fonction send-welcome-email:", error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

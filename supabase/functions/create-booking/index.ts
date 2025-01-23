@@ -35,26 +35,13 @@ serve(async (req) => {
       day: 'numeric'
     }).format(bookingDate);
 
-    // Calculer l'heure de début et de fin
-    const startHourInt = parseInt(timeSlot);
-    const durationInt = parseInt(duration);
-    const endHourInt = startHourInt + durationInt;
-    const startTime = formatHour(startHourInt);
-    const endTime = formatHour(endHourInt);
+    const startTime = formatHour(timeSlot);
     
-    console.log('⏰ Heures formatées:', {
-      startHourInt,
-      endHourInt,
-      startTime,
-      endTime,
-      duration: durationInt
-    });
-    
-    // Construction de la description
+    // Construction de la description simplifiée
     const description = [
       formattedDate,
-      `${startTime} - ${endTime}`,
-      `${groupSize} personne${parseInt(groupSize) > 1 ? 's' : ''} - ${durationInt}h`,
+      `${startTime}`,
+      `${groupSize} personne${parseInt(groupSize) > 1 ? 's' : ''}`,
       requestBody.message ? `Message: ${requestBody.message}` : '',
       requestBody.promoCode ? `Code promo: ${requestBody.promoCode}` : ''
     ].filter(Boolean).join('\n');
@@ -72,7 +59,7 @@ serve(async (req) => {
             metadata: {
               booking_date: date,
               time_slot: startTime,
-              duration: String(durationInt),
+              duration: String(duration),
               group_size: groupSize,
             },
           },
@@ -92,8 +79,7 @@ serve(async (req) => {
           user_phone: requestBody.phone || '',
           booking_date: date,
           time_slot: startTime,
-          end_time: endTime,
-          duration: String(durationInt),
+          duration: String(duration),
           group_size: `${groupSize} personne${parseInt(groupSize) > 1 ? 's' : ''}`,
           price: String(price),
           promo_code: requestBody.promoCode || '',
@@ -111,8 +97,7 @@ serve(async (req) => {
         userPhone: requestBody.phone || '',
         date: date,
         timeSlot: startTime,
-        endTime: endTime,
-        duration: String(durationInt),
+        duration: String(duration),
         groupSize: groupSize,
         price: String(price),
         promoCode: requestBody.promoCode || '',

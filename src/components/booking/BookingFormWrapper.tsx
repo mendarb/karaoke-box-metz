@@ -81,6 +81,7 @@ export const BookingFormWrapper = () => {
         
         <div className="min-h-[300px]">
           <BookingFormContent
+            currentStep={currentStep}
             form={form}
             groupSize={groupSize}
             duration={duration}

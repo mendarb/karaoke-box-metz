@@ -1,28 +1,27 @@
 import { UseFormReturn } from "react-hook-form";
-import { DateTimeFields } from "./DateTimeFields";
-import { GroupSizeAndDurationFields } from "./GroupSizeAndDurationFields";
-import { AdditionalFields } from "./additional/AdditionalFields";
-import { useEffect, useState } from "react";
-import { useBookingPrice } from "./hooks/useBookingPrice";
 import { LocationSelector } from "./location/LocationSelector";
+import { DateTimeFields } from "./date-time/DateTimeFields";
+import { GroupSizeAndDurationFields } from "@/components/GroupSizeAndDurationFields";
+import { AdditionalFields } from "./additional/AdditionalFields";
+import { BookingFormLegal } from "./BookingFormLegal";
 
-export interface BookingFormContentProps {
-  form: UseFormReturn<any>;
+interface BookingFormContentProps {
   currentStep: number;
+  form: UseFormReturn<any>;
   groupSize: string;
   duration: string;
   calculatedPrice: number;
   onGroupSizeChange: (size: string) => void;
   onDurationChange: (duration: string) => void;
   onPriceCalculated: (price: number) => void;
-  onAvailabilityChange: (date: Date | undefined, hours: number) => void;
+  onAvailabilityChange: (date: Date | undefined, availableHours: number) => void;
   availableHours: number;
-  onLocationSelect: (location: any) => void;
+  onLocationSelect: (location: string) => void;
 }
 
 export const BookingFormContent = ({
-  form,
   currentStep,
+  form,
   groupSize,
   duration,
   calculatedPrice,
@@ -31,41 +30,31 @@ export const BookingFormContent = ({
   onPriceCalculated,
   onAvailabilityChange,
   availableHours,
-  onLocationSelect
+  onLocationSelect,
 }: BookingFormContentProps) => {
-  const [selectedDate, setSelectedDate] = useState<Date>();
+  const date = form.watch("date");
+  const timeSlot = form.watch("timeSlot");
+  const formDuration = form.watch("duration");
 
-  const {
-    currentPrice,
-    updatePrices
-  } = useBookingPrice(form, onPriceCalculated);
-
-  const handleDateTimeAvailability = (date: Date | undefined, hours: number) => {
-    setSelectedDate(date);
-    onAvailabilityChange(date, hours);
-  };
-
-  useEffect(() => {
-    console.log('📅 BookingFormContent - Valeurs actuelles:', {
-      date: selectedDate,
-      timeSlot: form.getValues('timeSlot'),
-      step: currentStep,
-      duration: form.getValues('duration')
-    });
-  }, [selectedDate, form, currentStep]);
+  console.log('📅 BookingFormContent - Valeurs actuelles:', {
+    date,
+    timeSlot,
+    step: currentStep,
+    duration: formDuration || duration // Utiliser la valeur du form en priorité
+  });
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {currentStep === 1 && (
-        <LocationSelector
+        <LocationSelector 
           onSelect={onLocationSelect}
         />
       )}
 
       {currentStep === 2 && (
-        <DateTimeFields
+        <DateTimeFields 
           form={form}
-          onAvailabilityChange={handleDateTimeAvailability}
+          onAvailabilityChange={onAvailabilityChange}
         />
       )}
 
@@ -79,13 +68,16 @@ export const BookingFormContent = ({
         />
       )}
 
-      {currentStep === 4 && calculatedPrice > 0 && (
-        <AdditionalFields
-          form={form}
-          calculatedPrice={calculatedPrice}
-          groupSize={groupSize}
-          duration={duration}
-        />
+      {currentStep === 4 && (
+        <>
+          <AdditionalFields 
+            form={form}
+            calculatedPrice={calculatedPrice}
+            groupSize={groupSize}
+            duration={formDuration || duration} // Utiliser la valeur du form en priorité
+          />
+          <BookingFormLegal form={form} />
+        </>
       )}
     </div>
   );

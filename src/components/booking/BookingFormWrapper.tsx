@@ -98,12 +98,14 @@ export const BookingFormWrapper = () => {
           />
         </div>
 
-        <BookingFormActions
-          currentStep={currentStep}
-          isSubmitting={isSubmitting}
-          onPrevious={handlePrevious}
-          canProceed={true}
-        />
+        {currentStep !== 1 && (
+          <BookingFormActions
+            currentStep={currentStep}
+            isSubmitting={isSubmitting}
+            onPrevious={handlePrevious}
+            canProceed={true}
+          />
+        )}
       </form>
     </Form>
   );

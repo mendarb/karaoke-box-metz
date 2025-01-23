@@ -26,7 +26,7 @@ export const useBookingSubmit = (
 
     // Calculer la durée basée sur les créneaux sélectionnés
     const selectedSlots = form.getValues("selectedSlots") || [];
-    const calculatedDuration = selectedSlots.length > 0 ? selectedSlots.length.toString() : duration;
+    const calculatedDuration = selectedSlots.length.toString();
 
     console.log('🔍 Checking form data:', {
       date: data.date,
@@ -34,8 +34,7 @@ export const useBookingSubmit = (
       calculatedDuration,
       selectedSlots,
       groupSize,
-      calculatedPrice,
-      duration
+      calculatedPrice
     });
 
     // Validate required fields

@@ -35,13 +35,16 @@ serve(async (req) => {
       day: 'numeric'
     }).format(bookingDate);
 
-    const startHour = formatHour(timeSlot);
-    const endHour = formatHour(parseInt(timeSlot) + parseInt(duration));
+    // Calculer l'heure de fin en ajoutant la durée
+    const startHour = parseInt(timeSlot);
+    const endHour = startHour + parseInt(duration);
+    const startTime = formatHour(startHour);
+    const endTime = formatHour(endHour);
     
     // Construction de la description
     const description = [
       formattedDate,
-      `${startHour} - ${endHour}`,
+      `${startTime} - ${endTime}`,
       `${groupSize} personne${parseInt(groupSize) > 1 ? 's' : ''} - ${duration}h`,
       requestBody.message ? `Message: ${requestBody.message}` : '',
       requestBody.promoCode ? `Code promo: ${requestBody.promoCode}` : ''
@@ -59,7 +62,7 @@ serve(async (req) => {
             description: description,
             metadata: {
               booking_date: date,
-              time_slot: startHour,
+              time_slot: startTime,
               duration: `${duration}h`,
               group_size: groupSize,
             },
@@ -79,8 +82,8 @@ serve(async (req) => {
           user_email: email,
           user_phone: requestBody.phone || '',
           booking_date: date,
-          time_slot: startHour,
-          end_time: endHour,
+          time_slot: startTime,
+          end_time: endTime,
           duration: `${duration}h`,
           group_size: `${groupSize} personne${parseInt(groupSize) > 1 ? 's' : ''}`,
           price: String(price),
@@ -98,8 +101,8 @@ serve(async (req) => {
         userName: fullName,
         userPhone: requestBody.phone || '',
         date: date,
-        timeSlot: startHour,
-        endTime: endHour,
+        timeSlot: startTime,
+        endTime: endTime,
         duration: `${duration}h`,
         groupSize: groupSize,
         price: String(price),

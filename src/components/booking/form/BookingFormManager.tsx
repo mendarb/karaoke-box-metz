@@ -28,7 +28,6 @@ export const useBookingFormManager = () => {
   const { handleSubmit: submitBooking } = useBookingSubmit(
     form,
     groupSize,
-    duration,
     calculatedPrice,
     setIsSubmitting
   );

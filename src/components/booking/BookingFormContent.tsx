@@ -5,20 +5,34 @@ import { AdditionalFields } from "./additional/AdditionalFields";
 import { useEffect, useState } from "react";
 import { useBookingPrice } from "./hooks/useBookingPrice";
 
-interface BookingFormContentProps {
+export interface BookingFormContentProps {
   form: UseFormReturn<any>;
-  step: number;
-  onStepComplete: (step: number) => void;
+  currentStep: number;
+  groupSize: string;
+  duration: string;
+  calculatedPrice: number;
+  onGroupSizeChange: (size: string) => void;
+  onDurationChange: (duration: string) => void;
+  onPriceCalculated: (price: number) => void;
+  onAvailabilityChange: (date: Date | undefined, hours: number) => void;
+  availableHours: number;
+  onLocationSelect: (location: any) => void;
 }
 
 export const BookingFormContent = ({
   form,
-  step,
-  onStepComplete,
+  currentStep,
+  groupSize,
+  duration,
+  calculatedPrice,
+  onGroupSizeChange,
+  onDurationChange,
+  onPriceCalculated,
+  onAvailabilityChange,
+  availableHours,
+  onLocationSelect
 }: BookingFormContentProps) => {
-  const [availableHours, setAvailableHours] = useState<number>(0);
   const [selectedDate, setSelectedDate] = useState<Date>();
-  const [calculatedPrice, setCalculatedPrice] = useState<number>(0);
 
   const {
     currentPrice,
@@ -27,51 +41,43 @@ export const BookingFormContent = ({
 
   const handleDateTimeAvailability = (date: Date | undefined, hours: number) => {
     setSelectedDate(date);
-    setAvailableHours(hours);
-  };
-
-  const handleGroupSizeChange = (size: string) => {
-    console.log('👥 Taille du groupe mise à jour:', size);
-  };
-
-  const handleDurationChange = (duration: string) => {
-    console.log('⏱️ Durée mise à jour:', duration);
+    onAvailabilityChange(date, hours);
   };
 
   useEffect(() => {
     console.log('📅 BookingFormContent - Valeurs actuelles:', {
       date: selectedDate,
       timeSlot: form.getValues('timeSlot'),
-      step,
+      step: currentStep,
       duration: form.getValues('duration')
     });
-  }, [selectedDate, form, step]);
+  }, [selectedDate, form, currentStep]);
 
   return (
     <div className="space-y-8">
-      {step === 1 && (
+      {currentStep === 1 && (
         <DateTimeFields
           form={form}
           onAvailabilityChange={handleDateTimeAvailability}
         />
       )}
 
-      {step === 2 && (
+      {currentStep === 2 && (
         <GroupSizeAndDurationFields
           form={form}
-          onGroupSizeChange={handleGroupSizeChange}
-          onDurationChange={handleDurationChange}
-          onPriceCalculated={setCalculatedPrice}
+          onGroupSizeChange={onGroupSizeChange}
+          onDurationChange={onDurationChange}
+          onPriceCalculated={onPriceCalculated}
           availableHours={availableHours}
         />
       )}
 
-      {step === 3 && calculatedPrice > 0 && (
+      {currentStep === 3 && calculatedPrice > 0 && (
         <AdditionalFields
           form={form}
           calculatedPrice={calculatedPrice}
-          groupSize={form.getValues("groupSize")}
-          duration={form.getValues("duration")}
+          groupSize={groupSize}
+          duration={duration}
         />
       )}
     </div>

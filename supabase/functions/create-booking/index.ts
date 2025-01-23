@@ -18,7 +18,15 @@ serve(async (req) => {
 
     // Validation des données requises
     const { date, timeSlot, duration, groupSize, price, email, fullName } = requestBody;
-    if (!date || !timeSlot || !duration || !groupSize || !price || !email || !fullName) {
+    
+    // Validation spécifique de la durée
+    const parsedDuration = parseInt(duration);
+    if (!parsedDuration || parsedDuration <= 0) {
+      console.error('❌ Durée invalide:', duration);
+      throw new Error('La durée de réservation doit être supérieure à 0');
+    }
+
+    if (!date || !timeSlot || !groupSize || !price || !email || !fullName) {
       throw new Error('Données de réservation incomplètes');
     }
 
@@ -35,10 +43,9 @@ serve(async (req) => {
       day: 'numeric'
     }).format(bookingDate);
 
-    // Calculer l'heure de début et de fin
-    const startHourInt = parseInt(timeSlot);
-    const durationInt = parseInt(duration);
-    const endHourInt = startHourInt + durationInt;
+    // Extraire l'heure du timeSlot (format "HH:00")
+    const startHourInt = parseInt(timeSlot.split(':')[0]);
+    const endHourInt = startHourInt + parsedDuration;
     const startTime = formatHour(startHourInt);
     const endTime = formatHour(endHourInt);
     
@@ -47,14 +54,14 @@ serve(async (req) => {
       endHourInt,
       startTime,
       endTime,
-      duration: durationInt
+      duration: parsedDuration
     });
     
     // Construction de la description
     const description = [
       formattedDate,
       `${startTime} - ${endTime}`,
-      `${groupSize} personne${parseInt(groupSize) > 1 ? 's' : ''} - ${durationInt}h`,
+      `${groupSize} personne${parseInt(groupSize) > 1 ? 's' : ''} - ${parsedDuration}h`,
       requestBody.message ? `Message: ${requestBody.message}` : '',
       requestBody.promoCode ? `Code promo: ${requestBody.promoCode}` : ''
     ].filter(Boolean).join('\n');
@@ -72,7 +79,7 @@ serve(async (req) => {
             metadata: {
               booking_date: date,
               time_slot: startTime,
-              duration: String(durationInt),
+              duration: String(parsedDuration),
               group_size: groupSize,
             },
           },
@@ -93,7 +100,7 @@ serve(async (req) => {
           booking_date: date,
           time_slot: startTime,
           end_time: endTime,
-          duration: String(durationInt),
+          duration: String(parsedDuration),
           group_size: `${groupSize} personne${parseInt(groupSize) > 1 ? 's' : ''}`,
           price: String(price),
           promo_code: requestBody.promoCode || '',
@@ -112,7 +119,7 @@ serve(async (req) => {
         date: date,
         timeSlot: startTime,
         endTime: endTime,
-        duration: String(durationInt),
+        duration: String(parsedDuration),
         groupSize: groupSize,
         price: String(price),
         promoCode: requestBody.promoCode || '',
@@ -144,7 +151,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('❌ Erreur lors de la création de la session:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: 'Une erreur est survenue lors de la création de la réservation. Veuillez réessayer.' 
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500 

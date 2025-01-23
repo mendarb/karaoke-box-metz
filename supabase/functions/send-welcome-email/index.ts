@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+import { SmtpClient } from "https://deno.land/x/smtp@v0.7.0/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -21,46 +20,40 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    if (!RESEND_API_KEY) {
-      console.error('❌ Clé API Resend manquante');
-      throw new Error('RESEND_API_KEY is not configured');
-    }
-
     const { to, fullName } = await req.json() as EmailRequest;
     console.log('📧 Envoi d\'email à:', { to, fullName });
 
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-      },
-      body: JSON.stringify({
-        from: "K-Box <contact@reservation.karaoke-box-metz.fr>",
-        to: [to],
-        subject: "Bienvenue sur K-Box !",
-        html: `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-            <h1 style="color: #7C3AED;">Bienvenue ${fullName} !</h1>
-            <p>Nous sommes ravis de vous accueillir sur K-Box.</p>
-            <p>Votre compte a été créé avec succès. Vous pouvez dès maintenant réserver votre session de karaoké !</p>
-            <p style="margin-top: 24px;">À très bientôt,</p>
-            <p>L'équipe K-Box</p>
-          </div>
-        `,
-      }),
+    const client = new SmtpClient();
+
+    await client.connectTLS({
+      hostname: "smtp.gmail.com",
+      port: 465,
+      username: "noreply@kbox.fr",
+      password: "supabase",
     });
 
-    if (!res.ok) {
-      const error = await res.text();
-      console.error('❌ Erreur Resend:', error);
-      throw new Error(`Resend API error: ${error}`);
-    }
+    const html = `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        <h1 style="color: #7C3AED;">Bienvenue ${fullName} !</h1>
+        <p>Nous sommes ravis de vous accueillir sur K-Box.</p>
+        <p>Votre compte a été créé avec succès. Vous pouvez dès maintenant réserver votre session de karaoké !</p>
+        <p style="margin-top: 24px;">À très bientôt,</p>
+        <p>L'équipe K-Box</p>
+      </div>
+    `;
 
-    const data = await res.json();
-    console.log('✅ Email envoyé avec succès:', data);
+    await client.send({
+      from: "K-Box <noreply@kbox.fr>",
+      to: to,
+      subject: "Bienvenue sur K-Box !",
+      html: html,
+    });
 
-    return new Response(JSON.stringify(data), {
+    await client.close();
+    
+    console.log('✅ Email envoyé avec succès');
+
+    return new Response(JSON.stringify({ success: true }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

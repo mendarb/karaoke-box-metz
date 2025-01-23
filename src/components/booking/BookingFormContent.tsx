@@ -14,7 +14,7 @@ interface BookingFormContentProps {
   onGroupSizeChange: (size: string) => void;
   onDurationChange: (duration: string) => void;
   onPriceCalculated: (price: number) => void;
-  onAvailabilityChange: (isAvailable: boolean) => void;
+  onAvailabilityChange: (date: Date | undefined, availableHours: number) => void;
   availableHours: number;
   onLocationSelect?: (location: string) => void;
 }
@@ -78,6 +78,8 @@ export const BookingFormContent = ({
           <AdditionalFields
             form={form}
             calculatedPrice={calculatedPrice}
+            groupSize={groupSize}
+            duration={duration}
           />
         );
       default:

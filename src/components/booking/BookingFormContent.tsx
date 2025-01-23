@@ -1,83 +1,78 @@
 import { UseFormReturn } from "react-hook-form";
-import { LocationSelector } from "./location/LocationSelector";
-import { DateTimeFields } from "./date-time/DateTimeFields";
-import { GroupSizeAndDurationFields } from "@/components/GroupSizeAndDurationFields";
+import { DateTimeFields } from "./DateTimeFields";
+import { GroupSizeAndDurationFields } from "./GroupSizeAndDurationFields";
 import { AdditionalFields } from "./additional/AdditionalFields";
-import { BookingFormLegal } from "./BookingFormLegal";
+import { useEffect, useState } from "react";
+import { useBookingPrice } from "./hooks/useBookingPrice";
 
 interface BookingFormContentProps {
-  currentStep: number;
   form: UseFormReturn<any>;
-  groupSize: string;
-  duration: string;
-  calculatedPrice: number;
-  onGroupSizeChange: (size: string) => void;
-  onDurationChange: (duration: string) => void;
-  onPriceCalculated: (price: number) => void;
-  onAvailabilityChange: (date: Date | undefined, availableHours: number) => void;
-  availableHours: number;
-  onLocationSelect: (location: string) => void;
+  step: number;
+  onStepComplete: (step: number) => void;
 }
 
 export const BookingFormContent = ({
-  currentStep,
   form,
-  groupSize,
-  duration,
-  calculatedPrice,
-  onGroupSizeChange,
-  onDurationChange,
-  onPriceCalculated,
-  onAvailabilityChange,
-  availableHours,
-  onLocationSelect,
+  step,
+  onStepComplete,
 }: BookingFormContentProps) => {
-  const date = form.watch("date");
-  const timeSlot = form.watch("timeSlot");
-  const formDuration = form.watch("duration");
+  const [availableHours, setAvailableHours] = useState<number>(0);
+  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [calculatedPrice, setCalculatedPrice] = useState<number>(0);
 
-  console.log('📅 BookingFormContent - Valeurs actuelles:', {
-    date,
-    timeSlot,
-    step: currentStep,
-    duration: formDuration || duration // Utiliser la valeur du form en priorité
-  });
+  const {
+    currentPrice,
+    updatePrices
+  } = useBookingPrice(form, setCalculatedPrice);
+
+  const handleDateTimeAvailability = (date: Date | undefined, hours: number) => {
+    setSelectedDate(date);
+    setAvailableHours(hours);
+  };
+
+  const handleGroupSizeChange = (size: string) => {
+    console.log('👥 Taille du groupe mise à jour:', size);
+  };
+
+  const handleDurationChange = (duration: string) => {
+    console.log('⏱️ Durée mise à jour:', duration);
+  };
+
+  useEffect(() => {
+    console.log('📅 BookingFormContent - Valeurs actuelles:', {
+      date: selectedDate,
+      timeSlot: form.getValues('timeSlot'),
+      step,
+      duration: form.getValues('duration')
+    });
+  }, [selectedDate, form, step]);
 
   return (
-    <div className="space-y-6">
-      {currentStep === 1 && (
-        <LocationSelector 
-          onSelect={onLocationSelect}
-        />
-      )}
-
-      {currentStep === 2 && (
-        <DateTimeFields 
+    <div className="space-y-8">
+      {step === 1 && (
+        <DateTimeFields
           form={form}
-          onAvailabilityChange={onAvailabilityChange}
+          onAvailabilityChange={handleDateTimeAvailability}
         />
       )}
 
-      {currentStep === 3 && (
+      {step === 2 && (
         <GroupSizeAndDurationFields
           form={form}
-          onGroupSizeChange={onGroupSizeChange}
-          onDurationChange={onDurationChange}
-          onPriceCalculated={onPriceCalculated}
+          onGroupSizeChange={handleGroupSizeChange}
+          onDurationChange={handleDurationChange}
+          onPriceCalculated={setCalculatedPrice}
           availableHours={availableHours}
         />
       )}
 
-      {currentStep === 4 && (
-        <>
-          <AdditionalFields 
-            form={form}
-            calculatedPrice={calculatedPrice}
-            groupSize={groupSize}
-            duration={formDuration || duration} // Utiliser la valeur du form en priorité
-          />
-          <BookingFormLegal form={form} />
-        </>
+      {step === 3 && calculatedPrice > 0 && (
+        <AdditionalFields
+          form={form}
+          calculatedPrice={calculatedPrice}
+          groupSize={form.getValues("groupSize")}
+          duration={form.getValues("duration")}
+        />
       )}
     </div>
   );

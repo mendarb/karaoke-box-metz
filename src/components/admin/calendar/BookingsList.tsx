@@ -23,6 +23,11 @@ export const BookingsList = ({
 }: BookingsListProps) => {
   const isMobile = useIsMobile();
 
+  const formatTimeSlot = (startHour: number, duration: number) => {
+    const endHour = startHour + parseInt(duration.toString());
+    return `${startHour.toString().padStart(2, '0')}:00 - ${endHour.toString().padStart(2, '0')}:00`;
+  };
+
   return (
     <div className="divide-y divide-gray-100">
       <div className="p-4 bg-white/50 backdrop-blur sticky top-0 z-10 border-b">
@@ -43,7 +48,6 @@ export const BookingsList = ({
         ) : (
           bookings.map((booking) => {
             const startHour = parseInt(booking.time_slot);
-            const endHour = startHour + parseInt(booking.duration);
             
             return (
               <div
@@ -74,7 +78,7 @@ export const BookingsList = ({
                 
                 <div className="flex flex-wrap items-center gap-2 text-sm">
                   <Badge variant="outline" className="text-xs">
-                    {`${booking.time_slot}:00 - ${endHour}:00`}
+                    {formatTimeSlot(startHour, booking.duration)}
                   </Badge>
                   <Badge variant="outline" className="text-xs">
                     {booking.group_size} pers.

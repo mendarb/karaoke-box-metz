@@ -1,13 +1,13 @@
-import { useEffect, useRef } from "react";
+import { UseFormReturn } from "react-hook-form";
 import { LocationSelector } from "./location/LocationSelector";
 import { DateTimeFields } from "./date-time/DateTimeFields";
 import { GroupSizeAndDurationFields } from "@/components/GroupSizeAndDurationFields";
 import { AdditionalFields } from "./additional/AdditionalFields";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { BookingFormLegal } from "./BookingFormLegal";
 
 interface BookingFormContentProps {
   currentStep: number;
-  form: any;
+  form: UseFormReturn<any>;
   groupSize: string;
   duration: string;
   calculatedPrice: number;
@@ -16,7 +16,7 @@ interface BookingFormContentProps {
   onPriceCalculated: (price: number) => void;
   onAvailabilityChange: (date: Date | undefined, availableHours: number) => void;
   availableHours: number;
-  onLocationSelect?: (location: string) => void;
+  onLocationSelect: (location: string) => void;
 }
 
 export const BookingFormContent = ({
@@ -32,67 +32,53 @@ export const BookingFormContent = ({
   availableHours,
   onLocationSelect,
 }: BookingFormContentProps) => {
-  const contentRef = useRef<HTMLDivElement>(null);
-  const isMobile = useIsMobile();
+  const date = form.watch("date");
+  const timeSlot = form.watch("timeSlot");
+  const formDuration = form.watch("duration");
 
-  useEffect(() => {
-    if (isMobile && contentRef.current) {
-      const yOffset = -20; // Ajustement pour laisser un peu d'espace en haut
-      const element = contentRef.current;
-      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+  console.log('📅 BookingFormContent - Valeurs actuelles:', {
+    date,
+    timeSlot,
+    step: currentStep,
+    duration: formDuration || duration // Utiliser la valeur du form en priorité
+  });
 
-      window.scrollTo({
-        top: y,
-        behavior: "smooth"
-      });
-    }
-  }, [currentStep, isMobile]);
+  return (
+    <div className="space-y-6">
+      {currentStep === 1 && (
+        <LocationSelector 
+          onSelect={onLocationSelect}
+        />
+      )}
 
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <LocationSelector 
-            onSelect={onLocationSelect || (() => {})} 
-          />
-        );
-      case 2:
-        return (
-          <DateTimeFields
-            form={form}
-            onAvailabilityChange={onAvailabilityChange}
-          />
-        );
-      case 3:
-        return (
-          <GroupSizeAndDurationFields
-            form={form}
-            onGroupSizeChange={onGroupSizeChange}
-            onDurationChange={onDurationChange}
-            onPriceCalculated={onPriceCalculated}
-            availableHours={availableHours}
-          />
-        );
-      case 4:
-        return (
-          <AdditionalFields
+      {currentStep === 2 && (
+        <DateTimeFields 
+          form={form}
+          onAvailabilityChange={onAvailabilityChange}
+        />
+      )}
+
+      {currentStep === 3 && (
+        <GroupSizeAndDurationFields
+          form={form}
+          onGroupSizeChange={onGroupSizeChange}
+          onDurationChange={onDurationChange}
+          onPriceCalculated={onPriceCalculated}
+          availableHours={availableHours}
+        />
+      )}
+
+      {currentStep === 4 && (
+        <>
+          <AdditionalFields 
             form={form}
             calculatedPrice={calculatedPrice}
             groupSize={groupSize}
-            duration={duration}
+            duration={formDuration || duration} // Utiliser la valeur du form en priorité
           />
-        );
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div 
-      ref={contentRef}
-      className="space-y-6 animate-fade-in"
-    >
-      {renderStepContent()}
+          <BookingFormLegal form={form} />
+        </>
+      )}
     </div>
   );
 };

@@ -17,12 +17,23 @@ serve(async (req) => {
     console.log('📝 Données de réservation reçues:', requestBody);
 
     // Validation des données requises
-    const { date, timeSlot, duration, groupSize, price, email, fullName } = requestBody;
+    const { date, timeSlot, duration, groupSize, price, email, fullName, isTestMode } = requestBody;
     if (!date || !timeSlot || !duration || !groupSize || !price || !email || !fullName) {
       throw new Error('Données de réservation incomplètes');
     }
 
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+    // Sélectionner la bonne clé API Stripe en fonction du mode test
+    const stripeKey = isTestMode 
+      ? Deno.env.get('STRIPE_TEST_SECRET_KEY')
+      : Deno.env.get('STRIPE_SECRET_KEY');
+
+    if (!stripeKey) {
+      throw new Error(`${isTestMode ? 'Test' : 'Live'} mode Stripe API key not configured`);
+    }
+
+    console.log('💳 Mode:', isTestMode ? 'TEST' : 'LIVE');
+
+    const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
     });
 
@@ -54,7 +65,7 @@ serve(async (req) => {
           currency: 'eur',
           unit_amount: Math.round(price * 100),
           product_data: {
-            name: requestBody.isTestMode ? '[TEST MODE] Karaoké BOX - MB EI' : 'Karaoké BOX - MB EI',
+            name: isTestMode ? '[TEST MODE] Karaoké BOX - MB EI' : 'Karaoké BOX - MB EI',
             description: description,
             metadata: {
               booking_date: date,
@@ -84,7 +95,7 @@ serve(async (req) => {
           price: String(price),
           promo_code: requestBody.promoCode || '',
           discount_amount: String(requestBody.discountAmount || 0),
-          is_test_mode: String(requestBody.isTestMode || false),
+          is_test_mode: String(isTestMode || false),
         },
         description: `Réservation Karaoké Box - ${formattedDate}`,
         statement_descriptor: 'KARAOKE BOX METZ',
@@ -103,7 +114,7 @@ serve(async (req) => {
         promoCode: requestBody.promoCode || '',
         discountAmount: String(requestBody.discountAmount || 0),
         message: requestBody.message || '',
-        isTestMode: String(requestBody.isTestMode || false),
+        isTestMode: String(isTestMode || false),
       },
       custom_fields: [
         {
@@ -118,7 +129,8 @@ serve(async (req) => {
     console.log('✅ Session Stripe créée:', {
       sessionId: session.id,
       amount: price,
-      description: description
+      description: description,
+      isTestMode: isTestMode
     });
 
     return new Response(

@@ -13,13 +13,11 @@ serve(async (req) => {
       return new Response('ok', { headers: corsHeaders })
     }
 
-    // Récupérer les variables d'environnement
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Récupérer les données de la requête
     const {
       email,
       fullName,
@@ -47,7 +45,6 @@ serve(async (req) => {
       isTestMode
     })
 
-    // Initialiser Stripe avec la clé appropriée
     const stripeSecretKey = isTestMode 
       ? Deno.env.get('STRIPE_TEST_SECRET_KEY')
       : Deno.env.get('STRIPE_SECRET_KEY')
@@ -63,19 +60,6 @@ serve(async (req) => {
 
     console.log('💳 Mode de paiement:', isTestMode ? 'TEST' : 'PRODUCTION')
 
-    // S'assurer que la durée est un nombre
-    const durationNumber = parseInt(duration)
-    if (isNaN(durationNumber)) {
-      console.error('❌ Durée invalide:', duration)
-      throw new Error('Duration invalide')
-    }
-
-    console.log('⏱️ Durée calculée:', {
-      rawDuration: duration,
-      parsedDuration: durationNumber,
-    })
-
-    // Créer la session de paiement Stripe
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -84,8 +68,8 @@ serve(async (req) => {
             currency: 'eur',
             unit_amount: Math.round(price * 100),
             product_data: {
-              name: `${isTestMode ? '[TEST] ' : ''}Réservation Karaoké - ${durationNumber}h - ${groupSize} pers.`,
-              description: `${date} à ${timeSlot} - ${durationNumber} heure${durationNumber > 1 ? 's' : ''} - ${groupSize} personne${parseInt(groupSize) > 1 ? 's' : ''}`,
+              name: `${isTestMode ? '[TEST] ' : ''}Réservation Karaoké - ${duration}h - ${groupSize} pers.`,
+              description: `${date} à ${timeSlot} - ${duration} heure${duration > 1 ? 's' : ''} - ${groupSize} personne${parseInt(groupSize) > 1 ? 's' : ''}`,
             },
           },
           quantity: 1,
@@ -98,7 +82,7 @@ serve(async (req) => {
       metadata: {
         booking_date: date,
         time_slot: timeSlot,
-        duration: durationNumber.toString(),
+        duration: duration.toString(),
         group_size: groupSize,
         user_id: userId,
         is_test_mode: isTestMode ? 'true' : 'false',
@@ -111,11 +95,10 @@ serve(async (req) => {
     console.log('✅ Session de paiement créée:', {
       sessionId: session.id,
       amount: price,
-      duration: durationNumber,
+      duration,
       isTestMode
     })
 
-    // Créer la réservation dans la base de données
     const { data: booking, error: bookingError } = await supabaseClient
       .from('bookings')
       .insert([
@@ -126,7 +109,7 @@ serve(async (req) => {
           user_phone: phone,
           date,
           time_slot: timeSlot,
-          duration: durationNumber.toString(),
+          duration: duration.toString(),
           group_size: groupSize,
           price,
           message,

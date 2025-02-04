@@ -24,23 +24,25 @@ export const useBookingSubmit = (
       return;
     }
 
-    // Get the duration from the form's duration field
-    const bookingDuration = data.duration || duration;
+    // Calculer la durée basée sur les créneaux sélectionnés
+    const selectedSlots = form.getValues("selectedSlots") || [];
+    const calculatedDuration = selectedSlots.length.toString();
 
-    console.log('🔍 Vérification données réservation:', {
+    console.log('🔍 Checking form data:', {
       date: data.date,
       timeSlot: data.timeSlot,
-      duration: bookingDuration,
+      calculatedDuration,
+      selectedSlots,
       groupSize,
       calculatedPrice
     });
 
     // Validate required fields
-    if (!data.date || !data.timeSlot || !bookingDuration || !groupSize || !calculatedPrice) {
-      console.error('❌ Champs requis manquants:', { 
+    if (!data.date || !data.timeSlot || !calculatedDuration || !groupSize || !calculatedPrice) {
+      console.error('❌ Missing required fields:', { 
         date: data.date,
         timeSlot: data.timeSlot,
-        duration: bookingDuration,
+        duration: calculatedDuration,
         groupSize,
         calculatedPrice
       });
@@ -53,11 +55,11 @@ export const useBookingSubmit = (
     }
 
     try {
-      console.log('🎯 Début du processus de réservation:', {
+      console.log('🎯 Starting booking process:', {
         email: user.email,
         date: data.date,
         timeSlot: data.timeSlot,
-        duration: bookingDuration,
+        duration: calculatedDuration,
         groupSize,
         calculatedPrice,
         finalPrice: data.finalPrice,
@@ -82,7 +84,7 @@ export const useBookingSubmit = (
       }
 
       const startHour = parseInt(data.timeSlot);
-      const endHour = startHour + parseInt(bookingDuration);
+      const endHour = startHour + parseInt(calculatedDuration);
 
       const hasOverlap = existingBookings?.some(booking => {
         const bookingStart = parseInt(booking.time_slot);
@@ -103,7 +105,7 @@ export const useBookingSubmit = (
         return;
       }
 
-      console.log('📝 Appel de la fonction create-booking avec ID utilisateur:', user.id);
+      console.log('📝 Calling create-booking function with user ID:', user.id);
 
       // S'assurer que nous avons un prix valide
       const finalPrice = data.finalPrice || calculatedPrice;
@@ -122,7 +124,7 @@ export const useBookingSubmit = (
             phone: data.phone || user.user_metadata?.phone,
             date: formattedDate,
             timeSlot: data.timeSlot,
-            duration: bookingDuration,
+            duration: calculatedDuration,
             groupSize,
             price: finalPrice,
             message: data.message,
@@ -138,15 +140,14 @@ export const useBookingSubmit = (
       if (error) throw error;
 
       if (!response?.url) {
-        console.error('❌ Pas d\'URL de paiement retournée:', response);
-        throw new Error('Pas d\'URL de paiement retournée');
+        console.error('❌ No checkout URL returned:', response);
+        throw new Error('No checkout URL returned');
       }
 
-      console.log('✅ Réservation créée et lien de paiement généré:', {
+      console.log('✅ Booking created and payment link generated:', {
         checkoutUrl: response.url,
         userId: user.id,
         price: finalPrice,
-        duration: bookingDuration,
         responseData: response
       });
 
@@ -154,7 +155,7 @@ export const useBookingSubmit = (
       window.location.href = response.url;
 
     } catch (error: any) {
-      console.error('❌ Erreur lors de la réservation:', error);
+      console.error('❌ Error in booking process:', error);
       toast({
         title: "Erreur lors de la réservation",
         description: error.message || "Une erreur est survenue lors de la réservation",

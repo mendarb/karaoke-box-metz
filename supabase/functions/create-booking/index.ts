@@ -63,6 +63,17 @@ serve(async (req) => {
 
     console.log('💳 Mode de paiement:', isTestMode ? 'TEST' : 'PRODUCTION')
 
+    // S'assurer que la durée est un nombre
+    const durationNumber = parseInt(duration)
+    if (isNaN(durationNumber)) {
+      throw new Error('Duration invalide')
+    }
+
+    console.log('⏱️ Durée calculée:', {
+      rawDuration: duration,
+      parsedDuration: durationNumber,
+    })
+
     // Créer la session de paiement Stripe
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -72,8 +83,8 @@ serve(async (req) => {
             currency: 'eur',
             unit_amount: Math.round(price * 100),
             product_data: {
-              name: `${isTestMode ? '[TEST] ' : ''}Réservation Karaoké - ${duration}h - ${groupSize} pers.`,
-              description: `${date} à ${timeSlot} - ${duration} heure${parseInt(duration) > 1 ? 's' : ''} - ${groupSize} personne${parseInt(groupSize) > 1 ? 's' : ''}`,
+              name: `${isTestMode ? '[TEST] ' : ''}Réservation Karaoké - ${durationNumber}h - ${groupSize} pers.`,
+              description: `${date} à ${timeSlot} - ${durationNumber} heure${durationNumber > 1 ? 's' : ''} - ${groupSize} personne${parseInt(groupSize) > 1 ? 's' : ''}`,
             },
           },
           quantity: 1,
@@ -86,7 +97,7 @@ serve(async (req) => {
       metadata: {
         booking_date: date,
         time_slot: timeSlot,
-        duration,
+        duration: durationNumber.toString(),
         group_size: groupSize,
         user_id: userId,
         is_test_mode: isTestMode ? 'true' : 'false',
@@ -99,7 +110,7 @@ serve(async (req) => {
     console.log('✅ Session de paiement créée:', {
       sessionId: session.id,
       amount: price,
-      duration,
+      duration: durationNumber,
       isTestMode
     })
 
@@ -114,7 +125,7 @@ serve(async (req) => {
           user_phone: phone,
           date,
           time_slot: timeSlot,
-          duration,
+          duration: durationNumber.toString(),
           group_size: groupSize,
           price,
           message,

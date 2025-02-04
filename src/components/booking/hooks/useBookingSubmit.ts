@@ -24,11 +24,11 @@ export const useBookingSubmit = (
       return;
     }
 
-    // Calculer la durée basée sur les créneaux sélectionnés
+    // Récupérer les créneaux sélectionnés et calculer la durée
     const selectedSlots = form.getValues("selectedSlots") || [];
     const calculatedDuration = selectedSlots.length.toString();
 
-    console.log('🔍 Checking form data:', {
+    console.log('🔍 Vérification données réservation:', {
       date: data.date,
       timeSlot: data.timeSlot,
       calculatedDuration,
@@ -39,7 +39,7 @@ export const useBookingSubmit = (
 
     // Validate required fields
     if (!data.date || !data.timeSlot || !calculatedDuration || !groupSize || !calculatedPrice) {
-      console.error('❌ Missing required fields:', { 
+      console.error('❌ Champs requis manquants:', { 
         date: data.date,
         timeSlot: data.timeSlot,
         duration: calculatedDuration,
@@ -55,7 +55,7 @@ export const useBookingSubmit = (
     }
 
     try {
-      console.log('🎯 Starting booking process:', {
+      console.log('🎯 Début du processus de réservation:', {
         email: user.email,
         date: data.date,
         timeSlot: data.timeSlot,
@@ -105,7 +105,7 @@ export const useBookingSubmit = (
         return;
       }
 
-      console.log('📝 Calling create-booking function with user ID:', user.id);
+      console.log('📝 Appel de la fonction create-booking avec ID utilisateur:', user.id);
 
       // S'assurer que nous avons un prix valide
       const finalPrice = data.finalPrice || calculatedPrice;
@@ -140,11 +140,11 @@ export const useBookingSubmit = (
       if (error) throw error;
 
       if (!response?.url) {
-        console.error('❌ No checkout URL returned:', response);
-        throw new Error('No checkout URL returned');
+        console.error('❌ Pas d\'URL de paiement retournée:', response);
+        throw new Error('Pas d\'URL de paiement retournée');
       }
 
-      console.log('✅ Booking created and payment link generated:', {
+      console.log('✅ Réservation créée et lien de paiement généré:', {
         checkoutUrl: response.url,
         userId: user.id,
         price: finalPrice,
@@ -155,7 +155,7 @@ export const useBookingSubmit = (
       window.location.href = response.url;
 
     } catch (error: any) {
-      console.error('❌ Error in booking process:', error);
+      console.error('❌ Erreur lors de la réservation:', error);
       toast({
         title: "Erreur lors de la réservation",
         description: error.message || "Une erreur est survenue lors de la réservation",

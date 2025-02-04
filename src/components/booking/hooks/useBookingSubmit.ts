@@ -24,25 +24,23 @@ export const useBookingSubmit = (
       return;
     }
 
-    // Récupérer les créneaux sélectionnés et calculer la durée
-    const selectedSlots = form.getValues("selectedSlots") || [];
-    const calculatedDuration = selectedSlots.length.toString();
+    // Get the duration from the form's duration field
+    const bookingDuration = data.duration || duration;
 
     console.log('🔍 Vérification données réservation:', {
       date: data.date,
       timeSlot: data.timeSlot,
-      calculatedDuration,
-      selectedSlots,
+      duration: bookingDuration,
       groupSize,
       calculatedPrice
     });
 
     // Validate required fields
-    if (!data.date || !data.timeSlot || !calculatedDuration || !groupSize || !calculatedPrice) {
+    if (!data.date || !data.timeSlot || !bookingDuration || !groupSize || !calculatedPrice) {
       console.error('❌ Champs requis manquants:', { 
         date: data.date,
         timeSlot: data.timeSlot,
-        duration: calculatedDuration,
+        duration: bookingDuration,
         groupSize,
         calculatedPrice
       });
@@ -59,7 +57,7 @@ export const useBookingSubmit = (
         email: user.email,
         date: data.date,
         timeSlot: data.timeSlot,
-        duration: calculatedDuration,
+        duration: bookingDuration,
         groupSize,
         calculatedPrice,
         finalPrice: data.finalPrice,
@@ -84,7 +82,7 @@ export const useBookingSubmit = (
       }
 
       const startHour = parseInt(data.timeSlot);
-      const endHour = startHour + parseInt(calculatedDuration);
+      const endHour = startHour + parseInt(bookingDuration);
 
       const hasOverlap = existingBookings?.some(booking => {
         const bookingStart = parseInt(booking.time_slot);
@@ -124,7 +122,7 @@ export const useBookingSubmit = (
             phone: data.phone || user.user_metadata?.phone,
             date: formattedDate,
             timeSlot: data.timeSlot,
-            duration: calculatedDuration,
+            duration: bookingDuration,
             groupSize,
             price: finalPrice,
             message: data.message,
@@ -148,6 +146,7 @@ export const useBookingSubmit = (
         checkoutUrl: response.url,
         userId: user.id,
         price: finalPrice,
+        duration: bookingDuration,
         responseData: response
       });
 

@@ -66,6 +66,7 @@ serve(async (req) => {
     // S'assurer que la durée est un nombre
     const durationNumber = parseInt(duration)
     if (isNaN(durationNumber)) {
+      console.error('❌ Durée invalide:', duration)
       throw new Error('Duration invalide')
     }
 

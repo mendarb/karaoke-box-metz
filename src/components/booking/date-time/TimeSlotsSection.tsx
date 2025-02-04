@@ -88,15 +88,16 @@ export const TimeSlotsSection = ({ form, availableSlots, isLoading }: TimeSlotsS
 
     if (newSelectedSlots.length > 0) {
       const firstSlot = newSelectedSlots.sort()[0];
-      form.setValue("timeSlot", firstSlot);
-      // Set duration based on number of selected slots
-      form.setValue("duration", newSelectedSlots.length.toString());
+      const duration = newSelectedSlots.length.toString();
       
-      console.log('🕒 Durée calculée:', {
+      console.log('🕒 Mise à jour de la durée:', {
         selectedSlots: newSelectedSlots,
-        duration: newSelectedSlots.length,
+        duration: duration,
         startTime: firstSlot
       });
+
+      form.setValue("timeSlot", firstSlot);
+      form.setValue("duration", duration);
     } else {
       form.setValue("timeSlot", "");
       form.setValue("duration", "");

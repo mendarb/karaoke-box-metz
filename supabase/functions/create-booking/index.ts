@@ -22,6 +22,12 @@ serve(async (req) => {
       throw new Error('Données de réservation incomplètes');
     }
 
+    console.log('⏱️ Durée de la réservation:', {
+      duration,
+      timeSlot,
+      rawDuration: requestBody.duration
+    });
+
     // Sélectionner la bonne clé API Stripe en fonction du mode test
     const stripeKey = isTestMode 
       ? Deno.env.get('STRIPE_TEST_SECRET_KEY')
@@ -51,7 +57,7 @@ serve(async (req) => {
     // Construction de la description simplifiée
     const description = [
       formattedDate,
-      `${startTime}`,
+      `${startTime} (${duration}h)`,
       `${groupSize} personne${parseInt(groupSize) > 1 ? 's' : ''}`,
       requestBody.message ? `Message: ${requestBody.message}` : '',
       requestBody.promoCode ? `Code promo: ${requestBody.promoCode}` : ''
@@ -130,6 +136,7 @@ serve(async (req) => {
       sessionId: session.id,
       amount: price,
       description: description,
+      duration: duration,
       isTestMode: isTestMode
     });
 

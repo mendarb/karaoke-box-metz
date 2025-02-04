@@ -1,12 +1,11 @@
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Info } from "lucide-react";
 import { TimeSlot } from "./time-slots/TimeSlot";
 import { LoadingSkeleton } from "./time-slots/LoadingSkeleton";
 import { useBookedSlots } from "./time-slots/useBookedSlots";
 import { format, isToday, isBefore, parse } from "date-fns";
 import { useState, useEffect } from "react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Info } from "lucide-react";
 
 interface TimeSlotsSectionProps {
   form: UseFormReturn<any>;
@@ -90,14 +89,14 @@ export const TimeSlotsSection = ({ form, availableSlots, isLoading }: TimeSlotsS
       const firstSlot = newSelectedSlots.sort()[0];
       const duration = newSelectedSlots.length.toString();
       
-      console.log('🕒 Mise à jour de la durée:', {
+      console.log('🕒 Mise à jour de la réservation:', {
         selectedSlots: newSelectedSlots,
         duration: duration,
         startTime: firstSlot
       });
 
       form.setValue("timeSlot", firstSlot);
-      form.setValue("duration", duration);
+      form.setValue("duration", duration, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
     } else {
       form.setValue("timeSlot", "");
       form.setValue("duration", "");
@@ -105,52 +104,41 @@ export const TimeSlotsSection = ({ form, availableSlots, isLoading }: TimeSlotsS
   };
 
   return (
-    <FormField
-      control={form.control}
-      name="timeSlot"
-      render={({ field }) => (
-        <FormItem className="space-y-4">
-          <FormLabel className="text-lg font-semibold">Sélectionnez vos créneaux horaires</FormLabel>
-          
-          <Alert className="bg-violet-50 border-violet-200 mb-4">
-            <Info className="h-4 w-4 text-violet-600" />
-            <AlertDescription className="text-sm text-violet-800">
-              Sélectionnez votre heure de début. Vous pouvez réserver jusqu'à 4 heures consécutives en cliquant sur les créneaux qui suivent.
-              {selectedSlots.length > 0 && (
-                <div className="mt-2 font-medium">
-                  Durée sélectionnée : {selectedSlots.length} heure{selectedSlots.length > 1 ? 's' : ''}
-                </div>
-              )}
-            </AlertDescription>
-          </Alert>
-
-          <FormControl>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {availableTimeSlots.map((slot) => {
-                const isBlocked = unavailableSlots.has(slot);
-                const isSelected = selectedSlots.includes(slot);
-                const slotHour = parseInt(slot);
-                const canBeSelected = selectedSlots.length === 0 || 
-                  Math.abs(parseInt(selectedSlots[selectedSlots.length - 1]) - slotHour) === 1;
-                const canBeDeselected = isSelected && selectedSlots.indexOf(slot) === selectedSlots.length - 1;
-
-                return (
-                  <TimeSlot
-                    key={slot}
-                    slot={slot}
-                    isSelected={isSelected}
-                    isDisabled={isBlocked || (!isSelected && !canBeSelected && selectedSlots.length > 0) || (isSelected && !canBeDeselected)}
-                    onSelect={() => handleSlotSelection(slot)}
-                    date={selectedDate}
-                    selectedSlots={selectedSlots}
-                  />
-                );
-              })}
+    <div className="space-y-4">
+      <Alert className="bg-violet-50 border-violet-200 mb-4">
+        <Info className="h-4 w-4 text-violet-600" />
+        <AlertDescription className="text-sm text-violet-800">
+          Sélectionnez votre heure de début. Vous pouvez réserver jusqu'à 4 heures consécutives en cliquant sur les créneaux qui suivent.
+          {selectedSlots.length > 0 && (
+            <div className="mt-2 font-medium">
+              Durée sélectionnée : {selectedSlots.length} heure{selectedSlots.length > 1 ? 's' : ''}
             </div>
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
+          )}
+        </AlertDescription>
+      </Alert>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        {availableTimeSlots.map((slot) => {
+          const isBlocked = unavailableSlots.has(slot);
+          const isSelected = selectedSlots.includes(slot);
+          const slotHour = parseInt(slot);
+          const canBeSelected = selectedSlots.length === 0 || 
+            Math.abs(parseInt(selectedSlots[selectedSlots.length - 1]) - slotHour) === 1;
+          const canBeDeselected = isSelected && selectedSlots.indexOf(slot) === selectedSlots.length - 1;
+
+          return (
+            <TimeSlot
+              key={slot}
+              slot={slot}
+              isSelected={isSelected}
+              isDisabled={isBlocked || (!isSelected && !canBeSelected && selectedSlots.length > 0) || (isSelected && !canBeDeselected)}
+              onSelect={() => handleSlotSelection(slot)}
+              date={selectedDate}
+              selectedSlots={selectedSlots}
+            />
+          );
+        })}
+      </div>
+    </div>
   );
 };

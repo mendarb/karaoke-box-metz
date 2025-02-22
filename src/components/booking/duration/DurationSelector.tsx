@@ -16,10 +16,10 @@ export const DurationSelector = ({
   availableHours,
 }: DurationSelectorProps) => {
   const durations = [
-    { label: "1 heure", value: "1" },
-    { label: "2 heures", value: "2" },
-    { label: "3 heures", value: "3" },
-    { label: "4 heures", value: "4" }
+    { label: "1h", value: "1" },
+    { label: "2h", value: "2" },
+    { label: "3h", value: "3" },
+    { label: "4h", value: "4" }
   ];
 
   const selectedDuration = form.watch("duration");
@@ -64,9 +64,6 @@ export const DurationSelector = ({
             }}
           >
             <div className="text-base">{label}</div>
-            <div className="text-xs opacity-75">
-              de karaoké
-            </div>
           </Button>
         ))}
       </div>

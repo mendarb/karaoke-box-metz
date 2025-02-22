@@ -1,15 +1,15 @@
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Calendar, Clock, Users, Euro, MessageSquare } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface BookingSummaryProps {
-  groupSize: string;
-  duration: string;
+  groupSize?: string;
+  duration?: string;
   calculatedPrice: number;
-  isPromoValid: boolean;
-  promoCode?: string;
   finalPrice?: number;
-  date?: string;
+  isPromoValid?: boolean;
+  promoCode?: string;
+  date?: Date;
   timeSlot?: string;
   message?: string;
 }
@@ -18,75 +18,89 @@ export const BookingSummary = ({
   groupSize,
   duration,
   calculatedPrice,
+  finalPrice,
   isPromoValid,
   promoCode,
-  finalPrice,
   date,
   timeSlot,
   message
 }: BookingSummaryProps) => {
   const showDiscount = isPromoValid && finalPrice !== undefined && finalPrice !== calculatedPrice;
-  const endHour = timeSlot ? parseInt(timeSlot) + parseInt(duration) : undefined;
+  const startHour = timeSlot ? parseInt(timeSlot) : undefined;
+  const endHour = startHour !== undefined && duration ? startHour + parseInt(duration) : undefined;
   
+  const formatHour = (hour: number) => `${hour.toString().padStart(2, '0')}h00`;
+
+  // Calculate price per person per hour, ensuring duration is properly parsed
+  const pricePerPersonPerHour = groupSize && duration ? 
+    Math.round((calculatedPrice / (parseInt(groupSize) * parseInt(duration))) * 100) / 100 : 
+    0;
+
+  console.log('💰 Prix par personne/heure:', {
+    calculatedPrice,
+    groupSize,
+    duration,
+    pricePerPersonPerHour,
+    rawCalculation: calculatedPrice / (parseInt(groupSize || '1') * parseInt(duration || '1'))
+  });
+
   return (
-    <div className="bg-violet-50 p-4 rounded-lg space-y-4">
-      <h3 className="font-semibold text-violet-900">Récapitulatif de votre réservation</h3>
-      
-      <div className="space-y-4">
-        {date && timeSlot && (
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2">
-              <Calendar className="h-4 w-4 text-violet-500" />
-              <p className="font-medium">
-                {format(new Date(date), 'EEEE d MMMM yyyy', { locale: fr })}
-              </p>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Clock className="h-4 w-4 text-violet-500" />
-              <p>
-                {timeSlot}:00 - {endHour}:00 ({duration}h)
-              </p>
-            </div>
+    <Card className="bg-white/50 backdrop-blur-sm border-none">
+      <CardContent className="p-6">
+        <h3 className="font-semibold text-lg mb-4">Récapitulatif de votre réservation</h3>
+        
+        {date && (
+          <p className="text-gray-600 mb-2">
+            {format(date, "EEEE d MMMM yyyy", { locale: fr })}
+          </p>
+        )}
+
+        {startHour !== undefined && endHour !== undefined && duration && (
+          <div className="space-y-1 mb-4">
+            <p className="text-gray-600">
+              {formatHour(startHour)} - {formatHour(endHour)}
+            </p>
+            <p className="text-gray-600">
+              Durée : {duration} heure{parseInt(duration) > 1 ? 's' : ''}
+            </p>
           </div>
         )}
 
-        <div className="space-y-2">
-          <div className="flex items-center space-x-2">
-            <Users className="h-4 w-4 text-violet-500" />
-            <p>{groupSize} personnes</p>
+        {groupSize && (
+          <div className="space-y-1 mb-4">
+            <p className="text-gray-600">
+              {groupSize} personne{parseInt(groupSize) > 1 ? 's' : ''}
+            </p>
+            <p className="text-gray-600">
+              {pricePerPersonPerHour}€ par personne / heure
+            </p>
           </div>
-        </div>
-
-        <div className="space-y-2">
-          {showDiscount ? (
-            <>
-              <p className="line-through text-gray-500">Prix initial : {calculatedPrice}€</p>
-              <div className="flex items-center space-x-2">
-                <Euro className="h-4 w-4 text-green-500" />
-                <p className="font-semibold text-green-600">Prix final : {finalPrice}€</p>
-              </div>
-              <p className="text-green-600 font-medium">Code promo {promoCode} appliqué</p>
-            </>
-          ) : (
-            <div className="flex items-center space-x-2">
-              <Euro className="h-4 w-4 text-violet-500" />
-              <p className="font-semibold">Prix total : {calculatedPrice}€</p>
-            </div>
-          )}
-        </div>
+        )}
 
         {message && (
-          <div className="space-y-2">
-            <div className="flex items-start space-x-2">
-              <MessageSquare className="h-4 w-4 text-violet-500 mt-1" />
-              <div>
-                <p className="font-medium text-sm text-gray-700">Message</p>
-                <p className="text-gray-600">{message}</p>
-              </div>
-            </div>
-          </div>
+          <p className="text-gray-600 mb-4 italic">
+            Message : {message}
+          </p>
         )}
-      </div>
-    </div>
+
+        <div className="border-t pt-4">
+          {showDiscount && finalPrice !== undefined && (
+            <>
+              <p className="text-gray-500 line-through mb-1">
+                Prix initial : {calculatedPrice}€
+              </p>
+              <p className="font-semibold text-green-600">
+                Prix après réduction{promoCode ? ` (${promoCode})` : ''} : {finalPrice}€
+              </p>
+            </>
+          )}
+          {!showDiscount && (
+            <p className="font-semibold">
+              Prix total : {calculatedPrice}€
+            </p>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 };

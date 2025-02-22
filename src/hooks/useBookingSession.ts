@@ -1,40 +1,35 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useUserState } from './useUserState';
 
 export const useBookingSession = () => {
-  const [isLoading, setIsLoading] = useState(true);
+  const [sessionId] = useState(() => crypto.randomUUID());
+  const { user } = useUserState();
 
-  useEffect(() => {
-    const restoreSession = async () => {
-      try {
-        const storedSession = localStorage.getItem('currentBookingSession');
-        if (!storedSession) return;
+  const trackStep = async (step: number, stepName: string, completed: boolean = false, bookingId?: string) => {
+    try {
+      const { error } = await supabase
+        .from('booking_steps_tracking')
+        .insert({
+          session_id: sessionId,
+          user_id: user?.id,
+          user_email: user?.email,
+          step,
+          step_name: stepName,
+          completed,
+          booking_id: bookingId
+        });
 
-        const { session, bookingData } = JSON.parse(storedSession);
-        
-        // Vérifier si la session est toujours valide
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-        if (!currentSession) {
-          // Si pas de session, essayer de se reconnecter avec la session stockée
-          const { error } = await supabase.auth.setSession({
-            access_token: session.access_token,
-            refresh_token: session.refresh_token,
-          });
-
-          if (error) {
-            console.error('Error restoring session:', error);
-            localStorage.removeItem('currentBookingSession');
-          }
-        }
-      } catch (error) {
-        console.error('Error restoring booking session:', error);
-      } finally {
-        setIsLoading(false);
+      if (error) {
+        console.error('Error tracking step:', error);
       }
-    };
+    } catch (error) {
+      console.error('Error tracking step:', error);
+    }
+  };
 
-    restoreSession();
-  }, []);
-
-  return { isLoading };
+  return {
+    sessionId,
+    trackStep
+  };
 };

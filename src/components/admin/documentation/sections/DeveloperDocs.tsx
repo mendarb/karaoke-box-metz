@@ -1,4 +1,5 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BookOpen, Code, Terminal } from "lucide-react";
 
 export const developerDocs = [
   {
@@ -89,17 +90,60 @@ export const developerDocs = [
 
 export const DeveloperDocs = () => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {developerDocs.map((doc, index) => (
-        <Card key={index} className="animate-fadeIn">
-          <CardHeader>
-            <CardTitle className="text-lg md:text-xl">{doc.title}</CardTitle>
-            <CardDescription>{doc.description}</CardDescription>
+        <Card key={index} className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200">
+          <CardHeader className="bg-gray-50 border-b border-gray-200">
+            <div className="flex items-start gap-4">
+              <div className="p-2 rounded-lg bg-white shadow-sm">
+                <Code className="w-5 h-5 text-violet-600" />
+              </div>
+              <div>
+                <CardTitle className="text-xl font-semibold text-gray-900">{doc.title}</CardTitle>
+                <p className="text-gray-600 mt-1">{doc.description}</p>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent>
-            <pre className="whitespace-pre-wrap text-sm bg-muted p-4 rounded-lg overflow-auto">
-              {doc.content}
-            </pre>
+          <CardContent className="p-6">
+            <div className="prose prose-gray max-w-none">
+              <div className="space-y-4">
+                {doc.content.split('\n\n').map((paragraph, idx) => {
+                  if (paragraph.includes('Logs disponibles :')) {
+                    const [title, ...logs] = paragraph.split('\n');
+                    return (
+                      <div key={idx} className="mb-4">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
+                        <div className="bg-gray-900 text-gray-100 rounded-lg p-4 font-mono text-sm">
+                          {logs.map((log, logIdx) => (
+                            <div key={logIdx} className="flex items-start gap-2">
+                              <Terminal className="w-4 h-4 mt-1 flex-shrink-0" />
+                              <span>{log.trim()}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  }
+                  if (paragraph.includes(':')) {
+                    const [title, ...content] = paragraph.split(':');
+                    return (
+                      <div key={idx} className="mb-4">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{title.trim()}</h3>
+                        <div className="bg-gray-50 rounded-lg p-4">
+                          {content.join(':').trim().split('\n').map((line, lineIdx) => (
+                            <div key={lineIdx} className="flex items-start gap-2">
+                              <BookOpen className="w-4 h-4 mt-1 flex-shrink-0 text-blue-600" />
+                              <span className="text-gray-700">{line.trim()}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  }
+                  return <p key={idx} className="text-gray-700">{paragraph}</p>;
+                })}
+              </div>
+            </div>
           </CardContent>
         </Card>
       ))}

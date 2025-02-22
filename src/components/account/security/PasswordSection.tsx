@@ -35,8 +35,10 @@ export const PasswordSection = () => {
         return;
       }
 
+      // Remove any trailing colons and ensure proper URL format
+      const baseUrl = window.location.origin.replace(/:\/*$/, '');
       const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `${baseUrl}/account/reset-password`,
       });
 
       if (error) {
@@ -75,12 +77,13 @@ export const PasswordSection = () => {
   };
 
   return (
-    <div>
+    <div className="text-left">
       <h3 className="text-sm font-medium mb-2">Modifier votre mot de passe</h3>
       <Button 
         variant="outline" 
         onClick={handleResetPassword}
         disabled={isLoading}
+        className="bg-white/50 backdrop-blur-sm border-gray-200"
       >
         {isLoading ? "Envoi en cours..." : "Recevoir un lien de modification"}
       </Button>

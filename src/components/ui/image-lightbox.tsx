@@ -15,16 +15,19 @@ export const ImageLightbox = ({ src, alt, className }: ImageLightboxProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <img
-          src={src}
-          alt={alt}
-          className={cn("cursor-pointer hover:opacity-90 transition-opacity", className)}
-        />
+        <div className="group relative cursor-pointer overflow-hidden rounded-lg">
+          <img
+            src={src}
+            alt={alt}
+            className={cn("transition-transform duration-300 group-hover:scale-105", className)}
+          />
+          <div className="absolute inset-0 bg-black/0 transition-colors duration-300 group-hover:bg-black/20" />
+        </div>
       </DialogTrigger>
-      <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-transparent border-none">
+      <DialogContent className="max-w-[95vw] max-h-[95vh] p-2 bg-black/95 border-none">
         <div className="relative w-full h-full flex items-center justify-center">
           <button 
-            className="absolute top-2 right-2 p-2 rounded-full bg-black/70 text-white hover:bg-black/90 transition-colors z-50"
+            className="absolute top-2 right-2 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors z-50"
             onClick={() => setIsOpen(false)}
           >
             <X className="h-6 w-6" />

@@ -25,6 +25,9 @@ export default {
     },
     extend: {
       colors: {
+        gray: {
+          50: '#F9F9FA',
+        },
         kbox: {
           coral: "#FF5733",
           pink: "#FFE5E5",
@@ -73,6 +76,9 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        DEFAULT: "8px",
+        "2xl": "16px",
+        "3xl": "24px",
       },
       keyframes: {
         "accordion-down": {
@@ -95,7 +101,7 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        fadeIn: "fadeIn 0.5s ease-out",
+        fadeIn: "fadeIn 0.3s ease-out",
         slideIn: "slideIn 0.3s ease-out",
       },
     },

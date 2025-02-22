@@ -14,7 +14,7 @@ export const EmailSection = () => {
   } = useEmailUpdate();
 
   return (
-    <div>
+    <div className="text-left">
       <h3 className="text-sm font-medium mb-2">Modifier votre email</h3>
       {showEmailInput ? (
         <EmailForm
@@ -28,6 +28,7 @@ export const EmailSection = () => {
         <Button 
           variant="outline" 
           onClick={() => setShowEmailInput(true)}
+          className="bg-white/50 backdrop-blur-sm border-gray-200"
         >
           Changer d'email
         </Button>

@@ -1,17 +1,19 @@
-import { Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { Calendar } from "@/pages/Calendar";
 import { Settings } from "@/pages/Settings";
 import { Accounts } from "@/pages/Accounts";
 import { EditAccountPage } from "@/components/admin/accounts/EditAccountPage";
 import { DocumentationPage } from "@/components/admin/documentation/DocumentationPage";
+import { Analytics } from "@/pages/Analytics";
 import { ProtectedRoute } from "../ProtectedRoute";
+import { KaraokeBoxesPage } from "@/components/admin/karaoke-boxes/KaraokeBoxesPage";
 
 export const AdminRoutes = () => {
   return (
-    <>
+    <Routes>
       <Route
-        path="/admin"
+        path="/"
         element={
           <ProtectedRoute adminOnly>
             <AdminDashboard />
@@ -19,7 +21,7 @@ export const AdminRoutes = () => {
         }
       />
       <Route
-        path="/admin/calendar"
+        path="/calendar"
         element={
           <ProtectedRoute adminOnly>
             <Calendar />
@@ -27,7 +29,7 @@ export const AdminRoutes = () => {
         }
       />
       <Route
-        path="/admin/settings"
+        path="/settings"
         element={
           <ProtectedRoute adminOnly>
             <Settings />
@@ -35,7 +37,7 @@ export const AdminRoutes = () => {
         }
       />
       <Route
-        path="/admin/accounts"
+        path="/accounts"
         element={
           <ProtectedRoute adminOnly>
             <Accounts />
@@ -43,7 +45,7 @@ export const AdminRoutes = () => {
         }
       />
       <Route
-        path="/admin/accounts/:id"
+        path="/accounts/:id"
         element={
           <ProtectedRoute adminOnly>
             <EditAccountPage />
@@ -51,13 +53,29 @@ export const AdminRoutes = () => {
         }
       />
       <Route
-        path="/admin/documentation"
+        path="/documentation"
         element={
           <ProtectedRoute adminOnly>
             <DocumentationPage />
           </ProtectedRoute>
         }
       />
-    </>
+      <Route
+        path="/analytics"
+        element={
+          <ProtectedRoute adminOnly>
+            <Analytics />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/karaoke-boxes"
+        element={
+          <ProtectedRoute adminOnly>
+            <KaraokeBoxesPage />
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
   );
 };

@@ -39,6 +39,7 @@ export const PriceCalculator = ({
       groupSize={groupSize}
       duration={duration}
       price={price} 
+      finalPrice={price}
       pricePerPersonPerHour={pricePerPersonPerHour} 
     />
   );

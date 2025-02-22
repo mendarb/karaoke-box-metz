@@ -1,68 +1,81 @@
+import { useState } from "react";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { BoxFeatures } from "@/components/3d/BoxFeatures";
 import Footer from "@/components/home/Footer";
-import { ImageLightbox } from "@/components/ui/image-lightbox";
-import { Package, Music, Users } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Box3D = () => {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  const images = [
+    "/lovable-uploads/1b7097ed-462c-4d52-9925-7bcd936d3b0b.png",
+    "/lovable-uploads/157fd2f1-9efc-4a13-a414-2be1af92de9d.png",
+    "/lovable-uploads/7186434f-c7e0-403f-988a-8a91cb523a66.png",
+    "/lovable-uploads/90237877-fe16-4e2d-87bf-a89afe536a6a.png",
+    "/lovable-uploads/9c0b6639-b52e-465d-be6b-e82b447d21c5.png",
+    "/lovable-uploads/4704aa85-038c-4e47-8a9e-240bae94ec28.png"
+  ];
+
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-secondary to-white">
-      <main className="flex-grow">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-6 px-4 md:px-8 py-12">
-              <div className="overflow-hidden">
-                <ImageLightbox 
-                  src="/lovable-uploads/cfa63d4d-3758-45b6-8316-13d7d026d109.png"
-                  alt="K.Box Metz - Box Karaoké"
-                  className="w-full h-auto"
-                />
-                <div className="p-4 bg-white/90">
-                  <p className="text-sm text-gray-600 text-center">
-                    Rendu 3D de notre box karaoké à Metz
-                    <br />
-                    <span className="text-xs italic">(le résultat final peut légèrement différer)</span>
-                  </p>
-                </div>
-              </div>
+    <div className="min-h-screen flex flex-col">
+      <div className="container mx-auto px-4 py-8 md:py-12 flex-grow">
+        <div className="flex items-center gap-4 mb-8">
+          <Link 
+            to="/" 
+            className="inline-flex items-center text-kbox-coral hover:text-kbox-orange-dark transition-colors"
+          >
+            <ArrowLeft className="h-5 w-5 mr-2" />
+            Retour à l'accueil
+          </Link>
+        </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {[
-                  {
-                    icon: <Package className="h-8 w-8 text-kbox-coral" />,
-                    title: "Box Privative",
-                    description: "Espace intime et confortable"
-                  },
-                  {
-                    icon: <Music className="h-8 w-8 text-kbox-coral" />,
-                    title: "Catalogue Musical",
-                    description: "Plus de 30 000 titres disponibles"
-                  },
-                  {
-                    icon: <Users className="h-8 w-8 text-kbox-coral" />,
-                    title: "Entre Amis",
-                    description: "Capacité jusqu'à 10 personnes"
-                  }
-                ].map((feature, index) => (
-                  <div key={index} className="p-4 text-center bg-white/90 rounded-lg shadow-sm">
-                    <div className="flex flex-col items-center space-y-2">
-                      {feature.icon}
-                      <h3 className="font-semibold text-kbox-coral">{feature.title}</h3>
-                      <p className="text-sm text-gray-600">{feature.description}</p>
+        <h1 className="text-3xl md:text-4xl font-bold text-center mb-8 text-kbox-coral">
+          Notre Box Karaoké
+        </h1>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              {images.map((image, index) => (
+                <Dialog key={index}>
+                  <DialogTrigger asChild>
+                    <div 
+                      className="relative aspect-[4/3] overflow-hidden rounded-lg cursor-pointer group"
+                      onClick={() => setSelectedImage(image)}
+                    >
+                      <img
+                        src={image}
+                        alt={`Box karaoké vue ${index + 1}`}
+                        className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
                     </div>
-                  </div>
-                ))}
-              </div>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-[95vw] max-h-[95vh] p-4 bg-black/95">
+                    <div className="relative w-full h-full flex items-center justify-center">
+                      <img
+                        src={image}
+                        alt={`Box karaoké vue ${index + 1}`}
+                        className="max-w-full max-h-[85vh] object-contain rounded-lg"
+                      />
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              ))}
             </div>
+            
+            <p className="text-gray-600 text-lg leading-relaxed">
+              Découvrez notre box karaoké privative, un espace unique et confortable pour chanter vos chansons préférées entre amis. 
+              Profitez d'une ambiance festive avec notre système de son professionnel, nos éclairages d'ambiance et notre boule à facettes.
+            </p>
+          </div>
 
-            <div className="sticky top-4 px-4 md:px-8 py-12">
-              <div className="bg-white/90 p-8 rounded-lg shadow-sm">
-                <BoxFeatures />
-              </div>
-            </div>
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <BoxFeatures />
           </div>
         </div>
-      </main>
-
+      </div>
       <Footer />
     </div>
   );

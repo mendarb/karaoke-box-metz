@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { Booking } from "@/integrations/supabase/types/booking";
+import { sendPaymentRequestEmail } from "./emailService";
 
 export const generatePaymentLink = async (data: any) => {
   console.log('💰 Début de génération du lien de paiement:', {
@@ -8,7 +9,8 @@ export const generatePaymentLink = async (data: any) => {
     finalPrice: data.finalPrice,
     promoCode: data.promoCode,
     discountAmount: data.discountAmount,
-    isTestMode: data.isTestMode
+    isTestMode: data.isTestMode,
+    duration: data.duration // Log de la durée
   });
 
   try {
@@ -18,7 +20,7 @@ export const generatePaymentLink = async (data: any) => {
         userEmail: data.email,
         date: data.date,
         timeSlot: data.timeSlot,
-        duration: data.duration,
+        duration: data.duration.toString(), // Conversion explicite en string
         groupSize: data.groupSize,
         price: data.finalPrice || data.calculatedPrice,
         userName: data.fullName,
@@ -43,13 +45,30 @@ export const generatePaymentLink = async (data: any) => {
       throw new Error('Pas d\'URL de paiement retournée');
     }
 
+    // Si sendEmail est true, on envoie l'email de demande de paiement
+    if (data.sendEmail) {
+      await sendPaymentRequestEmail({
+        userEmail: data.email,
+        userName: data.fullName,
+        date: data.date,
+        timeSlot: data.timeSlot,
+        duration: data.duration,
+        groupSize: data.groupSize,
+        price: data.finalPrice || data.calculatedPrice,
+        promoCode: data.promoCode,
+        message: data.message,
+        paymentUrl: url
+      });
+    }
+
     console.log('✅ Lien de paiement généré avec succès:', {
       url,
       originalPrice: data.calculatedPrice,
       finalPrice: data.finalPrice,
       promoCode: data.promoCode,
       discountAmount: data.discountAmount,
-      isTestMode: data.isTestMode
+      isTestMode: data.isTestMode,
+      duration: data.duration // Log de la durée
     });
 
     return url;

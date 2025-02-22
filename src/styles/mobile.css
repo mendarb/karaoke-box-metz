@@ -1,0 +1,96 @@
+/* Mobile optimizations */
+@media (max-width: 640px) {
+  .logo {
+    height: 4em;
+    padding: 1em;
+  }
+
+  .card {
+    padding: 1em;
+  }
+
+  /* Touch target improvements */
+  button, 
+  [role="button"],
+  input,
+  select {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+  }
+
+  /* Prevent iOS zoom */
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"] {
+    font-size: 16px;
+  }
+}
+
+/* iOS scroll improvements */
+.scroll-container {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* Add safe area padding for iOS devices */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 1rem);
+}
+
+/* Add padding to the main content to account for the mobile nav */
+@media (max-width: 768px) {
+  main {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom, 1rem));
+  }
+  
+  /* Fix toast positioning on mobile */
+  [role="toast"] {
+    position: fixed !important;
+    bottom: calc(4rem + env(safe-area-inset-bottom, 1rem)) !important;
+    z-index: 100 !important;
+  }
+
+  /* Mobile booking form styles */
+  .booking-form-mobile {
+    @apply min-h-screen bg-white pb-[80px];
+  }
+
+  .booking-steps-mobile {
+    @apply sticky top-0 bg-white border-b border-gray-100 z-10;
+  }
+
+  .booking-content-mobile {
+    @apply px-4 py-6 space-y-6;
+  }
+
+  /* Mobile time slots grid */
+  .time-slots-grid {
+    @apply grid grid-cols-2 sm:grid-cols-3 gap-3;
+  }
+
+  .time-slot {
+    @apply flex flex-col items-center justify-center p-4 rounded-xl border border-gray-100 
+    transition-all duration-200;
+  }
+
+  .time-slot.selected {
+    @apply bg-violet-600 text-white border-violet-600;
+  }
+
+  /* Mobile calendar styles */
+  .calendar-container {
+    @apply p-4 bg-white rounded-xl;
+  }
+
+  .suggested-dates {
+    @apply flex gap-4 p-4 overflow-x-auto;
+  }
+
+  .date-suggestion {
+    @apply flex flex-col items-center p-4 rounded-xl border border-gray-100 min-w-[100px];
+  }
+}

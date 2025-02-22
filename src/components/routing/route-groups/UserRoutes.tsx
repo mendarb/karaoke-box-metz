@@ -1,27 +1,27 @@
-import { Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { AccountPage } from "@/components/account/AccountPage";
-import MyBookings from "@/pages/MyBookings";
+import { BookingHistory } from "@/components/booking/BookingHistory";
 import { ProtectedRoute } from "../ProtectedRoute";
 
 export const UserRoutes = () => {
   return (
-    <>
-      <Route
-        path="/account"
-        element={
-          <ProtectedRoute>
-            <AccountPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/my-bookings"
-        element={
-          <ProtectedRoute>
-            <MyBookings />
-          </ProtectedRoute>
-        }
-      />
-    </>
+    <Routes>
+      <Route path="/" element={<ProtectedRoute><AccountPage /></ProtectedRoute>} />
+      <Route path="my-bookings" element={
+        <ProtectedRoute>
+          <main className="container max-w-4xl mx-auto py-8 px-4">
+            <BookingHistory />
+          </main>
+        </ProtectedRoute>
+      } />
+      {/* Route alternative pour la compatibilité */}
+      <Route path="/my-bookings" element={
+        <ProtectedRoute>
+          <main className="container max-w-4xl mx-auto py-8 px-4">
+            <BookingHistory />
+          </main>
+        </ProtectedRoute>
+      } />
+    </Routes>
   );
 };

@@ -17,9 +17,23 @@ export default defineConfig(({ mode }) => ({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: undefined // Disable manual chunking to avoid loading issues
+        manualChunks: {
+          'vendor': ['react', 'react-dom'],
+          'router': ['react-router-dom'],
+          'ui': ['@radix-ui/react-dialog', '@radix-ui/react-popover'],
+          'forms': ['react-hook-form', '@hookform/resolvers'],
+          'utils': ['date-fns', 'clsx', 'tailwind-merge'],
+        }
       },
     },
+    target: 'esnext',
+    minify: 'esbuild',
+    cssMinify: true,
+    cssCodeSplit: true,
+    reportCompressedSize: false,
+    chunkSizeWarningLimit: 1000,
+    assetsInlineLimit: 4096,
+    sourcemap: mode === 'development',
   },
   plugins: [
     react(),

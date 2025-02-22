@@ -29,7 +29,6 @@ export const AdminDashboard = () => {
           return [];
         }
 
-        // Récupérer toutes les réservations non supprimées
         const { data, error: fetchError } = await supabase
           .from('bookings')
           .select('*')
@@ -49,7 +48,7 @@ export const AdminDashboard = () => {
       }
     },
     enabled: !!user && isAdmin,
-    refetchInterval: 5000, // Rafraîchir toutes les 5 secondes
+    refetchInterval: 5000,
   });
 
   if (error) {

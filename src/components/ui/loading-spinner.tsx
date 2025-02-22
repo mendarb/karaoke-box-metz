@@ -3,38 +3,32 @@ import { cn } from "@/lib/utils";
 interface LoadingSpinnerProps {
   className?: string;
   fullScreen?: boolean;
+  size?: "sm" | "md" | "lg";
 }
 
-export const LoadingSpinner = ({ className, fullScreen = false }: LoadingSpinnerProps) => {
-  if (fullScreen) {
-    return (
-      <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
-        <div className="bg-white/80 p-6 rounded-lg shadow-lg flex flex-col items-center gap-3">
-          <div
-            className={cn(
-              "inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent motion-reduce:animate-[spin_1.5s_linear_infinite]",
-              className
-            )}
-            role="status"
-          >
-            <span className="sr-only">Loading...</span>
-          </div>
-          <p className="text-sm text-muted-foreground">Chargement en cours...</p>
-        </div>
-      </div>
-    );
-  }
+export const LoadingSpinner = ({ className, fullScreen, size = "md" }: LoadingSpinnerProps) => {
+  const sizeClasses = {
+    sm: "h-4 w-4",
+    md: "h-8 w-8",
+    lg: "h-12 w-12"
+  };
 
   return (
-    <div className="flex flex-col items-center justify-center gap-2">
+    <div
+      className={cn(
+        fullScreen && "fixed inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm",
+        !fullScreen && "inline-block"
+      )}
+    >
       <div
         className={cn(
-          "inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-primary border-r-transparent motion-reduce:animate-[spin_1.5s_linear_infinite]",
+          "animate-spin rounded-full border-2 border-solid border-current border-r-transparent motion-reduce:animate-[spin_1.5s_linear_infinite]",
+          sizeClasses[size],
           className
         )}
         role="status"
       >
-        <span className="sr-only">Loading...</span>
+        <span className="sr-only">Chargement...</span>
       </div>
     </div>
   );

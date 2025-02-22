@@ -14,6 +14,7 @@ import { DashboardLayout } from "@/components/admin/dashboard/DashboardLayout";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Calendar = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
@@ -21,7 +22,6 @@ export const Calendar = () => {
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
-  // Activer les mises à jour en temps réel
   useRealtimeBookings();
 
   const { data: bookings = [], isLoading } = useQuery({
@@ -65,14 +65,12 @@ export const Calendar = () => {
     refetchOnMount: true,
   });
 
-  // Filtrer les réservations pour la date sélectionnée
   const bookingsForSelectedDate = selectedDate 
     ? bookings.filter(booking => 
         booking.date === format(selectedDate, 'yyyy-MM-dd')
       )
     : [];
 
-  // Obtenir les dates avec des réservations pour le style du calendrier
   const datesWithBookings = bookings.reduce((dates: Date[], booking) => {
     const bookingDate = new Date(booking.date);
     if (!dates.some(date => date.getTime() === bookingDate.getTime())) {
@@ -92,42 +90,87 @@ export const Calendar = () => {
   }
 
   return (
-    <DashboardLayout title="Calendrier des réservations">
-      <div className="space-y-6">
-        <div className="flex items-center gap-2">
-          <CalendarIcon className="h-5 w-5 text-violet-500" />
-          <h2 className="text-lg font-semibold">Sélectionnez une date</h2>
+    <DashboardLayout>
+      <div className="p-4 md:p-8 max-w-[1200px]">
+        <div className="mb-8">
+          <h1 className="text-3xl font-semibold text-gray-900 mb-2">Calendrier</h1>
+          <p className="text-gray-600">Gérez les réservations et consultez le planning</p>
         </div>
 
-        <div className={`grid gap-6 ${isMobile ? '' : 'md:grid-cols-2'}`}>
-          <Card className="p-4 shadow-none border-none bg-transparent">
-            <CalendarComponent
-              mode="single"
-              selected={selectedDate}
-              onSelect={setSelectedDate}
-              locale={fr}
-              modifiers={{
-                booked: datesWithBookings,
-              }}
-              modifiersStyles={{
-                booked: {
-                  fontWeight: 'bold',
-                  backgroundColor: '#9b87f5',
-                  color: 'white',
-                }
-              }}
-              className="rounded-md border-none"
-            />
-          </Card>
+        {isMobile ? (
+          <Tabs defaultValue="calendar" className="space-y-3">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="calendar">Calendrier</TabsTrigger>
+              <TabsTrigger value="bookings">Réservations</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="calendar">
+              <Card className="p-2 bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                <CalendarComponent
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={setSelectedDate}
+                  locale={fr}
+                  modifiers={{
+                    booked: datesWithBookings,
+                  }}
+                  modifiersStyles={{
+                    booked: {
+                      fontWeight: 'bold',
+                      backgroundColor: '#9b87f5',
+                      color: 'white',
+                    }
+                  }}
+                  className="rounded-md border-none"
+                />
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="bookings">
+              <Card className="relative overflow-hidden bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                <ScrollArea className="h-[calc(100vh-16rem)]">
+                  <BookingsList
+                    bookings={bookingsForSelectedDate}
+                    onViewDetails={setSelectedBooking}
+                    selectedDate={selectedDate}
+                  />
+                </ScrollArea>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        ) : (
+          <div className="grid gap-4 lg:grid-cols-[auto,1fr]">
+            <Card className="p-3 bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+              <CalendarComponent
+                mode="single"
+                selected={selectedDate}
+                onSelect={setSelectedDate}
+                locale={fr}
+                modifiers={{
+                  booked: datesWithBookings,
+                }}
+                modifiersStyles={{
+                  booked: {
+                    fontWeight: 'bold',
+                    backgroundColor: '#9b87f5',
+                    color: 'white',
+                  }
+                }}
+                className="rounded-md border-none"
+              />
+            </Card>
 
-          <ScrollArea className={isMobile ? "h-[calc(100vh-24rem)]" : "h-[600px]"}>
-            <BookingsList
-              bookings={bookingsForSelectedDate}
-              onViewDetails={setSelectedBooking}
-              selectedDate={selectedDate}
-            />
-          </ScrollArea>
-        </div>
+            <Card className="relative overflow-hidden bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+              <ScrollArea className="h-[600px]">
+                <BookingsList
+                  bookings={bookingsForSelectedDate}
+                  onViewDetails={setSelectedBooking}
+                  selectedDate={selectedDate}
+                />
+              </ScrollArea>
+            </Card>
+          </div>
+        )}
       </div>
 
       {selectedBooking && (

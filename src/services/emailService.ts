@@ -29,3 +29,28 @@ export const sendBookingEmail = async (booking: any) => {
     throw error;
   }
 };
+
+export const sendPaymentRequestEmail = async (booking: any) => {
+  try {
+    console.log('📧 Sending payment request email:', {
+      email: booking.userEmail,
+      date: booking.date,
+      price: booking.price
+    });
+
+    const { data, error } = await supabase.functions.invoke('send-payment-request', {
+      body: { booking }
+    });
+
+    if (error) {
+      console.error('❌ Error sending payment request email:', error);
+      throw error;
+    }
+
+    console.log('✅ Payment request email sent successfully:', data);
+    return { success: true };
+  } catch (error) {
+    console.error('❌ Error in sendPaymentRequestEmail:', error);
+    throw error;
+  }
+};

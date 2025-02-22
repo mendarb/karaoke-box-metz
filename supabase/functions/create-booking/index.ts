@@ -1,10 +1,10 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import Stripe from "https://esm.sh/stripe@14.21.0";
+import Stripe from 'https://esm.sh/stripe@14.21.0';
+import { corsHeaders } from "../_shared/cors.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, stripe-signature',
+const formatHour = (hour: string | number): string => {
+  const parsedHour = parseInt(String(hour));
+  return parsedHour ? `${String(parsedHour).padStart(2, '0')}:00` : '';
 };
 
 serve(async (req) => {
@@ -14,112 +14,132 @@ serve(async (req) => {
 
   try {
     const requestBody = await req.json();
-    console.log('📦 Données de réservation reçues:', {
-      email: requestBody.email,
-      fullName: requestBody.fullName,
-      date: requestBody.date,
-      timeSlot: requestBody.timeSlot,
-      duration: requestBody.duration,
-      groupSize: requestBody.groupSize,
-      price: requestBody.price,
-      promoCode: requestBody.promoCode,
-      discountAmount: requestBody.discountAmount,
-      isTestMode: requestBody.isTestMode,
-      userId: requestBody.userId,
-    });
+    console.log('📝 Données de réservation reçues:', requestBody);
 
-    if (!requestBody.userId) {
-      console.error('❌ Pas d\'ID utilisateur fourni');
-      throw new Error('ID utilisateur requis');
+    // Validation des données requises
+    const { date, timeSlot, duration, groupSize, price, email, fullName, isTestMode } = requestBody;
+    if (!date || !timeSlot || !duration || !groupSize || !price || !email || !fullName) {
+      throw new Error('Données de réservation incomplètes');
     }
 
-    const price = parseFloat(requestBody.price);
-    if (isNaN(price) || price < 0) {
-      console.error('❌ Prix invalide:', price);
-      throw new Error('Prix invalide');
-    }
-
-    const stripeKey = requestBody.isTestMode ? 
-      Deno.env.get('STRIPE_TEST_SECRET_KEY')! : 
-      Deno.env.get('STRIPE_SECRET_KEY')!;
+    // Sélectionner la bonne clé API Stripe en fonction du mode test
+    const stripeKey = isTestMode 
+      ? Deno.env.get('STRIPE_TEST_SECRET_KEY')
+      : Deno.env.get('STRIPE_SECRET_KEY');
 
     if (!stripeKey) {
-      throw new Error(`Clé Stripe ${requestBody.isTestMode ? 'test' : 'live'} non configurée`);
+      throw new Error(`${isTestMode ? 'Test' : 'Live'} mode Stripe API key not configured`);
     }
+
+    console.log('💳 Mode:', isTestMode ? 'TEST' : 'LIVE');
 
     const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
-      httpClient: Stripe.createFetchHttpClient(),
     });
 
-    console.log('💳 Création de la session Stripe...');
+    // Formatage de la date et des heures
+    const bookingDate = new Date(date);
+    const formattedDate = new Intl.DateTimeFormat('fr-FR', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }).format(bookingDate);
 
-    // Récupérer l'origine de la requête pour la redirection
-    const origin = req.headers.get('origin') || 'https://k-box.fr';
-    console.log('🌐 URL d\'origine pour la redirection:', origin);
+    const startTime = formatHour(timeSlot);
+    
+    // Construction de la description simplifiée
+    const description = [
+      formattedDate,
+      `${startTime}`,
+      `${groupSize} personne${parseInt(groupSize) > 1 ? 's' : ''}`,
+      requestBody.message ? `Message: ${requestBody.message}` : '',
+      requestBody.promoCode ? `Code promo: ${requestBody.promoCode}` : ''
+    ].filter(Boolean).join('\n');
+
+    console.log('📝 Description formatée:', description);
 
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
       line_items: [{
         price_data: {
           currency: 'eur',
           unit_amount: Math.round(price * 100),
           product_data: {
-            name: requestBody.isTestMode ? '[TEST MODE] Karaoké BOX - MB EI' : 'Karaoké BOX - MB EI',
-            description: `${requestBody.groupSize} personnes - ${requestBody.duration}h${requestBody.promoCode ? ` (Code promo: ${requestBody.promoCode})` : ''}`,
+            name: isTestMode ? '[TEST MODE] Karaoké BOX - MB EI' : 'Karaoké BOX - MB EI',
+            description: description,
+            metadata: {
+              booking_date: date,
+              time_slot: startTime,
+              duration: String(duration),
+              group_size: groupSize,
+            },
           },
         },
         quantity: 1,
       }],
       mode: 'payment',
-      success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}`,
-      customer_email: requestBody.email,
+      success_url: `${req.headers.get('origin') || 'https://k-box.fr'}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${req.headers.get('origin') || 'https://k-box.fr'}`,
+      customer_email: email,
+      client_reference_id: requestBody.userId,
+      payment_intent_data: {
+        metadata: {
+          user_id: requestBody.userId,
+          user_name: fullName,
+          user_email: email,
+          user_phone: requestBody.phone || '',
+          booking_date: date,
+          time_slot: startTime,
+          duration: String(duration),
+          group_size: `${groupSize} personne${parseInt(groupSize) > 1 ? 's' : ''}`,
+          price: String(price),
+          promo_code: requestBody.promoCode || '',
+          discount_amount: String(requestBody.discountAmount || 0),
+          is_test_mode: String(isTestMode || false),
+        },
+        description: `Réservation Karaoké Box - ${formattedDate}`,
+        statement_descriptor: 'KARAOKE BOX METZ',
+        statement_descriptor_suffix: 'RESERVATION',
+      },
       metadata: {
         userId: requestBody.userId,
-        userEmail: requestBody.email,
-        userName: requestBody.fullName,
-        userPhone: requestBody.phone,
-        date: requestBody.date,
-        timeSlot: requestBody.timeSlot,
-        duration: requestBody.duration,
-        groupSize: requestBody.groupSize,
+        userEmail: email,
+        userName: fullName,
+        userPhone: requestBody.phone || '',
+        date: date,
+        timeSlot: startTime,
+        duration: String(duration),
+        groupSize: groupSize,
         price: String(price),
         promoCode: requestBody.promoCode || '',
         discountAmount: String(requestBody.discountAmount || 0),
         message: requestBody.message || '',
-        isTestMode: String(requestBody.isTestMode),
+        isTestMode: String(isTestMode || false),
       },
+      custom_fields: [
+        {
+          key: 'phone',
+          label: { type: 'custom', custom: 'Téléphone' },
+          type: 'text',
+          optional: true,
+        },
+      ],
     });
 
     console.log('✅ Session Stripe créée:', {
       sessionId: session.id,
-      paymentIntentId: session.payment_intent,
-      userId: requestBody.userId,
-      price: price,
-      metadata: session.metadata,
-      successUrl: session.success_url,
-      cancelUrl: session.cancel_url
+      amount: price,
+      description: description,
+      isTestMode: isTestMode
     });
 
-    if (!session.url) {
-      console.error('❌ Pas d\'URL de paiement retournée par Stripe');
-      throw new Error('Pas d\'URL de paiement retournée par Stripe');
-    }
-
     return new Response(
-      JSON.stringify({ 
-        success: true,
-        url: session.url 
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
+      JSON.stringify({ url: session.url }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error('❌ Erreur dans le processus de réservation:', error);
+    console.error('❌ Erreur lors de la création de la session:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 

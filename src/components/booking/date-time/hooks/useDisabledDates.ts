@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { eachDayOfInterval, startOfDay } from "date-fns";
+import { eachDayOfInterval, startOfDay, isToday, isBefore } from "date-fns";
 import { useBookingSettings } from "./useBookingSettings";
 import { isDayExcluded } from "../utils/dateConversion";
 
@@ -27,8 +27,14 @@ export const useDisabledDates = ({ minDate, maxDate }: UseDisabledDatesProps) =>
       end: startOfDay(maxDate) 
     });
 
-    // Filtrer les dates désactivées
-    const disabledDates = dates.filter(date => isDayExcluded(date, settings));
+    // Filtrer les dates désactivées et passées
+    const disabledDates = dates.filter(date => {
+      // Désactiver les dates passées
+      if (isBefore(date, startOfDay(new Date()))) {
+        return true;
+      }
+      return isDayExcluded(date, settings);
+    });
 
     console.log('📅 Dates désactivées:', {
       total: disabledDates.length,

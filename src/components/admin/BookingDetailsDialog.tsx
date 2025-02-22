@@ -4,11 +4,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
-import { Calendar, Clock, Users, Euro, Mail, Phone, MessageSquare, Download } from "lucide-react";
 import { BookingStatusBadge } from "./BookingStatusBadge";
-import { Button } from "@/components/ui/button";
+import { CustomerInfo } from "./booking-details/CustomerInfo";
+import { BookingInfo } from "./booking-details/BookingInfo";
+import { BookingMessage } from "./booking-details/BookingMessage";
+import { BookingDocuments } from "./booking-details/BookingDocuments";
 
 interface BookingDetailsDialogProps {
   isOpen: boolean;
@@ -25,6 +25,7 @@ interface BookingDetailsDialogProps {
     message: string | null;
     status: string;
     payment_status: string;
+    payment_method: string;
     isTestBooking?: boolean;
     invoice_url?: string;
   };
@@ -33,7 +34,7 @@ interface BookingDetailsDialogProps {
 export const BookingDetailsDialog = ({ isOpen, onClose, booking }: BookingDetailsDialogProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md bg-white">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <span>Détails de la réservation</span>
@@ -45,67 +46,28 @@ export const BookingDetailsDialog = ({ isOpen, onClose, booking }: BookingDetail
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-6">
-          <div className="space-y-2">
-            <h3 className="font-semibold">Informations client</h3>
-            <div className="space-y-1 text-sm">
-              <p className="flex items-center">
-                <span className="font-medium">{booking.user_name}</span>
-              </p>
-              <p className="flex items-center">
-                <Mail className="mr-2 h-4 w-4" />
-                {booking.user_email}
-              </p>
-              <p className="flex items-center">
-                <Phone className="mr-2 h-4 w-4" />
-                {booking.user_phone}
-              </p>
-            </div>
-          </div>
+          <CustomerInfo
+            name={booking.user_name}
+            email={booking.user_email}
+            phone={booking.user_phone}
+          />
 
-          <div className="space-y-2">
-            <h3 className="font-semibold">Détails de la réservation</h3>
-            <div className="space-y-1 text-sm">
-              <p className="flex items-center">
-                <Calendar className="mr-2 h-4 w-4" />
-                {format(new Date(booking.date), "d MMMM yyyy", { locale: fr })}
-              </p>
-              <p className="flex items-center">
-                <Clock className="mr-2 h-4 w-4" />
-                {booking.time_slot}h - {parseInt(booking.time_slot) + parseInt(booking.duration)}h
-              </p>
-              <p className="flex items-center">
-                <Users className="mr-2 h-4 w-4" />
-                {booking.group_size} personnes
-              </p>
-              <p className="flex items-center">
-                <Euro className="mr-2 h-4 w-4" />
-                {booking.price}€
-              </p>
-            </div>
-          </div>
+          <BookingInfo
+            date={booking.date}
+            timeSlot={booking.time_slot}
+            duration={booking.duration}
+            groupSize={booking.group_size}
+            price={booking.price}
+            paymentMethod={booking.payment_method}
+          />
 
-          {booking.message && (
-            <div className="space-y-2">
-              <h3 className="font-semibold">Message</h3>
-              <p className="text-sm flex items-start">
-                <MessageSquare className="mr-2 h-4 w-4 mt-0.5" />
-                {booking.message}
-              </p>
-            </div>
-          )}
+          <BookingMessage message={booking.message} />
 
           {booking.payment_status === 'paid' && booking.invoice_url && (
-            <div className="space-y-2">
-              <h3 className="font-semibold">Documents</h3>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => window.open(booking.invoice_url, '_blank', 'noopener,noreferrer')}
-              >
-                <Download className="mr-2 h-4 w-4" />
-                Télécharger {booking.isTestBooking ? 'la facture test' : 'le reçu'}
-              </Button>
-            </div>
+            <BookingDocuments
+              invoiceUrl={booking.invoice_url}
+              isTestBooking={booking.isTestBooking}
+            />
           )}
         </div>
       </DialogContent>

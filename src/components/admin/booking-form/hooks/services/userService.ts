@@ -23,39 +23,12 @@ export const findOrCreateUser = async (email: string, fullName: string, phone: s
       return existingUser.user_id;
     }
 
-    console.log('📝 Aucun utilisateur existant trouvé, création d\'un nouveau compte...');
-    // Créer un nouveau compte utilisateur
-    const { data: authData } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        data: {
-          full_name: fullName,
-          phone: phone,
-        }
-      }
-    });
-
-    console.log('📧 Email de connexion OTP envoyé à:', email);
-
-    // Attendre un peu pour laisser le temps à l'utilisateur d'être créé
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // Récupérer l'ID de l'utilisateur nouvellement créé
-    const { data: newUser } = await supabase
-      .from('auth.users')
-      .select('id')
-      .eq('email', email)
-      .single();
-
-    if (newUser?.id) {
-      console.log('✅ Nouvel utilisateur créé avec succès, ID:', newUser.id);
-    } else {
-      console.log('⚠️ L\'utilisateur a été créé mais l\'ID n\'a pas pu être récupéré immédiatement');
-    }
-
-    return newUser?.id;
+    // Pour les réservations admin, on ne crée pas de compte utilisateur
+    // On retourne null pour indiquer qu'il n'y a pas d'utilisateur associé
+    console.log('📝 Pas d\'utilisateur existant trouvé, mais pas de création de compte en mode admin');
+    return null;
   } catch (error) {
-    console.error('❌ Erreur lors de la recherche/création d\'utilisateur:', error);
+    console.error('❌ Erreur lors de la recherche d\'utilisateur:', error);
     throw error;
   }
 };

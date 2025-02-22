@@ -1,9 +1,9 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { useSignupHandler } from "@/hooks/auth/useSignupHandler"
 import { SignupFormFields } from "./signup/SignupFormFields"
+import { GoogleSignupButton } from "./signup/GoogleSignupButton"
+import { SignupDivider } from "./signup/SignupDivider"
 
 interface SignupFormProps {
   onToggleMode: () => void;
@@ -15,11 +15,18 @@ export function SignupForm({ onToggleMode, onSuccess }: SignupFormProps) {
   const [password, setPassword] = useState("")
   const [fullName, setFullName] = useState("")
   const [phone, setPhone] = useState("")
+  const [phoneCountryCode, setPhoneCountryCode] = useState("+33")
   const { handleSignup, isLoading } = useSignupHandler()
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const { success, shouldSwitchToLogin } = await handleSignup(email, password, fullName, phone)
+    const { success, shouldSwitchToLogin } = await handleSignup(
+      email, 
+      password, 
+      fullName, 
+      phone,
+      phoneCountryCode
+    )
     
     if (shouldSwitchToLogin) {
       onToggleMode()
@@ -29,30 +36,36 @@ export function SignupForm({ onToggleMode, onSuccess }: SignupFormProps) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4 pt-4">
-      <SignupFormFields
-        email={email}
-        setEmail={setEmail}
-        password={password}
-        setPassword={setPassword}
-        fullName={fullName}
-        setFullName={setFullName}
-        phone={phone}
-        setPhone={setPhone}
-        isLoading={isLoading}
-      />
-      <Button type="submit" className="w-full" disabled={isLoading}>
-        {isLoading ? "Chargement..." : "S'inscrire"}
-      </Button>
-      <Button
-        type="button"
-        variant="link"
-        className="w-full"
-        onClick={onToggleMode}
-        disabled={isLoading}
-      >
-        Déjà un compte ? Se connecter
-      </Button>
-    </form>
+    <div className="space-y-4 pt-4">
+      <GoogleSignupButton isLoading={isLoading} />
+      <SignupDivider />
+      <form onSubmit={onSubmit} className="space-y-4">
+        <SignupFormFields
+          email={email}
+          setEmail={setEmail}
+          password={password}
+          setPassword={setPassword}
+          fullName={fullName}
+          setFullName={setFullName}
+          phone={phone}
+          setPhone={setPhone}
+          phoneCountryCode={phoneCountryCode}
+          setPhoneCountryCode={setPhoneCountryCode}
+          isLoading={isLoading}
+        />
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading ? "Chargement..." : "S'inscrire"}
+        </Button>
+        <Button
+          type="button"
+          variant="link"
+          className="w-full"
+          onClick={onToggleMode}
+          disabled={isLoading}
+        >
+          Déjà un compte ? Se connecter
+        </Button>
+      </form>
+    </div>
   )
 }

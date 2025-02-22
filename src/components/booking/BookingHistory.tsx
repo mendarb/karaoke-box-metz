@@ -1,18 +1,26 @@
 import { Loader2 } from "lucide-react";
 import { BookingCard } from "./history/BookingCard";
 import { useBookingHistory } from "./history/useBookingHistory";
-import { useToast } from "@/components/ui/use-toast";
-import { useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
 import { useUserState } from "@/hooks/useUserState";
+import { useEffect } from "react";
 
 export const BookingHistory = () => {
   const { data: bookings, isLoading, error } = useBookingHistory();
   const { toast } = useToast();
-  const { user } = useUserState();
+  const { user, isLoading: userLoading } = useUserState();
+
+  console.log("🎯 BookingHistory - Component rendering", {
+    user,
+    userLoading,
+    bookings,
+    isLoading,
+    error
+  });
 
   useEffect(() => {
     if (error) {
-      console.error('Error fetching bookings:', error);
+      console.error('❌ BookingHistory - Error:', error);
       toast({
         title: "Erreur",
         description: "Impossible de charger vos réservations",
@@ -21,52 +29,59 @@ export const BookingHistory = () => {
     }
   }, [error, toast]);
 
-  if (!user) {
+  if (userLoading) {
+    console.log("⏳ BookingHistory - User loading...");
     return (
-      <div className="text-center p-8 text-gray-500">
-        Connectez-vous pour voir vos réservations
+      <div className="flex justify-center items-center p-8 bg-white rounded-lg shadow">
+        <Loader2 className="h-8 w-8 animate-spin text-kbox-violet" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    console.log("❌ BookingHistory - No user found");
+    return (
+      <div className="text-center p-8 bg-white rounded-lg shadow">
+        <p className="text-gray-500">Connectez-vous pour voir vos réservations</p>
       </div>
     );
   }
 
   if (isLoading) {
+    console.log("⏳ BookingHistory - Bookings loading...");
     return (
-      <div className="flex justify-center items-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
+      <div className="flex justify-center items-center p-8 bg-white rounded-lg shadow">
+        <Loader2 className="h-8 w-8 animate-spin text-kbox-violet" />
       </div>
     );
   }
 
   if (!bookings?.length) {
+    console.log("ℹ️ BookingHistory - No bookings found");
     return (
-      <div className="text-center p-8 text-gray-500">
-        Vous n'avez pas encore de réservations
+      <div className="text-center p-8 bg-white rounded-lg shadow">
+        <p className="text-gray-500">Vous n'avez pas encore de réservations</p>
       </div>
     );
   }
 
-  // Group bookings by date
-  const groupedBookings = bookings.reduce((groups: any, booking: any) => {
-    const date = booking.date;
-    if (!groups[date]) {
-      groups[date] = [];
-    }
-    groups[date].push(booking);
-    return groups;
-  }, {});
-
+  console.log("✅ BookingHistory - Rendering bookings:", bookings);
   return (
     <div className="space-y-8">
-      <h2 className="text-2xl font-bold">Mes réservations</h2>
-      {Object.entries(groupedBookings).map(([date, dateBookings]: [string, any]) => (
-        <div key={date} className="space-y-4">
-          <div className="grid gap-4">
-            {dateBookings.map((booking: any) => (
-              <BookingCard key={booking.id} booking={booking} />
-            ))}
-          </div>
-        </div>
-      ))}
+      <div className="space-y-2">
+        <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900">
+          Mes réservations
+        </h2>
+        <p className="text-base sm:text-lg text-gray-600">
+          Retrouvez l'historique de toutes vos réservations
+        </p>
+      </div>
+      
+      <div className="space-y-4">
+        {bookings.map((booking) => (
+          <BookingCard key={booking.id} booking={booking} />
+        ))}
+      </div>
     </div>
   );
 };

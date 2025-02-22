@@ -1,65 +1,40 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { useToast } from "@/components/ui/use-toast";
+import { useUserState } from "@/hooks/useUserState";
 
 export const useBookingHistory = () => {
-  const { toast } = useToast();
+  const { user } = useUserState();
+
+  console.log("🔍 useBookingHistory - Starting hook execution");
+  console.log("🔍 useBookingHistory - Current user:", user);
 
   return useQuery({
-    queryKey: ['user-bookings'],
+    queryKey: ['user-bookings', user?.id],
     queryFn: async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session?.user) {
-          console.log('No session found');
-          throw new Error('No session found');
-        }
+      console.log("🔍 useBookingHistory - QueryFn starting");
+      
+      if (!user) {
+        console.log("❌ useBookingHistory - No user found, returning empty array");
+        return [];
+      }
 
-        console.log('Fetching bookings for user:', session.user.id);
+      console.log("🔍 useBookingHistory - Fetching bookings for user:", user.id);
 
-        // Vérifions d'abord si l'utilisateur a des réservations sans filtres
-        const { data: allBookings, error: allBookingsError } = await supabase
-          .from('bookings')
-          .select('*')
-          .eq('user_id', session.user.id);
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('user_id', user.id)
+        .is('deleted_at', null)
+        .order('date', { ascending: false });
 
-        console.log('All bookings (without deleted_at filter):', allBookings);
-
-        // Vérifions maintenant avec le filtre de status
-        const { data: pendingBookings, error: pendingError } = await supabase
-          .from('bookings')
-          .select('*')
-          .eq('user_id', session.user.id)
-          .eq('status', 'pending');
-
-        console.log('Pending bookings:', pendingBookings);
-
-        // Maintenant la requête finale avec tous les filtres
-        const { data, error } = await supabase
-          .from('bookings')
-          .select('*')
-          .eq('user_id', session.user.id)
-          .is('deleted_at', null)
-          .order('date', { ascending: false });
-
-        if (error) {
-          console.error('Error fetching bookings:', error);
-          throw error;
-        }
-
-        console.log('Final filtered bookings:', data);
-        return data;
-      } catch (error: any) {
-        console.error('Error in useBookingHistory:', error);
-        toast({
-          title: "Erreur",
-          description: "Impossible de charger vos réservations",
-          variant: "destructive",
-        });
+      if (error) {
+        console.error("❌ useBookingHistory - Error fetching bookings:", error);
         throw error;
       }
+
+      console.log("✅ useBookingHistory - Bookings fetched successfully:", data);
+      return data || [];
     },
-    retry: false,
+    enabled: !!user,
   });
 };

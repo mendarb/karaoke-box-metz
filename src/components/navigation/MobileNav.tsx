@@ -1,55 +1,101 @@
-import { Link } from "react-router-dom";
-import { Home, Calendar, User as UserIcon, Settings, LayoutDashboard } from "lucide-react";
-
-interface MobileNavProps {
-  user: any;
-  isAdmin: boolean;
-  onSignOut: () => Promise<void>;
-  onShowAuth: () => void;
-}
+import { Link, useLocation } from "react-router-dom";
+import { CalendarPlus, Calendar, User2, Settings, LogOut } from "lucide-react";
+import { MobileNavProps } from "@/types/navigation";
+import { useToast } from "@/components/ui/use-toast";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 
 export const MobileNav = ({ user, isAdmin, onSignOut, onShowAuth }: MobileNavProps) => {
-  return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 py-3 px-4 md:hidden z-50">
-      <div className="flex justify-around items-center divide-x divide-gray-100">
-        <Link to="/" className="flex flex-col items-center flex-1 px-2">
-          <Home className="h-5 w-5 text-kbox-coral" />
-          <span className="text-xs mt-1 text-gray-600">Accueil</span>
-        </Link>
-        {user ? (
-          <>
-            <Link to="/my-bookings" className="flex flex-col items-center flex-1 px-2">
-              <Calendar className="h-5 w-5 text-kbox-coral" />
-              <span className="text-xs mt-1 text-gray-600">Réservations</span>
-            </Link>
-            <Link to="/account" className="flex flex-col items-center flex-1 px-2">
-              <Settings className="h-5 w-5 text-kbox-coral" />
-              <span className="text-xs mt-1 text-gray-600">Compte</span>
-            </Link>
-            {isAdmin && (
-              <Link to="/admin" className="flex flex-col items-center flex-1 px-2">
-                <LayoutDashboard className="h-5 w-5 text-kbox-coral" />
-                <span className="text-xs mt-1 text-gray-600">Admin</span>
-              </Link>
-            )}
-            <button
-              onClick={onSignOut}
-              className="flex flex-col items-center flex-1 px-2"
-            >
-              <UserIcon className="h-5 w-5 text-kbox-coral" />
-              <span className="text-xs mt-1 text-gray-600">Déconnexion</span>
-            </button>
-          </>
-        ) : (
-          <button
-            onClick={onShowAuth}
-            className="flex flex-col items-center flex-1 px-2"
+  const location = useLocation();
+  const isBookingFlow = location.pathname === "/booking";
+  const { toast } = useToast();
+
+  const handleSignOut = async () => {
+    try {
+      await onSignOut();
+      toast({
+        title: "Déconnexion réussie",
+        description: "À bientôt !",
+      });
+    } catch (error) {
+      console.error('Error signing out:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de se déconnecter",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (isBookingFlow) {
+    return null;
+  }
+
+  const getItemStyle = (path: string) => {
+    const isActive = location.pathname === path;
+    return `flex flex-col items-center gap-1 py-2 px-4 ${
+      isActive ? "text-violet-600" : "text-gray-500"
+    } transition-colors duration-200`;
+  };
+
+  if (user) {
+    return (
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 pb-safe z-50">
+        <div className="flex justify-around items-center py-2">
+          <Link 
+            to="/" 
+            className="flex flex-col items-center gap-1 py-2 px-4 bg-kbox-coral text-white hover:bg-kbox-orange-dark rounded-xl shadow-lg transition-all duration-200"
           >
-            <UserIcon className="h-5 w-5 text-kbox-coral" />
-            <span className="text-xs mt-1 text-gray-600">Connexion</span>
-          </button>
-        )}
+            <CalendarPlus className="w-6 h-6" />
+            <span className="text-xs font-semibold">Réserver</span>
+          </Link>
+
+          <Link 
+            to="/account/my-bookings" 
+            className={getItemStyle("/account/my-bookings")}
+          >
+            <Calendar className="w-6 h-6" />
+            <span className="text-xs font-medium">Mes résa.</span>
+          </Link>
+
+          <Link 
+            to="/account" 
+            className={getItemStyle("/account")}
+          >
+            <User2 className="w-6 h-6" />
+            <span className="text-xs font-medium">Profil</span>
+          </Link>
+
+          {isAdmin && (
+            <Link to="/admin" className={getItemStyle("/admin")}>
+              <Settings className="w-6 h-6" />
+              <span className="text-xs font-medium">Admin</span>
+            </Link>
+          )}
+        </div>
+      </nav>
+    );
+  }
+
+  return (
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 pb-safe z-50">
+      <div className="flex justify-around items-center py-2">
+        <Link 
+          to="/" 
+          className="flex flex-col items-center gap-1 py-2 px-4 bg-kbox-coral text-white hover:bg-kbox-orange-dark rounded-xl shadow-lg transition-all duration-200"
+        >
+          <CalendarPlus className="w-6 h-6" />
+          <span className="text-xs font-semibold">Réserver</span>
+        </Link>
+
+        <button 
+          onClick={onShowAuth} 
+          className={getItemStyle("/account")}
+        >
+          <User2 className="w-6 h-6" />
+          <span className="text-xs font-medium">Connexion</span>
+        </button>
       </div>
-    </div>
+    </nav>
   );
 };

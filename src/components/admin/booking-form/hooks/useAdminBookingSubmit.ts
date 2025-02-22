@@ -3,6 +3,8 @@ import { UseFormReturn } from "react-hook-form";
 import { useToast } from "@/components/ui/use-toast";
 import { findOrCreateUser } from "./services/userService";
 import { generatePaymentLink } from "./services/bookingService";
+import { supabase } from "@/lib/supabase";
+import type { PaymentMethod } from "../../BookingForm";
 
 export const useAdminBookingSubmit = (form: UseFormReturn<any>) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -16,29 +18,65 @@ export const useAdminBookingSubmit = (form: UseFormReturn<any>) => {
       date: data.date,
       finalPrice: data.finalPrice,
       calculatedPrice: data.calculatedPrice,
-      promoCode: data.promoCode
+      promoCode: data.promoCode,
+      paymentMethod: data.paymentMethod,
+      duration: data.duration // Log de la durée
     });
 
     try {
       setIsLoading(true);
 
-      // Trouver ou créer l'utilisateur
+      // Trouver l'utilisateur (sans en créer un nouveau)
       const userId = await findOrCreateUser(data.email, data.fullName, data.phone);
-      console.log('✅ Utilisateur trouvé/créé:', userId);
+      console.log('✅ Utilisateur trouvé:', userId);
 
-      // Générer directement le lien de paiement
-      const checkoutUrl = await generatePaymentLink({
-        ...data,
-        userId: userId
-      });
-      
-      setPaymentLink(checkoutUrl);
+      if (data.paymentMethod === 'stripe') {
+        // Générer le lien de paiement uniquement pour Stripe
+        const checkoutUrl = await generatePaymentLink({
+          ...data,
+          userId: userId,
+          sendEmail: true
+        });
+        setPaymentLink(checkoutUrl);
+      } else {
+        // Pour SumUp et espèces, créer directement la réservation
+        const bookingData = {
+          user_id: userId,
+          user_email: data.email,
+          user_name: data.fullName,
+          user_phone: data.phone,
+          date: data.date,
+          time_slot: data.timeSlot,
+          duration: data.duration.toString(), // Conversion explicite en string
+          group_size: data.groupSize,
+          price: data.calculatedPrice,
+          message: data.message || '',
+          payment_status: data.paymentMethod === 'cash' ? 'pending' : 'paid',
+          status: data.paymentMethod === 'cash' ? 'pending' : 'confirmed',
+          is_test_booking: false,
+          promo_code_id: data.promoCodeId || null,
+          payment_method: data.paymentMethod,
+          cabin: 'metz'
+        };
+
+        console.log('📝 Création de la réservation avec les données:', bookingData);
+
+        const { error } = await supabase
+          .from('bookings')
+          .insert([bookingData]);
+
+        if (error) {
+          console.error('Erreur détaillée:', error);
+          throw error;
+        }
+
+        toast({
+          title: "Réservation créée",
+          description: `La réservation a été créée avec succès (paiement par ${data.paymentMethod === 'sumup' ? 'carte' : 'espèces'})`,
+        });
+      }
 
       console.log('✅ Processus de réservation admin terminé avec succès');
-      toast({
-        title: "Lien de paiement généré",
-        description: "Le lien de paiement a été généré avec succès.",
-      });
     } catch (error: any) {
       console.error('❌ Erreur dans le processus de réservation admin:', error);
       toast({

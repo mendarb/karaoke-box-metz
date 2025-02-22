@@ -5,6 +5,7 @@ export interface SignupData {
   password: string;
   fullName: string;
   phone: string;
+  phoneCountryCode: string;
 }
 
 export interface AuthResponse {
@@ -25,7 +26,7 @@ export interface SignupResult {
 
 export interface AuthHandlers {
   handleLogin: (email: string, password: string) => Promise<AuthResponse>;
-  handleSignup: (email: string, password: string, fullName: string, phone: string) => Promise<SignupResult>;
+  handleSignup: (email: string, password: string, fullName: string, phone: string, phoneCountryCode: string) => Promise<SignupResult>;
   handleResetPassword: (email: string) => Promise<AuthResponse>;
   isLoading: boolean;
 }

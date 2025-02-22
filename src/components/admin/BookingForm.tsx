@@ -10,9 +10,15 @@ import { BookingSteps } from "@/components/BookingSteps";
 import { useState } from "react";
 import { User2, Calendar, Users } from "lucide-react";
 import type { Step } from "@/components/BookingSteps";
+import { ClientTypeSelector } from "./booking-form/ClientTypeSelector";
+import { PaymentMethodSelector } from "./booking-form/PaymentMethodSelector";
+
+export type PaymentMethod = 'stripe' | 'sumup' | 'cash';
 
 export const AdminBookingForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [clientType, setClientType] = useState<'existing' | 'new'>('existing');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('stripe');
   
   const form = useForm({
     defaultValues: {
@@ -26,14 +32,12 @@ export const AdminBookingForm = () => {
       message: "",
       calculatedPrice: 0,
       userId: null,
+      paymentMethod: "stripe" as PaymentMethod,
     },
   });
 
   const { checkOverlap } = useBookingOverlap();
   const { isLoading, paymentLink, handleSubmit } = useAdminBookingSubmit(form);
-
-  const durations = ["1", "2", "3", "4"];
-  const groupSizes = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"];
 
   const handlePriceCalculated = (price: number) => {
     form.setValue("calculatedPrice", price);
@@ -41,8 +45,6 @@ export const AdminBookingForm = () => {
 
   const onSubmit = async () => {
     const data = form.getValues();
-    
-    // Convert string date to Date object
     const bookingDate = data.date ? new Date(data.date) : null;
     
     if (!bookingDate) {
@@ -50,11 +52,10 @@ export const AdminBookingForm = () => {
       return;
     }
     
-    // Vérifier les chevauchements
     const hasOverlap = await checkOverlap(bookingDate, data.timeSlot, data.duration);
     if (hasOverlap) return;
 
-    await handleSubmit(data);
+    await handleSubmit({ ...data, paymentMethod });
   };
 
   const steps: Step[] = [
@@ -86,21 +87,28 @@ export const AdminBookingForm = () => {
 
   return (
     <Form {...form}>
-      <div className="space-y-6">
+      <div className="space-y-6 bg-white p-6 rounded-lg shadow-sm">
         <BookingSteps steps={steps} currentStep={currentStep} />
 
         {currentStep === 1 && (
-          <ClientSelection
-            form={form}
-            onNext={() => setCurrentStep(2)}
-          />
+          <div className="space-y-6">
+            <ClientTypeSelector 
+              value={clientType}
+              onChange={setClientType}
+            />
+            <ClientSelection
+              form={form}
+              onNext={() => setCurrentStep(2)}
+              clientType={clientType}
+            />
+          </div>
         )}
 
         {currentStep === 2 && (
           <BookingDetails
             form={form}
-            durations={durations}
-            groupSizes={groupSizes}
+            durations={["1", "2", "3", "4"]}
+            groupSizes={["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"]}
             isLoading={isLoading}
             onPriceCalculated={handlePriceCalculated}
             onBack={() => setCurrentStep(1)}
@@ -109,13 +117,20 @@ export const AdminBookingForm = () => {
         )}
 
         {currentStep === 3 && (
-          <Confirmation
-            form={form}
-            isLoading={isLoading}
-            paymentLink={paymentLink}
-            onBack={() => setCurrentStep(2)}
-            onSubmit={onSubmit}
-          />
+          <div className="space-y-6">
+            <PaymentMethodSelector
+              value={paymentMethod}
+              onChange={setPaymentMethod}
+            />
+            <Confirmation
+              form={form}
+              isLoading={isLoading}
+              paymentLink={paymentLink}
+              onBack={() => setCurrentStep(2)}
+              onSubmit={onSubmit}
+              paymentMethod={paymentMethod}
+            />
+          </div>
         )}
       </div>
     </Form>

@@ -9,7 +9,9 @@ export const handleCheckoutSession = async (
     sessionId: session.id,
     metadata: session.metadata,
     paymentStatus: session.payment_status,
-    livemode: session.livemode
+    livemode: session.livemode,
+    customerEmail: session.customer_details?.email,
+    customerName: session.customer_details?.name
   });
 
   try {
@@ -18,14 +20,22 @@ export const handleCheckoutSession = async (
       return { received: true, status: "pending" };
     }
 
+    // Ensure we have the customer email
+    const userEmail = session.metadata?.userEmail || session.customer_details?.email;
+    const userName = session.metadata?.userName || session.customer_details?.name;
+    
+    if (!userEmail) {
+      throw new Error('Email utilisateur manquant');
+    }
+
     // Créer la réservation uniquement après un paiement réussi
     const { data: booking, error: bookingError } = await supabase
       .from('bookings')
       .insert([{
         user_id: session.metadata?.userId,
-        user_email: session.metadata?.userEmail,
-        user_name: session.metadata?.userName,
-        user_phone: session.metadata?.userPhone,
+        user_email: userEmail,
+        user_name: userName || 'Client',
+        user_phone: session.metadata?.userPhone || '',
         date: session.metadata?.date,
         time_slot: session.metadata?.timeSlot,
         duration: session.metadata?.duration,
@@ -37,6 +47,7 @@ export const handleCheckoutSession = async (
         is_test_booking: session.metadata?.isTestMode === 'true',
         payment_intent_id: session.payment_intent as string,
         promo_code_id: session.metadata?.promoCodeId || null,
+        cabin: 'metz'
       }])
       .select()
       .single();
@@ -49,7 +60,8 @@ export const handleCheckoutSession = async (
     console.log('✅ Réservation créée:', {
       id: booking.id,
       status: booking.status,
-      paymentStatus: booking.payment_status
+      paymentStatus: booking.payment_status,
+      userEmail: booking.user_email
     });
 
     // Récupérer l'URL du reçu

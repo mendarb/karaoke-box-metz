@@ -1,5 +1,7 @@
 import { useState, useCallback } from "react";
 import { PriceSettings } from "./types";
+import { calculateBasePrice, calculateTotalPrice, formatPrices } from "./utils/priceUtils";
+import { calculateDiscount } from "./utils/discountUtils";
 
 interface CalculatePriceProps {
   settings?: { basePrice: PriceSettings };
@@ -8,8 +10,9 @@ interface CalculatePriceProps {
 export const useCalculatePrice = ({ settings }: CalculatePriceProps = {}) => {
   const [price, setPrice] = useState<number>(0);
   const [pricePerPersonPerHour, setPricePerPersonPerHour] = useState<number>(0);
+  const [hasDiscount, setHasDiscount] = useState<boolean>(false);
 
-  const calculatePrice = useCallback((groupSize: string, duration: string) => {
+  const calculatePrice = useCallback((groupSize: string, duration: string, date?: string, timeSlot?: string) => {
     if (!settings?.basePrice) {
       console.log('❌ Paramètres de prix manquants');
       return 0;
@@ -26,30 +29,57 @@ export const useCalculatePrice = ({ settings }: CalculatePriceProps = {}) => {
     const baseHourRate = settings.basePrice.perHour || 30;
     const basePersonRate = settings.basePrice.perPerson || 5;
 
-    console.log('💰 Tarifs de base:', { baseHourRate, basePersonRate });
+    console.log('💰 Calcul du prix initial:', {
+      baseHourRate,
+      basePersonRate,
+      date,
+      timeSlot,
+      groupSize,
+      duration
+    });
 
-    // Prix par personne pour la première heure
-    const basePrice = baseHourRate + (basePersonRate * size);
+    // Calcul du prix de base
+    const basePrice = calculateBasePrice(size, baseHourRate, basePersonRate);
     
-    // Prix total pour la première heure
-    let totalPrice = basePrice;
-    
-    // Prix réduit pour les heures suivantes (-10%)
-    if (hours > 1) {
-      const additionalHoursPrice = (basePrice * 0.9) * (hours - 1);
-      totalPrice += additionalHoursPrice;
+    // Calcul du prix total avec réduction pour heures additionnelles
+    let totalPrice = calculateTotalPrice(basePrice, hours);
+
+    // Application de la réduction selon le jour et l'heure
+    if (date && timeSlot) {
+      const { finalPrice: discountedPrice, hasDiscount: timeDiscount } = calculateDiscount(totalPrice, date, timeSlot);
+      totalPrice = discountedPrice;
+      setHasDiscount(timeDiscount);
+      
+      console.log('💰 Après calcul réduction:', {
+        prixInitial: totalPrice,
+        prixReduit: discountedPrice,
+        reduction: timeDiscount ? '20%' : 'aucune',
+        date,
+        timeSlot
+      });
+    } else {
+      setHasDiscount(false);
+      console.log('⚠️ Pas de réduction possible:', {
+        date,
+        timeSlot,
+        raison: 'Date ou créneau manquant'
+      });
     }
 
-    // Arrondir à 2 décimales et forcer l'affichage des deux décimales
-    const finalPrice = Number(totalPrice.toFixed(2));
-    const pricePerPerson = Number((finalPrice / (size * hours)).toFixed(2));
+    // Formatage des prix finaux
+    const { finalPrice, pricePerPerson } = formatPrices(totalPrice, size, hours);
 
-    console.log('💰 Calcul du prix:', {
-      groupSize,
-      duration,
-      basePrice,
-      totalPrice: finalPrice,
-      pricePerPerson
+    console.log('💰 Prix final calculé:', {
+      prixBase: basePrice,
+      prixTotal: finalPrice,
+      prixParPersonne: pricePerPerson,
+      reduction: hasDiscount,
+      parametres: {
+        date,
+        timeSlot,
+        groupSize,
+        duration
+      }
     });
 
     setPrice(finalPrice);
@@ -58,5 +88,5 @@ export const useCalculatePrice = ({ settings }: CalculatePriceProps = {}) => {
     return finalPrice;
   }, [settings]);
 
-  return { price, pricePerPersonPerHour, calculatePrice };
+  return { price, pricePerPersonPerHour, calculatePrice, hasDiscount };
 };

@@ -67,9 +67,14 @@ export const NotificationSettings = () => {
       title="Paramètres des notifications"
       description="Configurez les notifications pour les réservations"
     >
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <Label htmlFor="email-notif">Notifications par email</Label>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between py-2">
+          <Label htmlFor="email-notif" className="flex flex-col gap-0.5">
+            <span>Notifications par email</span>
+            <span className="font-normal text-sm text-muted-foreground">
+              Envoyez des emails pour chaque nouvelle réservation
+            </span>
+          </Label>
           <Switch
             id="email-notif"
             checked={emailNotifications}
@@ -77,8 +82,13 @@ export const NotificationSettings = () => {
           />
         </div>
 
-        <div className="flex items-center justify-between">
-          <Label htmlFor="sms-notif">Notifications par SMS</Label>
+        <div className="flex items-center justify-between py-2">
+          <Label htmlFor="sms-notif" className="flex flex-col gap-0.5">
+            <span>Notifications par SMS</span>
+            <span className="font-normal text-sm text-muted-foreground">
+              Envoyez des SMS pour chaque nouvelle réservation
+            </span>
+          </Label>
           <Switch
             id="sms-notif"
             checked={smsNotifications}
@@ -88,7 +98,7 @@ export const NotificationSettings = () => {
 
         <Button 
           onClick={() => mutation.mutate()} 
-          className="w-full"
+          className="w-full h-9"
           disabled={mutation.isPending}
         >
           {mutation.isPending ? (

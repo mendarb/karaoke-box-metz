@@ -10,7 +10,8 @@ export function useAuthHandlers(): AuthHandlers {
 
   return {
     handleLogin,
-    handleSignup,
+    handleSignup: (email: string, password: string, fullName: string, phone: string, phoneCountryCode: string) => 
+      handleSignup(email, password, fullName, phone, phoneCountryCode),
     handleResetPassword,
     isLoading: isLoginLoading || isSignupLoading || isResetLoading,
   };

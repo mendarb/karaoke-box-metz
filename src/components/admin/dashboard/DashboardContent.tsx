@@ -1,73 +1,53 @@
-import { useState } from "react";
-import { Booking } from "@/hooks/useBookings";
-import { DashboardStats } from "../DashboardStats";
-import { BookingsTable } from "../BookingsTable";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Plus } from "lucide-react";
+import { BookingsTable } from "../BookingsTable";
+import { useState } from "react";
 import { AdminBookingForm } from "../BookingForm";
-import { Plus, Trash2 } from "lucide-react";
-import { CleanupBookingsDialog } from "../actions/CleanupBookingsDialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import type { Booking } from "@/hooks/useBookings";
+import { DashboardStats } from "../DashboardStats";
 
 interface DashboardContentProps {
-  bookings: Booking[];
+  bookings: any[];
   isLoading: boolean;
   onViewDetails: (booking: Booking) => void;
 }
 
-export const DashboardContent = ({ 
-  bookings, 
-  isLoading,
-  onViewDetails 
-}: DashboardContentProps) => {
-  const [isCleanupDialogOpen, setIsCleanupDialogOpen] = useState(false);
-  const dummyOnStatusChange = async () => {};
+export const DashboardContent = ({ bookings, isLoading, onViewDetails }: DashboardContentProps) => {
+  const navigate = useNavigate();
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
   return (
-    <div className="p-4 md:p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Tableau de bord administrateur</h1>
-        <div className="flex gap-2">
-          <Button
-            variant="destructive"
-            onClick={() => setIsCleanupDialogOpen(true)}
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Nettoyer les réservations
-          </Button>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Nouvelle réservation
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-3xl">
-              <DialogHeader>
-                <DialogTitle>Créer une nouvelle réservation</DialogTitle>
-              </DialogHeader>
-              <AdminBookingForm />
-            </DialogContent>
-          </Dialog>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">Tableau de bord</h1>
+          <p className="text-gray-600">Gérez vos réservations et consultez les statistiques</p>
         </div>
-      </div>
-      
-      <div className="mb-8">
-        <DashboardStats bookings={bookings} />
-      </div>
-      
-      <div className="bg-white rounded-lg shadow-lg p-2 md:p-6 overflow-x-auto">
-        <BookingsTable
-          data={bookings}
-          onViewDetails={onViewDetails}
-          onStatusChange={dummyOnStatusChange}
-          isLoading={isLoading}
-        />
+        <Button 
+          onClick={() => setIsBookingModalOpen(true)} 
+          className="bg-kbox-coral hover:bg-kbox-orange-dark"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Nouvelle réservation
+        </Button>
       </div>
 
-      <CleanupBookingsDialog 
-        isOpen={isCleanupDialogOpen}
-        onClose={() => setIsCleanupDialogOpen(false)}
+      <DashboardStats bookings={bookings} />
+
+      <BookingsTable 
+        data={bookings}
+        isLoading={isLoading}
+        onViewDetails={onViewDetails}
+        onStatusChange={async () => {}}
       />
+
+      <Dialog open={isBookingModalOpen} onOpenChange={setIsBookingModalOpen}>
+        <DialogContent className="max-w-4xl">
+          <AdminBookingForm />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

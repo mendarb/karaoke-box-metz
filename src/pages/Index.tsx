@@ -3,11 +3,12 @@ import { AuthModal } from "@/components/auth/AuthModal";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useUserState } from "@/hooks/useUserState";
-import { CookieConsent } from "@/components/legal/CookieConsent";
+import { CookieConsent } from "@/components/legal/cookie-consent/CookieConsent";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { HeroSection } from "@/components/home/HeroSection";
 import { FeatureGrid } from "@/components/home/FeatureGrid";
+import { AnnouncementBanner } from "@/components/announcements/AnnouncementBanner";
 
 const BookingSection = lazy(() => import("@/components/home/BookingSection"));
 const Footer = lazy(() => import("@/components/home/Footer"));
@@ -36,30 +37,45 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-kbox-coral">
-      <main className="flex-grow container mx-auto pb-20 md:pb-0">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-0 min-h-[500px]">
-          <div className="md:col-span-1">
-            <HeroSection />
-          </div>
-
-          <div className="md:col-span-2 bg-white">
-            <Suspense fallback={
-              <div className="flex items-center justify-center h-full min-h-[500px]">
-                <LoadingSpinner />
-              </div>
-            }>
-              <BookingSection 
-                user={user} 
-                onShowAuth={() => setShowAuthModal(true)} 
-              />
-            </Suspense>
+    <div className="min-h-screen flex flex-col bg-[#F1F1F1]">
+      <AnnouncementBanner />
+      <main className="flex-grow">
+        <div className="bg-gray-50">
+          <div className="max-w-[1280px] mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
+              {isMobile ? (
+                <>
+                  <div className="bg-white min-h-[600px] flex items-center justify-center p-8 order-1">
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <BookingSection 
+                        user={user} 
+                        onShowAuth={() => setShowAuthModal(true)} 
+                      />
+                    </Suspense>
+                  </div>
+                  <div className="relative min-h-[600px] text-white order-2">
+                    <HeroSection />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="relative min-h-[600px] text-white">
+                    <HeroSection />
+                  </div>
+                  <div className="bg-white min-h-[600px] flex items-center justify-center p-8">
+                    <Suspense fallback={<LoadingSpinner />}>
+                      <BookingSection 
+                        user={user} 
+                        onShowAuth={() => setShowAuthModal(true)} 
+                      />
+                    </Suspense>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
-
-        <div>
-          <FeatureGrid />
-        </div>
+        <FeatureGrid />
       </main>
 
       <Suspense fallback={null}>

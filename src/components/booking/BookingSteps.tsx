@@ -34,8 +34,8 @@ export const BookingSteps = ({
   };
 
   return (
-    <div className={`${isMobile ? 'fixed bottom-0 left-0 right-0 z-50 pb-4 pt-2 glass' : 'pb-8'}`}>
-      <nav aria-label="Progress" className={`${isMobile ? 'px-4' : ''}`}>
+    <div className={`${isMobile ? 'fixed bottom-0 left-0 right-0 z-50 pb-4 pt-2 glass' : 'py-8 mt-6'}`}>
+      <nav aria-label="Progress" className={`${isMobile ? 'px-6' : 'px-4'}`}>
         <ol role="list" className="flex justify-around space-x-2 md:space-x-4">
           {steps.map((step, index) => (
             <li key={step.id} className="flex-1">

@@ -72,7 +72,7 @@ export const PromoCodeDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="bg-white">
         <DialogHeader>
           <DialogTitle>
             {promoCode ? 'Modifier le code promo' : 'Ajouter un code promo'}

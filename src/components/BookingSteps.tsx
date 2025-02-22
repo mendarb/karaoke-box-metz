@@ -1,4 +1,4 @@
-import { User2, Calendar, Users, CreditCard } from "lucide-react";
+import { User2, Calendar, Users, CreditCard, Home } from "lucide-react";
 import React from "react";
 
 export interface Step {
@@ -17,7 +17,7 @@ interface BookingStepsProps {
 
 export const BookingSteps = ({ steps, currentStep }: BookingStepsProps) => {
   return (
-    <div className="w-full mb-8">
+    <div className="w-full mb-8 mt-[30px]">
       <div className="flex justify-between">
         {steps.map((step, index) => (
           <div
@@ -27,15 +27,17 @@ export const BookingSteps = ({ steps, currentStep }: BookingStepsProps) => {
             } ${step.current ? "opacity-100" : "opacity-50"}`}
           >
             <div
-              className={`rounded-full p-3 mb-2 ${
-                step.current
+              className={`rounded-full p-3 mb-2 transition-all duration-300 ${
+                step.completed
+                  ? "bg-violet-600 text-white"
+                  : step.current
                   ? "bg-violet-100 text-violet-600"
                   : "bg-gray-100 text-gray-400"
               }`}
             >
               {step.icon}
             </div>
-            <span className="text-sm font-medium hidden sm:block">
+            <span className="text-sm font-medium text-center px-2 hidden sm:block">
               {step.title}
             </span>
           </div>

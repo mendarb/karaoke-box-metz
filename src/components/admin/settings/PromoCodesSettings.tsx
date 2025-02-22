@@ -1,21 +1,20 @@
-import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import { useState } from "react";
+import { PromoCodeDialog } from "./promo-codes/PromoCodeDialog";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
-import { PromoCodeDialog } from "./promo-codes/PromoCodeDialog";
 import { DeletePromoCodeDialog } from "./promo-codes/DeletePromoCodeDialog";
 
 export const PromoCodesSettings = () => {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [showDialog, setShowDialog] = useState(false);
   const [selectedCode, setSelectedCode] = useState<any>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  const { data: promoCodes, refetch } = useQuery({
+  const { data: promoCodes, isLoading } = useQuery({
     queryKey: ['promo-codes'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -31,28 +30,39 @@ export const PromoCodesSettings = () => {
 
   const handleEdit = (code: any) => {
     setSelectedCode(code);
-    setIsDialogOpen(true);
+    setShowDialog(true);
   };
 
   const handleDelete = (code: any) => {
     setSelectedCode(code);
-    setIsDeleteDialogOpen(true);
+    setShowDeleteDialog(true);
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Codes promo</CardTitle>
-        <CardDescription>Gérez vos codes promotionnels</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="mb-4">
-          <Button onClick={() => setIsDialogOpen(true)}>
-            Ajouter un code promo
+    <Card className="p-4 md:p-6">
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-base font-medium">Codes promo</h2>
+          <p className="text-sm text-muted-foreground">
+            Gérez vos codes promo et leurs conditions d'utilisation
+          </p>
+        </div>
+
+        <div className="flex justify-between items-center">
+          <Button
+            onClick={() => {
+              setSelectedCode(null);
+              setShowDialog(true);
+            }}
+            size="sm"
+            className="h-8"
+          >
+            <Plus className="h-4 w-4 mr-1" />
+            Nouveau code
           </Button>
         </div>
 
-        <div className="rounded-md border">
+        <ScrollArea className="h-[calc(100vh-20rem)]">
           <Table>
             <TableHeader>
               <TableRow>
@@ -60,59 +70,39 @@ export const PromoCodesSettings = () => {
                 <TableHead>Type</TableHead>
                 <TableHead>Valeur</TableHead>
                 <TableHead>Utilisations</TableHead>
-                <TableHead>Validité</TableHead>
-                <TableHead>Statut</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {promoCodes?.map((code) => (
                 <TableRow key={code.id}>
-                  <TableCell className="font-medium">{code.code}</TableCell>
-                  <TableCell>
-                    {code.type === 'percentage' ? 'Pourcentage' : 
-                     code.type === 'fixed_amount' ? 'Montant fixe' : 
-                     'Gratuit'}
+                  <TableCell className="py-2 font-medium">{code.code}</TableCell>
+                  <TableCell className="py-2">
+                    {code.type === 'percentage' ? 'Pourcentage' : 'Montant fixe'}
                   </TableCell>
-                  <TableCell>
-                    {code.type === 'percentage' ? `${code.value}%` :
-                     code.type === 'fixed_amount' ? `${code.value}€` :
-                     'Gratuit'}
+                  <TableCell className="py-2">
+                    {code.value}
+                    {code.type === 'percentage' ? '%' : '€'}
                   </TableCell>
-                  <TableCell>
-                    {code.current_uses}/{code.max_uses || '∞'}
+                  <TableCell className="py-2">
+                    {code.current_uses}
+                    {code.max_uses ? `/${code.max_uses}` : ''}
                   </TableCell>
-                  <TableCell>
-                    {code.start_date && (
-                      <span>
-                        Du {format(new Date(code.start_date), 'dd/MM/yyyy', { locale: fr })}
-                      </span>
-                    )}
-                    {code.end_date && (
-                      <span>
-                        {' '}au {format(new Date(code.end_date), 'dd/MM/yyyy', { locale: fr })}
-                      </span>
-                    )}
-                    {!code.start_date && !code.end_date && 'Pas de limite'}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={code.is_active ? "default" : "secondary"}>
-                      {code.is_active ? 'Actif' : 'Inactif'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
+                  <TableCell className="py-2">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
                         size="sm"
                         onClick={() => handleEdit(code)}
+                        className="h-8 px-2"
                       >
                         Modifier
                       </Button>
-                      <Button 
-                        variant="destructive" 
+                      <Button
+                        variant="ghost"
                         size="sm"
                         onClick={() => handleDelete(code)}
+                        className="h-8 px-2 text-red-500 hover:text-red-600 hover:bg-red-50"
                       >
                         Supprimer
                       </Button>
@@ -122,36 +112,28 @@ export const PromoCodesSettings = () => {
               ))}
             </TableBody>
           </Table>
-        </div>
+        </ScrollArea>
+      </div>
 
-        <PromoCodeDialog 
-          isOpen={isDialogOpen}
-          onClose={() => {
-            setIsDialogOpen(false);
-            setSelectedCode(null);
-          }}
-          promoCode={selectedCode}
-          onSuccess={() => {
-            refetch();
-            setIsDialogOpen(false);
-            setSelectedCode(null);
-          }}
-        />
+      <PromoCodeDialog
+        isOpen={showDialog}
+        onClose={() => setShowDialog(false)}
+        promoCode={selectedCode}
+        onSuccess={() => {
+          setShowDialog(false);
+          setSelectedCode(null);
+        }}
+      />
 
-        <DeletePromoCodeDialog
-          isOpen={isDeleteDialogOpen}
-          onClose={() => {
-            setIsDeleteDialogOpen(false);
-            setSelectedCode(null);
-          }}
-          promoCode={selectedCode}
-          onSuccess={() => {
-            refetch();
-            setIsDeleteDialogOpen(false);
-            setSelectedCode(null);
-          }}
-        />
-      </CardContent>
+      <DeletePromoCodeDialog
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        promoCode={selectedCode}
+        onSuccess={() => {
+          setShowDeleteDialog(false);
+          setSelectedCode(null);
+        }}
+      />
     </Card>
   );
 };

@@ -9,6 +9,66 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      announcements: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean | null
+          message: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          message: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          message?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      blocked_time_slots: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          date: string
+          id: string
+          reason: string | null
+          recurring_days: number[] | null
+          time_slot: string
+          type: Database["public"]["Enums"]["blocked_slot_type"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          date: string
+          id?: string
+          reason?: string | null
+          recurring_days?: number[] | null
+          time_slot: string
+          type?: Database["public"]["Enums"]["blocked_slot_type"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          date?: string
+          id?: string
+          reason?: string | null
+          recurring_days?: number[] | null
+          time_slot?: string
+          type?: Database["public"]["Enums"]["blocked_slot_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       booking_settings: {
         Row: {
           created_at: string
@@ -33,6 +93,50 @@ export type Database = {
         }
         Relationships: []
       }
+      booking_steps_tracking: {
+        Row: {
+          booking_id: string | null
+          completed: boolean | null
+          created_at: string
+          id: string
+          session_id: string
+          step: number
+          step_name: string
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          booking_id?: string | null
+          completed?: boolean | null
+          created_at?: string
+          id?: string
+          session_id: string
+          step: number
+          step_name: string
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          booking_id?: string | null
+          completed?: boolean | null
+          created_at?: string
+          id?: string
+          session_id?: string
+          step?: number
+          step_name?: string
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_steps_tracking_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
           cabin: string
@@ -46,6 +150,7 @@ export type Database = {
           is_test_booking: boolean | null
           message: string | null
           payment_intent_id: string | null
+          payment_method: string | null
           payment_status: string
           price: number
           promo_code_id: string | null
@@ -69,6 +174,7 @@ export type Database = {
           is_test_booking?: boolean | null
           message?: string | null
           payment_intent_id?: string | null
+          payment_method?: string | null
           payment_status?: string
           price: number
           promo_code_id?: string | null
@@ -92,6 +198,7 @@ export type Database = {
           is_test_booking?: boolean | null
           message?: string | null
           payment_intent_id?: string | null
+          payment_method?: string | null
           payment_status?: string
           price?: number
           promo_code_id?: string | null
@@ -112,6 +219,108 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      karaoke_boxes: {
+        Row: {
+          address: string
+          base_price_per_hour: number
+          capacity: number
+          city: string
+          created_at: string
+          deleted_at: string | null
+          description: string | null
+          features: Json | null
+          id: string
+          image_url: string | null
+          name: string
+          postal_code: string
+          status: Database["public"]["Enums"]["box_status"] | null
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          base_price_per_hour: number
+          capacity: number
+          city: string
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          features?: Json | null
+          id?: string
+          image_url?: string | null
+          name: string
+          postal_code: string
+          status?: Database["public"]["Enums"]["box_status"] | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          base_price_per_hour?: number
+          capacity?: number
+          city?: string
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          features?: Json | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          postal_code?: string
+          status?: Database["public"]["Enums"]["box_status"] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      landing_pages: {
+        Row: {
+          content: Json
+          created_at: string
+          deleted_at: string | null
+          description: string
+          id: string
+          image_url: string | null
+          is_published: boolean | null
+          keywords: string[]
+          meta_description: string
+          meta_title: string
+          slug: string
+          template_type: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: Json
+          created_at?: string
+          deleted_at?: string | null
+          description: string
+          id?: string
+          image_url?: string | null
+          is_published?: boolean | null
+          keywords?: string[]
+          meta_description: string
+          meta_title: string
+          slug: string
+          template_type: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          deleted_at?: string | null
+          description?: string
+          id?: string
+          image_url?: string | null
+          is_published?: boolean | null
+          keywords?: string[]
+          meta_description?: string
+          meta_title?: string
+          slug?: string
+          template_type?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       locations: {
         Row: {
@@ -169,6 +378,8 @@ export type Database = {
           id: string
           last_name: string | null
           phone: string | null
+          phone_country_code: string | null
+          phone_number: string | null
           updated_at: string
         }
         Insert: {
@@ -178,6 +389,8 @@ export type Database = {
           id: string
           last_name?: string | null
           phone?: string | null
+          phone_country_code?: string | null
+          phone_number?: string | null
           updated_at?: string
         }
         Update: {
@@ -187,6 +400,8 @@ export type Database = {
           id?: string
           last_name?: string | null
           phone?: string | null
+          phone_country_code?: string | null
+          phone_number?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -239,6 +454,48 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_bookings: {
+        Row: {
+          cabin: string
+          created_at: string
+          date: string
+          deleted_at: string | null
+          duration: string
+          group_size: string
+          id: string
+          message: string | null
+          time_slot: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cabin?: string
+          created_at?: string
+          date: string
+          deleted_at?: string | null
+          duration: string
+          group_size: string
+          id?: string
+          message?: string | null
+          time_slot: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cabin?: string
+          created_at?: string
+          date?: string
+          deleted_at?: string | null
+          duration?: string
+          group_size?: string
+          id?: string
+          message?: string | null
+          time_slot?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       settings: {
         Row: {
           created_at: string
@@ -287,6 +544,60 @@ export type Database = {
         }
         Relationships: []
       }
+      user_events: {
+        Row: {
+          created_at: string
+          event_data: Json | null
+          event_type: string
+          id: string
+          session_id: string | null
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          session_id?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          session_id?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"] | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"] | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"] | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -300,7 +611,10 @@ export type Database = {
       }
     }
     Enums: {
+      app_role: "admin" | "user"
+      blocked_slot_type: "one_time" | "recurring"
       booking_status: "pending" | "confirmed" | "cancelled" | "archived"
+      box_status: "active" | "maintenance" | "inactive"
       promo_code_type: "percentage" | "fixed_amount" | "free"
       weekday:
         | "monday"

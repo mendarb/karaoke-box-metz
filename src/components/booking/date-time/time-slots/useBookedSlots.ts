@@ -2,6 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { format } from "date-fns";
 
+interface Booking {
+  time_slot: string;
+  duration: string;
+}
+
 export const useBookedSlots = (selectedDate: Date | null) => {
   return useQuery({
     queryKey: ['booked-slots', selectedDate?.toISOString()],
@@ -9,7 +14,7 @@ export const useBookedSlots = (selectedDate: Date | null) => {
       if (!selectedDate) return [];
 
       const formattedDate = format(selectedDate, 'yyyy-MM-dd');
-      console.log('🔍 Vérification des créneaux pour:', formattedDate);
+      console.log('🔍 Vérification des réservations pour:', formattedDate);
       
       const { data: bookings, error } = await supabase
         .from('bookings')
@@ -20,24 +25,13 @@ export const useBookedSlots = (selectedDate: Date | null) => {
         .eq('payment_status', 'paid');
 
       if (error) {
-        console.error('❌ Erreur lors du chargement des créneaux réservés:', error);
+        console.error('❌ Erreur lors du chargement des réservations:', error);
         throw error;
       }
 
-      const bookedSlots = new Set<string>();
-      bookings?.forEach(booking => {
-        const startHour = parseInt(booking.time_slot);
-        const duration = parseInt(booking.duration);
-        
-        for (let hour = startHour; hour < startHour + duration; hour++) {
-          bookedSlots.add(`${hour.toString().padStart(2, '0')}:00`);
-        }
-      });
-
-      return Array.from(bookedSlots);
+      console.log('✅ Réservations trouvées:', bookings);
+      return bookings as Booking[];
     },
     enabled: !!selectedDate,
-    staleTime: 30000,
-    gcTime: 300000, // Remplace cacheTime
   });
 };

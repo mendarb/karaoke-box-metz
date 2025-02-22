@@ -24,12 +24,42 @@ export const useBookingSubmit = (
       return;
     }
 
-    try {
-      console.log('🎯 Starting booking process:', {
-        email: data.email,
+    // Calculer la durée basée sur les créneaux sélectionnés
+    const selectedSlots = form.getValues("selectedSlots") || [];
+    const calculatedDuration = selectedSlots.length.toString();
+
+    console.log('🔍 Checking form data:', {
+      date: data.date,
+      timeSlot: data.timeSlot,
+      calculatedDuration,
+      selectedSlots,
+      groupSize,
+      calculatedPrice
+    });
+
+    // Validate required fields
+    if (!data.date || !data.timeSlot || !calculatedDuration || !groupSize || !calculatedPrice) {
+      console.error('❌ Missing required fields:', { 
         date: data.date,
         timeSlot: data.timeSlot,
-        duration,
+        duration: calculatedDuration,
+        groupSize,
+        calculatedPrice
+      });
+      toast({
+        title: "Erreur",
+        description: "Veuillez remplir tous les champs requis",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      console.log('🎯 Starting booking process:', {
+        email: user.email,
+        date: data.date,
+        timeSlot: data.timeSlot,
+        duration: calculatedDuration,
         groupSize,
         calculatedPrice,
         finalPrice: data.finalPrice,
@@ -54,7 +84,7 @@ export const useBookingSubmit = (
       }
 
       const startHour = parseInt(data.timeSlot);
-      const endHour = startHour + parseInt(duration);
+      const endHour = startHour + parseInt(calculatedDuration);
 
       const hasOverlap = existingBookings?.some(booking => {
         const bookingStart = parseInt(booking.time_slot);
@@ -84,17 +114,17 @@ export const useBookingSubmit = (
       }
       console.log('💰 Prix final:', finalPrice);
 
-      // Appeler la nouvelle fonction Edge pour créer la réservation
+      // Appeler la fonction Edge pour créer la réservation
       const { data: response, error } = await supabase.functions.invoke(
         'create-booking',
         {
           body: {
-            email: data.email,
-            fullName: data.fullName,
-            phone: data.phone,
+            email: user.email,
+            fullName: data.fullName || user.user_metadata?.full_name,
+            phone: data.phone || user.user_metadata?.phone,
             date: formattedDate,
             timeSlot: data.timeSlot,
-            duration,
+            duration: calculatedDuration,
             groupSize,
             price: finalPrice,
             message: data.message,
@@ -115,7 +145,6 @@ export const useBookingSubmit = (
       }
 
       console.log('✅ Booking created and payment link generated:', {
-        bookingId: response.bookingId,
         checkoutUrl: response.url,
         userId: user.id,
         price: finalPrice,

@@ -2,6 +2,8 @@ import { UseFormReturn } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Users } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 
 interface GroupSizeSelectorProps {
   form: UseFormReturn<any>;
@@ -13,12 +15,12 @@ export const GroupSizeSelector = ({
   onGroupSizeChange,
 }: GroupSizeSelectorProps) => {
   const groupSizes = [
-    { label: "3 et moins", value: "3" },
+    { label: "3", value: "3" },
     { label: "4", value: "4" },
     { label: "5", value: "5" },
-    { label: "6 et plus", value: "6" }
+    { label: "6+", value: "6" },
   ];
-  
+
   const selectedSize = form.watch("groupSize");
 
   return (
@@ -30,9 +32,10 @@ export const GroupSizeSelector = ({
         </h2>
       </div>
       <p className="text-sm text-gray-600">
-        Sélectionnez le nombre de personnes
+        Choisissez le nombre de personnes
       </p>
-      <div className="grid grid-cols-2 gap-2 w-full">
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {groupSizes.map(({ label, value }) => (
           <Button
             key={value}
@@ -50,12 +53,18 @@ export const GroupSizeSelector = ({
             }}
           >
             <div className="text-base">{label}</div>
-            <div className="text-xs opacity-75">
-              personnes
-            </div>
           </Button>
         ))}
       </div>
+
+      {selectedSize === "6" && (
+        <Alert variant="warning" className="py-2 border-none bg-amber-50">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription className="text-xs">
+            Pour les groupes de 6 personnes et plus, le maximum est de 10 personnes
+          </AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 };

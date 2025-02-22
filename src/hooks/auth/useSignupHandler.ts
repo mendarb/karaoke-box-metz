@@ -12,7 +12,8 @@ export const useSignupHandler = () => {
     email: string,
     password: string,
     fullName: string,
-    phone: string
+    phone: string,
+    phoneCountryCode: string
   ): Promise<SignupResult> => {
     setIsLoading(true);
     
@@ -29,6 +30,7 @@ export const useSignupHandler = () => {
         password,
         fullName,
         phone,
+        phoneCountryCode
       });
 
       if (result.success) {

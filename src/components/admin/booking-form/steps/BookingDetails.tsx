@@ -1,7 +1,8 @@
 import { UseFormReturn } from "react-hook-form";
-import { BookingFormFields } from "../BookingFormFields";
-import { PriceCalculator } from "@/components/PriceCalculator";
 import { Button } from "@/components/ui/button";
+import { DateTimeFields } from "@/components/booking/DateTimeFields";
+import { GroupSizeAndDurationFields } from "@/components/GroupSizeAndDurationFields";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface BookingDetailsProps {
   form: UseFormReturn<any>;
@@ -22,46 +23,43 @@ export const BookingDetails = ({
   onBack,
   onNext,
 }: BookingDetailsProps) => {
-  const handleNext = () => {
-    const requiredFields = ["date", "timeSlot", "duration", "groupSize"];
-    const isValid = requiredFields.every(field => form.getValues(field));
-    
-    if (!isValid) {
-      form.trigger(requiredFields);
-      return;
-    }
-    
-    onNext();
-  };
-
   return (
-    <div className="space-y-6">
-      <Button 
-        variant="ghost" 
-        onClick={onBack}
-        className="mb-4"
-      >
-        ← Retour au client
-      </Button>
+    <ScrollArea className="h-[calc(100vh-200px)] pr-4">
+      <div className="space-y-6">
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold">Détails de la réservation</h2>
+          
+          <DateTimeFields 
+            form={form}
+            onAvailabilityChange={() => {}}
+          />
 
-      <BookingFormFields
-        form={form}
-        durations={durations}
-        groupSizes={groupSizes}
-        isLoading={isLoading}
-      />
+          <GroupSizeAndDurationFields
+            form={form}
+            onGroupSizeChange={(size) => form.setValue("groupSize", size)}
+            onDurationChange={(duration) => form.setValue("duration", duration)}
+            onPriceCalculated={onPriceCalculated}
+            availableHours={4}
+          />
+        </div>
 
-      <div className="mt-6">
-        <PriceCalculator
-          groupSize={form.watch("groupSize")}
-          duration={form.watch("duration")}
-          onPriceCalculated={onPriceCalculated}
-        />
+        <div className="flex justify-between gap-4">
+          <Button
+            variant="outline"
+            onClick={onBack}
+            className="w-full"
+          >
+            Retour
+          </Button>
+          <Button 
+            onClick={onNext}
+            disabled={isLoading}
+            className="w-full"
+          >
+            Suivant
+          </Button>
+        </div>
       </div>
-
-      <Button onClick={handleNext} className="w-full">
-        Continuer
-      </Button>
-    </div>
+    </ScrollArea>
   );
 };

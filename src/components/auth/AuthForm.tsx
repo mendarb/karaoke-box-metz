@@ -2,7 +2,7 @@ import { LoginForm } from "./LoginForm"
 import { SignupForm } from "./SignupForm"
 
 interface AuthFormProps {
-  onClose: () => void;
+  onClose?: () => void;
   isLogin: boolean;
   onToggleMode: () => void;
 }
